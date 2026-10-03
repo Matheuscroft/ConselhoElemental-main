@@ -28,7 +28,10 @@ import {
   CalisteniaExerciseDetail,
   CassinoArcano,
   WorkoutHub,
+<<<<<<< HEAD
   WorkoutPreview,
+=======
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
   ActiveWorkout,
   WorkoutSummary,
   Corpo,
@@ -144,7 +147,10 @@ function App() {
             <Route path="/temporal/calendario" element={<TemporalCalendarPage />} />
             <Route path="/pilares" element={<Pilares />} />
             <Route path="/treinos" element={<WorkoutHub />} />
+<<<<<<< HEAD
             <Route path="/treinos/preview/:workoutId" element={<WorkoutPreview />} />
+=======
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
             <Route path="/treinos/corpo" element={<Corpo />} />
             <Route path="/treinos/ativo/:sessionId" element={<ActiveWorkout />} />
             <Route path="/treinos/resumo/:sessionId" element={<WorkoutSummary />} />

@@ -31,6 +31,7 @@ module.exports = {
         agua: { DEFAULT: "#1B4965", light: "#48CAE4", dark: "#0A1F2E" },
         ar: { DEFAULT: "#A8DADC", light: "#E0F7FA", dark: "#3A6366" },
         mana: { DEFAULT: "#FFD700", dim: "#B8860B" },
+<<<<<<< HEAD
         fitness: {
           canvas:           "#101011",
           deep:             "#0B0B0C",
@@ -58,6 +59,8 @@ module.exports = {
           orange:           "#FF9B52",
           blue:             "#6697F2",
         },
+=======
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
       },
       boxShadow: {
         glass: "0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
@@ -68,10 +71,13 @@ module.exports = {
         "glow-ar":     "0 0 20px rgba(168, 218, 220, 0.25), 0 0 50px rgba(224, 247, 250, 0.10)",
         "glow-arcane": "0 0 25px rgba(157, 78, 221, 0.35), 0 0 60px rgba(0, 217, 255, 0.12)",
         "glow-gold":   "0 0 25px rgba(255, 215, 0, 0.35), 0 0 60px rgba(255, 215, 0, 0.12)",
+<<<<<<< HEAD
         "fitness-card":     "0 16px 36px rgba(0,0,0,0.30)",
         "fitness-elevated": "0 22px 48px rgba(0,0,0,0.42)",
         "fitness-primary":  "0 0 28px rgba(133,130,242,0.16)",
         "fitness-green":    "0 0 18px rgba(0,201,154,0.18)",
+=======
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
       },
       fontFamily: {
         mystic:  ['Cinzel', 'serif'],

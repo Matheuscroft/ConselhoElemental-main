@@ -79,7 +79,10 @@
     "globals": "^16.5.0",
     "kimi-plugin-inspect-react": "^1.0.3",
     "postcss": "^8.5.6",
+<<<<<<< HEAD
     "puppeteer": "^25.12.0",
+=======
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
     "sharp": "^0.35.3",
     "tailwindcss": "^3.4.19",
     "tailwindcss-animate": "^1.0.7",

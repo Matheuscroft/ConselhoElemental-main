@@ -67,4 +67,10 @@
 }
 
 @layer utilities {
+<<<<<<< HEAD
+=======
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom, 16px);
+  }
+>>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
 }
