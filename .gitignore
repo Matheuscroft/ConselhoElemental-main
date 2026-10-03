@@ -24,10 +24,10 @@ app/yarn-error.log*
 app/pnpm-debug.log*
 app/.vercel/
 
-# Optional docs and local-only notes inside app are excluded.
-app/docs/
+# Local-only notes inside app are excluded; docs are tracked.
 app/**/*.md
 !app/README.md
+!app/docs/**/*.md
 
 # OS and editor files
 .DS_Store
