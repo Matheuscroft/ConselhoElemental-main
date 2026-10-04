@@ -23,7 +23,7 @@ interface SetRowProps {
   onSkip: () => void;
 }
 
-const SetRow: React.FC<SetRowProps> = ({ set, measureMode, loadMode, restSeconds, onComplete, onSkip }) => {
+export const SetRow: React.FC<SetRowProps> = ({ set, measureMode, loadMode, restSeconds, onComplete, onSkip }) => {
   const [loadKg, setLoadKg] = useState(set.loadKg);
   const [reps, setReps] = useState(set.reps);
   const [durationSeconds, setDurationSeconds] = useState(set.durationSeconds ?? 0);
@@ -32,20 +32,20 @@ const SetRow: React.FC<SetRowProps> = ({ set, measureMode, loadMode, restSeconds
   return (
     <div
       className={cn(
-        'rounded-xl border p-3',
-        set.completed && 'border-terra-light/40 bg-terra-light/10',
-        set.skipped && 'border-white/10 bg-white/5 opacity-60',
-        !isDone && 'border-white/10 bg-black/20'
+        'rounded-2xl p-3',
+        set.completed && 'bg-fitness-green/10',
+        set.skipped && 'bg-fitness-surface-muted opacity-60',
+        !isDone && 'bg-fitness-surface-muted'
       )}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-white/60">Série {set.setNumber}</span>
+        <span className="text-xs text-fitness-muted">Série {set.setNumber}</span>
         {set.completed && (
-          <span className="flex items-center gap-1 text-[11px] text-terra-light">
+          <span className="flex items-center gap-1 text-[11px] text-fitness-green">
             <Check className="w-3.5 h-3.5" aria-hidden="true" /> Concluída
           </span>
         )}
-        {set.skipped && <span className="text-[11px] text-white/40">Pulada</span>}
+        {set.skipped && <span className="text-[11px] text-fitness-muted">Pulada</span>}
       </div>
 
       <div className="grid grid-cols-3 gap-2 mb-2">
@@ -101,12 +101,12 @@ const SetRow: React.FC<SetRowProps> = ({ set, measureMode, loadMode, restSeconds
           <Button
             type="button"
             size="sm"
-            className="flex-1 bg-terra-light hover:bg-terra-light/80"
+            className="flex-1 rounded-full bg-fitness-green text-fitness-black hover:bg-fitness-green/80"
             onClick={() => onComplete({ loadKg, reps, durationSeconds })}
           >
             Concluir série
           </Button>
-          <Button type="button" size="sm" variant="outline" className="border-white/15" onClick={onSkip}>
+          <Button type="button" size="sm" variant="outline" className="rounded-full border-fitness-surface-hover bg-transparent text-fitness-text hover:bg-fitness-surface-hover" onClick={onSkip}>
             Pular
           </Button>
         </div>

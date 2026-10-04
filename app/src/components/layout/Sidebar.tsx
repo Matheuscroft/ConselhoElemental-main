@@ -1,27 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, Bot, CheckSquare, Shield, BookOpen, LogOut, Heart, Zap, Flame, Calendar, Dice6, Swords, Globe, Mountain, Library, Dumbbell } from 'lucide-react';
+import { Sparkles, LogOut, Heart, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/stores/appStore';
 import { useAuthStore } from '@/stores/authStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
+import { SIDEBAR_ROUTES } from '@/lib/app-routes';
 
-const NAV_ITEMS = [
-  { id: 'santuario', label: 'Santuário', icon: Sparkles, path: '/santuario' },
-  { id: 'rituais', label: 'Rituais', icon: CheckSquare, path: '/rituais' },
-  { id: 'ciclos', label: 'Ciclos', icon: Flame, path: '/ciclos' },
-  { id: 'treinos', label: 'Treinos', icon: Dumbbell, path: '/treinos' },
-  { id: 'jornadas', label: 'Jornadas', icon: Swords, path: '/jornadas' },
-  { id: 'grandes-obras', label: 'Grandes Obras', icon: Mountain, path: '/grandes-obras' },
-  { id: 'temporal', label: 'Temporal', icon: Calendar, path: '/temporal/semana' },
-  { id: 'grimorio', label: 'Grimório', icon: Library, path: '/grimorio' },
-  { id: 'dominios', label: 'Domínios', icon: Globe, path: '/dominios' },
-  { id: 'astrolabio', label: 'Astrolábio', icon: BookOpen, path: '/astrolabio' },
-  { id: 'cassino', label: 'Cassino Arcano', icon: Dice6, path: '/cassino-arcano' },
-  { id: 'forja', label: 'Forja', icon: Bot, path: '/forja' },
-  { id: 'pilares', label: 'Pilares', icon: Shield, path: '/pilares' },
-];
+const NAV_ITEMS = SIDEBAR_ROUTES;
 
 export const Sidebar: React.FC = () => {
   const location = useLocation();

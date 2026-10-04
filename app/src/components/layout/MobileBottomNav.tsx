@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Sparkles, CheckSquare, Plus, Library, LayoutGrid, Flame, Swords, Mountain, Calendar, Globe, Dice6, Dumbbell } from 'lucide-react';
+import { Sparkles, CheckSquare, Plus, Library, LayoutGrid } from 'lucide-react';
+import { AllRoutesSheet } from './AllRoutesSheet';
 
 export const MobileBottomNav: React.FC = () => {
   const { pathname } = useLocation();
@@ -34,40 +34,15 @@ export const MobileBottomNav: React.FC = () => {
             <Library className="w-6 h-6" />
           </button>
 
-          <button onClick={() => setMoreOpen(true)} className="flex flex-col items-center gap-1 text-white/40">
+          <button onClick={() => setMoreOpen(true)} aria-label="Mais páginas" className="flex flex-col items-center gap-1 text-white/40">
             <LayoutGrid className="w-6 h-6" />
+            <span className="text-[10px]">Mais</span>
           </button>
 
         </div>
       </nav>
 
-      {/* Menu "Mais" Drawer */}
-      <AnimatePresence>
-        {moreOpen && (
-          <div className="md:hidden fixed inset-0 z-[60]">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMoreOpen(false)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="absolute bottom-0 w-full glass-card rounded-b-none p-6 pb-12">
-              <div className="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6" />
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { id: 'ciclos', label: 'Ciclos', icon: Flame, path: '/ciclos' },
-                  { id: 'treinos', label: 'Treinos', icon: Dumbbell, path: '/treinos' },
-                  { id: 'jornadas', label: 'Jornadas', icon: Swords, path: '/jornadas' },
-                  { id: 'grandes-obras', label: 'Obras', icon: Mountain, path: '/grandes-obras' },
-                  { id: 'temporal', label: 'Temporal', icon: Calendar, path: '/temporal/semana' },
-                  { id: 'cassino', label: 'Cassino', icon: Dice6, path: '/cassino-arcano' },
-                  { id: 'dominios', label: 'Domínios', icon: Globe, path: '/dominios' }
-                ].map(item => (
-                  <button key={item.id} onClick={() => { setMoreOpen(false); navigate(item.path); }} className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white/80">
-                    <item.icon className="w-6 h-6 text-mystic-gold" />
-                    <span className="text-[11px] font-bold">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <AllRoutesSheet open={moreOpen} onOpenChange={setMoreOpen} variant="mystic" />
     </>
   );
 };

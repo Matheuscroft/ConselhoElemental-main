@@ -1,6 +1,6 @@
 /**
  * MetricRing — a single SVG concentric ring.
- * Used by RingsOverview to compose three stacked activity rings.
+ * RingsOverview stacks up to three of them around a shared center.
  */
 import React from 'react';
 
@@ -13,6 +13,8 @@ interface MetricRingProps {
   radius: number;
   /** Stroke width in px */
   strokeWidth: number;
+  /** Shared center of the concentric rings */
+  center: number;
   /** Progress arc stroke color */
   color: string;
   /** Background track color */
@@ -24,13 +26,13 @@ export const MetricRing: React.FC<MetricRingProps> = ({
   max,
   radius,
   strokeWidth,
+  center,
   color,
   trackColor,
 }) => {
   const circumference = 2 * Math.PI * radius;
   const clampedRatio = Math.min(1, Math.max(0, max > 0 ? value / max : 0));
   const dashOffset = circumference * (1 - clampedRatio);
-  const center = radius + strokeWidth / 2;
 
   return (
     <g>
@@ -61,9 +63,9 @@ export const MetricRing: React.FC<MetricRingProps> = ({
   );
 };
 
-// ─── RingsOverview ────────────────────────────────────────────────────────────
+// ─── RingsOverview ─────────────────────────────────────────────────────────────────────
 
-interface RingDef {
+export interface RingDef {
   value: number;
   max: number;
   color: string;
@@ -73,74 +75,40 @@ interface RingDef {
 }
 
 interface RingsOverviewProps {
-  /** Outer ring */
-  sleep: RingDef;
-  /** Middle ring */
-  exercise: RingDef;
-  /** Inner ring */
-  water: RingDef;
+  /** Ordered from the outer ring to the inner ring (up to 3) */
+  rings: RingDef[];
   /** Accessible summary for screen readers */
   summary?: string;
   size?: number;
 }
 
-/**
- * RingsOverview — three concentric SVG activity rings (Sleep / Exercise / Water).
- * Layout matches Apple-style health rings: external = sleep (green), middle = exercise (orange), internal = water (blue).
- */
-export const RingsOverview: React.FC<RingsOverviewProps> = ({
-  sleep,
-  exercise,
-  water,
-  summary,
-  size = 140,
-}) => {
-  const strokeWidth = 14;
-  const gap = 6; // gap between rings
-  const rOuter = (size / 2) - strokeWidth / 2;
-  const rMid = rOuter - strokeWidth - gap;
-  const rInner = rMid - strokeWidth - gap;
-  const viewBoxSize = size;
+const RING_STROKE_WIDTH = 14;
+const RING_GAP = 6;
+
+/** Concentric SVG rings; each entry is one ring, outermost first. */
+export const RingsOverview: React.FC<RingsOverviewProps> = ({ rings, summary, size = 140 }) => {
+  const center = size / 2;
+  const outerRadius = center - RING_STROKE_WIDTH / 2;
 
   return (
     <div
       role="img"
-      aria-label={summary ?? `Anéis de atividade: Sono ${sleep.valueLabel}, Exercício ${exercise.valueLabel}, Água ${water.valueLabel}`}
+      aria-label={summary ?? `Anéis: ${rings.map((ring) => `${ring.label} ${ring.valueLabel}`).join(', ')}`}
       style={{ width: size, height: size }}
     >
-      <svg
-        width={viewBoxSize}
-        height={viewBoxSize}
-        viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-        aria-hidden="true"
-      >
-        {/* Outer: Sleep */}
-        <MetricRing
-          value={sleep.value}
-          max={sleep.max}
-          radius={rOuter}
-          strokeWidth={strokeWidth}
-          color={sleep.color}
-          trackColor={sleep.trackColor}
-        />
-        {/* Middle: Exercise */}
-        <MetricRing
-          value={exercise.value}
-          max={exercise.max}
-          radius={rMid}
-          strokeWidth={strokeWidth}
-          color={exercise.color}
-          trackColor={exercise.trackColor}
-        />
-        {/* Inner: Water */}
-        <MetricRing
-          value={water.value}
-          max={water.max}
-          radius={rInner}
-          strokeWidth={strokeWidth}
-          color={water.color}
-          trackColor={water.trackColor}
-        />
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
+        {rings.slice(0, 3).map((ring, index) => (
+          <MetricRing
+            key={ring.label}
+            value={ring.value}
+            max={ring.max}
+            radius={outerRadius - index * (RING_STROKE_WIDTH + RING_GAP)}
+            strokeWidth={RING_STROKE_WIDTH}
+            center={center}
+            color={ring.color}
+            trackColor={ring.trackColor}
+          />
+        ))}
       </svg>
     </div>
   );

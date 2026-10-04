@@ -16,7 +16,7 @@ import {
 } from '@/components/fitness';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
-import { formatDurationCompact, formatSecondsLabel } from '@/lib/fitness/fitness-format';
+import { formatDurationCompact } from '@/lib/fitness/fitness-format';
 
 export const WorkoutPreview: React.FC = () => {
   const navigate = useNavigate();
@@ -51,8 +51,6 @@ export const WorkoutPreview: React.FC = () => {
       </FitnessPageShell>
     );
   }
-
-  const CategoryIcon = CATEGORY_ICONS[workout.category] ?? Dumbbell;
 
   const handleStart = () => {
     const session = startWorkout(workout.id);

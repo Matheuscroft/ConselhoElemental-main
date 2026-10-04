@@ -79,6 +79,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       '/invocar': 'Invocar',
       '/dominios': 'Domínios',
       '/pilares': 'Pilares Elementais',
+      '/mapa': 'Mapa de páginas',
       '/temporal/semana': 'Temporal - Semana',
       '/temporal/mes': 'Temporal - Mês',
       '/temporal/ano': 'Temporal - Ano',

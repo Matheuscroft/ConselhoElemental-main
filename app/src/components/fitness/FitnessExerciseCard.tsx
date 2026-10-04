@@ -20,6 +20,7 @@ interface FitnessExerciseCardProps {
   onToggleExpand?: () => void;
   videoSrc?: string;
   videoPoster?: string;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -32,6 +33,7 @@ export const FitnessExerciseCard: React.FC<FitnessExerciseCardProps> = ({
   onToggleExpand,
   videoSrc,
   videoPoster,
+  children,
   className,
 }) => {
   const isCompleted = state === 'completed';
@@ -127,6 +129,7 @@ export const FitnessExerciseCard: React.FC<FitnessExerciseCardProps> = ({
               poster={videoPoster}
               title={name}
             />
+            {children && <div className="mt-3 space-y-2">{children}</div>}
           </motion.div>
         )}
       </AnimatePresence>

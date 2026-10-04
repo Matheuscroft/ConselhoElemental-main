@@ -6,5 +6,5 @@ export { CreateWorkoutDialog } from './CreateWorkoutDialog';
 export { BodyTrackingCard } from './BodyTrackingCard';
 export { BodyMeasurementDialog, BODY_MEASUREMENT_FIELDS } from './BodyMeasurementDialog';
 export { WorkoutCategoryGrid } from './WorkoutCategoryGrid';
-export { ActiveExerciseCard } from './ActiveExerciseCard';
+export { ActiveExerciseCard, SetRow } from './ActiveExerciseCard';
 export { RpgImpactCard } from './RpgImpactCard';

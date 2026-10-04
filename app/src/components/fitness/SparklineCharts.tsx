@@ -62,10 +62,10 @@ export const WeeklyBarChart: React.FC<WeeklyBarChartProps> = ({ data, limitLabel
       </div>
     )}
     <div className="flex items-end justify-between gap-2 h-28" aria-label="Gráfico semanal de atividade">
-      {data.map(({ day, value, max }) => {
+      {data.map(({ day, value, max }, index) => {
         const pct = max > 0 ? Math.min(1, value / max) : 0;
         return (
-          <div key={day} className="flex flex-col items-center gap-1.5 flex-1">
+          <div key={`${day}-${index}`} className="flex flex-col items-center gap-1.5 flex-1">
             <div className="relative flex-1 w-3 rounded-full bg-fitness-green-dim overflow-hidden">
               <div
                 className="absolute bottom-0 left-0 right-0 rounded-full bg-fitness-green"

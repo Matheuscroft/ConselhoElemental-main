@@ -20,12 +20,13 @@ export { Calistenia } from './Calistenia';
 export { CalisteniaExerciseDetail } from './CalisteniaExerciseDetail';
 export { CassinoArcano } from './CassinoArcano';
 export { WorkoutHub } from './WorkoutHub';
-<<<<<<< HEAD
 export { WorkoutPreview } from './WorkoutPreview';
-=======
->>>>>>> 42bd28d4c90747fd7bc1fff722dc1f9486157c1e
 export { ActiveWorkout } from './ActiveWorkout';
 export { WorkoutSummary } from './WorkoutSummary';
+export { WorkoutHistory } from './WorkoutHistory';
+export { WorkoutWeekly } from './WorkoutWeekly';
+export { WorkoutInsights } from './WorkoutInsights';
+export { Mapa } from './Mapa';
 export { Corpo } from './Corpo';
 export {
 	TemporalWeekPage,

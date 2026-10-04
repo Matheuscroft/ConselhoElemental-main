@@ -10,6 +10,8 @@ interface FitnessPageShellProps {
   className?: string;
   /** Extra padding-bottom for pages with a sticky bottom CTA */
   ctaOffset?: boolean;
+  /** Extra padding-bottom for pages with the floating FitnessBottomNav */
+  navOffset?: boolean;
   /** Override: don't add default px-6 */
   noPadX?: boolean;
 }
@@ -18,6 +20,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
   children,
   className,
   ctaOffset = false,
+  navOffset = false,
   noPadX = false,
 }) => (
   <div
@@ -27,6 +30,8 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
       'pt-[env(safe-area-inset-top)]',
       ctaOffset
         ? 'pb-[calc(6rem+env(safe-area-inset-bottom))]'
+        : navOffset
+        ? 'pb-[calc(8rem+env(safe-area-inset-bottom))]'
         : 'pb-[env(safe-area-inset-bottom)]',
       !noPadX && 'px-6',
       className
@@ -59,21 +64,22 @@ export const FitnessHeader: React.FC<FitnessHeaderProps> = ({
 }) => (
   <div className={cn('flex items-center justify-between pt-6 pb-2', className)}>
     {/* Back button or spacer */}
-    {onBack ? (
-      <button
-        type="button"
-        onClick={onBack}
-        aria-label="Voltar"
-        className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-fitness-surface transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
-      >
-        {/* Arrow Left SVG */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-      </button>
-    ) : (
-      <div className="w-9" aria-hidden="true" />
-    )}
+    <div className="flex-1 flex justify-start">
+      {onBack ? (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Voltar"
+          className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-fitness-surface transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+        </button>
+      ) : (
+        <div className="w-9" aria-hidden="true" />
+      )}
+    </div>
 
     {/* Center text */}
     <div className="flex flex-col items-center">
@@ -84,11 +90,9 @@ export const FitnessHeader: React.FC<FitnessHeaderProps> = ({
     </div>
 
     {/* Right action or spacer */}
-    {rightAction ? (
-      <div className="w-9 flex justify-end">{rightAction}</div>
-    ) : (
-      <div className="w-9" aria-hidden="true" />
-    )}
+    <div className="flex-1 flex justify-end">
+      {rightAction ?? <div className="w-9" aria-hidden="true" />}
+    </div>
   </div>
 );
 
