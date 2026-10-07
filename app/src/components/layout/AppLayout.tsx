@@ -50,14 +50,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   }, [timer.isRunning, tickTimer]);
 
   return (
-    <div className="min-h-screen text-fg-primary bg-void overflow-x-hidden selection:bg-mystic-arcane/40">
-      {/* Background Arcane Elegante */}
-      <div aria-hidden className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 inset-x-0 h-[50vh] bg-gradient-radial-magic" />
-        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-mystic-arcane/10 blur-[100px] animate-pulse-magic" />
-        <div className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-mystic-cyan/5 blur-[100px] animate-pulse-magic" style={{ animationDelay: '2s' }} />
-      </div>
-
+    <div className="min-h-screen text-fg-primary bg-transparent overflow-x-hidden selection:bg-mystic-arcane/40">
       <Sidebar />
       <TopBar title={title} showBackButton={showBackButton} rightAction={rightAction} />
 

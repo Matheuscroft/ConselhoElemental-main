@@ -1,0 +1,6 @@
+---
+description: Preferência do usuário para uso da frontend-design em tarefas de frontend
+alwaysApply: true
+---
+
+Para tarefas de frontend, avalie a skill em `.agents/skills/frontend-design/SKILL.md`. Use-a em criação ou reformulação visual; em manutenção estritamente funcional, aplique apenas o que for pertinente. As referências explícitas do usuário e preservação de funcionalidades têm prioridade. A visão do app é gestão pessoal gamificada com magia elemental.

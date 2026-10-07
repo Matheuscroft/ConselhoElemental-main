@@ -1,3 +1,11 @@
+import { WorkoutSelect as WorkoutHub } from '@/pages/fitness/WorkoutSelect';
+import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
+import { WorkoutHistory } from '@/pages/fitness/WorkoutHistory';
+import { HealthWeeklySummary as WorkoutWeekly } from '@/pages/fitness/HealthWeeklySummary';
+import { HealthInsights as WorkoutInsights } from '@/pages/fitness/HealthInsights';
+import { ActiveWorkout } from '@/pages/fitness/ActiveWorkout';
+import { WorkoutSummary } from '@/pages/fitness/WorkoutSummary';
+import { HealthDashboard } from '@/pages/fitness/HealthDashboard';
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -27,14 +35,7 @@ import {
   Calistenia,
   CalisteniaExerciseDetail,
   CassinoArcano,
-  WorkoutHub,
-  WorkoutPreview,
-  WorkoutHistory,
-  WorkoutWeekly,
-  WorkoutInsights,
   Mapa,
-  ActiveWorkout,
-  WorkoutSummary,
   Corpo,
   TemporalWeekPage,
   TemporalMonthPage,
@@ -64,7 +65,7 @@ function ProtectedRoute() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen bg-void text-white grid place-items-center">
+      <div className="min-h-screen bg-transparent text-white grid place-items-center">
         <p className="text-white/70">Preparando sessao...</p>
       </div>
     );
@@ -96,7 +97,7 @@ function PublicAuthRoute() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen bg-void text-white grid place-items-center">
+      <div className="min-h-screen bg-transparent text-white grid place-items-center">
         <p className="text-white/70">Preparando sessao...</p>
       </div>
     );
@@ -148,6 +149,8 @@ function App() {
             <Route path="/temporal/calendario" element={<TemporalCalendarPage />} />
             <Route path="/pilares" element={<Pilares />} />
             <Route path="/treinos" element={<WorkoutHub />} />
+            <Route path="/treinos/painel" element={<HealthDashboard />} />
+            <Route path="/treinos/plano/:workoutId" element={<WorkoutPreview />} />
             <Route path="/treinos/preview/:workoutId" element={<WorkoutPreview />} />
             <Route path="/treinos/historico" element={<WorkoutHistory />} />
             <Route path="/treinos/semana" element={<WorkoutWeekly />} />

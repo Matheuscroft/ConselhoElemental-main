@@ -35,7 +35,7 @@ export function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-void text-white grid place-items-center px-4">
+    <div className="min-h-screen bg-transparent text-white grid place-items-center px-4">
       <Card className="w-full max-w-md border-white/20 bg-void/90 backdrop-blur-xl">
         <CardHeader>
           <CardTitle className="text-xl">Conselho Elemental</CardTitle>

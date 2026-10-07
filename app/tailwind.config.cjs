@@ -76,6 +76,7 @@ module.exports = {
         "fitness-primary":  "0 0 28px rgba(133,130,242,0.16)",
         "fitness-green":    "0 0 18px rgba(0,201,154,0.18)",
       },
+      borderRadius: { 'fit-sm': '18px', fit: '24px', 'fit-lg': '28px', 'fit-xl': '32px', 'fit-sheet': '36px', 'fit-hero': '52px' },
       fontFamily: {
         mystic:  ['Cinzel', 'serif'],
         display: ['Cinzel Decorative', 'cursive'],

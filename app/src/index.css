@@ -71,3 +71,52 @@
     height: env(safe-area-inset-bottom, 16px);
   }
 }
+
+/* One decorative canvas for all routes, with portrait-friendly bounded layers. */
+#root { isolation: isolate; min-height: 100dvh; }
+.aurora-background {
+  position: fixed; inset: 0; z-index: -1; overflow: hidden;
+  pointer-events: none; background: #050508; contain: strict;
+}
+.aurora-glow {
+  position: absolute; width: 90%; height: 75%; border-radius: 50%;
+  background: radial-gradient(ellipse, var(--aurora-color1) 0%, transparent 70%);
+  animation: aurora-drift 30s ease-in-out infinite alternate;
+}
+.aurora-glow-a { top: -18%; left: -25%; }
+.aurora-glow-b {
+  bottom: -15%; right: -25%;
+  background: radial-gradient(ellipse, var(--aurora-color2) 0%, transparent 70%);
+  animation-duration: 40s; animation-delay: -12s;
+}
+.aurora-glow-c {
+  top: 20%; left: 15%; width: 70%; height: 65%;
+  background: radial-gradient(ellipse, rgba(192,38,211,.12) 0%, transparent 65%);
+  animation: aurora-breathe var(--aurora-pulse-duration) ease-in-out infinite;
+}
+.aurora-star {
+  position: absolute; width: 2px; height: 2px; border-radius: 50%;
+  background: #eee8ff; opacity: .3; animation: aurora-twinkle 5s ease-in-out infinite;
+}
+@keyframes aurora-drift { from { transform: translate3d(-3%, -2%, 0); } to { transform: translate3d(6%, 5%, 0); } }
+@keyframes aurora-breathe { 0%,100% { opacity: .5; } 50% { opacity: .9; } }
+@keyframes aurora-twinkle { 0%,100% { opacity: .12; } 50% { opacity: .55; } }
+@media (max-width: 767px) {
+  .aurora-glow { width: 140%; height: 65%; }
+  .aurora-glow-a { left: -55%; top: -10%; }
+  .aurora-glow-b { right: -55%; bottom: -5%; }
+  .aurora-glow-c { display: none; }
+  .aurora-star:nth-of-type(n+25) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora-background * { animation: none !important; }
+}
+
+/* Scoped to Fitness portals; shared dialogs retain their default theme. */
+.fitness-dialog { background: #262b37; color: #f4f4f6; border: 0; border-radius: 24px; font-family: Inter, sans-serif; }
+.fitness-dialog .font-mystic { font-family: Inter, sans-serif; }
+.fitness-dialog input { min-height: 44px; font-size: 16px; background: #191d27; border-color: transparent; border-radius: 12px; }
+.fitness-dialog label > span { font-size: 13px; color: #b5b8c3; margin-bottom: 6px; }
+.fitness-dialog button { min-height: 44px; }
+.fitness-dialog button.bg-mystic-arcane { background: #8582f2; border-radius: 999px; }
+.fitness-dialog .text-mystic-arcane { color: #a5a2ff; }

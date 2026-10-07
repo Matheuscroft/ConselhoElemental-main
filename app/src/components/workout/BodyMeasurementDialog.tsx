@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,12 +27,14 @@ export const BODY_MEASUREMENT_FIELDS: Array<{ key: keyof BodyMeasurementInput; l
 type FormState = Partial<Record<keyof BodyMeasurementInput, string>>;
 
 interface BodyMeasurementDialogProps {
+  variant?: 'default' | 'fitness';
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSaved?: () => void;
 }
 
-export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ open, onOpenChange, onSaved }) => {
+export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ open, onOpenChange, onSaved, variant = 'default' }) => {
+  const titleId = useId();
   const { addBodyMeasurement } = useWorkoutStore();
   const [form, setForm] = useState<FormState>({});
 
@@ -68,9 +70,9 @@ export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ op
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="bg-mystic-purple/95 border-white/10 max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent aria-labelledby={titleId} aria-describedby={undefined} className={variant === 'fitness' ? 'fitness-dialog max-w-md max-h-[85dvh] overflow-y-auto' : 'bg-mystic-purple/95 border-white/10 max-w-md max-h-[85vh] overflow-y-auto'}>
         <DialogHeader>
-          <DialogTitle className="font-mystic">Registrar avaliação corporal</DialogTitle>
+          <DialogTitle id={titleId} className="font-mystic">Registrar avaliação corporal</DialogTitle>
         </DialogHeader>
         <div className="grid grid-cols-2 gap-3">
           {BODY_MEASUREMENT_FIELDS.map((field) => (

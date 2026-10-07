@@ -14,6 +14,7 @@ import {
 import type { WorkoutExercise } from '@/types/workout';
 
 interface ExerciseDetailSheetProps {
+  variant?: 'default' | 'fitness';
   exercise: WorkoutExercise | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -22,6 +23,7 @@ interface ExerciseDetailSheetProps {
 
 export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({
   exercise,
+  variant = 'default',
   open,
   onOpenChange,
   onAddToWorkout,
@@ -32,7 +34,7 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="bg-void border-white/10 rounded-t-3xl max-h-[88vh] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6"
+        className={`${variant === 'fitness' ? 'fitness-dialog' : 'bg-void border-white/10'} rounded-t-3xl max-h-[88dvh] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6`}
       >
         {exercise && (
           <div className="space-y-5">
@@ -41,9 +43,9 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({
                 <Icon className="w-7 h-7 text-mystic-arcane" aria-hidden="true" />
               </div>
               <div className="min-w-0">
-                <h2 className="font-mystic text-xl text-white truncate">{exercise.name}</h2>
+                <h2 className="font-mystic text-xl text-white break-words">{exercise.name}</h2>
                 {exercise.nameAlternate && (
-                  <p className="text-sm text-mystic-gold italic truncate">{exercise.nameAlternate}</p>
+                  <p className="text-sm text-mystic-gold italic break-words">{exercise.nameAlternate}</p>
                 )}
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   <Badge variant="outline" className="text-[10px] bg-mystic-purple/10 text-mystic-purple border-mystic-purple/40">

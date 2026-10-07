@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useId } from 'react';
 import { toast } from 'sonner';
 import { Calendar as CalendarIcon, Plus, X } from 'lucide-react';
 import {
@@ -72,6 +72,7 @@ export const CreateWorkoutDialog: React.FC<CreateWorkoutDialogProps> = ({
   presetExerciseId,
   onCreated,
 }) => {
+  const titleId = useId();
   const { getExerciseCatalog, createWorkout } = useWorkoutStore();
   const catalog = getExerciseCatalog();
 
@@ -156,9 +157,9 @@ export const CreateWorkoutDialog: React.FC<CreateWorkoutDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-fitness-surface border-transparent rounded-[24px] max-w-md max-h-[90vh] overflow-y-auto text-fitness-text shadow-fitness-elevated">
+      <DialogContent aria-labelledby={titleId} aria-describedby={undefined} className="bg-fitness-surface border-transparent rounded-[24px] max-w-md max-h-[90vh] overflow-y-auto text-fitness-text shadow-fitness-elevated">
         <DialogHeader>
-          <DialogTitle className="text-[20px] font-semibold text-fitness-text uppercase tracking-wider">Criar Treino</DialogTitle>
+          <DialogTitle id={titleId} className="text-[20px] font-semibold text-fitness-text uppercase tracking-wider">Criar Treino</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-5">

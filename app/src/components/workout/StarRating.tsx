@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface StarRatingProps {
   value: number;
+  variant?: 'default' | 'fitness';
   onRate?: (stars: 1 | 2 | 3 | 4 | 5) => void;
   readOnly?: boolean;
   size?: number;
@@ -11,7 +12,7 @@ interface StarRatingProps {
 
 const STAR_VALUES = [1, 2, 3, 4, 5] as const;
 
-export const StarRating: React.FC<StarRatingProps> = ({ value, onRate, readOnly = false, size = 28 }) => {
+export const StarRating: React.FC<StarRatingProps> = ({ value, variant = 'default', onRate, readOnly = false, size = 28 }) => {
   const [hovered, setHovered] = useState<number | null>(null);
   const displayValue = hovered ?? value;
 
@@ -35,16 +36,25 @@ export const StarRating: React.FC<StarRatingProps> = ({ value, onRate, readOnly 
             onMouseEnter={() => !readOnly && setHovered(star)}
             onFocus={() => !readOnly && setHovered(star)}
             onBlur={() => setHovered(null)}
+            tabIndex={star === (value || 1) ? 0 : -1}
+            onKeyDown={(event) => {
+              const next = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? star % 5 + 1 : event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? (star + 3) % 5 + 1 : event.key === 'Home' ? 1 : event.key === 'End' ? 5 : null;
+              if (!next || readOnly) return;
+              event.preventDefault();
+              onRate?.(next as 1 | 2 | 3 | 4 | 5);
+              (event.currentTarget.parentElement?.children[next - 1] as HTMLButtonElement)?.focus();
+            }}
             onClick={() => !readOnly && onRate?.(star)}
             className={cn(
-              'rounded-full p-1 transition-transform outline-none focus-visible:ring-2 focus-visible:ring-mystic-gold/70',
+              variant === 'fitness' && 'text-fitness-primary',
+              'min-h-11 min-w-11 rounded-full p-1 motion-reduce:transform-none motion-reduce:transition-none transition-transform outline-none focus-visible:ring-2 focus-visible:ring-mystic-gold/70',
               !readOnly && 'hover:scale-110 cursor-pointer',
               readOnly && 'cursor-default'
             )}
           >
             <Star
               style={{ width: size, height: size }}
-              className={filled ? 'fill-mystic-gold text-mystic-gold' : 'text-white/20'}
+              className={filled ? (variant === 'fitness' ? 'fill-fitness-primary text-fitness-primary' : 'fill-mystic-gold text-mystic-gold') : 'text-white/40'}
               aria-hidden="true"
             />
           </button>

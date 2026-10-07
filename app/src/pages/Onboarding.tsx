@@ -46,7 +46,7 @@ const Onboarding = () => {
   const canFinish = onboarding.selectedAreas.length > 0;
 
   return (
-    <div className="min-h-screen bg-void text-white px-4 py-8">
+    <div className="min-h-screen bg-transparent text-white px-4 py-8">
       <div className="max-w-5xl mx-auto">
         <h1 className="font-mystic text-3xl md:text-4xl text-mystic-gold">Despertar Elemental</h1>
         <p className="mt-2 text-white/70">
