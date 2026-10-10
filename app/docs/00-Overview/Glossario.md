@@ -13,16 +13,18 @@ Este documento consolida a taxonomia de vida do Conselho Elemental: os 4 **Eleme
 
 ## 1. Elementos
 
-Cada Área do sistema pertence a exatamly um elemento arquetípico. O elemento determina a cor-base, o tom narrativo e (futuramente) os modificadores do Motor Astrológico (ver [03-Astrology-Engine.md](../01-Domain-Core/03-Astrology-Engine.md)).
+Os valores desta seção são `element_code` estáveis, não chaves primárias. Cada linha de elemento tem `id` UUID v4 textual; FKs como `element_id` armazenam o UUID.
 
-| ID | Nome | Significado | Cor Base |
+Cada Área do sistema pertence a exatamente um elemento arquetípico. O elemento determina a cor-base e o tom narrativo. O Motor Astrológico atualmente oferece apenas contextualização e não altera a mecânica (ver [03-Astrology-Engine.md](../01-Domain-Core/03-Astrology-Engine.md)).
+
+| `element_code` | Nome | Significado | Cor Base |
 |----|------|-------------|----------|
-| `body-earth` | **Terra** | Estrutura, corpo, base material | `#3E5F44` |
-| `body-fire`  | **Fogo**  | Expansão, ação, impacto | `#D14900` |
-| `body-water` | **Água**  | Emoção, conexão, interior | `#1B4965` |
-| `body-air`   | **Ar**    | Intelecto, comunicação, ideias | `#A8DADC` |
+| `earth` | **Terra** | Estrutura, corpo, base material | `#3E5F44` |
+| `fire`  | **Fogo**  | Expansão, ação, impacto | `#D14900` |
+| `water` | **Água**  | Emoção, conexão, interior | `#1B4965` |
+| `air`   | **Ar**    | Intelecto, comunicação, ideias | `#A8DADC` |
 
-> Nota de implementação: no banco de dados o campo que guarda o elemento de uma Área é historicamente chamado `body_id` (`body-earth`, `body-fire`, `body-water`, `body-air`). Não confundir com o conceito de **Corpo** (domínio pessoal) da seção 2 — são dois eixos diferentes que infelizmente compartilham o nome "body" na camada de persistência legada.
+> Nota de implementação: a coluna FK `element_id` armazena UUID v4 textual. Códigos semânticos como `earth` e `fire` não devem ser gravados como PK/FK.
 
 ---
 
@@ -42,6 +44,8 @@ Cada Action/Habit pode ter um `body_primary_id` associado (opcional). Diferente 
 ---
 
 ## 3. Áreas (Esferas de Vida)
+
+Os valores `area-*` listados abaixo são `area_code` semânticos estáveis para seed, exibição e configuração, não IDs de linha. Cada área persistida tem `id` UUID v4 textual; as FKs de área armazenam esses UUIDs.
 
 Áreas são as categorias nomeadas de vida do usuário, sempre associadas a um Elemento. O sistema nasce com 4 grupos de áreas pré-definidas (seed data) — o usuário pode ativar/desativar ou criar áreas customizadas, mas não pode editar/apagar as pré-definidas.
 
@@ -86,7 +90,7 @@ Subáreas principais: Desenvolvimento profissional, Promoção, Networking · Es
 | area-emocoes-saude-mental | Emoções & Saúde Mental | #00B4D8 |
 | area-comunidade-impacto-social | Comunidade & Impacto Social | #0096C7 |
 
-Subáreas principais: Parceiro(a), Amizades, Vida social · Pais, Filhos, Parentes · Meditação, Oração, Ritual, Magia, Estudo espiritual · Terapia, Journaling, Reflexão · Regulação emocional, Autocuidado, Mindfulness · Voluntariado, Grupos, Causas, Ativismo.
+Subáreas principais: Parceiro(a), Amizades, Vida social · Pais, Filhos, Parentes · Meditação, Oração, Ritos espirituais, Magia, Estudo espiritual · Terapia, Journaling, Reflexão · Regulação emocional, Autocuidado, Mindfulness · Voluntariado, Grupos, Causas, Ativismo.
 
 ### 🌬️ Ar — Intelecto, Comunicação e Ideias
 
@@ -106,9 +110,9 @@ Subáreas principais: Faculdade, Cursos, Certificações · Livros, Artigos · E
 
 ## 4. Regra Especial: `SEM_CATEGORIA` (Área Invisível Padrão)
 
-`SEM_CATEGORIA` ("Sem Categoria" / "No Category") é uma Área especial, com ID fixo `area-sem-categoria`, que atua como **fallback temporário** — nunca aparece nas listas de seleção de área.
+`SEM_CATEGORIA` ("Sem Categoria" / "No Category") é uma Área especial de fallback temporário, nunca exibida nas listas de seleção. `area-sem-categoria` é seu `area_code`, não uma chave primária. O `id` persistido da área é UUID v4 textual.
 
-**Propósito:** valor padrão para Actions/ActionItems recém-criados de forma já classificada (ex.: Quick Add contextualizado dentro da Lista Diária), antes que o usuário atribua a área real.
+**Propósito:** valor padrão para entidades criadas já classificadas pelos botões contextuais das telas Ciclos, Tarefas, Quests e Projetos, antes que o usuário atribua uma área de vida real. Rascunhos são criados exclusivamente no Inbox e permanecem sem área até a classificação.
 
 **Regras:**
 - ✅ Criada sob demanda (`getOrCreateSemCategoria()`), não faz parte do seed inicial.
@@ -117,29 +121,30 @@ Subáreas principais: Faculdade, Cursos, Certificações · Livros, Artigos · E
 - ❌ **Rascunhos (`lifecycle_type = null`) NUNCA recebem `SEM_CATEGORIA`** — rascunhos têm `area_primary_id = null` até serem classificados. Só itens já classificados (`lifecycle_type` definido) recebem o fallback `area-sem-categoria`.
 
 ```typescript
-export const SEM_CATEGORIA_AREA_ID = 'area-sem-categoria';
+export const SEM_CATEGORIA_AREA_CODE = 'area-sem-categoria';
 
 async function getOrCreateSemCategoria(): Promise<Area> {
-  const existing = await getAreaById(SEM_CATEGORIA_AREA_ID);
+  const existing = await getAreaByCode(SEM_CATEGORIA_AREA_CODE);
   if (existing) return existing;
 
   return createArea({
-    id: SEM_CATEGORIA_AREA_ID,
+    id: uuid_v4(),
+    area_code: SEM_CATEGORIA_AREA_CODE,
     name: 'Sem Categoria',
-    body_id: 'body-earth',
+    element_id: earth_element_uuid, // UUID v4 resolvido pelo element_code='earth'
     color_hex: '#9CA3AF',
     is_primary: false,
   });
 }
 
 // Sempre filtrar da UI:
-areas.filter(area => area.id !== SEM_CATEGORIA_AREA_ID);
+areas.filter(area => area.area_code !== SEM_CATEGORIA_AREA_CODE);
 ```
 
-| Contexto de criação | `area_primary_id` |
+| Contexto de criação | `area_primary_id` (UUID v4 da área) |
 |---|---|
-| Rascunho (Quick Add global) | `null` (nenhuma área) |
-| Ação classificada diretamente (Quick Add contextualizado) | `'area-sem-categoria'` (temporário) |
-| Após classificação via Questionário | `<área real selecionada pelo usuário>` |
+| Rascunho criado no Inbox | `null` (nenhuma área) |
+| Entidade criada diretamente por botão contextual | UUID v4 da área com `area_code = 'area-sem-categoria'` (temporário) |
+| Após Quick Edit ou Wizard de classificação | `<área real selecionada pelo usuário>` |
 
 Ver a árvore completa de tipos e o fluxo de classificação em [01-Domain-Core/01-Hierarquia-e-Tipos.md](../01-Domain-Core/01-Hierarquia-e-Tipos.md).

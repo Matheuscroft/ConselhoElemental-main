@@ -1,3 +1,4 @@
+import { LevelingCalculatorService } from '@/services/leveling-calculator';
 // ============================================
 // CONSELHO ELEMENTAL - CONSTANTES
 // ============================================
@@ -559,21 +560,23 @@ export function calculateAggregatedScore(children: { isCompleted: boolean; baseV
 // ============================================
 
 export function calculateXPForLevel(level: number): number {
-  return Math.floor(100 * Math.pow(1.5, level - 1));
+  const currentLevel = Math.max(1, Math.floor(level));
+  const current = LevelingCalculatorService.calculate(xpThresholdForLevel(currentLevel));
+  return current.xpToNextLevel;
 }
 
-export function calculateLevelUp(currentXP: number, currentLevel: number): { newLevel: number; remainingXP: number } {
-  let xpNeeded = calculateXPForLevel(currentLevel);
-  let level = currentLevel;
-  let xp = currentXP;
-  
-  while (xp >= xpNeeded) {
-    xp -= xpNeeded;
-    level++;
-    xpNeeded = calculateXPForLevel(level);
+const xpThresholdForLevel = (targetLevel: number): number => {
+  let total = 0;
+  for (let level = 1; level < targetLevel; level += 1) {
+    total += LevelingCalculatorService.calculate(total).xpToNextLevel;
   }
-  
-  return { newLevel: level, remainingXP: xp };
+  return total;
+};
+
+export function calculateLevelUp(currentXP: number, currentLevel: number): { newLevel: number; remainingXP: number } {
+  const totalXp = xpThresholdForLevel(Math.max(1, currentLevel)) + Math.max(0, currentXP);
+  const progress = LevelingCalculatorService.calculate(totalXp);
+  return { newLevel: progress.level, remainingXP: Math.floor(totalXp - progress.xpAtLevelStart) };
 }
 
 // Export types

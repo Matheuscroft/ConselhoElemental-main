@@ -871,7 +871,7 @@ const finalizeSessionState = (
   };
 
   useAppStore.getState().addScore(earthPoints);
-  useAppStore.getState().addExperience(xpAwarded);
+  useAppStore.getState().addElementExperience('terra', xpAwarded);
 
   return {
     nextState: updateAccountData(state, accountId, () => nextData),
@@ -1665,3 +1665,4 @@ useAppStore.subscribe((state, previousState) => {
 });
 
 useWorkoutStore.getState().syncAccountContext(useAppStore.getState().currentAccountId);
+

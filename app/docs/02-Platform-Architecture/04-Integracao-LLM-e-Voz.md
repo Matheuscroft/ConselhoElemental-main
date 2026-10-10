@@ -58,15 +58,15 @@ O assistente só pode agir através de um conjunto fechado de funções, cada um
 const tools = [
   {
     name: 'create_draft_item',
-    description: 'Cria um Rascunho (lifecycle_type=null) a partir de um título dito/escrito pelo usuário.',
+    description: 'Cria exclusivamente no Inbox um Rascunho fora da tabela actions (lifecycle_type=null, area_primary_id=null), contendo apenas um título dito/escrito pelo usuário.',
     parameters: { title: 'string' },
   },
   {
     name: 'classify_item',
-    description: 'Classifica um item existente (Rascunho → ACTION/HABIT/QUEST/PROJECT/MISSION), atribuindo área, esforço e tempo.',
+    description: 'Classifica um Rascunho existente via fluxo autorizado (Quick Edit/Wizard), materializando ACTION/HABIT em actions ou QUEST/PROJECT/MISSION em suas tabelas próprias, e atribuindo área e campos aplicáveis.',
     parameters: {
       item_id: 'string',
-      lifecycle_type: "'ACTION' | 'HABIT' | 'QUEST' | 'PROJECT' | 'MISSION'",
+      entity_type: "'ACTION' | 'HABIT' | 'QUEST' | 'PROJECT' | 'MISSION'",
       area_primary_id: 'string',
       effort_level: 'number (1-5, opcional)',
       planned_time_minutes: 'number (opcional)',
@@ -87,10 +87,11 @@ const tools = [
 
 ### Regras de Execução (Não Contornam o Domínio)
 
-- ✅ `create_draft_item` sempre cria com `lifecycle_type = null`, `area_primary_id = null` — segue exatamente a regra de Rascunhos ([01-Hierarquia-e-Tipos.md](../01-Domain-Core/01-Hierarquia-e-Tipos.md)).
+- ✅ `create_draft_item` cria um registro exclusivo do Inbox, fora de `actions`, com `lifecycle_type = null` e `area_primary_id = null` — segue exatamente a regra de Rascunhos ([01-Hierarquia-e-Tipos.md](../01-Domain-Core/01-Hierarquia-e-Tipos.md)).
 - ✅ `classify_item` exige `area_primary_id` explícito — o LLM deve perguntar ao usuário se a área não estiver clara na fala/texto (nunca infere área silenciosamente, mesma regra de não-inferência do domínio).
 - ✅ `complete_item` dispara o mesmo cálculo de `ExecutionLog` do Motor de Pontuação/Energia — inclusive débito/recuperação de Prana quando aplicável.
 - ✅ Toda tool call é auditada (log de qual função foi chamada, com quais parâmetros, por qual `user_id` e a partir de qual mensagem de chat).
+- ✅ Ações destrutivas, externas ou que descartem progresso sem possibilidade de Undo exigem confirmação explícita antes da tool call. Uma intenção clara de concluir um item pode ser processada pelo comando normal do Core.
 - ❌ Não existe tool genérica de "executar SQL" ou "editar qualquer campo" — o LLM só acessa as operações de domínio explicitamente expostas.
 
 ---

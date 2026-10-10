@@ -1,6 +1,10 @@
-# 🧙‍♂️ CONSELHO ELEMENTAL — DIAGRAMAS VISUAIS
+# Diagramas e Fluxos da Plataforma
+
+Diagramas de referência para arquitetura de dados, hierarquia, pontuação e navegação. As regras normativas ficam nos documentos de domínio e plataforma vinculados em cada seção.
 
 ## Diagrama de Arquitetura de Dados
+
+IDs de tabelas de domínio e FKs são UUID v4 textuais. `element_code` e `area_code` são códigos semânticos estáveis, não IDs.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -12,64 +16,65 @@
 │                              ENTIDADES PRINCIPAIS                            │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-┌──────────────┐     ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   ELEMENTO   │     │    ÁREA      │     │   TAREFA     │     │   HÁBITO     │
-├──────────────┤     ├──────────────┤     ├──────────────┤     ├──────────────┤
-│ id           │────▶│ id           │◀────│ id           │     │ entity_id    │
-│ name         │     │ name         │     │ title        │     │ version_id   │
-│ color        │     │ element_id   │     │ lifecycle    │     │ completion   │
-│ icon         │     │ parent_id    │     │ base_value   │     │ recurrence   │
-└──────────────┘     │ color_hex    │     │ effort       │     └──────────────┘
-                     └──────────────┘     │ time         │
-                                          │ area_id      │
-                                          │ element_id   │
-                                          │ is_completed │
-                                          └──────────────┘
-                                                   │
-                                                   │ 1:N
-                                                   ▼
-                                          ┌──────────────┐
-                                          │  TASK ITEM   │
-                                          ├──────────────┤
-                                          │ id           │
-                                          │ task_id      │
-                                          │ parent_id    │
-                                          │ semantic_type│
-                                          │ title        │
-                                          │ is_completed │
-                                          │ base_value   │
-                                          └──────────────┘
+┌──────────────┐     ┌──────────────┐     ┌─────────────────────────┐
+│   ELEMENTS   │     │    AREAS     │     │         ACTIONS         │
+├──────────────┤     ├──────────────┤     ├─────────────────────────┤
+│ id: UUID v4  │────▶│ id: UUID v4  │◀────│ id: UUID v4             │
+│ element_code │     │ area_code    │     │ parent_id: UUID/null    │
+│ name         │     │ element_id   │     │ lifecycle_type (raiz)   │
+│ color        │     │ parent_id    │     │ semantic_type (filhos)  │
+│ icon         │     │ color_hex    │     │ project/quest/mission FK│
+└──────────────┘     └──────────────┘     │ due_date/recurrence     │
+                                          │ base/effort/area        │
+                                          └─────────────────────────┘
+                                                     ▲
+                                                     │ self-FK parent_id
+                                                     └── filhos/netos/bisnetos
+
+┌────────────────────┐  ┌────────────────────┐  ┌────────────────────┐
+│     PROJECTS       │  │       QUESTS       │  │      MISSIONS      │
+├────────────────────┤  ├────────────────────┤  ├────────────────────┤
+│ id: UUID v4        │  │ id: UUID v4        │  │ id: UUID v4        │
+│ prazo, escopo      │  │ lore, badges       │  │ propósito          │
+└────────────────────┘  └────────────────────┘  └────────────────────┘
+
+┌───────────────────────┐      ┌───────────────────────────────┐
+│   HABIT_ROTATIONS     │      │      ROTATION_MEMBERSHIPS      │
+├───────────────────────┤      ├───────────────────────────────┤
+│ id: UUID v4           │◀─────│ rotation_id: UUID v4          │
+│ current_position      │      │ habit_id: UUID v4             │
+│ last_resolved_date    │      │ position (ordinal, não ID)    │
+└───────────────────────┘      └───────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              HIERARQUIA DE TIPOS                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  PROJETO (Grandes Obras)                                                    │
-│  ├── MISSÃO (Campanha)                                                      │
-│  │   └── AÇÃO (Ritual)                                                      │
-│  │       └── ACTION ITEM                                                    │
-│  │           ├── Task (valuable) - Pontua                                   │
-│  │           ├── Check (structural) - Não pontua                           │
-│  │           └── Note (text) - Informação                                  │
-│  │                                                                          │
-│  └── QUEST (Jornada) - Standalone, agrupa ações                            │
+│  PROJECT / MISSION (tabelas macro próprias)                                 │
+│  ├── ACTION (`actions`, lifecycle_type='ACTION')                            │
+│  ├── HABIT (`actions`, lifecycle_type='HABIT')                              │
+│  └── QUEST (`quests`; associa Actions por FK/junção)                         │
 │                                                                              │
-│  HÁBITO (Ciclo) - Standalone, recorrente                                   │
+│  ACTION/HABIT ROOT (`parent_id=null`, lifecycle_type; semantic_type=null)    │
+│  └── ACTION DESCENDANT (`parent_id` UUID v4; lifecycle_type=null)            │
+│      ├── VALUABLE  - pode gerar XP/base_value                                │
+│      ├── VALUELESS - marcação visual, sem XP                                 │
+│      └── NOTE      - texto informativo, sem checkbox                         │
+│          └── mesmos tipos podem continuar em profundidade ilimitada           │
 │                                                                              │
-│  RASCUNHO (Forja) - Não classificado, sem área                             │
+│  RASCUNHO (Inbox/Forja) - só título; tipo e área nulos                       │
 └─────────────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                         REGRA DE AGREGAÇÃO (LEAF vs AGGREGATOR)             │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-    LEAF (Sem filhos Task)                    AGGREGATOR (Com filhos Task)
+    LEAF (Sem descendente VALUABLE)            AGGREGATOR (Com descendente VALUABLE)
     ┌─────────────────────┐                   ┌─────────────────────┐
-    │ ✓ base_value: 1     │                   │ ✗ base_value: NULL  │
-    │ ✓ effort_level: 3   │                   │ ✗ effort_level: NULL│
-    │ ✓ planned_time: 30  │                   │ ✗ planned_time: NULL│
-    │ ✓ SCORABLE          │                   │ ✗ NOT SCORABLE      │
+    │ ✓ usa base_value    │                   │ ignora base da raiz │
+    │ ✓ esforço da folha  │                   │ soma folhas elegíveis│
+    │ ✓ pode pontuar      │                   │ esforço/Prana da raiz│
     │                     │                   │                     │
     │ Pontuação própria   │                   │ Soma dos filhos     │
     └─────────────────────┘                   └─────────────────────┘
@@ -84,63 +89,73 @@
     ┌─────────────────────────────────────────────────────────────────────┐
     │  VALOR PLANEJADO (Planned Value)                                    │
     │                                                                     │
-    │  projected_leaf = base × (1+presence) × effort × time × exhaustion  │
+    │  projected_leaf = MIN(base × (1+presence) × effort × time, cap)     │
     │                                                                     │
     │  ┌────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────────┐│
     │  │   base     │ │  presence   │ │   effort    │ │      time       ││
-    │  │ default: 1 │ │ +0.0 a +0.5 │ │ ×1.0 a ×2.8 │ │  ×1.0 a ×80.0   ││
+    │  │ default: 1 │ │ +0.0 a +0.5 │ │ ×1.0 a ×2.8 │ │  ×1.0 a ×4.0    ││
     │  │ (aceita    │ │             │ │             │ │  Escalonamento  ││
     │  │ decimais)  │ │             │ │             │ │  Agressivo:     ││
-    │  │            │ │             │ │             │ │  > 120m = ×80   ││
+    │  │            │ │             │ │             │ │  > 120m = ×4.0  ││
     │  └────────────┘ └─────────────┘ └─────────────┘ └─────────────────┘│
     └─────────────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────────────┐
-    │  PRANA (Energia) — modificador global do usuário                   │
+    │  PRANA (Energia) — recurso global do usuário                        │
     │                                                                     │
     │  Custo por effort_level:   1=-5   2=-10   3=-15   4=-25   5=-35     │
     │  Restaurador (Sono/Meditação): recupera Prana em vez de custar     │
     │  Veneno: custa Prana normalmente, mas gera 0 pontos elementais      │
-    │  exhaustion = ×0.5 em TODOS os multiplicadores se prana_level <= 0  │
+    │  Teto por esforço: 10, 25, 50, 100 ou 200 pontos/folha              │
     └─────────────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────────────┐
     │  DISTRIBUIÇÃO POR ÁREA (Multi-Area)                                 │
     │                                                                     │
-    │  final_value = base × (1+presence) × effort × time × exhaustion    │
+    │  Orçamento distribuído: 100% do valor limitado da folha             │
     │                                                                     │
     │  ┌─────────────────────────────────────────────────────────────┐   │
-    │  │  Área Primária:    final_value × 1.00 = 100%               │   │
-    │  │  Área Secundária 1: final_value × 0.60 = 60%               │   │
-    │  │  Área Secundária 2: final_value × 0.30 = 30%               │   │
+    │  │  1 área: 100% Primária                                     │   │
+    │  │  2 áreas: 70% Primária / 30% Secundária                    │   │
+    │  │  3 áreas: 60% Primária / 25% Secundária / 15% Terciária    │   │
     │  └─────────────────────────────────────────────────────────────┘   │
     │                                                                     │
-    │  Total distribuído: 190% do final_value (cross-pollination)        │
+    │  Total alocado entre áreas: 100% do final_value                   │
     └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              FLUXO DE DADOS                                  │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-    │   CRIAR     │────▶│  CLASSIFICAR│────▶│   PLANEJAR  │────▶│  EXECUTAR   │
-    │  (Quick Add)│     │(Questionário)│     │  (Editar)   │     │ (Timer)     │
-    └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
-          │                   │                   │                   │
-          ▼                   ▼                   ▼                   ▼
-    ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-    │ lifecycle:  │     │ lifecycle:  │     │ base_value  │     │ actual_time │
-    │ null        │     │ ACTION/etc  │     │ effort      │     │ completed   │
-    │ area: null  │     │ area: set   │     │ time        │     │ items       │
-    │ base: null  │     │ base: 1     │     │             │     │             │
+```
+    ┌─────────────────────┐       ┌──────────────────────────────┐
+    │ Criar em tela       │       │ Criar Rascunho no Inbox      │
+    │ contextual          │       │ apenas com título            │
+    └──────────┬──────────┘       └──────────────┬───────────────┘
+               │                                  ▼
+               │                    ┌──────────────────────────────┐
+               │                    │ Classificar via Quick Edit   │
+               │                    │ ou Wizard de Triagem         │
+               │                    └──────────────┬───────────────┘
+               └──────────────────┬───────────────┘
+                                  ▼
+                         ┌───────────────────────┐
+                         │ Entidade tipada       │
+                         │ área real ou          │
+                         │ area-sem-categoria    │
+                         └──────────┬────────────┘
+                                    ▼
+                         ┌───────────────────────┐
+                         │ Planejar e executar   │
+                         └───────────────────────┘
     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
                                                                         │
                                                                         ▼
-                                                               ┌─────────────┐
-                                                               │ EXECUTION   │
-                                                               │ LOG         │
-                                                               │ (imutável)  │
-                                                               └─────────────┘
+                                                               ┌─────────────────────────┐
+                                                               │ EXECUTION LOG           │
+                                                               │ Imutável enquanto existe│
+                                                               │ Undo = Hard Delete      │
+                                                               └─────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              TELAS DO SISTEMA                                │
@@ -161,8 +176,8 @@
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  🔄 CICLOS (Hábitos)                                                        │
 │  ├── Visão: Dia / Semana / Mês / Trimestre / Ano                          │
-│  ├── Calendário de streaks                                                 │
-│  ├── Streak atual                                                          │
+│  ├── Calendário de ciclos concluídos                                       │
+│  ├── Marcos de consistência                                                │
 │  └── Frequência e evolução                                                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  🗺️ JORNADAS (Quests)                                                       │
@@ -180,68 +195,36 @@
 │  🔨 FORJA (Rascunhos)                                                       │
 │  ├── Itens não classificados                                               │
 │  ├── Questionário de triagem                                               │
-│  └── Sugestão de tipo (Tarefa/Hábito/Quest/Projeto)                        │
+│  └── Sugestão de tipo (Action/Habit/Project/Quest/Mission)                 │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  🔮 ASTROLÁBIO (Analytics)                                                  │
 │  ├── Evolução por elemento (gráfico de linha)                              │
 │  ├── Evolução por área                                                     │
 │  ├── Distribuição percentual (gráfico de pizza)                            │
-│  ├── Streaks e heatmap                                                     │
+│  ├── Ciclos concluídos e heatmap                                           │
 │  └── Linha do tempo elemental                                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │  📖 GRIMÓRIO (Perfil)                                                       │
 │  ├── Avatar do mago                                                        │
-│  ├── Nível e XP                                                            │
-│  ├── Pontuação por elemento                                                │
-│  ├── Barra de progresso para próximo nível                                 │
-│  ├── Streak atual                                                          │
+│  ├── Nível/Título geral do Avatar (XP bruto total dos 4 Elementos)         │
+│  ├── Nível/Título individual de Terra, Fogo, Água e Ar                     │
+│  ├── XP atual e barra para o próximo nível (sem level cap)                 │
+│  ├── Marcos de consistência                                                │
 │  ├── Estatísticas gerais                                                   │
 │  └── Histórico visual                                                      │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│  ➕ INVOCAR (Criar)                                                         │
-│  ├── Formulário rápido                                                     │
-│  ├── Seleção de tipo                                                       │
-│  ├── Seleção de área                                                       │
+│  ➕ CRIAÇÃO CONTEXTUAL (Ciclos/Tarefas/Quests/Projetos)                     │
+│  ├── Entidade nasce no tipo da tela                                        │
+│  ├── Área inicial: area-sem-categoria quando ainda não definida             │
+│  ├── Inbox de Rascunhos: criação exclusiva com título                       │
+│  └── Classificação do Rascunho: Quick Edit ou Wizard                        │
 │  ├── Nível de esforço                                                      │
 │  └── Tempo estimado                                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              SISTEMA DE DESIGN                               │
-└─────────────────────────────────────────────────────────────────────────────┘
+## Referência de apresentação
 
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │  PALETA DE CORES                                                    │
-    │                                                                     │
-    │  Fundo:                    #0A0A0F (void-black)                    │
-    │  Cards:                    #1A1025 (deep-purple)                   │
-    │                                                                     │
-    │  Terra:  #3E5F44 ──🌿──  #4CAF50  (glow: rgba(62,95,68,0.4))      │
-    │  Fogo:   #D14900 ──🔥──  #FF6B35  (glow: rgba(209,73,0,0.5))      │
-    │  Água:   #1B4965 ──🌊──  #48CAE4  (glow: rgba(27,73,101,0.4))     │
-    │  Ar:     #A8DADC ──💨──  #E0F7FA  (glow: rgba(168,218,220,0.3))   │
-    │                                                                     │
-    │  Destaque: #FFD700 (mana-gold)                                     │
-    │  Magia:    #9D4EDD (arcane-purple)                                 │
-    └─────────────────────────────────────────────────────────────────────┘
-
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │  TIPOGRAFIA                                                         │
-    │                                                                     │
-    │  Títulos:    Cinzel, Playfair Display (serif)                      │
-    │  Corpo:      Inter, Roboto (sans-serif)                            │
-    │  Místico:    Cinzel Decorative (display)                           │
-    └─────────────────────────────────────────────────────────────────────┘
-
-    ┌─────────────────────────────────────────────────────────────────────┐
-    │  EFEITOS VISUAIS                                                    │
-    │                                                                     │
-    │  ✨ Glow elemental por elemento                                     │
-    │  🌟 Gradientes etéreos                                              │
-    │  💫 Animações de aura pulsante                                      │
-    │  🔮 Partículas flutuantes                                           │
-    │  ⚡ Transições suaves                                               │
-    └─────────────────────────────────────────────────────────────────────┘
+Os códigos de cores elementais são definidos em [Glossário](../00-Overview/Glossario.md). Tokens de UI, acessibilidade e requisitos dos fluxos nativos estão em [Princípios de UX e Fluxos](./07-Principios-de-UX-e-Fluxos.md); este diagrama não define paleta, tipografia ou animações paralelas.
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              COMPONENTES REUTILIZÁVEIS                       │
@@ -250,17 +233,17 @@
     ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
     │  ElementCard    │  │   TaskCard      │  │   AreaBadge     │
     │  ─────────────  │  │  ────────────   │  │  ────────────   │
-    │  🔥 Fogo        │  │  ☐ Ritual       │  │  45 Saúde       │
+    │  🔥 Fogo        │  │  ☐ Tarefa       │  │  45 Saúde       │
     │  Ação & Projetos│  │  🌿 Saúde       │  │  +27 Criatividade│
     │  [=======68%]   │  │  ⏱️ 30 min      │  │                 │
     │  1,250 pts      │  │  [Iniciar]      │  │  (com valor!)   │
     └─────────────────┘  └─────────────────┘  └─────────────────┘
 
     ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-    │  TimerModal     │  │  TreeView       │  │  ElementRadar   │
+    │  ExecutionTimer │  │  TreeView       │  │  ElementRadar   │
     │  ─────────────  │  │  ────────────   │  │  ────────────   │
-    │  ⏱️ 15:32       │  │  ▼ Ritual       │  │      🔥         │
-    │  [Pausar]       │  │    ├─ ☐ Item 1  │  │    🌿    💨     │
+    │  ⏱️ 15:32       │  │  ▼ Tarefa       │  │      🔥         │
+    │  [Registrar tempo] │  │    ├─ ☐ Item 1  │  │    🌿    💨     │
     │  [Concluir]     │  │    └─ ☐ Item 2  │  │      🌊         │
     └─────────────────┘  └─────────────────┘  └─────────────────┘
 
@@ -269,9 +252,9 @@
 └─────────────────────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────────────┐
-    │  FLUXO: Criar e Executar um Ritual                                  │
+    │  FLUXO: Criar e Executar uma Tarefa/Ação                             │
     │                                                                     │
-    │  1. Invocar → Ritual                                               │
+    │  1. Criar na tela Tarefas → Action (lifecycle_type='ACTION')      │
     │  2. Preencher: título, área, esforço, tempo                         │
     │  3. Salvar → aparece na lista                                       │
     │  4. Iniciar → cronômetro começa                                     │
@@ -284,14 +267,11 @@
     │  FLUXO: Triagem na Forja (Rascunho → Classificado)                  │
     │                                                                     │
     │  1. Criar na Forja → apenas título                                  │
-    │  2. Classificar → questionário                                      │
-    │  3. Perguntas:                                                      │
-    │     - É recorrente? → Hábito                                        │
-    │     - Tem etapas? → Quest/Projeto                                   │
-    │     - É grande? → Projeto/Missão                                    │
-    │     - Senão → Tarefa                                                │
-    │  4. Atribuir: área, esforço, tempo, subárea                         │
-    │  5. Confirmar → rascunho convertido                                 │
+    │  2. Classificar → Quick Edit ou Wizard                              │
+    │  3. Escolher qualquer entidade do sistema:                          │
+    │     Action, Habit, Project, Quest ou Mission                         │
+    │  4. Atribuir campos obrigatórios da entidade de destino               │
+    │  5. Confirmar → INSERT na tabela canônica correspondente              │
     └─────────────────────────────────────────────────────────────────────┘
 
     ┌─────────────────────────────────────────────────────────────────────┐
@@ -301,6 +281,35 @@
     │  2. Escolha do avatar                                               │
     │  3. Apresentação dos 4 elementos                                    │
     │  4. Seleção de áreas iniciais (mínimo 1 por elemento)               │
-    │  5. Primeira invocação (criar ritual/hábito)                        │
+    │  5. Primeira invocação (criar Tarefa ou Ciclo)                      │
     │  6. Santuário inicial com áreas selecionadas                        │
     └─────────────────────────────────────────────────────────────────────┘
+
+## Progressão Elemental e Grimório
+
+```mermaid
+flowchart LR
+  XP[XP bruto por Elemento] --> E[LevelingCalculatorService]
+  XP --> S[Soma exata dos quatro saldos]
+  S --> E
+  E -->|XP elemental| SL[Nível e título do Elemento]
+  E -->|XP total| AL[Nível e título do Avatar]
+  SL --> G[Grimório / Perfil]
+  AL --> G
+```
+
+A projeção é infinita, e o bracket de nível 200 ou superior exibe o título **Lenda**. Fórmula, faixas e contrato do serviço estão em [Motor de Pontuação e Energia](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md#10-progressão-infinita-e-cálculo-de-níveis) e [Grimório e Perfil](./05-Grimorio-e-Perfil.md).
+
+## Conversão de Entidade após Criação
+
+```mermaid
+flowchart LR
+  A[Origem: actions / projects / quests / missions] --> B[Validar tipo e mapear campos]
+  B --> C[Transação: criar ou atualizar destino]
+  C --> D[Migrar árvore, FKs, vínculos e referências de histórico]
+  D --> E{Integridade e snapshots preservados?}
+  E -->|Sim| F[Commit e remover origem]
+  E -->|Não| G[Rollback integral]
+```
+
+Action ↔ Habit conserva a linha `actions`; conversões entre tabelas criam o destino apropriado e preservam UUIDs/valores históricos conforme o Data Migration Service definido em [01-Hierarquia-e-Tipos.md](../01-Domain-Core/01-Hierarquia-e-Tipos.md#4-conversão-de-entidades-data-migration-service).

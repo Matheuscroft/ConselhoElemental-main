@@ -46,7 +46,7 @@ executed_leaf_value = base_value
 - Independente de histórico/streak — não depende de `consistency_days` ou qualquer estado acumulado.
 - Teto em +0.5 — nunca decresce, nunca ultrapassa.
 - Aplica-se apenas a folhas Task com tempo real registrado; não se aplica a itens estruturais/texto nem a agregadores.
-- Distinto do multiplicador de tempo (linear, por faixas de duração ≥ 3 min) — os dois fatores coexistem e são multiplicados separadamente.
+- Distinto do multiplicador de tempo, definido pela tabela vigente em [02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md). A tabela de presença deste ADR registra a decisão histórica; o documento de domínio é a fonte canônica para fórmula, faixas de tempo e teto por esforço.
 
 ## Consequência
 A definição antiga (`0.1 × consistency_days`) foi removida do domínio. Nenhum parâmetro `consistencyDays` deve ser passado a funções de cálculo em nenhuma camada do código.

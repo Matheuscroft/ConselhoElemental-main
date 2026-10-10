@@ -21,23 +21,27 @@ import type {
   ElementId,
   OnboardingState,
   HabitCompletion,
+  Action,
   TaskItem,
+  SemanticType,
   Mission,
 } from '@/types';
 import { AREAS, AVATARS, DEFAULT_SCORES, EFFORT_MULTIPLIERS, ELEMENTS, calculateTaskScore, getAreaById } from '@/constants';
 import { moveNodeUp, moveNodeDown, calculateNextSortOrder } from '@/lib/tree-helpers';
+import { LevelingCalculatorService } from '@/services/leveling-calculator';
 
 // ============================================
 // ESTADO INICIAL
 // ============================================
 
 const initialUser: User = {
-  id: 'user-1',
+  id: crypto.randomUUID(),
   name: 'Mago Iniciante',
   avatar: AVATARS[0],
-  level: 1,
-  experience: 0,
-  experienceToNextLevel: 100,
+  xp_fire: 0,
+  xp_earth: 0,
+  xp_water: 0,
+  xp_air: 0,
   totalScore: 0,
   streak: 0,
   longestStreak: 0,
@@ -137,8 +141,8 @@ const getHabitPlannedMinutes = (habit: Habit): number => {
 };
 
 const syncHabitSemanticBackups = (habit: Habit): Habit => {
-  const semanticType = habit.semanticType ?? 'valuable';
-  if (semanticType !== 'valuable') return habit;
+  const semanticType = habit.semanticType ?? 'VALUABLE';
+  if (semanticType !== 'valuable' && semanticType !== 'VALUABLE') return habit;
 
   const plannedPoints = getHabitPlannedPoints(habit);
   const plannedTimeMinutes = getHabitPlannedMinutes(habit);
@@ -155,8 +159,8 @@ const syncHabitSemanticBackups = (habit: Habit): Habit => {
 };
 
 const getHabitBasePoints = (habit: Habit): number => {
-  const semanticType = habit.semanticType ?? 'valuable';
-  if (semanticType !== 'valuable') return 0;
+  const semanticType = habit.semanticType ?? 'VALUABLE';
+  if (semanticType !== 'valuable' && semanticType !== 'VALUABLE') return 0;
 
   if (habit.childHabits.length > 0) {
     // Aggregators never contribute direct base points.
@@ -287,63 +291,14 @@ const calculateStreakFromCompletionDays = (completionDays: Set<number>) => {
   return { streak, longestStreak };
 };
 
-const calculateLevelProgressFromExperience = (experience: number) => {
-  let level = 1;
-  let experienceToNextLevel = 100;
-  let remainingExperience = Math.max(0, Math.round(experience));
-
-  while (remainingExperience >= experienceToNextLevel) {
-    remainingExperience -= experienceToNextLevel;
-    level += 1;
-    experienceToNextLevel = Math.floor(experienceToNextLevel * 1.5);
-  }
-
-  return {
-    level,
-    experience: remainingExperience,
-    experienceToNextLevel,
-  };
-};
-
 const calculateUserProgressFromState = (state: Pick<AppState, 'tasks' | 'habits' | 'projects' | 'quests'>) => {
-  const taskScore = state.tasks.reduce((sum, task) => {
-    if (!task.isCompleted) return sum;
-    const baseValue = task.baseValue || 1;
-    const effortMultiplier = EFFORT_MULTIPLIERS[task.effortLevel || 1];
-    return sum + Math.round(baseValue * effortMultiplier);
-  }, 0);
-
+  const taskScore = state.tasks.reduce((sum, task) => { if (!task.isCompleted) return sum; return sum + Math.round((task.baseValue || 1) * EFFORT_MULTIPLIERS[task.effortLevel || 1]); }, 0);
   const { totalHabitScore, completionDays } = collectHabitScoresAndCompletionDays(state.habits);
-
-  state.tasks.forEach((task) => {
-    if (!task.isCompleted) return;
-    const completedDay = toDayStamp(task.updatedAt);
-    if (completedDay != null) {
-      completionDays.add(completedDay);
-    }
-  });
-
-  const projectScore = state.projects.reduce((sum, project) => {
-    return project.isCompleted ? sum + (project.xpBonus || 0) : sum;
-  }, 0);
-
-  const questScore = state.quests.reduce((sum, quest) => {
-    return quest.isCompleted ? sum + (quest.xpBonus || 0) : sum;
-  }, 0);
-
-  const totalScore = taskScore + totalHabitScore + projectScore + questScore;
+  state.tasks.forEach((task) => { if (task.isCompleted) { const day = toDayStamp(task.updatedAt); if (day != null) completionDays.add(day); } });
+  const projectScore = state.projects.reduce((sum, project) => sum + (project.isCompleted ? project.xpBonus || 0 : 0), 0);
+  const questScore = state.quests.reduce((sum, quest) => sum + (quest.isCompleted ? quest.xpBonus || 0 : 0), 0);
   const { streak, longestStreak } = calculateStreakFromCompletionDays(completionDays);
-  const experienceTotal = Math.max(0, Math.round(totalScore / 2));
-  const levelProgress = calculateLevelProgressFromExperience(experienceTotal);
-
-  return {
-    totalScore,
-    streak,
-    longestStreak,
-    level: levelProgress.level,
-    experience: levelProgress.experience,
-    experienceToNextLevel: levelProgress.experienceToNextLevel,
-  };
+  return { totalScore: taskScore + totalHabitScore + projectScore + questScore, streak, longestStreak };
 };
 
 const habitMatchesDate = (habit: Habit, date: Date | string | number): boolean => {
@@ -497,7 +452,11 @@ interface AppState {
   // ========== USUÁRIO ==========
   user: User;
   updateUser: (updates: Partial<User>) => void;
-  addExperience: (amount: number) => void;
+  addExperience: (amount: number, elementId?: ElementId) => void;
+  addElementExperience: (elementId: ElementId, amount: number) => void;
+  getLevelProgress: () => ReturnType<typeof LevelingCalculatorService.calculateAvatar>;
+  getElementLevelProgress: (elementId: ElementId) => ReturnType<typeof LevelingCalculatorService.calculate>;
+  getMasteryProgress: () => { avatar: ReturnType<typeof LevelingCalculatorService.calculateAvatar>; terra: ReturnType<typeof LevelingCalculatorService.calculate>; fogo: ReturnType<typeof LevelingCalculatorService.calculate>; agua: ReturnType<typeof LevelingCalculatorService.calculate>; ar: ReturnType<typeof LevelingCalculatorService.calculate> };
   addScore: (amount: number) => void;
   recomputeUserProgress: () => void;
   
@@ -520,6 +479,9 @@ interface AppState {
   removeCustomSubarea: (parentAreaId: string, subareaId: string) => void;
   
   // ========== TAREFAS (RITUAIS) ==========
+  actions: Action[];
+  addAction: (action: Partial<Action> & { parentId?: string | null; semanticType?: SemanticType | null }) => Action;
+  updateAction: (actionId: string, updates: Partial<Action>) => void;
   tasks: Task[];
   addTask: (task: Partial<Task>) => Task;
   updateTask: (taskId: string, updates: Partial<Task>) => void;
@@ -534,6 +496,8 @@ interface AppState {
   createHabitFromTask: (taskId: string, effectiveStartDate?: Date) => Habit;
   
   // ========== ITENS DE TAREFA (FILHOS) ==========
+  /** @deprecated View legado; novas subtarefas devem usar addAction com parentId e semanticType. */
+  /** @deprecated Adapter para componentes antigos; use addAction passando parentId e semanticType. */
   addTaskItem: (taskId: string, item: Partial<TaskItem>, parentItemId?: string | null) => void;
   updateTaskItem: (taskId: string, itemId: string, updates: Partial<TaskItem>) => void;
   deleteTaskItem: (taskId: string, itemId: string) => void;
@@ -667,6 +631,7 @@ interface AccountScopedData {
   customAreas: Area[];
   customSubareas: Record<string, Area[]>;
   linkedSubareasByAreaId: Record<string, string[]>;
+  actions: Action[];
   tasks: Task[];
   habits: Habit[];
   cycleSequences: CycleSequence[];
@@ -680,7 +645,7 @@ interface AccountScopedData {
 const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => ({
   user: {
     ...initialUser,
-    id: `user-${profile.id}`,
+    id: crypto.randomUUID(),
     name: profile.name,
     avatar: profile.avatar,
     joinedAt: profile.createdAt,
@@ -692,6 +657,7 @@ const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => (
   customAreas: [],
   customSubareas: {},
   linkedSubareasByAreaId: {},
+  actions: [],
   tasks: [],
   habits: [],
   cycleSequences: [],
@@ -705,7 +671,7 @@ const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => (
 const captureAccountData = (state: AppState, profile: AccountProfile): AccountScopedData => ({
   user: {
     ...state.user,
-    id: `user-${profile.id}`,
+    id: crypto.randomUUID(),
     name: profile.name,
     avatar: profile.avatar,
   },
@@ -716,6 +682,7 @@ const captureAccountData = (state: AppState, profile: AccountProfile): AccountSc
   customAreas: state.customAreas,
   customSubareas: state.customSubareas,
   linkedSubareasByAreaId: state.linkedSubareasByAreaId,
+  actions: state.actions,
   tasks: state.tasks,
   habits: state.habits,
   cycleSequences: state.cycleSequences,
@@ -745,7 +712,7 @@ export const useAppStore = create<AppState>()(
         }
 
         const profile: AccountProfile = {
-          id: `account-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: trimmedName,
           avatar: AVATARS[Math.floor(Math.random() * AVATARS.length)] || AVATARS[0],
           createdAt: new Date(),
@@ -815,31 +782,24 @@ export const useAppStore = create<AppState>()(
         }));
       },
       
-      addExperience: (amount) => {
-        set((state) => {
-          const newExperience = state.user.experience + amount;
-          let newLevel = state.user.level;
-          let newExperienceToNext = state.user.experienceToNextLevel;
-          let remainingExp = newExperience;
-          
-          // Level up logic
-          while (remainingExp >= newExperienceToNext) {
-            remainingExp -= newExperienceToNext;
-            newLevel++;
-            newExperienceToNext = Math.floor(newExperienceToNext * 1.5);
-          }
-          
-          return {
-            user: {
-              ...state.user,
-              level: newLevel,
-              experience: remainingExp,
-              experienceToNextLevel: newExperienceToNext,
-            },
-          };
-        });
+      addExperience: (amount, elementId = 'terra') => {
+        const xpKey = `xp_${elementId}` as const;
+        set((state) => ({ user: { ...state.user, [xpKey]: Math.max(0, state.user[xpKey] + amount) } }));
       },
-      
+      addElementExperience: (elementId, amount) => {
+        const xpKey = `xp_${elementId}` as const;
+        set((state) => ({ user: { ...state.user, [xpKey]: Math.max(0, state.user[xpKey] + amount) } }));
+      },
+      getLevelProgress: () => LevelingCalculatorService.calculateAvatar(get().user),
+      getElementLevelProgress: (elementId) => {
+        const user = get().user;
+        return LevelingCalculatorService.calculate(({ terra: user.xp_earth, fogo: user.xp_fire, agua: user.xp_water, ar: user.xp_air })[elementId]);
+      },
+      getMasteryProgress: () => {
+        const user = get().user;
+        return { avatar: LevelingCalculatorService.calculateAvatar(user), terra: LevelingCalculatorService.calculate(user.xp_earth), fogo: LevelingCalculatorService.calculate(user.xp_fire), agua: LevelingCalculatorService.calculate(user.xp_water), ar: LevelingCalculatorService.calculate(user.xp_air) };
+      },
+
       addScore: (amount) => {
         set((state) => ({
           user: {
@@ -852,17 +812,7 @@ export const useAppStore = create<AppState>()(
       recomputeUserProgress: () => {
         set((state) => {
           const metrics = calculateUserProgressFromState(state);
-          return {
-            user: {
-              ...state.user,
-              level: metrics.level,
-              experience: metrics.experience,
-              experienceToNextLevel: metrics.experienceToNextLevel,
-              totalScore: metrics.totalScore,
-              streak: metrics.streak,
-              longestStreak: metrics.longestStreak,
-            },
-          };
+          return { user: { ...state.user, totalScore: metrics.totalScore, streak: metrics.streak, longestStreak: metrics.longestStreak } };
         });
       },
       
@@ -923,7 +873,7 @@ export const useAppStore = create<AppState>()(
         }
 
         const customArea: Area = {
-          id: `custom-area-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: trimmedName,
           description: 'Area personalizada criada pelo usuario',
           elementId,
@@ -954,7 +904,7 @@ export const useAppStore = create<AppState>()(
         }
 
         const customSubarea: Area = {
-          id: `custom-subarea-${parentAreaId}-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: trimmedName,
           description: 'Subarea personalizada criada pelo usuario',
           elementId,
@@ -1022,6 +972,24 @@ export const useAppStore = create<AppState>()(
       },
       
       // ========== TAREFAS ==========
+      actions: [],
+      addAction: (data) => {
+        const createdAt = new Date();
+        const item: Action = {
+          id: crypto.randomUUID(), title: data.title || 'Novo item', description: data.description || '',
+          type: data.parentId ? 'TASK' : data.lifecycleType === 'HABIT' ? 'HABIT' : 'TASK',
+          lifecycleType: data.parentId ? null : data.lifecycleType === 'HABIT' ? 'HABIT' : 'ACTION',
+          semanticType: data.parentId ? data.semanticType ?? 'VALUABLE' : null, parentId: data.parentId ?? null,
+          children: [], isAggregator: false, aggregatedScore: 0, isCompleted: false, createdAt, updatedAt: createdAt,
+          baseValue: data.baseValue ?? 0, effortLevel: data.effortLevel ?? 1, plannedTimeMinutes: data.plannedTimeMinutes ?? null, actualTimeMinutes: null,
+          areaPrimaryId: data.areaPrimaryId ?? null, areaSecondaryId1: data.areaSecondaryId1 ?? null, areaSecondaryId2: data.areaSecondaryId2 ?? null,
+          subareaPrimaryId: data.subareaPrimaryId ?? null, subareaSecondaryId1: data.subareaSecondaryId1 ?? null, subareaSecondaryId2: data.subareaSecondaryId2 ?? null,
+          elementId: data.elementId ?? 'terra', isInProgress: false, elapsedSeconds: 0, lastStartedAt: null, isExpanded: false, displayOrder: data.displayOrder ?? 0,
+        };
+        set((state) => ({ actions: [...state.actions, item] }));
+        return item;
+      },
+      updateAction: (actionId, updates) => set((state) => ({ actions: state.actions.map((action) => action.id === actionId ? { ...action, ...updates, updatedAt: new Date() } : action) })),
       tasks: [],
       
       addTask: (taskData) => {
@@ -1030,7 +998,7 @@ export const useAppStore = create<AppState>()(
         const maxOrder = state.tasks.reduce((max, task) => Math.max(max, task.displayOrder || 0), 0);
         
         const newTask: Task = {
-          id: `task-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: taskData.title || 'Novo Ritual',
           description: taskData.description || '',
           lifecycleType: 'ACTION',
@@ -1062,25 +1030,22 @@ export const useAppStore = create<AppState>()(
           isExpanded: false,
           displayOrder: taskData.displayOrder ?? (maxOrder + 1),
         };
-        set((state) => ({
-          tasks: [newTask, ...state.tasks],
-        }));
+        const rootAction: Action = { ...newTask, parentId: null, lifecycleType: 'ACTION', semanticType: null, children: [] };
+        set((state) => ({ actions: [...state.actions, rootAction], tasks: [newTask, ...state.tasks] }));
         return newTask;
       },
       
       updateTask: (taskId, updates) => {
         set((state) => ({
-          tasks: state.tasks.map((task) =>
-            task.id === taskId
-              ? { ...task, ...updates, updatedAt: new Date() }
-              : task
-          ),
+          actions: state.actions.map((action) => action.id === taskId ? { ...action, ...updates, updatedAt: new Date() } : action),
+          tasks: state.tasks.map((task) => task.id === taskId ? { ...task, ...updates, updatedAt: new Date() } : task),
         }));
       },
       
       deleteTask: (taskId) => {
         set((state) => ({
-          tasks: state.tasks.filter((task) => task.id !== taskId),
+          actions: state.actions.filter((action) => action.id !== taskId && action.parentId !== taskId),
+        tasks: state.tasks.filter((task) => task.id !== taskId),
         }));
       },
       
@@ -1190,7 +1155,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
           
-          get().addExperience(Math.round(roundedScore / 2));
+          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         }
         
@@ -1229,7 +1194,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
           
-          get().addExperience(Math.round(roundedScore / 2));
+          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         } else {
           // **CASE B**: Alguns filhos completos → completar apenas o pai, somar apenas os completos
@@ -1255,7 +1220,7 @@ export const useAppStore = create<AppState>()(
             },
           }));
           
-          get().addExperience(Math.round(roundedScore / 2));
+          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         }
       },
@@ -1459,7 +1424,7 @@ export const useAppStore = create<AppState>()(
         const cloneItems = (items: TaskItem[]): TaskItem[] => {
           return items.map(item => ({
             ...item,
-            id: `item-${Date.now()}-${Math.random()}`,
+            id: crypto.randomUUID(),
             updatedAt: new Date(),
             childItems: item.childItems.length > 0 ? cloneItems(item.childItems) : [],
           }));
@@ -1467,7 +1432,7 @@ export const useAppStore = create<AppState>()(
 
         const duplicatedTask: Task = {
           ...taskToDuplicate,
-          id: `task-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: `${taskToDuplicate.title} (cópia)`,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -1496,11 +1461,11 @@ export const useAppStore = create<AppState>()(
           const childHabits = item.childItems.map((child) => mapTaskItemToHabit(child, parentElementId));
           const hasChildren = childHabits.length > 0;
           const semanticType = item.semanticType || 'valuable';
-          const plannedPoints = semanticType === 'valuable' ? (item.baseValue ?? 0) : 0;
-          const plannedTimeMinutes = semanticType === 'valuable' ? (item.plannedTimeMinutes ?? 0) : 0;
+          const plannedPoints = String(semanticType).toUpperCase() === 'VALUABLE' ? (item.baseValue ?? 0) : 0;
+          const plannedTimeMinutes = String(semanticType).toUpperCase() === 'VALUABLE' ? (item.plannedTimeMinutes ?? 0) : 0;
 
           return {
-            id: `habit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            id: crypto.randomUUID(),
             title: item.title,
             name: item.title,
             description: item.description || '',
@@ -1510,13 +1475,13 @@ export const useAppStore = create<AppState>()(
             subareaId: item.subareaPrimaryId || null,
             elementId: parentElementId,
             semanticType,
-            semanticValueBackup: semanticType === 'valuable'
+            semanticValueBackup: String(semanticType).toUpperCase() === 'VALUABLE'
               ? {
                   plannedPoints,
                   plannedTimeMinutes,
                 }
               : null,
-            semanticStructuralBackup: semanticType === 'structural'
+            semanticStructuralBackup: String(semanticType).toUpperCase() === 'VALUELESS'
               ? {
                   plannedPoints,
                   plannedTimeMinutes,
@@ -1553,7 +1518,7 @@ export const useAppStore = create<AppState>()(
         const maxSequenceOrder = state.cycleSequences.reduce((max, sequence) => Math.max(max, sequence.displayOrder || 0), 0);
 
         const newHabit: Habit = {
-          id: `habit-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: task.title,
           name: task.title,
           description: task.description || '',
@@ -1562,7 +1527,7 @@ export const useAppStore = create<AppState>()(
           areaId: task.areaPrimaryId || getDefaultAreaIdForElement(task.elementId),
           subareaId: task.subareaPrimaryId || null,
           elementId: task.elementId,
-          semanticType: 'valuable',
+          semanticType: 'VALUABLE',
           semanticValueBackup: {
             plannedPoints: hasChildren ? 0 : (task.baseValue ?? 0),
             plannedTimeMinutes: task.plannedTimeMinutes ?? 0,
@@ -1592,9 +1557,8 @@ export const useAppStore = create<AppState>()(
           controlledBySequenceId: null,
         };
 
-        set((state) => ({
-          habits: [...state.habits, newHabit],
-        }));
+        const canonicalHabit: Action = { ...newHabit, parentId: null, lifecycleType: 'HABIT', semanticType: null, children: [] };
+        set((state) => ({ actions: [...state.actions, canonicalHabit], habits: [...state.habits, newHabit] }));
 
         if (hasChildren) {
           get().calculateHabitAggregation(newHabit.id);
@@ -1629,11 +1593,11 @@ export const useAppStore = create<AppState>()(
         const nextSortOrder = siblings.reduce((max, item) => Math.max(max, item.sortOrder || 0), 0) + 1;
 
         const newItem: TaskItem = {
-          id: `item-${Date.now()}`,
+          id: crypto.randomUUID(),
           taskId,
           type: 'TASK_ITEM',
           title: itemData.title || 'Novo Item',
-          semanticType: itemData.semanticType || 'valuable',
+          semanticType: itemData.semanticType || 'VALUABLE',
           isCompleted: false,
           baseValue: itemData.baseValue ?? 1,
           plannedTimeMinutes: itemData.plannedTimeMinutes ?? null,
@@ -1662,7 +1626,11 @@ export const useAppStore = create<AppState>()(
           isExpanded: false,
         };
         
-        // Função auxiliar para adicionar item recursivamente
+        // Persistência canônica: um registro Action separado ligado ao pai imediato.
+        const canonicalAction: Action = { ...newItem, type: 'TASK', lifecycleType: null, semanticType: ({ valuable: 'VALUABLE', structural: 'VALUELESS', text: 'NOTE' } as Record<string, SemanticType>)[String(newItem.semanticType).toLowerCase()] ?? 'VALUABLE', parentId: parentItemId ?? taskId, children: [] };
+        set((state) => ({ actions: [...state.actions, canonicalAction] }));
+
+        // Projeção temporária da UI antiga (removida na etapa Style Swap).
         const addItemRecursively = (items: TaskItem[]): TaskItem[] => {
           return items.map(item => {
             if (item.id === parentItemId) {
@@ -2327,7 +2295,7 @@ export const useAppStore = create<AppState>()(
           return items.reduce(
             (acc: TaskAggregation, item: TaskItem): TaskAggregation => {
               const childAgg = item.childItems.length > 0 ? aggregateItems(item.childItems) : null;
-              const itemValue = item.semanticType === 'valuable' ? (item.baseValue || 0) : 0;
+              const itemValue = String(item.semanticType).toUpperCase() === 'VALUABLE' ? (item.baseValue || 0) : 0;
               const itemTime = item.plannedTimeMinutes || 0;
 
               const value = childAgg ? childAgg.totalValue : itemValue;
@@ -2404,7 +2372,7 @@ export const useAppStore = create<AppState>()(
         const areaForElement = habitData.areaId ? getAreaById(habitData.areaId) : undefined;
         const resolvedElementId = habitData.elementId ?? areaForElement?.elementId ?? 'terra';
         const newHabit: Habit = {
-          id: `habit-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: habitData.title || habitData.name || 'Novo Ciclo',
           name: habitData.name || habitData.title || 'Novo Ciclo',
           description: habitData.description || '',
@@ -2413,7 +2381,7 @@ export const useAppStore = create<AppState>()(
           areaId: habitData.areaId || 'sem-categoria',
           subareaId: habitData.subareaId ?? null,
           elementId: resolvedElementId,
-          semanticType: habitData.semanticType || 'valuable',
+          semanticType: habitData.semanticType || 'VALUABLE',
           semanticValueBackup: {
             plannedPoints: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
             plannedTimeMinutes: habitData.plannedTimeMinutes ?? 0,
@@ -2442,14 +2410,14 @@ export const useAppStore = create<AppState>()(
           isExpanded: false,
           controlledBySequenceId: null,
         };
-        set((state) => ({
-          habits: [...state.habits, newHabit],
-        }));
+        const canonicalHabit: Action = { ...newHabit, parentId: null, lifecycleType: 'HABIT', semanticType: null, children: [] };
+        set((state) => ({ actions: [...state.actions, canonicalHabit], habits: [...state.habits, newHabit] }));
         return newHabit;
       },
       
       updateHabit: (habitId, updates) => {
         set((state) => ({
+          actions: state.actions.map((action) => action.id === habitId ? { ...action, ...updates, updatedAt: new Date() } : action),
           habits: state.habits.map((habit) =>
             habit.id === habitId
               ? syncHabitSemanticBackups({ ...habit, ...updates, updatedAt: new Date() })
@@ -2496,7 +2464,7 @@ export const useAppStore = create<AppState>()(
         const cloneHabits = (habits: Habit[]): Habit[] => {
           return habits.map(habit => ({
             ...habit,
-            id: `habit-${Date.now()}-${Math.random()}`,
+            id: crypto.randomUUID(),
             createdAt: new Date(),
             updatedAt: new Date(),
             completions: [],
@@ -2515,7 +2483,7 @@ export const useAppStore = create<AppState>()(
 
         const duplicatedHabit: Habit = {
           ...habitToDuplicate,
-          id: `habit-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: `${habitToDuplicate.name} (cópia)`,
           title: `${habitToDuplicate.title} (cópia)`,
           createdAt: new Date(),
@@ -2529,7 +2497,7 @@ export const useAppStore = create<AppState>()(
           startDate: new Date(),
           isInProgress: false,
           elapsedSeconds: 0,
-          semanticType: habitToDuplicate.semanticType || 'valuable',
+          semanticType: habitToDuplicate.semanticType || 'VALUABLE',
           semanticValueBackup: habitToDuplicate.semanticValueBackup || {
             plannedPoints: habitToDuplicate.plannedPoints,
             plannedTimeMinutes: habitToDuplicate.plannedTimeMinutes,
@@ -2600,7 +2568,7 @@ export const useAppStore = create<AppState>()(
           ?? 'terra';
 
         const newHabit: Habit = {
-          id: `habit-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: habitData.title || habitData.name || 'Novo Subciclo',
           name: habitData.name || habitData.title || 'Novo Subciclo',
           description: habitData.description || '',
@@ -2609,7 +2577,7 @@ export const useAppStore = create<AppState>()(
           areaId: habitData.areaId ?? parentHabit?.areaId ?? 'sem-categoria',
           subareaId: habitData.subareaId ?? parentHabit?.subareaId ?? null,
           elementId: resolvedElementId,
-          semanticType: habitData.semanticType || 'valuable',
+          semanticType: habitData.semanticType || 'VALUABLE',
           semanticValueBackup: {
             plannedPoints: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
             plannedTimeMinutes: habitData.plannedTimeMinutes ?? 0,
@@ -2668,9 +2636,8 @@ export const useAppStore = create<AppState>()(
           });
         };
 
-        set((current) => ({
-          habits: addChildRecursively(current.habits),
-        }));
+        const canonicalChild: Action = { ...newHabit, parentId: parentHabitId, lifecycleType: null, semanticType: newHabit.semanticType === 'structural' ? 'VALUELESS' : newHabit.semanticType === 'text' ? 'NOTE' : 'VALUABLE', children: [] };
+        set((current) => ({ actions: [...current.actions, canonicalChild], habits: addChildRecursively(current.habits) }));
 
         get().calculateHabitAggregation(parentHabitId);
       },
@@ -2891,7 +2858,7 @@ export const useAppStore = create<AppState>()(
         }
 
         const completion: HabitCompletion = {
-          id: `completion-${Date.now()}`,
+          id: crypto.randomUUID(),
           habitId,
           completionDate: completionAt,
           timeSpentMinutes,
@@ -2925,7 +2892,7 @@ export const useAppStore = create<AppState>()(
               const completionToApply = shouldAddTargetCompletion
                 ? completion
                 : {
-                    id: `completion-${Date.now()}-${Math.random()}`,
+                    id: crypto.randomUUID(),
                     habitId: habit.id,
                     completionDate: completionAt,
                     timeSpentMinutes: 0,
@@ -3551,7 +3518,7 @@ export const useAppStore = create<AppState>()(
       addCommitment: (input) => {
         const now = new Date();
         const commitment: Commitment = {
-          id: `commitment-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: input.title.trim() || 'Novo compromisso',
           date: new Date(input.date),
           recurrence: input.recurrence ?? 'ONCE',
@@ -3580,7 +3547,7 @@ export const useAppStore = create<AppState>()(
         const maxHabitOrder = state.habits.reduce((max, h) => Math.max(max, h.sortOrder || 0), 0);
         const maxSequenceOrder = state.cycleSequences.reduce((max, sequence) => Math.max(max, sequence.displayOrder || 0), 0);
         const newSequence: CycleSequence = {
-          id: `sequence-${Date.now()}`,
+          id: crypto.randomUUID(),
           name: input.name.trim() || 'Nova Sequencia',
           displayOrder: Math.max(maxHabitOrder, maxSequenceOrder) + 1,
           recurrenceType: input.recurrenceType ?? 'DAILY',
@@ -3822,7 +3789,7 @@ export const useAppStore = create<AppState>()(
           .length;
 
         const membership: SequenceMembership = {
-          id: `sequence-membership-${Date.now()}`,
+          id: crypto.randomUUID(),
           sequenceId,
           habitId,
           position: nextPosition,
@@ -3894,7 +3861,7 @@ export const useAppStore = create<AppState>()(
       
       addProject: (projectData) => {
         const newProject: Project = {
-          id: `project-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: projectData.title || 'Nova Grande Obra',
           description: projectData.description || '',
           type: 'PROJECT',
@@ -3940,7 +3907,7 @@ export const useAppStore = create<AppState>()(
       
       addMissionToProject: (projectId, missionData) => {
         const newMission: Mission = {
-          id: `mission-${Date.now()}`,
+          id: crypto.randomUUID(),
           projectId,
           title: missionData.title || 'Nova Campanha',
           description: missionData.description || '',
@@ -4047,7 +4014,7 @@ export const useAppStore = create<AppState>()(
       
       addQuest: (questData) => {
         const newQuest: Quest = {
-          id: `quest-${Date.now()}`,
+          id: crypto.randomUUID(),
           title: questData.title || 'Nova Jornada',
           description: questData.description || '',
           type: 'QUEST',
@@ -4155,7 +4122,7 @@ export const useAppStore = create<AppState>()(
       
       addDraft: (title, notes) => {
         const newDraft: Draft = {
-          id: `draft-${Date.now()}`,
+          id: crypto.randomUUID(),
           title,
           notes,
           createdAt: new Date(),
@@ -4531,7 +4498,12 @@ export const useAppStore = create<AppState>()(
     {
       name: 'conselho-elemental-storage',
       onRehydrateStorage: () => (state) => {
-        state?.recomputeUserProgress();
+        if (!state) return;
+        const persistedUser = state.user as User & { experience?: number; level?: number; experienceToNextLevel?: number };
+        if (persistedUser.experience != null && persistedUser.xp_earth === 0 && persistedUser.xp_fire === 0 && persistedUser.xp_water === 0 && persistedUser.xp_air === 0) {
+          state.updateUser({ xp_earth: Math.max(0, persistedUser.experience) });
+        }
+        state.recomputeUserProgress();
       },
       partialize: (state) => ({
         accounts: state.accounts,
@@ -4542,6 +4514,7 @@ export const useAppStore = create<AppState>()(
         customAreas: state.customAreas,
         customSubareas: state.customSubareas,
         linkedSubareasByAreaId: state.linkedSubareasByAreaId,
+        actions: state.actions,
         tasks: state.tasks,
         habits: state.habits,
         cycleSequences: state.cycleSequences,
@@ -4554,3 +4527,4 @@ export const useAppStore = create<AppState>()(
     }
   )
 );
+

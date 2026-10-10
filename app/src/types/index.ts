@@ -38,11 +38,14 @@ export interface Area {
 // TIPOS DE LIFECYCLE
 // ============================================
 export type LifecycleType = 'ACTION' | 'HABIT' | 'QUEST' | 'PROJECT' | 'MISSION' | 'DRAFT';
+export type ActionLifecycleType = 'ACTION' | 'HABIT';
+export type MasteryTitle = 'Iniciado' | 'Aprendiz' | 'Adepto' | 'Especialista' | 'Mestre' | 'Grão-Mestre' | 'Ancião' | 'Lenda';
 
 // ============================================
 // TIPOS SEMÂNTICOS DE ITENS
 // ============================================
-export type SemanticType = 'valuable' | 'structural' | 'text';
+export type SemanticType = 'VALUABLE' | 'VALUELESS' | 'NOTE';
+export type LegacySemanticType = 'valuable' | 'structural' | 'text';
 
 // ============================================
 // STATUS
@@ -70,135 +73,80 @@ export interface BaseItem {
 }
 
 // ============================================
-// TASK ITEM (filho de Task - pode ter filhos recursivos)
-// ============================================
-export interface TaskItem extends BaseItem {
-  type: 'TASK_ITEM';
-  taskId: string;
-  semanticType: SemanticType;
-  baseValue: number | null;
-  plannedTimeMinutes: number | null;
-  actualTimeMinutes: number | null;
-  sortOrder: number;
-  isExpanded?: boolean;
-  areaPrimaryId: string | null;
-  subareaPrimaryId: string | null;
-  areaSecondaryId1: string | null;
-  subareaSecondaryId1: string | null;
-  areaSecondaryId2: string | null;
-  subareaSecondaryId2: string | null;
-  areaTertiaryId1?: string | null;
-  subareaTertiaryId1?: string | null;
-  areaTertiaryId2?: string | null;
-  subareaTertiaryId2?: string | null;
-  
-  // Recursão: TaskItem pode ter childItems
-  childItems: TaskItem[];
-}
-
-// ============================================
-// TASK / RITUAL (AÇÃO)
-// ============================================
-export interface Task extends BaseItem {
-  type: 'TASK';
-  lifecycleType: 'ACTION';
-  
-  // Pontuação
+// ACTION: linha raiz ou descendente da tabela actions, ligada por parentId.
+export interface Action extends BaseItem {
+  type: 'TASK' | 'HABIT';
+  lifecycleType: ActionLifecycleType | null;
+  semanticType: SemanticType | LegacySemanticType | null;
+  parentId: string | null;
   baseValue: number | null;
   effortLevel: number | null;
   plannedTimeMinutes: number | null;
   actualTimeMinutes: number | null;
   completedScore?: number | null;
   completedAt?: Date | null;
-  
-  // Áreas (herdadas do pai se for filho)
   areaPrimaryId: string | null;
   areaSecondaryId1: string | null;
   areaSecondaryId2: string | null;
-  
-  // Subareas - novas! 🎯
   subareaPrimaryId: string | null;
   subareaSecondaryId1: string | null;
   subareaSecondaryId2: string | null;
-  
-  // Elemento (herdado do pai se for filho)
   elementId: ElementId;
-  
-  // Execução
   isInProgress: boolean;
   elapsedSeconds: number;
   lastStartedAt: Date | null;
-  
-  // Agregação
-  childItems: TaskItem[];
-  
-  // Visual
   isExpanded: boolean;
-  
-  // Ordenação manual - nova! 🎯
   displayOrder: number;
+  recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+  recurrenceConfig?: { daysOfWeek?: number[]; daysOfMonth?: number[] };
+  completions?: HabitCompletion[];
+  controlledBySequenceId?: string | null;
+  areaId?: string;
+  subareaId?: string | null;
+  name?: string;
+  childItems?: TaskItem[]; // projeção de interface legada; estrutura persistida usa parentId
+  plannedPoints?: number;
+  streak?: number;
+  longestStreak?: number;
+  lastCompletedAt?: Date | null;
+  childHabits?: Habit[]; // projeção temporária para UI antiga
 }
 
-// ============================================
-// HÁBITO / CICLO
-// ============================================
-export interface Habit extends BaseItem {
+/** @deprecated View legado temporário; não corresponde a tabela ou entidade de domínio separada. */
+export interface TaskItem extends Action {
+  type: 'TASK_ITEM';
+  lifecycleType: null;
+  semanticType: SemanticType | LegacySemanticType;
+  taskId: string;
+  sortOrder: number;
+}
+
+
+export interface Task extends Action {
+  type: 'TASK';
+  lifecycleType: 'ACTION';
+  semanticType: null;
+  childItems: TaskItem[];
+}
+
+/** @deprecated View legado temporário; Habit canônico é uma Action com lifecycleType HABIT. */
+export interface Habit extends Action {
   type: 'HABIT';
   lifecycleType: 'HABIT';
-
-  // Tipo semantico para subitens: valuable | structural | text (nota)
-  semanticType?: SemanticType;
-  semanticValueBackup?: {
-    plannedPoints: number;
-    plannedTimeMinutes: number;
-  } | null;
-  semanticStructuralBackup?: {
-    plannedPoints: number;
-    plannedTimeMinutes: number;
-  } | null;
-  
-  // Habit usa 'name' em vez de 'title'
+  semanticType: SemanticType | LegacySemanticType | null;
   name: string;
-  
-  // Áreas
   areaId: string;
-  subareaId?: string | null;
-  elementId: ElementId;
-  
-  // Pontuação
   plannedTimeMinutes: number;
   plannedPoints: number;
-  
-  // Recorrência
   recurrenceType: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  recurrenceConfig: {
-    daysOfWeek?: number[]; // 0-6 (domingo-sábado)
-    daysOfMonth?: number[]; // 1-31
-  };
-  startDate?: Date;
-  
-  // Estado
+  recurrenceConfig: { daysOfWeek?: number[]; daysOfMonth?: number[] };
   streak: number;
   longestStreak: number;
   lastCompletedAt: Date | null;
   completions: HabitCompletion[];
-  
-  // Agregação - Hábitos podem ter filhos (sub-hábitos)
   childHabits: Habit[];
-  
-  // Execução
-  isInProgress: boolean;
-  elapsedSeconds: number;
-
-  // Ordenação e UI
-  sortOrder: number;
-  isExpanded?: boolean;
-
-  // Ownership de sequencia: evita exibir o mesmo ciclo como standalone e dentro de sequencia ao mesmo tempo
-  controlledBySequenceId?: string | null;
 }
 
-// ============================================
 // SEQUENCIA DE CICLOS
 // ============================================
 export interface CycleSequence {
@@ -361,8 +309,8 @@ export interface Draft {
 // ============================================
 export interface ExecutionLog {
   id: string;
-  entityId: string;
-  entityType: LifecycleType;
+  subjectId: string; // UUID v4; persisted as subject_id
+  subjectType: LifecycleType; // persisted as subject_type
   timestamp: Date;
   actualTimeMinutes: number;
   actualEffortLevel: number;
@@ -379,9 +327,10 @@ export interface User {
   id: string;
   name: string;
   avatar: string;
-  level: number;
-  experience: number;
-  experienceToNextLevel: number;
+  xp_fire: number;
+  xp_earth: number;
+  xp_water: number;
+  xp_air: number;
   totalScore: number;
   streak: number;
   longestStreak: number;

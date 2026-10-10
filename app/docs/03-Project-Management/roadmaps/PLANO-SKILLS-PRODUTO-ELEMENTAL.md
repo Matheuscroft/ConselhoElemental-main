@@ -37,7 +37,7 @@ A página https://skills.sh/hot apresenta popularidade recente, não adequação
 
 ## Conhecimento específico que nenhuma skill genérica resolve
 
-A especificação de domínio já existe em `/Users/fabioandre/Developer/docs-conselho-master/`, indicada pelo usuário em 05/10/2026. Usá-la como referência principal, conforme `docs/BASE-CANONICA-E-EVOLUCAO.md`. Antes de uma skill própria, mapear os contratos documentados para o código existente e complementar apenas lacunas de apresentação e critérios de entrega. Não reinventar o core nem substituir associações entre elementos e vida.
+Na data deste plano, a especificação de domínio estava em outra cópia local do projeto. Para este repositório, consulte as regras canônicas em [docs/README.md](../../README.md) e a [base de continuidade arquivada](../reports/BASE-CANONICA-E-EVOLUCAO.md). Não use caminhos absolutos daquela máquina como dependências atuais.
 
 Critérios propostos: concluir uma atividade deve produzir uma evolução explicável, registrada uma vez; desfazer deve ser consistente; descanso não deve gerar humilhação; diário emocional deve permitir registro voluntário e controle dos próprios dados. O assistente deve distinguir sugestões de ações e pedir confirmação para ações relevantes. Dados de saúde observados, estimativas e recursos fictícios do RPG precisam ter rótulos distintos. Apoio emocional não deve ser apresentado como diagnóstico ou tratamento.
 

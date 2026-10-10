@@ -17,7 +17,7 @@ Base 0.1.6, branch codex/fitness-ui-integration. Preparação pelo Codex em 04/1
 - Backup e smoke reutilizável: /Users/fabioandre/Developer/conselheiro-backups/frontend-handoff-016/.
 - Recursos da seleção e atalhos/contexto do painel restaurados.
 - O relatório anterior não comprova validação completa. O roteiro atual prioriza acabamento visual com evidências.
-- Próximo item: bloco A de FINALIZAR-FRONTEND-FITNESS.md; leia referências de seleção/preview e capture estados atuais antes de decidir mudanças.
+- Registro histórico: o roteiro de implementação associado a este checkpoint foi removido após assimilação dos requisitos duráveis em `02-Platform-Architecture/07-Principios-de-UX-e-Fluxos.md`.
 - A/B/C/D aguardam execução do roteiro atual. As telas já existem; avaliar acabamento antes de alterar.
 
 Após cada bloco registre alterações, arquivos, comparações visuais, testes, caminhos de evidências e próximo item. Não marque testes não executados como aprovados.
