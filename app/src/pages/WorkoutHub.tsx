@@ -31,6 +31,8 @@ import {
   Star,
   Swords,
   Trophy,
+  Bike,
+  Footprints,
 } from 'lucide-react';
 import {
   FitnessPageShell,
@@ -63,6 +65,10 @@ const CATEGORY_ICON_MAP: Record<WorkoutExerciseCategory, LucideIcon> = {
   conditioning: HeartPulse,
   mixed: Shapes,
   custom: Sparkles,
+  running: Footprints,
+  swimming: Waves,
+  martial_arts: Swords,
+  cycling: Bike,
 };
 
 /** Alternate card heights for staggered masonry feel */

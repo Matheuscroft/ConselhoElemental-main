@@ -1,4 +1,7 @@
 import {
+  Bike,
+  Footprints,
+  Swords,
   Dumbbell,
   Flame,
   Flower2,
@@ -19,6 +22,10 @@ import type {
 } from '@/types/workout';
 
 export const ALL_CATEGORIES: WorkoutExerciseCategory[] = [
+  'running',
+  'swimming',
+  'martial_arts',
+  'cycling',
   'strength',
   'hypertrophy',
   'calisthenics',
@@ -30,6 +37,10 @@ export const ALL_CATEGORIES: WorkoutExerciseCategory[] = [
 ];
 
 export const CATEGORY_LABELS: Record<WorkoutExerciseCategory, string> = {
+  running: 'Corrida',
+  swimming: 'Natação',
+  martial_arts: 'Artes marciais',
+  cycling: 'Ciclismo',
   strength: 'Força',
   hypertrophy: 'Hipertrofia',
   calisthenics: 'Calistenia',
@@ -41,6 +52,10 @@ export const CATEGORY_LABELS: Record<WorkoutExerciseCategory, string> = {
 };
 
 export const CATEGORY_DESCRIPTIONS: Record<WorkoutExerciseCategory, string> = {
+  running: 'Planejamento de treinos de corrida',
+  swimming: 'Planejamento de treinos de natação',
+  martial_arts: 'Planejamento de treinos de artes marciais',
+  cycling: 'Planejamento de treinos de ciclismo',
   strength: 'Cargas progressivas e recordes de força',
   hypertrophy: 'Volume dedicado ao ganho de massa muscular',
   calisthenics: 'Controle corporal usando o próprio peso',
@@ -52,6 +67,10 @@ export const CATEGORY_DESCRIPTIONS: Record<WorkoutExerciseCategory, string> = {
 };
 
 export const CATEGORY_ICONS: Record<WorkoutExerciseCategory, LucideIcon> = {
+  running: Footprints,
+  swimming: Waves,
+  martial_arts: Swords,
+  cycling: Bike,
   strength: Dumbbell,
   hypertrophy: Flame,
   calisthenics: PersonStanding,

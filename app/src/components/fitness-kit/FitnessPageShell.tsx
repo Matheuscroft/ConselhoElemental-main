@@ -7,6 +7,9 @@ import { cn } from '@/lib/utils';
 
 interface FitnessPageShellProps {
   children: React.ReactNode;
+  /** Fluxo de escolha mobile, centralizado como tablet também no PC. */
+  focused?: boolean;
+  showPageMap?: boolean;
   /** Reserva espaço no rodapé para a FitnessBottomNav. */
   withNav?: boolean;
   /** Reserva espaço no rodapé para um CTA fixo (ex.: barra de ações). */
@@ -25,6 +28,8 @@ interface FitnessPageShellProps {
  */
 export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
   children,
+  focused = false,
+  showPageMap = true,
   withNav = false,
   withFixedAction = false,
   bleed = false,
@@ -50,24 +55,25 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
       : 'pb-[calc(2.5rem+env(safe-area-inset-bottom))]';
 
   return (
-    <div className="min-h-dvh bg-transparent font-sans text-fitness-text antialiased overflow-x-hidden">
-      <Sidebar />
+    <div className={cn('min-h-dvh font-sans text-fitness-text antialiased overflow-x-hidden', focused ? 'bg-fitness-canvas' : 'bg-transparent')}>
+      {!focused && <Sidebar />}
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main
         id="main-content"
         className={cn(
-          'relative mx-auto max-w-md md:ml-72 md:mr-0 md:max-w-none',
+          'relative mx-auto',
+          focused ? 'max-w-xl' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
           !flushTop && 'pt-[calc(1.5rem+env(safe-area-inset-top))]',
           bottomPadding,
           className
         )}
       >
-        <div className="mx-auto flex w-full justify-end px-6 pb-3 md:max-w-md">
-          <button type="button" aria-label="Mapa de páginas" onClick={() => setRoutesOpen(true)} className="flex min-h-11 items-center gap-2 rounded-full px-3 text-sm text-fitness-muted hover:text-fitness-text focus-visible:ring-2 focus-visible:ring-fitness-primary">
-            <LayoutGrid className="h-5 w-5" aria-hidden="true" /> Todas as páginas
+        {showPageMap && <div className={focused ? 'absolute right-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-10' : 'mx-auto flex w-full justify-end px-6 pb-3 md:max-w-md'}>
+          <button type="button" aria-label="Mapa de páginas" onClick={() => setRoutesOpen(true)} className={cn('flex min-h-11 items-center justify-center gap-2 rounded-full text-sm text-fitness-muted hover:text-fitness-text focus-visible:ring-2 focus-visible:ring-fitness-primary', focused ? 'w-11' : 'px-3')}>
+            <LayoutGrid className="h-5 w-5" aria-hidden="true" /> {!focused && 'Todas as páginas'}
           </button>
-        </div>
-        <div className={cn('mx-auto w-full md:max-w-md', !bleed && 'px-6')}>{children}</div>
+        </div>}
+        <div className={cn('mx-auto w-full', !focused && 'md:max-w-md', !bleed && 'px-6')}>{children}</div>
       </main>
     </div>
   );

@@ -4,9 +4,9 @@
 
 # 🔮 Domínio do Mago - Elemental Arcane UI
 
-![React](https://img.shields.io/badge/React-19.0-blue?style=for-the-badge&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=for-the-badge&logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-5.0-purple?style=for-the-badge&logo=vite)
+![React](https://img.shields.io/badge/React-19.2-blue?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=for-the-badge&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-7.2-purple?style=for-the-badge&logo=vite)
 ![Zustand](https://img.shields.io/badge/Zustand-State_Management-brown?style=for-the-badge)
 ![Supabase](https://img.shields.io/badge/Supabase-Backend-green?style=for-the-badge&logo=supabase)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-Glassmorphism-cyan?style=for-the-badge&logo=tailwind-css)
@@ -47,13 +47,13 @@ A aplicação está a atravessar uma refatoração total para a "Elemental Arcan
 
 1. Clone o repositório:
 ```bash
-git clone https://github.com/fabiorodrigues-tech-dev/dominio-do-mago-app.git
-cd dominio-do-mago-app
+git clone https://github.com/Matheuscroft/ConselhoElemental-main.git
+cd ConselhoElemental-main/app
 ```
 
 2. Instale as dependências:
 ```bash
-npm install
+npm ci
 ```
 
 3. Inicie o servidor de desenvolvimento:
@@ -69,3 +69,7 @@ cp .env.example .env
 ```
 2. Configure `VITE_ENABLE_SUPABASE_AUTH=true` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`.
 3. Execute o SQL de migração em `supabase/migrations/20260319_init_auth_and_user_data.sql`.
+
+## Astro Boy e colaboração
+
+Veja [boas-vindas de Matheus/Fábio](docs/ASTRO-BOY-BOAS-VINDAS.md). `npm run astro:setup -- --name Matheus --role backend` configura apenas esta máquina. Abra a raiz do Git na IDE para carregar as instruções de entrada. Estado e próximos passos em [CONTINUIDADE](docs/CONTINUIDADE.md).

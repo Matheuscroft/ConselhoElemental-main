@@ -40,7 +40,7 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
   onSave,
   children,
 }) => (
-  <FitnessPageShell withFixedAction>
+  <FitnessPageShell focused showPageMap={false} withFixedAction>
     <FitnessHeader
       title={FITNESS_COPY.summary}
       onBack={onBack}
@@ -50,7 +50,7 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
           type="button"
           onClick={onShare}
           aria-label={FITNESS_COPY.share}
-          className="grid h-11 w-11 place-items-center rounded-full bg-fitness-primary text-white shadow-fitness-primary outline-none transition-[filter,transform] hover:brightness-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas"
+          className="grid h-11 w-11 place-items-center rounded-full bg-fitness-primary text-white outline-none transition-[filter,transform] hover:brightness-110 active:scale-95 focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas"
         >
           <Share2 className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
         </button>
@@ -77,9 +77,9 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
 
     {children && <div className="mt-8 space-y-5">{children}</div>}
 
-    <FitnessStickyAction>
-      <FitnessButton className="w-full" onClick={onSave}>
-        {FITNESS_COPY.saveWorkout}
+    <FitnessStickyAction focused>
+      <FitnessButton className="w-full !shadow-none" onClick={onSave}>
+        Voltar aos treinos
       </FitnessButton>
     </FitnessStickyAction>
   </FitnessPageShell>

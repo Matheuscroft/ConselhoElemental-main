@@ -2,6 +2,12 @@
 # Ignore everything at root, then allow only app/ content.
 /*
 !/.gitignore
+!/AGENTS.md
+!/CLAUDE.md
+!/README.md
+!/.cursor/
+!/.cursor/rules/
+!/.cursor/rules/astro-boy.mdc
 !/app/
 !/app/**
 
@@ -28,9 +34,16 @@ app/.vercel/
 app/**/*.md
 !app/README.md
 !app/docs/**/*.md
+!app/AGENTS.md
+!app/.agents/**
 
 # OS and editor files
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+
+# Astro Boy machine profiles and generated audit reports
+app/.astro-boy/
+app/.env.*
+!app/.env.example

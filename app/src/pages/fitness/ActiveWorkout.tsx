@@ -1,3 +1,4 @@
+import { ActivitySessionMetrics } from '@/components/workout/ActivitySessionMetrics';
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -116,9 +117,9 @@ export const ActiveWorkout: React.FC = () => {
   const hasIncompleteSets = doneSets < totalSets;
 
   const estimatedSeconds = (workout?.estimatedDurationMinutes ?? 0) * 60;
-  const remainingSeconds = Math.max(0, estimatedSeconds - elapsedSeconds);
+  const remainingSeconds = hasIncompleteSets ? Math.max(0, estimatedSeconds - elapsedSeconds) : 0;
   const subtitle = isPaused
-    ? `Visualização pausada · ${formatClock(elapsedSeconds)}`
+    ? 'Relógio oculto · registro manual disponível'
     : estimatedSeconds > 0 && remainingSeconds > 0
       ? `${formatClock(elapsedSeconds)} · ${formatMinutes(Math.ceil(remainingSeconds / 60))} ${FITNESS_COPY.timeLeft}`
       : `${formatClock(elapsedSeconds)} ${FITNESS_COPY.elapsed}`;
@@ -145,7 +146,7 @@ export const ActiveWorkout: React.FC = () => {
   ];
 
   return (
-    <FitnessPageShell withFixedAction>
+    <FitnessPageShell focused withFixedAction>
       <FitnessHeader
         title={session.workoutNameSnapshot}
         subtitle={subtitle}
@@ -154,12 +155,12 @@ export const ActiveWorkout: React.FC = () => {
       />
       <div className="mt-6" aria-label="Progresso da sessão">
         <p className="text-center text-sm text-fitness-muted" aria-live="polite">
-          {completedSets} de {totalSets} séries concluídas{skippedSets > 0 ? ` · ${skippedSets} puladas` : ''}
+          {completedSets} de {totalSets} {['running','swimming','cycling','martial_arts'].includes(workout?.category ?? '') ? 'blocos concluídos' : 'séries concluídas'}{skippedSets > 0 ? ` · ${skippedSets} puladas` : ''}
         </p>
         <progress className="mt-3 h-1.5 w-full overflow-hidden rounded-full accent-fitness-green" value={doneSets} max={Math.max(1, totalSets)} aria-label="Séries processadas" />
       </div>
 
-      <div className="mt-10 space-y-5">
+      <div className="mt-6 space-y-5">
         {orderedResults.map((result) => {
           const exercise = getExerciseById(result.exerciseId);
           const plan = workout?.exercises.find((exercisePlan) => exercisePlan.order === result.order);
@@ -169,7 +170,7 @@ export const ActiveWorkout: React.FC = () => {
           const state: ExerciseCardState = allSkipped ? 'skipped' : complete ? 'completed' : result.exerciseId === currentExerciseId ? 'active' : 'pending';
           const currentSet = result.sets.find((set) => !set.completed && !set.skipped);
           const skipped = result.sets.filter((set) => set.skipped).length;
-          const subtitleText = complete ? (skipped > 0 ? `${done - skipped} concluídas · ${skipped} puladas` : 'Concluído') : currentSet ? `Série ${currentSet.setNumber} de ${result.sets.length}` : `${result.sets.length} séries`;
+          const subtitleText = complete ? (skipped > 0 ? `${done - skipped} concluídas · ${skipped} puladas` : 'Concluído') : currentSet ? `${exercise?.source === 'native' ? 'Bloco' : 'Série'} ${currentSet.setNumber} de ${result.sets.length}` : `${result.sets.length} séries`;
 
           return (
             <ExerciseCard
@@ -181,11 +182,13 @@ export const ActiveWorkout: React.FC = () => {
               expanded={expandedExerciseId === result.exerciseId}
               onToggle={() => setExpandedExerciseId((current) => (current === result.exerciseId ? null : result.exerciseId))}
             >
-              <VideoExercisePlayer title={result.exerciseNameSnapshot} poster={getExercisePoster(exercise)} />
-              {result.sets.map((set) => (
+              {getExercisePoster(exercise) && <VideoExercisePlayer title={result.exerciseNameSnapshot} poster={getExercisePoster(exercise)} />}
+              {result.sets.filter((set) => set.completed || set.skipped || set.id === currentSet?.id).map((set) => (
                 <ExerciseSetRow
                   key={set.id}
                   set={set}
+                  activity={exercise?.source === 'native'}
+                  distanceUnit={exercise?.category === 'swimming' ? 'm' : ['running','cycling'].includes(exercise?.category ?? '') ? 'km' : undefined}
                   measureMode={exercise?.measureMode ?? 'reps'}
                   loadMode={exercise?.loadMode ?? 'weighted'}
                   restSeconds={plan?.sets.find((setPlan) => setPlan.setNumber === set.setNumber)?.restSeconds ?? 60}
@@ -198,10 +201,12 @@ export const ActiveWorkout: React.FC = () => {
         })}
       </div>
 
+      <ActivitySessionMetrics session={session} earthPoints={preview?.earthPoints} />
       <details className="mt-10 rounded-fit-lg bg-fitness-surface p-5">
         <summary className="cursor-pointer rounded-lg font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-fitness-primary">Músculos e recompensas</summary>
       <FitnessCard radius="lg" className="mt-5 p-1">
-        <h2 className="font-sans text-xl font-semibold text-fitness-text">Distribuição muscular</h2>
+        <h2 className="font-sans text-xl font-semibold text-fitness-text">Distribuição muscular estimada</h2>
+        <p className="mt-3 text-xs text-fitness-muted">Com tempo e esforço registrados, somente esses blocos entram na estimativa. Sem essas medidas, usa-se o índice legado. Os dois métodos não são somados.</p>
         <div className="mt-4">
           <MuscleBars distribution={muscleDistribution} emptyMessage="Conclua séries para revelar a distribuição muscular desta sessão." />
         </div>
@@ -211,19 +216,19 @@ export const ActiveWorkout: React.FC = () => {
         <h2 className="font-sans text-xl font-semibold text-fitness-text">Impacto Arcano (potencial)</h2>
         <WorkoutStatsGrid metrics={impactMetrics} className="mt-5 [&_dd]:text-[28px]" />
         <p className="mt-6 text-sm text-fitness-muted">
-          Prana disponível: {resourceSnapshot.currentPrana}/{resourceSnapshot.basePrana} · Stamina disponível: {resourceSnapshot.currentStamina}/{resourceSnapshot.baseStamina}
+          Prana disponível: {resourceSnapshot.basePrana > 0 ? `${resourceSnapshot.currentPrana}/${resourceSnapshot.basePrana}` : 'não configurado'} · Stamina disponível: {resourceSnapshot.currentStamina}/{resourceSnapshot.baseStamina}
         </p>
         <p className="mt-1 text-xs text-fitness-muted-dark">Valores potenciais — confirmados apenas ao finalizar o treino.</p>
       </FitnessCard>
 
       </details>
 
-      <p className="mt-5 text-sm text-fitness-muted">Congelar o relógio pausa apenas a visualização. O tempo total da sessão continua contando até finalizar.</p>
-      <FitnessStickyAction layout="row">
-        <FitnessButton className="flex-1" onClick={() => setIsPaused((current) => !current)}>
-          {isPaused ? 'Retomar relógio' : 'Congelar relógio'}
+      <p className="mt-5 text-sm text-fitness-muted">Tempo da sessão e tempo ativo declarado são medidas diferentes. O descanso não entra no tempo ativo.</p>
+      <FitnessStickyAction focused layout="row">
+        <FitnessButton className="flex-1 !h-12 !px-3 !text-sm !shadow-none" onClick={() => setIsPaused((current) => !current)}>
+          {isPaused ? 'Ver relógio' : 'Ocultar relógio'}
         </FitnessButton>
-        <FitnessButton variant="coral" className="flex-1" onClick={handleFinishClick}>
+        <FitnessButton variant="coral" className="flex-1 !h-12 !px-3 !text-sm" onClick={handleFinishClick}>
           {FITNESS_COPY.finish}
         </FitnessButton>
       </FitnessStickyAction>

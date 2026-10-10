@@ -1,4 +1,5 @@
 import React from 'react';
+import { CharacterStage } from '@/components/sanctuary/CharacterStage';
 
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, TrendingUp, Play } from 'lucide-react';
@@ -15,8 +16,9 @@ export const Santuario: React.FC = () => {
   const pendingTasks = tasks.filter(t => !t.isCompleted).slice(0, 4);
 
   return (
-    <AppLayout showAura={true}>
+    <AppLayout showAura={false}>
       <div className="space-y-8">
+        <CharacterStage />
         
         {/* Actions Cards Premium */}
         <div className="grid grid-cols-2 gap-4">

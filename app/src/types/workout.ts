@@ -24,6 +24,10 @@ export interface MuscleContribution {
 export type WorkoutExerciseSource = 'native' | 'calistenia' | 'yoga' | 'custom';
 
 export type WorkoutExerciseCategory =
+  | 'running'
+  | 'swimming'
+  | 'martial_arts'
+  | 'cycling'
   | 'strength'
   | 'hypertrophy'
   | 'calisthenics'
@@ -110,6 +114,10 @@ export interface PerformedSet {
   effectiveLoadKg: number;
   volume: number;
   formulaVersion: string;
+  perceivedExertion?: number;
+  distanceMeters?: number;
+  activityNotes?: string;
+  activityLoad?: number;
 }
 
 export interface WorkoutExerciseResult {
@@ -252,6 +260,9 @@ export interface WorkoutUpdateInput {
 }
 
 export interface PerformedSetUpdateInput {
+  perceivedExertion?: number;
+  distanceMeters?: number;
+  activityNotes?: string;
   loadKg?: number;
   reps?: number;
   durationSeconds?: number;

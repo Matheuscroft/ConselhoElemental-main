@@ -33,4 +33,11 @@ build.log
 Thumbs.db
 .vscode/
 .idea/
-node_modules
+
+# Keep project coordination instructions versionable
+!/AGENTS.md
+
+# Local collaborator identity, never shared
+.astro-boy/
+.env.*
+!.env.example
