@@ -107,3 +107,7 @@ São referências/assets com uso atual. A otimização de imagens originais/avat
 - Cópia limpa do índice: `npm ci --ignore-scripts --no-audit --no-fund` instalou 482 pacotes; build e astro:test passaram. Hooks de instalação foram desabilitados nesta verificação.
 - Oito skills, regras de entrada e documentos conferidos na cópia limpa; setup Matheus exibiu saudação/equipe/estado, mantendo apresentação pendente para a IDE. Deno: 7/7 testes do gateway passaram com mocks, sem rede.
 - Fluxos visuais/funcionais M01 e I03: evidências históricas nos relatórios correspondentes, não revalidados por este inventário. Apresentação em IDE de Matheus e integração real de backend ainda precisam de verificação naquele ambiente.
+
+## Publicação confirmada
+
+Push sem force aceito pelo GitHub: main avançou de 03f0588 para 4f180f9 em 10/10/2026. Commit contém o estado acumulado autorizado de Fitness/Saúde/assistente e os arquivos portáveis de Astro Boy. A documentação de encerramento acompanha esse commit em atualização posterior. Nenhum deployment ou chamada remota do assistente foi realizado.
