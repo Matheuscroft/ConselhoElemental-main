@@ -26,7 +26,7 @@ export const formatWeight = (value: number): string => `${Math.round(value).toLo
 export const formatPercent = (value: number): string => `${Math.round(value).toLocaleString('pt-BR')}%`;
 
 interface DurationEstimateInput {
-  sets: Array<{ restSeconds: number }>;
+  sets: Array<{ restSeconds: number; targetDurationSeconds?: number }>;
 }
 
 const ESTIMATED_WORK_SECONDS_PER_SET = 45;
@@ -35,8 +35,9 @@ const ESTIMATED_WORK_SECONDS_PER_SET = 45;
 export const estimateWorkoutDurationMinutes = (exercises: DurationEstimateInput[]): number => {
   const totalSeconds = exercises.reduce(
     (sum, exercise) =>
-      sum + exercise.sets.reduce((setSum, set) => setSum + ESTIMATED_WORK_SECONDS_PER_SET + Math.max(0, set.restSeconds), 0),
+      sum + exercise.sets.reduce((setSum, set) => setSum + (set.targetDurationSeconds ?? ESTIMATED_WORK_SECONDS_PER_SET) + Math.max(0, set.restSeconds), 0),
     0
   );
-  return Math.max(5, Math.round(totalSeconds / 60));
+  const timed = exercises.some((exercise)=>exercise.sets.some((set)=>set.targetDurationSeconds !== undefined));
+  return timed ? Math.max(1, Math.ceil(totalSeconds / 60)) : Math.max(5, Math.round(totalSeconds / 60));
 };

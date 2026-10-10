@@ -1,6 +1,18 @@
 # Missão atual: terminar o frontend do Fitness Kit
 
+## Diretriz mais recente do usuário — 09/10/2026
+
+Prioridade imediata: finalizar a tela Escolher treino (/treinos), referência 21.26.22, antes de preview/edição e demais telas. Produto mobile: celular é o alvo principal; tablet deve funcionar bem. PC usa a mesma composição com largura de tablet, sem trabalho de layout desktop independente. Esta diretriz prevalece sobre recomendações de sidebar desktop e validação ampla históricas abaixo. Ver STATUS-FRONTEND-FITNESS.md para evidências e próximo passo; não repetir lotes já aceitos.
+
 O usuário quer concluir o frontend de treinos e saúde seguindo as capturas locais, preservando funcionalidades. Continue a implementação existente. Este é o roteiro atual; roteiros antigos de auditoria são histórico. docs/PROMPT-NVIDIA-FITNESS.md é a especificação detalhada de design, subordinada à preservação funcional.
+
+## Ícones e modalidades — autorização mais recente
+
+UI02-B: o usuário solicitou explicitamente os seis pictogramas originais de 21.26.22 e nomes portugueses. Entregues em 0.1.18: Corrida, Calistenia/Core Training, Natação, Artes marciais, Yoga, Ciclismo. Isso substitui notas anteriores limitando a duas modalidades. As quatro novas categorias usam o formulário atual; cadastro de exercícios próprios de cada esporte e GPS/sensores seguem fora deste lote. Referência PNG íntegra em public/fitness-kit, recortes SVG em WorkoutReferenceIcons.tsx.
+
+## Formulário de criação — UI03
+
+0.1.19 reformula o formulário da captura 23.28.14, mantendo seus contratos. Evidências e limites em STATUS-FRONTEND-FITNESS; próximo: revisão visual do usuário, depois preview/edição. Não presumir que edição já esteja implementada.
 
 ## Ambiente preparado
 
@@ -44,3 +56,8 @@ Não retire recursos para aproximar o desenho. Não invente categorias. Não use
 5. Entregue matriz por tela: implementado, evidência visual, ações verificadas e diferenças legítimas. Informe pendências reais; não declare conclusão com testes obrigatórios ausentes.
 
 Continue A → B → C → D sem pedir autorização a cada ajuste deste escopo. Perto do limite de contexto, registre próximo item exato e arquivos em STATUS-FRONTEND-FITNESS.md e retome após compactação. Se usar agentes, mantenha um editor do frontend e um revisor somente leitura, sem edições concorrentes dos mesmos arquivos.
+
+
+## M01 — contexto de modalidades e execução
+
+0.1.20 amplia base explicitamente solicitada. Fonte de continuidade: MODALIDADES-E-METRICAS-TREINO.md e encerramento da fila; próxima revisão do usuário. Preservar medidas reais e snapshots; não reaplicar recompensas nem inferir ativação muscular por texto.

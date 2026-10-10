@@ -25,7 +25,8 @@ export const HealthInsights: React.FC = () => {
 
   const bodyMetrics = useMemo(() => mapMeasurementToMetrics(latestMeasurement), [latestMeasurement]);
   const week = useMemo(() => buildWeekBuckets(sessions, weekStartsOn), [sessions, weekStartsOn]);
-  const trend = useMemo(() => week.map((day) => ({ label: day.shortLabel, value: Math.round(day.volume) })), [week]);
+  const measuredLoad = week.some((day)=>day.observedSessions>0);
+  const trend = useMemo(() => week.map((day) => ({ label: day.shortLabel, value: Math.round(measuredLoad ? day.activityLoad : day.volume) })), [week, measuredLoad]);
   const hasTrend = week.some((day) => day.sessionCount > 0);
 
   return (
@@ -43,13 +44,13 @@ export const HealthInsights: React.FC = () => {
 
         <ChartWidget
           title={FITNESS_COPY.trending}
-          subtitle={<span className="text-base text-fitness-muted">Volume por dia (kg)</span>}
+          subtitle={<span className="text-base text-fitness-muted">{measuredLoad ? 'Carga percebida por dia (u.a.)' : 'Índice de volume legado por dia'}</span>}
           radius="lg"
           className="p-6"
           emptyMessage={hasTrend ? undefined : FITNESS_COPY.empty.trend}
-          summary={`Volume por dia nesta semana: ${trend.map((point) => `${point.label} ${point.value} kg`).join(', ')}`}
+          summary={`${measuredLoad ? 'Carga percebida' : 'Volume legado'} por dia nesta semana: ${trend.map((point) => `${point.label} ${point.value} ${measuredLoad ? 'u.a.' : 'índice'}`).join(', ')}`}
         >
-          <TrendAreaChart data={trend} unit="kg" height={240} />
+          <TrendAreaChart data={trend} unit={measuredLoad ? 'u.a.' : 'índice'} height={240} />
         </ChartWidget>
       </div>
 

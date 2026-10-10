@@ -1,3 +1,5 @@
+import { ActivitySessionMetrics } from '@/components/workout/ActivitySessionMetrics';
+import { activityMetrics } from '@/lib/workout/activity-metrics';
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -66,7 +68,12 @@ export const WorkoutSummary: React.FC = () => {
     };
   }, [accountData, effectiveExerciseId]);
 
-  const metrics = useMemo(() => (session ? mapSessionToSummaryMetrics(session) : []), [session]);
+  const metrics = useMemo(() => {
+    if (!session) return [];
+    if (!session.exerciseResults.some((result)=>result.exerciseId.startsWith('sport-'))) return mapSessionToSummaryMetrics(session);
+    const measured=activityMetrics(session);
+    return [{id:'active-time',label:'Tempo ativo',value:(measured.seconds/60).toFixed(1),unit:'min'},{id:'activity-load',label:'Carga percebida',value:measured.load.toFixed(1),unit:'u.a.'},{id:'earth',label:'Terra',value:String(session.earthPoints)},{id:'distance',label:'Distância',value:measured.distance>0?String(measured.distance):'—',unit:'m'}];
+  }, [session]);
 
   if (!sessionId || !session) {
     return (
@@ -135,6 +142,7 @@ export const WorkoutSummary: React.FC = () => {
       onShare={() => void handleShare()}
       onSave={handleSave}
     >
+      <ActivitySessionMetrics session={session} />
       <FitnessCard radius="lg" className="flex flex-col items-center p-6 text-center">
         <h3 className="font-sans text-xl font-semibold text-fitness-text">Como foi este treino?</h3>
         <div className="mt-4">
@@ -148,7 +156,7 @@ export const WorkoutSummary: React.FC = () => {
       <details className="rounded-fit-lg bg-fitness-surface p-5">
         <summary className="min-h-11 cursor-pointer rounded-lg py-2 font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-fitness-primary">Evolução e distribuição muscular</summary>
         <div className="mt-4 space-y-5">
-      <ChartWidget
+      {!session.exerciseResults.some((result)=>result.exerciseId.startsWith('sport-')) && <ChartWidget
         title="Progressão de força"
         subtitle={
           exerciseOptions.length > 1 ? (
@@ -170,18 +178,22 @@ export const WorkoutSummary: React.FC = () => {
         summary={`1RM estimado em ${strengthSeries.length} registros`}
       >
         <TrendAreaChart data={strengthSeries} unit="kg" />
-      </ChartWidget>
+      </ChartWidget>}
 
-      <ChartWidget
-        title="Histórico de volume"
+      <ChartWidget title="Carga percebida registrada" summary="Somente sessões com tempo ativo e esforço; não é volume em kg." emptyMessage={useWorkoutStore.getState().getWorkoutHistory().filter((item)=>activityMetrics(item).observations>0).length<2 ? 'Registre duas sessões com tempo ativo e esforço para comparar.' : undefined}>
+        <TrendAreaChart data={useWorkoutStore.getState().getWorkoutHistory().filter((item)=>activityMetrics(item).observations>0).map((item)=>({label:shortDate(item.completedAt ?? item.startedAt),value:activityMetrics(item).load}))} unit="u.a." />
+      </ChartWidget>
+      {!session.exerciseResults.some((result)=>result.exerciseId.startsWith('sport-')) && <ChartWidget
+        title="Histórico de volume legado (índice)"
         emptyMessage={volumeSeries.length >= 2 ? undefined : FITNESS_COPY.empty.trend}
         summary={`Volume dos últimos ${volumeSeries.length} dias com treino`}
       >
-        <TrendAreaChart data={volumeSeries} unit="kg" />
-      </ChartWidget>
+        <TrendAreaChart data={volumeSeries} unit="índice" />
+      </ChartWidget>}
 
       <FitnessCard radius="lg" className="p-6">
-        <h3 className="font-sans text-xl font-semibold text-fitness-text">Distribuição muscular</h3>
+        <h3 className="font-sans text-xl font-semibold text-fitness-text">Distribuição muscular estimada</h3>
+        <p className="mt-3 text-xs text-fitness-muted">Com tempo e esforço registrados, a distribuição usa apenas esses blocos. Sem essas medidas, usa-se o índice legado. Estimativa de perfil, não medição corporal.</p>
         <div className="mt-4">
           <MuscleBars distribution={muscleDistribution} emptyMessage="Nenhuma série concluída nesta sessão." />
         </div>

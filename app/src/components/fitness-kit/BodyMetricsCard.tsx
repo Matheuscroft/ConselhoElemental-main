@@ -4,7 +4,6 @@ import type { MetricItem } from '@/lib/fitness-kit/adapters';
 import { BodySilhouette } from './BodySilhouette';
 import { FitnessButton } from './FitnessButton';
 import { FitnessCard } from './FitnessCard';
-import { FitnessEmptyState } from './FitnessEmptyState';
 
 interface BodyMetricsCardProps {
   metrics: MetricItem[];
@@ -30,14 +29,13 @@ export const BodyMetricsCard: React.FC<BodyMetricsCardProps> = ({ metrics, measu
       )}
     </div>
     {measuredAt && <p className="mt-2 text-sm text-fitness-muted">Última avaliação: <time dateTime={measuredAt}>{new Date(measuredAt).toLocaleDateString('pt-BR')}</time></p>}
-    {metrics.length === 0 ? (
-      <FitnessEmptyState
-        message={FITNESS_COPY.empty.body}
-        action={onRecord && <FitnessButton size="md" onClick={onRecord}>Registrar avaliação</FitnessButton>}
-      />
-    ) : (
-      <div className="mt-4 grid grid-cols-[minmax(0,35fr)_minmax(0,65fr)] items-center gap-4">
-        <BodySilhouette className="mx-auto h-auto max-h-48 w-full" />
+    <div className="mt-5 grid grid-cols-[minmax(0,35fr)_minmax(0,65fr)] items-center gap-4">
+      <BodySilhouette className="mx-auto h-52 w-full max-w-28" />
+      {metrics.length === 0 ? (
+        <div className="min-w-0">
+          <p className="text-base leading-relaxed text-fitness-muted">Suas medidas aparecem aqui após a primeira avaliação.</p>
+        </div>
+      ) : (
         <dl className="grid grid-cols-2 gap-x-3 gap-y-6">
           {metrics.map((metric) => (
             <div key={metric.id} className="min-w-0">
@@ -45,11 +43,14 @@ export const BodyMetricsCard: React.FC<BodyMetricsCardProps> = ({ metrics, measu
                 {metric.value}
                 {metric.unit && <span className="ml-1 text-base">{metric.unit}</span>}
               </dd>
-              <dt className="break-words text-base text-fitness-muted">{metric.label}</dt>
+              <dt className="break-words text-sm text-fitness-muted">{metric.label}</dt>
             </div>
           ))}
         </dl>
-      </div>
+      )}
+    </div>
+    {metrics.length === 0 && onRecord && (
+      <FitnessButton size="md" className="mt-6 w-full" onClick={onRecord}>Registrar avaliação</FitnessButton>
     )}
     {metrics.length > 0 && onRecord && (
       <FitnessButton size="md" variant="secondary" className="mt-6 w-full" onClick={onRecord}>Registrar nova avaliação</FitnessButton>

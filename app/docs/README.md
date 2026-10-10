@@ -46,3 +46,22 @@ Novas camadas foram injetadas nesta reestruturação: Energia (Prana), Motor Ast
 - `1-2-implement-tree-structure-constraints.md`, `5-0-frontend-architecture.md`, `E5-0-FRONTEND-ARCHITECTURE-*-PHASE.md` -> `../03-sprints-stories`
 - Guia de agente TEA (`test-architecture.md`) -> `.github/agents`
 - Referencia de workflow BMAD (`workflow-architecture-reference.md`) -> `_bmad/`
+
+## Engenharia e continuidade do aplicativo
+
+A fonte canônica principal permanece `/Users/fabioandre/Developer/docs-conselho-master/README.md`. Para executar e retomar trabalho neste app:
+
+- [Ponto de retomada](CONTINUIDADE.md): checkout, estado e próximo passo.
+- [Manual de engenharia](MANUAL-ENGENHARIA.md): operação, validação e versionamento.
+- [Dossiê técnico](DOSSIE-TECNICO.md): origem verificável, escopo e arquitetura.
+- [Responsável por versões e documentação](AGENTE-VERSIONAMENTO-DOCUMENTACAO.md): atribuição e reporte.
+- [Coordenação](COORDENACAO-AGENTES.md) e [fila local](FILA-ENTREGAS.md): consultar a autoridade operacional indicada no ponto de retomada antes de alterar estado.
+
+- [Política de modelos](POLITICA-MODELOS.md): seleção e escalonamento por tarefa.
+- [Auditorias Core, Astrolábio e assistente](AUDITORIA-CONTRATOS-CORE.md): evidências estáticas e limitações.
+- [Decisão inicial de provedor de IA](DECISAO-PROVEDOR-IA.md): comparação oficial e limites para piloto.
+- [Protótipo do assistente](ASSISTENTE-PROTOTIPO.md): escopo, consentimento, segurança e validação delimitada do I03.
+
+## Colaboração e publicação
+
+[Entrada de Matheus e Fábio](ASTRO-BOY-BOAS-VINDAS.md), [auditoria das pastas/publicação](AUDITORIA-PUBLICACAO.md). Os capítulos de arquitetura acima são a cópia portável dos contratos para este repositório. Caminhos absolutos em relatórios anteriores preservam a origem das evidências; não são requisito para clonar e usar.

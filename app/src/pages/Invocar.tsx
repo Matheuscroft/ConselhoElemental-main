@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Check, ArrowRight } from 'lucide-react';
@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { ElementId } from '@/types';
+import { isSupabaseAuthEnabled, supabase } from '@/lib/supabase';
 
 export const Invocar: React.FC = () => {
   const navigate = useNavigate();
@@ -52,6 +53,64 @@ export const Invocar: React.FC = () => {
   
   const [showSuccess, setShowSuccess] = useState(false);
   const [createdEntity, setCreatedEntity] = useState<{ type: string; title: string } | null>(null);
+  const [aiMessage, setAiMessage] = useState('');
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiStatus, setAiStatus] = useState('');
+  const aiRequest = useRef<AbortController | null>(null);
+
+  useEffect(() => () => aiRequest.current?.abort(), []);
+
+  const requestSuggestion = async () => {
+    if (aiRequest.current || !aiConsent || !aiMessage.trim() || aiMessage.length > 2000) return;
+    if (!supabase || !isSupabaseAuthEnabled) {
+      setAiStatus('A IA precisa de uma conta conectada. Você pode preencher o rascunho manualmente.');
+      return;
+    }
+    const controller = new AbortController();
+    aiRequest.current = controller;
+    setAiBusy(true);
+    setAiStatus('');
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (controller.signal.aborted) return;
+      if (sessionError || !session || session.user.is_anonymous) {
+        setAiStatus('Entre na sua conta para pedir uma sugestão. O preenchimento manual continua disponível.');
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('assistant-suggest', {
+        body: { message: aiMessage.trim(), consent: true },
+        headers: { Authorization: `Bearer ${session.access_token}` },
+        signal: controller.signal, timeout: 30_000,
+      });
+      if (controller.signal.aborted) return;
+      if (error) {
+        const response = 'context' in error && error.context instanceof Response ? error.context : null;
+        const status = response?.status;
+        setAiStatus(status === 401 ? 'Sua sessão expirou. Entre novamente.'
+          : status === 429 ? 'O limite de sugestões foi atingido. Tente mais tarde.'
+          : status === 503 ? 'A IA ainda não está disponível. Preencha o rascunho manualmente.'
+          : 'Não foi possível obter uma sugestão. Tente novamente ou preencha manualmente.');
+        return;
+      }
+      const suggestion = data?.suggestion;
+      if (!suggestion || typeof suggestion.title !== 'string' || !suggestion.title.trim() ||
+        suggestion.title.length > 120 || typeof suggestion.description !== 'string' || suggestion.description.length > 1000) {
+        setAiStatus('A sugestão veio incompleta. Preencha o rascunho manualmente.');
+        return;
+      }
+      setTitle(suggestion.title.trim());
+      setDescription(suggestion.description.trim());
+      setAiStatus('Sugestão preenchida abaixo. Revise e edite antes de continuar; nada foi salvo.');
+    } catch {
+      if (!controller.signal.aborted) setAiStatus('Não foi possível obter uma sugestão. O preenchimento manual continua disponível.');
+    } finally {
+      if (aiRequest.current === controller) {
+        aiRequest.current = null;
+        setAiBusy(false);
+      }
+    }
+  };
 
   const filteredAreas = AREAS.filter(area => area.elementId === selectedElement);
 
@@ -241,12 +300,37 @@ export const Invocar: React.FC = () => {
             <h3 className="font-mystic text-lg text-center mb-4">
               Defina o {entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Projeto' : 'Rascunho'}
             </h3>
+
+            {entityType === 'DRAFT' && (
+              <section aria-labelledby="draft-ai-heading" className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                <h4 id="draft-ai-heading" className="font-mystic">Ajuda para escrever</h4>
+                <p className="text-sm text-white/70">Descreva sua ideia para receber um título e uma descrição. Você revisa antes de salvar.</p>
+                <Label htmlFor="draft-ai-message">Sua ideia</Label>
+                <Textarea id="draft-ai-message" name="draftIdea" autoComplete="off" value={aiMessage} maxLength={2000} disabled={aiBusy}
+                  onChange={e => setAiMessage(e.target.value)} placeholder="Ex.: organizar meus materiais de estudo"
+                  className="bg-white/5 border-white/10" />
+                <label className="flex items-start gap-2 text-sm text-white/70">
+                  <input type="checkbox" checked={aiConsent} disabled={aiBusy}
+                    onChange={e => setAiConsent(e.target.checked)} className="mt-1 shrink-0 accent-mystic-arcane focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mystic-gold" />
+                  <span>Autorizo enviar apenas este texto à Cloudflare para gerar a sugestão.</span>
+                </label>
+                {!isSupabaseAuthEnabled && <p className="text-sm text-white/70">A IA precisa de uma conta conectada. Preencha o rascunho abaixo manualmente.</p>}
+                <Button type="button" onClick={requestSuggestion}
+                  disabled={aiBusy || !aiConsent || !aiMessage.trim() || !isSupabaseAuthEnabled}
+                  className="w-full bg-mystic-arcane">
+                  {aiBusy ? 'Gerando sugestão…' : 'Sugerir título e descrição'}
+                </Button>
+                <p role="status" aria-live="polite" className="text-sm text-white/70">{aiStatus}</p>
+              </section>
+            )}
             
             <div className="space-y-2">
-              <Label>Nome</Label>
+              <Label htmlFor="invocar-title">Nome</Label>
               <Input
+                id="invocar-title"
                 placeholder="Nome do item..."
                 value={title}
+                disabled={aiBusy}
                 onChange={(e) => setTitle(e.target.value)}
                 className="bg-white/5 border-white/10"
                 autoFocus
@@ -254,10 +338,12 @@ export const Invocar: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label>Descrição (opcional)</Label>
+              <Label htmlFor="invocar-description">Descrição (opcional)</Label>
               <Textarea
+                id="invocar-description"
                 placeholder="Detalhes adicionais..."
                 value={description}
+                disabled={aiBusy}
                 onChange={(e) => setDescription(e.target.value)}
                 className="bg-white/5 border-white/10 min-h-[80px]"
               />
@@ -311,13 +397,14 @@ export const Invocar: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setStep(1)}
+                disabled={aiBusy}
                 className="flex-1 border-white/20"
               >
                 Voltar
               </Button>
               <Button 
                 onClick={() => setStep(3)}
-                disabled={!canProceed()}
+                disabled={aiBusy || !canProceed()}
                 className="flex-1 bg-mystic-arcane"
               >
                 Continuar

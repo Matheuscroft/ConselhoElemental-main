@@ -24,10 +24,10 @@ const ITEMS: NavItem[] = [
   },
   {
     id: 'insights',
-    label: 'Insights',
+    label: 'Saúde',
     icon: BarChart3,
     path: '/treinos/insights',
-    isActive: (p) => p.startsWith('/treinos/insights') || p.startsWith('/treinos/semana'),
+    isActive: (p) => p.startsWith('/treinos/insights') || p.startsWith('/treinos/semana') || p.startsWith('/treinos/corpo'),
   },
   { id: 'history', label: 'Histórico', icon: History, path: '/treinos/historico', isActive: (p) => p.startsWith('/treinos/historico') },
 ];

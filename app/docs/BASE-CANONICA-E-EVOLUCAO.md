@@ -43,3 +43,7 @@ Próxima entrega: mapa de implementação versus documentação e seleção de u
 ## Primeiro mapa produzido
 
 Consultar `docs/MAPA-IMPLEMENTACAO-ELEMENTAL.md`: inspeção estática com divergências concretas e próximo lote visual selecionado. Validação funcional integral permanece pendente.
+
+## Distribuição portável — P01
+
+Em clones de outros colaboradores, começar por `docs/README.md` e capítulos versionados de Overview, Domain Core, Platform Architecture e ADRs. O caminho absoluto citado acima registra a fonte original de Fábio; não exige acesso a essa pasta. Conferir divergências entre contrato e código; relatórios históricos não autorizam reescrita automática.

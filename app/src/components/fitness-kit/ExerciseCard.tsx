@@ -1,5 +1,5 @@
 import React, { useId } from 'react';
-import { Check, ChevronDown, SkipForward } from 'lucide-react';
+import { Activity, Check, ChevronDown, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export type ExerciseCardState = 'pending' | 'active' | 'completed' | 'skipped';
@@ -45,6 +45,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
           )}
         >
           {skipped && <SkipForward className="h-5 w-5" strokeWidth={2} />}
+          {!completed && !skipped && <Activity className="h-5 w-5" />}
           {completed && <Check className="h-5 w-5" strokeWidth={2} />}
         </span>
         <span className="min-w-0 flex-1">

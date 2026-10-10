@@ -1,3 +1,4 @@
+import { activityMetrics } from '@/lib/workout/activity-metrics';
 /**
  * Adapters de APRESENTAÇÃO do módulo Fitness.
  *
@@ -34,7 +35,7 @@ export const mapSessionToSummaryMetrics = (session: WorkoutSession): MetricItem[
   ];
 
   if (session.totalVolume > 0) {
-    metrics.push({ id: 'volume', label: 'Volume total', ...formatMetric(session.totalVolume, 'kg') });
+    metrics.push({ id: 'volume', label: 'Volume total', ...formatMetric(session.totalVolume, 'índice') });
   }
   metrics.push({ id: 'earth', label: 'Terra conquistado', ...formatMetric(session.earthPoints) });
   metrics.push({ id: 'strength', label: 'Força ganha', value: `+${Math.round(session.strengthGain)}` });
@@ -58,6 +59,8 @@ export interface DayBucket {
   minutes: number;
   volume: number;
   sessionCount: number;
+  activityLoad: number;
+  observedSessions: number;
   /** Volume de cada série concluída, na ordem em que foi feita (para sparkline). */
   setVolumes: number[];
 }
@@ -89,7 +92,9 @@ export const buildWeekBuckets = (
       shortLabel: formatShortDayLabel(date),
       fullLabel: formatDayLabel(date),
       isToday: isSameDay(date, reference),
-      minutes: daySessions.reduce((sum, session) => sum + session.durationSeconds, 0) / 60,
+      minutes: daySessions.reduce((sum, session) => {const actual=activityMetrics(session);return sum + (actual.observations ? actual.seconds : session.durationSeconds);}, 0) / 60,
+      activityLoad: daySessions.reduce((sum,session)=>sum+activityMetrics(session).load,0),
+      observedSessions: daySessions.filter((session)=>activityMetrics(session).observations>0).length,
       volume: daySessions.reduce((sum, session) => sum + session.totalVolume, 0),
       sessionCount: daySessions.length,
       setVolumes,
@@ -102,7 +107,7 @@ export const getTodayExerciseMinutes = (sessions: WorkoutSession[], reference: D
   sessions
     .filter(isCompleted)
     .filter((session) => isSameDay(sessionDate(session), reference))
-    .reduce((sum, session) => sum + session.durationSeconds, 0) / 60;
+    .reduce((sum, session) => {const actual=activityMetrics(session);return sum+(actual.observations ? actual.seconds : session.durationSeconds);}, 0) / 60;
 
 /* -------------------------------------------------------------------------- */
 /* Histórico                                                                   */
@@ -122,7 +127,7 @@ export const mapSessionsToHistoryItems = (
   getCategory: (workoutId: string) => WorkoutExerciseCategory | undefined
 ): HistoryItem[] =>
   sessions.filter(isCompleted).map((session) => {
-    const metric = session.totalVolume > 0 ? formatMetric(session.totalVolume, 'kg') : formatMetric(session.durationSeconds / 60, 'min');
+    const metric = session.totalVolume > 0 ? formatMetric(session.totalVolume, 'índice') : formatMetric(session.durationSeconds / 60, 'min');
     return {
       id: session.id,
       name: session.workoutNameSnapshot,

@@ -1,6 +1,8 @@
 import React from 'react';
 import { AlertCircle, Lightbulb, ListChecks, Plus, Wind } from 'lucide-react';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import './exercise-detail.css';
+import { MuscleBars } from '@/components/fitness-kit';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MuscleDistributionBars } from './MuscleDistributionBars';
@@ -30,11 +32,32 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({
 }) => {
   const Icon = exercise ? CATEGORY_ICONS[exercise.category] ?? CATEGORY_ICONS.mixed : CATEGORY_ICONS.mixed;
 
+  if (variant === 'fitness') return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="bottom" className="fitness-exercise-detail">
+        {exercise && <>
+          <header className="fitness-exercise-detail-header"><span className="fitness-exercise-symbol"><Icon size={24} aria-hidden="true" /></span><div><SheetTitle className="fitness-exercise-title">{exercise.name}</SheetTitle><p>{CATEGORY_LABELS[exercise.category]}{exercise.family ? ` · ${exercise.family}` : ''}</p></div></header>
+          <div className="fitness-exercise-detail-body">
+            <p className="fitness-exercise-description">{exercise.description || exercise.focus}</p>
+            <div className="fitness-exercise-tags"><span>{LEVEL_LABELS[exercise.level]}</span><span>{exercise.measureMode === 'duration' ? 'Registro por tempo' : 'Registro por repetições'}</span></div>
+            <section><h3>Como executar / registrar</h3><ol>{exercise.instructions.map((instruction,index)=><li key={instruction}><span>{index+1}</span>{instruction}</li>)}</ol></section>
+            {exercise.breathing && <section><h3>Respiração</h3><p>{exercise.breathing}</p></section>}
+            {exercise.benefits.length > 0 && <details><summary>Benefícios</summary><ul>{exercise.benefits.map((item)=><li key={item}>{item}</li>)}</ul></details>}
+            {exercise.variations.length > 0 && <details><summary>Variações</summary><ul>{exercise.variations.map((item)=><li key={item}>{item}</li>)}</ul></details>}
+            {exercise.contraindications.length > 0 && <details><summary>Cuidados</summary><ul>{exercise.contraindications.map((item)=><li key={item}>{item}</li>)}</ul></details>}
+            <details><summary>Perfil muscular estimado</summary><p>Referência do cadastro para distribuir o trabalho registrado. Não mede ativação muscular nem considera automaticamente a descrição livre.</p><MuscleBars distribution={exercise.muscleDistribution} emptyMessage="Sem perfil cadastrado." /></details>
+            {onAddToWorkout && <Button className="fitness-exercise-add" onClick={()=>onAddToWorkout(exercise)}>Adicionar ao treino</Button>}
+          </div>
+        </>}
+      </SheetContent>
+    </Sheet>
+  );
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className={`${variant === 'fitness' ? 'fitness-dialog' : 'bg-void border-white/10'} rounded-t-3xl max-h-[88dvh] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6`}
+        className={`bg-void border-white/10 rounded-t-3xl max-h-[88dvh] overflow-y-auto px-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-6`}
       >
         {exercise && (
           <div className="space-y-5">

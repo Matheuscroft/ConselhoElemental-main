@@ -1,4 +1,4 @@
-import React, { useState, useId } from 'react';
+import React, { useState, useId, useRef } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,7 @@ interface BodyMeasurementDialogProps {
 
 export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ open, onOpenChange, onSaved, variant = 'default' }) => {
   const titleId = useId();
+  const returnFocus = useRef<HTMLElement | null>(null);
   const { addBodyMeasurement } = useWorkoutStore();
   const [form, setForm] = useState<FormState>({});
 
@@ -70,7 +71,15 @@ export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ op
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent aria-labelledby={titleId} aria-describedby={undefined} className={variant === 'fitness' ? 'fitness-dialog max-w-md max-h-[85dvh] overflow-y-auto' : 'bg-mystic-purple/95 border-white/10 max-w-md max-h-[85vh] overflow-y-auto'}>
+      <DialogContent
+        onOpenAutoFocus={() => { returnFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null; }}
+        onCloseAutoFocus={(event) => {
+          if (returnFocus.current?.isConnected) {
+            event.preventDefault();
+            returnFocus.current.focus();
+          }
+        }}
+        aria-labelledby={titleId} aria-describedby={undefined} className={variant === 'fitness' ? 'fitness-dialog max-w-md max-h-[85dvh] overflow-y-auto' : 'bg-mystic-purple/95 border-white/10 max-w-md max-h-[85vh] overflow-y-auto'}>
         <DialogHeader>
           <DialogTitle id={titleId} className="font-mystic">Registrar avaliação corporal</DialogTitle>
         </DialogHeader>

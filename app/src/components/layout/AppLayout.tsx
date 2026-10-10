@@ -57,7 +57,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <main id="main-content" className={`relative z-10 px-4 pt-4 md:ml-72 md:px-8 md:pt-6 ${hideNav ? 'pb-8' : 'pb-[calc(7rem+env(safe-area-inset-bottom))]'}`}>
         <div className="mx-auto w-full max-w-5xl space-y-6">
           
-          <div className={`glass-card flex-col items-center px-4 py-8 shadow-glow-arcane relative ${renderAura ? 'flex' : 'hidden'}`}>
+          {renderAura && <div className={`glass-card flex-col items-center px-4 py-8 shadow-glow-arcane relative ${renderAura ? 'flex' : 'hidden'}`}>
             <Suspense fallback={<div className="w-[200px] h-[200px] rounded-full bg-white/5 animate-pulse" />}>
               <AuraAvatar3D pranaLevel={pranaLevel} className="max-w-[240px] md:max-w-[300px] -mb-8" />
             </Suspense>
@@ -112,7 +112,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 </div>
               </div>
             </div>
-          </div>
+          </div>}
 
           <AnimatePresence mode="wait">
             <motion.div

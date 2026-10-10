@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
+import { SPORT_ACTIVITIES } from '@/constants/sport-activities';
 import { YOGA_POSES } from '@/constants/yoga-poses';
 import type {
   BodyMeasurement,
@@ -452,7 +453,7 @@ const normalizeWorkoutExercises = (exercises: WorkoutExercisePlan[]): WorkoutExe
     .sort((left, right) => left.order - right.order);
 
 const getExerciseByIdFromData = (data: WorkoutAccountData | null, id: string): WorkoutExercise | undefined =>
-  data?.exercisesCatalog.find((exercise) => exercise.id === id);
+  data?.exercisesCatalog.find((exercise) => exercise.id === id) ?? SPORT_ACTIVITIES.find((exercise) => exercise.id === id);
 
 const getLatestWeightAt = (data: WorkoutAccountData, at: ISODateString): number | undefined => {
   const atTime = new Date(at).getTime();
@@ -492,6 +493,7 @@ const calculateSetVolume = (
   completed: boolean,
   bodyweightKg: number | undefined
 ): { effectiveLoadKg: number; volume: number } => {
+  if (exercise.id.startsWith('sport-')) return {effectiveLoadKg:0,volume:0};
   const effectiveLoadKg = getEffectiveLoadKg(exercise, loadKg, bodyweightKg);
   if (!completed) return { effectiveLoadKg, volume: 0 };
 
@@ -752,11 +754,16 @@ const computeSessionImpactMetrics = (
       0
     )
   );
-  const earthPoints = totalVolume > 0 ? Math.max(1, Math.floor(totalVolume / 10)) : 0;
+  const nativeLoad = session.exerciseResults.filter((result) => result.exerciseId.startsWith('sport-')).reduce((sum, result) => sum + result.sets.reduce((total, performed) => performed.completed && !performed.skipped ? total + (performed.activityLoad ?? 0) : total, 0), 0);
+  const legacyVolume = session.exerciseResults.filter((result) => !result.exerciseId.startsWith('sport-')).reduce((sum, result) => sum + result.sets.reduce((total, performed) => performed.completed && !performed.skipped ? total + (performed.activityLoad ?? performed.volume) : total, 0), 0);
+  const rewardBasis = legacyVolume + nativeLoad;
+  const earthPoints = rewardBasis > 0 ? Math.max(1, Math.floor(rewardBasis / 10)) : 0;
   const xpAwarded = Math.round(earthPoints / 2);
-  const durationMinutes = durationSeconds / 60;
-  const staminaCost = Math.max(1, Math.ceil(durationMinutes / 5 + totalVolume / 100));
-  const pranaCost = Math.max(1, Math.ceil(durationMinutes / 10 + earthPoints / 10));
+  const recordedActiveSeconds = session.exerciseResults.reduce((sum, result) => sum + result.sets.reduce((total, performed) => performed.completed && !performed.skipped ? total + (performed.durationSeconds ?? 0) : total, 0), 0);
+  const hasNativeActivities = session.exerciseResults.some((result) => result.exerciseId.startsWith('sport-') || result.sets.some((performed)=>performed.activityLoad !== undefined));
+  const durationMinutes = (hasNativeActivities ? recordedActiveSeconds : durationSeconds) / 60;
+  const staminaCost = !hasNativeActivities || rewardBasis > 0 ? Math.max(1, Math.ceil(durationMinutes / 5 + rewardBasis / 100)) : 0;
+  const pranaCost = !hasNativeActivities || rewardBasis > 0 ? Math.max(1, Math.ceil(durationMinutes / 10 + earthPoints / 10)) : 0;
 
   const bestByExercise = new Map<string, ReturnType<typeof calculateExerciseBest>>();
   session.exerciseResults.forEach((result) => {
@@ -839,7 +846,7 @@ const finalizeSessionState = (
     staminaCost,
     pranaCost,
     strengthGain: roundFinite(strengthGainTotal),
-    formulaVersion: FORMULA_VERSION,
+    formulaVersion: existingSession.exerciseResults.some((result) => result.exerciseId.startsWith('sport-') || result.sets.some((performed)=>performed.activityLoad !== undefined)) ? 'workout-activity-v2' : FORMULA_VERSION,
   };
 
   const finalSession: WorkoutSession = {
@@ -853,7 +860,7 @@ const finalizeSessionState = (
     pranaCost,
     staminaCost,
     gamificationApplied: true,
-    formulaVersion: FORMULA_VERSION,
+    formulaVersion: gamificationEntry.formulaVersion,
   };
 
   const nextData: WorkoutAccountData = {
@@ -899,7 +906,8 @@ export const useWorkoutStore = create<WorkoutState>()(
       getExerciseCatalog: () => {
         const accountId = getCurrentAccountId(get().currentAccountId);
         const data = getCurrentAccountData(get().accountDataById, accountId);
-        return data?.exercisesCatalog ?? [];
+        const existing = data?.exercisesCatalog ?? [];
+        return [...existing, ...SPORT_ACTIVITIES.filter((activity) => !existing.some((exercise) => exercise.id === activity.id))];
       },
 
       getExercisesBySource: (source) => get().getExerciseCatalog().filter((exercise) => exercise.source === source),
@@ -1106,6 +1114,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       },
 
       updatePerformedSet: (sessionId, performedSetId, updates) => {
+        if (updates.perceivedExertion !== undefined && (!Number.isFinite(updates.perceivedExertion) || updates.perceivedExertion < 1 || updates.perceivedExertion > 10)) return undefined;
         const accountId = getCurrentAccountId(get().currentAccountId);
         if (!accountId) return undefined;
         const data = getCurrentAccountData(get().accountDataById, accountId);
@@ -1165,6 +1174,10 @@ export const useWorkoutStore = create<WorkoutState>()(
                   durationSeconds: durationSeconds > 0 ? durationSeconds : undefined,
                   effectiveLoadKg: calculation.effectiveLoadKg,
                   volume: calculation.volume,
+                  perceivedExertion: updates?.perceivedExertion === undefined ? existingSet.perceivedExertion : clamp(sanitizeInteger(updates.perceivedExertion), 1, 10),
+                  distanceMeters: updates?.distanceMeters === undefined ? existingSet.distanceMeters : sanitizeNonNegative(updates.distanceMeters),
+                  activityNotes: updates?.activityNotes === undefined ? existingSet.activityNotes : updates.activityNotes.slice(0, 2000),
+                  activityLoad: (() => { const effort = updates?.perceivedExertion ?? existingSet.perceivedExertion; return effort ? roundFinite(durationSeconds / 60 * clamp(effort, 1, 10)) : undefined; })(),
                   completedAt: existingSet.completed ? existingSet.completedAt ?? nowIso : undefined,
                 };
                 return { ...result, sets: result.sets.map((candidate, index) => (index === setIndex ? nextSet : candidate)) };
@@ -1207,6 +1220,9 @@ export const useWorkoutStore = create<WorkoutState>()(
                   updates?.durationSeconds === undefined
                     ? existingSet.durationSeconds ?? 0
                     : sanitizeNonNegative(updates.durationSeconds);
+                const observedEffort = updates?.perceivedExertion ?? existingSet.perceivedExertion;
+                if (observedEffort !== undefined && (!Number.isFinite(observedEffort) || observedEffort < 1 || observedEffort > 10)) return result;
+                if (exercise?.id.startsWith('sport-') && (observedEffort === undefined || durationSeconds <= 0)) return result;
                 const calculation = calculateSetVolume(
                   exercise ?? {
                     id: result.exerciseId,
@@ -1242,7 +1258,11 @@ export const useWorkoutStore = create<WorkoutState>()(
                   completedAt: nowIso,
                   effectiveLoadKg: calculation.effectiveLoadKg,
                   volume: calculation.volume,
-                  formulaVersion: FORMULA_VERSION,
+                  perceivedExertion: updates?.perceivedExertion === undefined ? existingSet.perceivedExertion : clamp(sanitizeInteger(updates.perceivedExertion), 1, 10),
+                  distanceMeters: updates?.distanceMeters === undefined ? existingSet.distanceMeters : sanitizeNonNegative(updates.distanceMeters),
+                  activityNotes: updates?.activityNotes === undefined ? existingSet.activityNotes : updates.activityNotes.slice(0, 2000),
+                  activityLoad: (() => { const effort = updates?.perceivedExertion ?? existingSet.perceivedExertion; return effort ? roundFinite(durationSeconds / 60 * clamp(effort, 1, 10)) : undefined; })(),
+                  formulaVersion: exercise?.id.startsWith('sport-') ? 'workout-activity-v2' : FORMULA_VERSION,
                 };
                 return { ...result, sets: result.sets.map((candidate, index) => (index === setIndex ? nextSet : candidate)) };
               }),
@@ -1601,11 +1621,12 @@ export const useWorkoutStore = create<WorkoutState>()(
         const sessions = sessionId
           ? data.sessions.filter((session) => session.id === sessionId)
           : getCompletedSessions(data);
+        const hasObservedLoad = sessions.some((session) => session.exerciseResults.some((result) => result.sets.some((performed) => performed.completed && !performed.skipped && performed.activityLoad !== undefined)));
         const totals = new Map<MuscleGroupId, number>();
         sessions.forEach((session) => {
           session.exerciseResults.forEach((result) => {
             const volume = result.sets.reduce(
-              (sum, set) => (set.completed && !set.skipped ? sum + set.volume : sum),
+              (sum, set) => (set.completed && !set.skipped ? sum + (hasObservedLoad ? set.activityLoad ?? 0 : result.exerciseId.startsWith('sport-') ? 0 : set.volume) : sum),
               0
             );
             result.muscleDistribution.forEach((entry) => {
@@ -1615,7 +1636,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           });
         });
 
-        if (totals.size === 0) return [];
+        if (totals.size === 0 || Array.from(totals.values()).every((value) => value <= 0)) return [];
         return normalizeMuscleDistribution(
           Array.from(totals.entries()).map(([muscleId, percentage]) => ({ muscleId, percentage }))
         );

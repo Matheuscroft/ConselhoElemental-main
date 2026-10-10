@@ -1,9 +1,9 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { RunningReferenceIcon, CoreReferenceIcon, SwimmingReferenceIcon, MartialArtsReferenceIcon, YogaReferenceIcon, CyclingReferenceIcon } from '@/components/fitness-kit/WorkoutReferenceIcons';
 import { Play } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
-  FitnessBottomNav,
   FitnessButton,
   FitnessCategoryGrid,
   FitnessEmptyState,
@@ -55,7 +55,7 @@ export const WorkoutSelect: React.FC = () => {
   // Seleção do usuário sobrepõe o filtro vindo da URL (?source=). `undefined` = ainda não escolheu.
   const [userCategory, setUserCategory] = useState<WorkoutExerciseCategory | null | undefined>(undefined);
   const selectedCategory: WorkoutExerciseCategory | null =
-    userCategory !== undefined ? userCategory : sourceParam ? SOURCE_TO_CATEGORY[sourceParam] ?? null : null;
+    userCategory !== undefined ? userCategory : sourceParam ? SOURCE_TO_CATEGORY[sourceParam] ?? null : 'running';
   const [createRequested, setCreateRequested] = useState(false);
   const [createPresetExerciseId, setCreatePresetExerciseId] = useState<string | undefined>(undefined);
   const [showAllExercises, setShowAllExercises] = useState(false);
@@ -64,9 +64,16 @@ export const WorkoutSelect: React.FC = () => {
   const categoryOptions = useMemo<CategoryOption[]>(() => {
     const counts = new Map<WorkoutExerciseCategory, number>();
     catalog.forEach((exercise) => counts.set(exercise.category, (counts.get(exercise.category) ?? 0) + 1));
-    return Array.from(counts.keys())
-      .sort((a, b) => (counts.get(b) ?? 0) - (counts.get(a) ?? 0))
-      .map((category) => ({ id: category, description: `${counts.get(category)} exercícios`, label: CATEGORY_LABELS[category], icon: CATEGORY_ICONS[category] ?? CATEGORY_ICONS.mixed }));
+    const reference: CategoryOption[] = [
+      { id: 'running', label: 'Corrida', icon: RunningReferenceIcon },
+      { id: 'calisthenics', label: 'Calistenia', icon: CoreReferenceIcon },
+      { id: 'swimming', label: 'Natação', icon: SwimmingReferenceIcon },
+      { id: 'martial_arts', label: 'Artes marciais', icon: MartialArtsReferenceIcon },
+      { id: 'yoga', label: 'Yoga', icon: YogaReferenceIcon },
+      { id: 'cycling', label: 'Ciclismo', icon: CyclingReferenceIcon },
+    ];
+    const shown = new Set(reference.map((option) => option.id));
+    return [...reference, ...Array.from(counts.keys()).filter((category) => !shown.has(category)).map((category) => ({ id: category, label: CATEGORY_LABELS[category], icon: CATEGORY_ICONS[category] }))];
   }, [catalog]);
 
   const visibleWorkouts = useMemo(
@@ -134,10 +141,10 @@ export const WorkoutSelect: React.FC = () => {
   };
 
   return (
-    <FitnessPageShell withNav>
-      <FitnessHeader title={FITNESS_COPY.selectTitle} onBack={() => navigate('/santuario')} backLabel="Voltar para o Santuário" />
+    <FitnessPageShell focused>
+      <FitnessHeader className="[&_h1]:text-2xl min-[390px]:[&_h1]:text-[28px]" title={FITNESS_COPY.selectTitle} onBack={() => navigate('/santuario')} backLabel="Voltar para o Santuário" />
 
-      <div className="mt-10">
+      <div className="mt-12">
         {categoryOptions.length === 0 ? (
           <FitnessEmptyState message="Nenhum exercício disponível no catálogo." />
         ) : (
@@ -164,10 +171,10 @@ export const WorkoutSelect: React.FC = () => {
       )}
 
       <div className="mt-10 flex flex-col items-center gap-3 px-4">
-        <p className="text-center text-sm text-fitness-muted" aria-live="polite">
-          {selectedCategory ? `${CATEGORY_LABELS[selectedCategory]} · ${visibleExercises.length} exercícios disponíveis` : 'Escolha uma categoria para montar seu treino.'}
+        <p id="workout-selection-hint" className="text-center text-sm text-fitness-muted" aria-live="polite">
+          {selectedCategory ? visibleExercises.length > 0 ? `${CATEGORY_LABELS[selectedCategory]} · ${visibleExercises.length} exercícios disponíveis` : `${CATEGORY_LABELS[selectedCategory]} · Monte um treino escolhendo exercícios do catálogo.` : 'Escolha uma categoria para montar seu treino.'}
         </p>
-        <FitnessButton className="w-full max-w-[19rem]" disabled={!selectedCategory} onClick={handleStart}>
+        <FitnessButton className="w-full max-w-[24rem]" aria-describedby="workout-selection-hint" disabled={!selectedCategory} onClick={handleStart}>
           {selectedCategory && visibleWorkouts.length === 0 ? 'Montar treino' : selectedCategory ? 'Ver treino' : FITNESS_COPY.start}
         </FitnessButton>
       </div>
@@ -266,7 +273,6 @@ export const WorkoutSelect: React.FC = () => {
         </div>
       </details>
 
-      <FitnessBottomNav />
 
       <CreateWorkoutDialog
         open={createOpen}

@@ -65,7 +65,8 @@ export const HealthDashboard: React.FC = () => {
   );
 
   const weekHasData = week.some((day) => day.sessionCount > 0);
-  const volumeValues = week.map((day) => day.volume);
+  const measuredLoad = week.some((day)=>day.observedSessions>0);
+  const volumeValues = week.map((day) => measuredLoad ? day.activityLoad : day.volume);
   const maxMinutes = Math.max(DAILY_EXERCISE_GOAL_MINUTES, ...week.map((day) => day.minutes));
 
   return (
@@ -86,13 +87,13 @@ export const HealthDashboard: React.FC = () => {
       <h2 className="mt-8 font-sans text-xl font-semibold text-fitness-text">Nesta semana</h2>
       <div className="mt-4 grid grid-cols-2 gap-5">
         <ChartWidget
-          title="Volume"
+          title={measuredLoad ? 'Carga percebida' : 'Volume legado'}
           icon={Dumbbell}
           iconClassName="text-fitness-primary"
           radius="sm"
           className="aspect-square p-4 sm:p-5"
           emptyMessage={weekHasData ? undefined : 'Sem treinos esta semana.'}
-          summary={`Volume por dia nesta semana: ${volumeValues.map((value) => Math.round(value)).join(', ')} kg`}
+          summary={`Volume por dia nesta semana: ${volumeValues.map((value) => Math.round(value)).join(', ')} ${measuredLoad ? 'u.a.' : 'índice'}`}
           bodyClassName="mt-6"
         >
           <MiniSparkline values={volumeValues} color="#8582F2" height={96} />

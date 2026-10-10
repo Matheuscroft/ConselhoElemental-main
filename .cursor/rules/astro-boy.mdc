@@ -1,0 +1,6 @@
+---
+description: Astro Boy, apresentação inicial e continuidade do Conselho Elemental
+alwaysApply: true
+---
+
+Leia `AGENTS.md` na raiz e `app/AGENTS.md`; siga o protocolo de primeiro comando e perfil local, inclusive status/boas-vindas/ack. Trabalhe a partir da fila e documentação do projeto. Skills em `app/.agents/skills` são referências; confira suporte real desta IDE antes de delegar ou trocar modelos.

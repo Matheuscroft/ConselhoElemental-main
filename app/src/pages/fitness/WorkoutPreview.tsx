@@ -5,16 +5,16 @@ import {
   FitnessButton,
   FitnessEmptyState,
   FitnessListRow,
-  FitnessMetaPill,
+  FitnessHeader,
   FitnessPageShell,
   FitnessStickyAction,
   SectionHeader,
-  WorkoutPreviewHero,
+
 } from '@/components/fitness-kit';
 import { ExerciseDetailSheet } from '@/components/workout';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatClock, formatMinutes } from '@/lib/fitness-kit/format';
-import { CATEGORY_ICONS, LEVEL_LABELS } from '@/lib/workout';
+import { CATEGORY_ICONS, CATEGORY_LABELS, LEVEL_LABELS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { WorkoutExercise, WorkoutExerciseLevel, WorkoutExercisePlan } from '@/types/workout';
 
@@ -72,7 +72,7 @@ export const WorkoutPreview: React.FC = () => {
     );
   }
 
-  const durationLevel: 1 | 2 | 3 = workout.estimatedDurationMinutes < 20 ? 1 : workout.estimatedDurationMinutes < 45 ? 2 : 3;
+
   const isCompleted = workout.status === 'completed';
   const canStart = workout.status === 'planned' || workout.status === 'in_progress';
 
@@ -89,18 +89,18 @@ export const WorkoutPreview: React.FC = () => {
   const actionDisabled = isCompleted ? !workout.lastSessionId : !canStart;
 
   return (
-    <FitnessPageShell bleed flushTop withFixedAction>
-      <WorkoutPreviewHero title={workout.name} onBack={() => navigate('/treinos')} />
+    <FitnessPageShell focused withFixedAction>
+      <FitnessHeader title="Seu treino" onBack={() => navigate('/treinos')} />
 
-      <div className="relative -mt-12 rounded-tl-fit-hero bg-fitness-canvas px-6 pt-10">
+      <div className="mt-8 bg-fitness-canvas">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="min-w-0 break-words font-sans text-[28px] font-semibold leading-tight text-fitness-text">{workout.name}</h2>
           <span className="shrink-0 text-lg font-medium text-fitness-primary">{formatMinutes(workout.estimatedDurationMinutes)}</span>
         </div>
 
         <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <FitnessMetaPill label={FITNESS_COPY.difficulty} level={difficultyScore} valueText={SCORE_LABEL[difficultyScore]} />
-          <FitnessMetaPill label={FITNESS_COPY.duration} level={durationLevel} valueText={formatMinutes(workout.estimatedDurationMinutes)} />
+          <span className="text-sm text-fitness-muted">{CATEGORY_LABELS[workout.category]} · {rows.every((row)=>row.exercise?.source === 'native') ? 'Registro manual' : SCORE_LABEL[difficultyScore]}</span>
+          <span className="text-sm text-fitness-muted">Tempo planejado, ajustável ao executar</span>
         </div>
 
         <div className="mt-12">
@@ -134,7 +134,7 @@ export const WorkoutPreview: React.FC = () => {
         onOpenChange={(open) => { if (!open) setDetailExercise(null); }}
       />
 
-      <FitnessStickyAction>
+      <FitnessStickyAction focused>
         <FitnessButton className="w-full" disabled={actionDisabled} onClick={handlePrimaryAction}>
           {actionLabel}
         </FitnessButton>
