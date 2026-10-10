@@ -2,6 +2,7 @@ import { LayoutGrid } from 'lucide-react';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import React, { useEffect, useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useAppStore } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
 
@@ -10,7 +11,7 @@ interface FitnessPageShellProps {
   /** Fluxo de escolha mobile, centralizado como tablet também no PC. */
   focused?: boolean;
   showPageMap?: boolean;
-  /** Reserva espaço no rodapé para a FitnessBottomNav. */
+  /** Mantido por compatibilidade; reserva espaço para a navegação global. */
   withNav?: boolean;
   /** Reserva espaço no rodapé para um CTA fixo (ex.: barra de ações). */
   withFixedAction?: boolean;
@@ -56,13 +57,13 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
 
   return (
     <div className={cn('min-h-dvh font-sans text-fitness-text antialiased overflow-x-hidden', focused ? 'bg-fitness-canvas' : 'bg-transparent')}>
-      {!focused && <Sidebar />}
+      <Sidebar />
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main
         id="main-content"
         className={cn(
           'relative mx-auto',
-          focused ? 'max-w-xl' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
+          focused ? 'mx-auto max-w-xl md:ml-72 md:mr-0 md:max-w-none' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
           !flushTop && 'pt-[calc(1.5rem+env(safe-area-inset-top))]',
           bottomPadding,
           className
@@ -75,6 +76,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
         </div>}
         <div className={cn('mx-auto w-full', !focused && 'md:max-w-md', !bleed && 'px-6')}>{children}</div>
       </main>
+      <MobileBottomNav />
     </div>
   );
 };

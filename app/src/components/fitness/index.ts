@@ -5,7 +5,7 @@ export { FitnessIconBadge } from './FitnessIconBadge';
 export { FitnessPageShell, FitnessHeader, SectionHeader } from './FitnessShell';
 export { MetricRing, RingsOverview } from './MetricRing';
 export type { RingDef } from './MetricRing';
-export { FitnessBottomNav } from './FitnessBottomNav';
+export { FitnessBottomNav, FitnessTopTabs, FitnessModuleFab, FitnessCreateWorkoutFab } from './FitnessBottomNav';
 export { BodySilhouette } from './BodySilhouette';
 export { ChartWidget } from './ChartWidget';
 export { HeartRateChart } from './HeartRateChart';

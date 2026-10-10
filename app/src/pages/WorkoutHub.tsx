@@ -42,6 +42,7 @@ import {
   FitnessCard,
   FitnessIconBadge,
   FitnessBottomNav,
+  FitnessModuleFab,
 } from '@/components/fitness';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { CreateWorkoutDialog, ExerciseDetailSheet } from '@/components/workout';
@@ -431,6 +432,7 @@ export const WorkoutHub: React.FC = () => {
       </Sheet>
 
       <FitnessBottomNav />
+      <FitnessModuleFab />
     </FitnessPageShell>
   );
 };

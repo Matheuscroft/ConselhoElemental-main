@@ -1,5 +1,11 @@
 # Fila única de entregas — 08/10/2026
 
+## UI Shell — 10/10/2026
+
+| ID | Escopo e dono | Dependências | Estado | Aceite verificável |
+|---|---|---|---|---|
+| UI-SHELL | AppLayout/BottomNav e navegação Fitness — Astro Boy, papel Interface | Nenhuma | em revisão | Confirmar quatro itens globais na ordem Santuário/Ciclos/Pilares/Mais, acesso ao hub Mais, top tabs Treinos/Histórico/Saúde e FAB acima da navegação global; revisar 360/390/768px e desktop. Build/lint aprovados; navegador ainda pendente. Sem alteração de stores/contratos. |
+
 Coordenação: Astro Boy. Protocolo em [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md). Donos abaixo são papéis; o coordenador registra agente concreto e reserva ao despachar. Todos os lotes futuros permanecem sem reserva e não iniciados. C00 foi aceita por Astro Boy e integrada documentalmente ao checkout original em 08/10/2026.
 
 ## Ordem proposta

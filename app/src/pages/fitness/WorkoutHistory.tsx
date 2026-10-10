@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { FitnessButton, FitnessBottomNav, FitnessEmptyState, FitnessPageShell, SectionHeader, WorkoutHistoryCard } from '@/components/fitness-kit';
+import { FitnessButton, FitnessTopTabs, FitnessEmptyState, FitnessPageShell, SectionHeader, WorkoutHistoryCard } from '@/components/fitness-kit';
 import { mapSessionsToHistoryItems } from '@/lib/fitness-kit/adapters';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatMonthLabel } from '@/lib/fitness-kit/format';
@@ -33,6 +33,7 @@ export const WorkoutHistory: React.FC = () => {
 
   return (
     <FitnessPageShell withNav>
+      <FitnessTopTabs />
       <SectionHeader
         level="page"
         title={FITNESS_COPY.workouts}
@@ -70,7 +71,6 @@ export const WorkoutHistory: React.FC = () => {
         )}
       </div>
 
-      <FitnessBottomNav />
     </FitnessPageShell>
   );
 };

@@ -5,7 +5,7 @@ export { FitnessButton } from './FitnessButton';
 export { FitnessIconBadge } from './FitnessIconBadge';
 export { FitnessEmptyState } from './FitnessEmptyState';
 export { FitnessListRow } from './FitnessListRow';
-export { FitnessBottomNav, NEW_WORKOUT_PATH } from './FitnessBottomNav';
+export { FitnessTopTabs, FitnessBottomNav, FitnessCreateWorkoutFab, FitnessModuleFab, NEW_WORKOUT_PATH } from './FitnessBottomNav';
 export { SectionHeader } from './SectionHeader';
 export { MetricRing, type RingMetric } from './MetricRing';
 export { RingsOverview } from './RingsOverview';

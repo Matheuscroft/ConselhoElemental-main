@@ -10,6 +10,8 @@ import {
   FitnessHeader,
   FitnessListRow,
   FitnessPageShell,
+  FitnessTopTabs,
+  FitnessCreateWorkoutFab,
   SectionHeader,
   type CategoryOption,
 } from '@/components/fitness-kit';
@@ -141,7 +143,8 @@ export const WorkoutSelect: React.FC = () => {
   };
 
   return (
-    <FitnessPageShell focused>
+    <FitnessPageShell focused withNav>
+      <FitnessTopTabs />
       <FitnessHeader className="[&_h1]:text-2xl min-[390px]:[&_h1]:text-[28px]" title={FITNESS_COPY.selectTitle} onBack={() => navigate('/santuario')} backLabel="Voltar para o Santuário" />
 
       <div className="mt-12">
@@ -289,6 +292,7 @@ export const WorkoutSelect: React.FC = () => {
         onOpenChange={handleExerciseDetailOpenChange}
         onAddToWorkout={handleAddToWorkout}
       />
+      <FitnessCreateWorkoutFab />
     </FitnessPageShell>
   );
 };

@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow';
 import {
   BodyMetricsCard,
   ChartWidget,
-  FitnessBottomNav,
+  FitnessTopTabs,
   FitnessPageShell,
   SectionHeader,
   TrendAreaChart,
@@ -31,6 +31,7 @@ export const HealthInsights: React.FC = () => {
 
   return (
     <FitnessPageShell withNav>
+      <FitnessTopTabs />
       <SectionHeader
         level="page"
         title={FITNESS_COPY.insights}
@@ -54,7 +55,6 @@ export const HealthInsights: React.FC = () => {
         </ChartWidget>
       </div>
 
-      <FitnessBottomNav />
       <BodyMeasurementDialog variant="fitness" open={measurementOpen} onOpenChange={setMeasurementOpen} />
     </FitnessPageShell>
   );

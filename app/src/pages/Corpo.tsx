@@ -5,7 +5,7 @@ import { Trash2 } from 'lucide-react';
 import {
   BodyMetricsCard,
   ChartWidget,
-  FitnessBottomNav,
+  FitnessTopTabs,
   FitnessCard,
   FitnessHeader,
   FitnessPageShell,
@@ -45,6 +45,7 @@ export const Corpo: React.FC = () => {
 
   return (
     <FitnessPageShell withNav>
+      <FitnessTopTabs />
       <FitnessHeader title="Meu corpo" onBack={() => navigate('/treinos/insights')} backLabel="Voltar para Saúde" />
       <div className="mt-8 space-y-6">
         <BodyMetricsCard metrics={metrics} measuredAt={latest?.measuredAt} onRecord={() => setDialogOpen(true)} />
@@ -111,7 +112,6 @@ export const Corpo: React.FC = () => {
         </section>
       </div>
       <BodyMeasurementDialog variant="fitness" open={dialogOpen} onOpenChange={setDialogOpen} />
-      <FitnessBottomNav />
     </FitnessPageShell>
   );
 };

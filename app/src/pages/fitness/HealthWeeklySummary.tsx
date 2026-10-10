@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import {
   ChartWidget,
-  FitnessBottomNav,
+  FitnessTopTabs,
   FitnessCard,
   FitnessPageShell,
   MiniSparkline,
@@ -30,6 +30,7 @@ export const HealthWeeklySummary: React.FC = () => {
 
   return (
     <FitnessPageShell withNav>
+      <FitnessTopTabs />
       <SectionHeader
         level="page"
         title={FITNESS_COPY.weeklySummary}
@@ -72,7 +73,6 @@ export const HealthWeeklySummary: React.FC = () => {
         </div>
       </div>
 
-      <FitnessBottomNav />
     </FitnessPageShell>
   );
 };

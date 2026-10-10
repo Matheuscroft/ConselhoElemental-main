@@ -54,7 +54,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       <Sidebar />
       <TopBar title={title} showBackButton={showBackButton} rightAction={rightAction} />
 
-      <main id="main-content" className={`relative z-10 px-4 pt-4 md:ml-72 md:px-8 md:pt-6 ${hideNav ? 'pb-8' : 'pb-[calc(7rem+env(safe-area-inset-bottom))]'}`}>
+      <main id="main-content" className="relative z-10 px-4 pt-4 pb-[calc(6rem+env(safe-area-inset-bottom))] md:ml-72 md:px-8 md:pt-6">
         <div className="mx-auto w-full max-w-5xl space-y-6">
           
           {renderAura && <div className={`glass-card flex-col items-center px-4 py-8 shadow-glow-arcane relative ${renderAura ? 'flex' : 'hidden'}`}>
@@ -128,7 +128,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         </div>
       </main>
 
-      {!hideNav && <MobileBottomNav />}
+      <MobileBottomNav />
     </div>
   );
 };

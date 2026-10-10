@@ -4,7 +4,8 @@ import { Activity, Dumbbell } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
   ChartWidget,
-  FitnessBottomNav,
+  FitnessTopTabs,
+  FitnessCreateWorkoutFab,
   FitnessButton,
   FitnessPageShell,
   MiniBars,
@@ -71,6 +72,7 @@ export const HealthDashboard: React.FC = () => {
 
   return (
     <FitnessPageShell withNav>
+      <FitnessTopTabs />
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="break-words font-sans text-[32px] font-semibold leading-[1.1] text-fitness-text">
@@ -135,7 +137,7 @@ export const HealthDashboard: React.FC = () => {
         </FitnessButton>
       </div>
 
-      <FitnessBottomNav />
+      <FitnessCreateWorkoutFab />
     </FitnessPageShell>
   );
 };

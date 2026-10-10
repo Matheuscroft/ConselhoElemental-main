@@ -1,5 +1,11 @@
 # Retomada vigente — P01 / 0.1.21, 10/10/2026
 
+## App Shell / Fitness — implementação local pendente de revisão visual (10/10/2026)
+
+Checkout `C:\Users\mathe\Downloads\Dominio-Atualizado\ConselhoElemental-main`; perfil explícito Matheus/fullstack. Implementado shell global com quatro destinos fixos (Santuário, Ciclos, Pilares, Mais), e FitnessPageShell agora preserva navegação global mesmo em páginas focadas. Antiga barra inferior Fitness removida: o componente compatível renderiza top tabs Treinos/Histórico/Saúde; ação Criar treino é FAB nas telas de hub/dashboard. `hideNav` não suprime mais a navegação global. Arquivos de layout e páginas Fitness alterados; sem mudança em stores/contratos.
+
+Verificações executadas em 10/10: `npm run build` e `npm run lint` passaram; `git diff --check` passou. Nenhum teste visual de navegador executado. Próximo: revisar 360/390/768px e desktop, conferir posicionamento de FAB e barra global nas rotas Fitness e atualizar fila com resultado. Não houve bump, commit, push ou deploy.
+
 Astro Boy/Sol médio. Fábio autorizou publicar o estado acumulado em Matheuscroft/ConselhoElemental-main e preparar a colaboração de Matheus/backend/documentação. Regras raiz para Codex/Cursor/Claude, oito skills portáveis, perfil explícito local e roteiro inicial implementados. Matheus configura `node app/scripts/astro-boy.mjs setup --name Matheus --role backend` na raiz; depois pede ao agente da IDE para continuar. Perfil ignorado, sem IP. Fábio/frontend usa seu próprio perfil.
 
 Pastas inventariadas por astro:audit; plugin dev sem uso removido com 99 pacotes do lockfile, sem atualizar outras dependências. Metadados macOS removidos; assets/páginas/contratos preservados. Build/lint/astro:test e sete testes Deno com mocks passaram; cópia limpa instalou 482 pacotes com npm ci --ignore-scripts, build/astro:test e presença das oito skills/regras/docs conferidos. Zero erros de lint, quatro avisos anteriores. npm audit e limites de performance em AUDITORIA-PUBLICACAO. Não houve novo teste visual neste lote.
