@@ -257,3 +257,5 @@ Autorização atual do usuário: conversão 1ER=0.10, atualização dos exemplos
 F06 implementada: constante compartilhada0.10, nova conversão em preview/conclusão/helpers ER, seletor fator de carga em planejamento e execução, exemplos/docs canônicos atualizados. ESLint sete arquivos/diff-check passaram; sem testes funcionais/navegador/publicação. Histórico preservado, reservas liberadas.
 
 F12 — ativação semanal Fitness implementada: modal de dias, Adapter via addHabit e indicador por template. Core mantém fonte/valores na Action e projeção Habit. Sem publicação, commit ou migração; reservas encerradas. Revisão funcional de Ciclos pendente.
+
+F13 — rich widget Fitness integrado em hábitos/rotacões da tela Ciclos. Preview Core e despacho HABIT único, sem subtarefas/duplicação de recompensa. Revisão funcional pendente; sem commit/push.

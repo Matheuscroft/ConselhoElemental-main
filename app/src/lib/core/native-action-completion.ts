@@ -8,6 +8,7 @@ export interface NativeActionCompletion {
   durationSeconds: number;
   completedAt: string;
   effortLevel?: number;
+  habitId?: string;
 }
 
 const effortRules: Record<number, { multiplier: number; cap: number; pranaCost: number }> = {

@@ -787,7 +787,37 @@ export const useAppStore = create<AppState>()(
       completeNativeAction: (input) => {
         const state = get();
         const previous = state.executionLogs.find((log) => log.sourceModule === 'modulo_treino' && log.sourceRefId === input.sessionId);
-        if (previous) return previous;
+        if (previous) {
+          if (input.habitId && previous.subjectId !== input.habitId) throw new Error('Esta sessão já foi registrada em outra ocorrência.');
+          return previous;
+        }
+        if (input.habitId) {
+          const habit = state.habits.find((item) => item.id === input.habitId && item.sourceModule === 'modulo_treino');
+          const timestamp = new Date(input.completedAt);
+          if (!habit || isHabitCompletedOnDate(habit, timestamp)) throw new Error('Ciclo inexistente ou já concluído neste dia.');
+          const result = buildNativeCompletion({ ...input, coreEntityId: undefined }, state.user.pranaLevel ?? 100);
+          const log: ExecutionLog = { ...result.log, subjectId: habit.id, subjectType: 'HABIT' };
+          const completion: HabitCompletion = { id: log.id, habitId: habit.id, completionDate: timestamp,
+            timeSpentMinutes: input.durationSeconds / 60, scoreEarned: log.executedValue, executedScore: log.executedValue,
+            actualEffortLevel: input.effortLevel ?? 1, formulaVersion: log.ruleVersion };
+          const last = habit.lastCompletedAt ? new Date(habit.lastCompletedAt) : null;
+          const yesterday = new Date(timestamp); yesterday.setDate(yesterday.getDate() - 1);
+          const streak = last?.toDateString() === yesterday.toDateString() ? habit.streak + 1 : 1;
+          const updated = { ...habit, completions: [...habit.completions, completion], lastCompletedAt: timestamp,
+            streak, longestStreak: Math.max(habit.longestStreak, streak), updatedAt: timestamp, isInProgress: false, elapsedSeconds: 0 };
+          const membership = state.sequenceMemberships.find((item) => item.habitId === habit.id);
+          const sequence = membership ? state.cycleSequences.find((item) => item.id === membership.sequenceId && item.isActive) : undefined;
+          const members = sequence ? state.sequenceMemberships.filter((item) => item.sequenceId === sequence.id).sort((a, b) => a.position - b.position) : [];
+          const position = sequence && members.length ? getSequencePositionForDate(sequence, members.length, timestamp) : -1;
+          // Um único ledger e uma única recompensa; nenhuma Action avulsa ou subtarefa extra.
+          set((current) => ({ habits: current.habits.map((item) => item.id === habit.id ? updated : item),
+            actions: current.actions.map((item) => item.id === habit.id ? { ...item, completions: updated.completions, lastCompletedAt: timestamp, streak, longestStreak: updated.longestStreak, updatedAt: timestamp } : item),
+            executionLogs: [...current.executionLogs, log],
+            cycleSequences: current.cycleSequences.map((item) => sequence && item.id === sequence.id && membership?.position === position && (!item.lastCompletedDate || !isSameDay(item.lastCompletedDate, timestamp)) ? { ...item, currentPosition: position, lastCompletedDate: timestamp, updatedAt: timestamp } : item),
+            user: { ...current.user, totalScore: current.user.totalScore + log.executedValue,
+              xp_earth: current.user.xp_earth + log.executedValue, pranaLevel: result.pranaAfter } }));
+          return log;
+        }
         const existing = input.coreEntityId ? state.actions.find((action) => action.id === input.coreEntityId) : undefined;
         if (input.coreEntityId && !existing) throw new Error('A ocorrência vinculada não foi encontrada.');
         const { action, log, pranaAfter } = buildNativeCompletion(input, state.user.pranaLevel ?? 100, existing);

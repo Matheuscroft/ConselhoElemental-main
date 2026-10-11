@@ -28,8 +28,14 @@ const modalities = [
 ] satisfies { id: WorkoutExerciseCategory; label: string; icon: typeof Dumbbell; description: string }[];
 
 function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalog: Exercise[] }) {
-  const [editing, setEditing] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const [editing, setEditing] = useState(params.get('edit') === template.id);
+  const [confirmDelete, setConfirmDelete] = useState(params.get('delete') === template.id);
+  useEffect(() => {
+    if (params.get('edit') === template.id || params.get('delete') === template.id) {
+      const next = new URLSearchParams(params); next.delete('edit'); next.delete('delete'); setParams(next, { replace: true });
+    }
+  }, [params, setParams, template.id]);
   const [cycleOpen, setCycleOpen] = useState(false);
   const hasCycle = useAppStore((state) => state.habits.some((habit) => habit.sourceModule === 'modulo_treino' && habit.sourceRefId === template.id));
   const deleteTemplate = useWorkoutStore((state) => state.deleteTemplate);

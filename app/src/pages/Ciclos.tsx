@@ -26,6 +26,7 @@ import {
 import { AppLayout } from '@/components/layout';
 import { ScoreHierarchyPanel } from '@/components/cards';
 import { WorkoutListCard } from '@/components/workout';
+import { FitnessHabitWidget } from '@/components/workout/FitnessHabitWidget';
 import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { Workout } from '@/types/workout';
@@ -2011,6 +2012,7 @@ export const Ciclos: React.FC = () => {
                     );
                   }
 
+                  if (sequenceHabit.sourceModule === 'modulo_treino') return <div key={`sequence-${item.sequence.id}`} className="space-y-2"><p className="text-sm text-white/60">{item.sequence.name}</p><FitnessHabitWidget habit={sequenceHabit} date={selectedDate} /></div>;
                   const completed = isHabitCompleted(sequenceHabit);
                   const completion = getCompletionForDate(sequenceHabit);
                   const childHabits = sequenceHabit.childHabits || [];
@@ -2326,6 +2328,7 @@ export const Ciclos: React.FC = () => {
                     return b[1].points - a[1].points;
                   });
                 
+                if (habit.sourceModule === 'modulo_treino') return <FitnessHabitWidget key={habit.id} habit={habit} date={selectedDate} />;
                 const primaryAreaBadgeLabel = !hasChildren && habit.areaId
                   ? `+${Math.round(habit.plannedPoints)} ${areaDisplayName}${subarea ? ` | ${subarea.name}` : ''}`
                   : null;

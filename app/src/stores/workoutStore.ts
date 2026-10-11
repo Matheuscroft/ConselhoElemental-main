@@ -706,10 +706,10 @@ interface WorkoutState {
   deleteTemplate: (templateId: string) => void;
   saveSequence: (input: SaveSequenceInput) => WorkoutSequence | undefined;
   deleteSequence: (sequenceId: string) => void;
-  startSession: (templateId?: string | null) => NativeWorkoutSession | undefined;
+  startSession: (templateId?: string | null, effortLevel?: number) => NativeWorkoutSession | undefined;
   addExerciseToSession: (exercise: PlannedExercise | Exercise) => ExecutedExercise | undefined;
   logSet: (exerciseInstanceId: string, setId: string, updates: NativeSetUpdate) => NativeWorkoutSession | undefined;
-  finishSession: () => NativeWorkoutSession | undefined;
+  finishSession: (habitId?: string) => NativeWorkoutSession | undefined;
   scheduleWorkoutAsHabit: (templateId: string, daysOfWeek: number[]) => string;
   discardNativeSession: (sessionId: string) => boolean;
   previewTemplateReward: (templateId: string) => ReturnType<typeof projectTemplateReward> | undefined;
@@ -1066,15 +1066,15 @@ export const useWorkoutStore = create<WorkoutState>()(
         })));
       },
 
-      startSession: (templateId) => {
+      startSession: (templateId, effortLevel) => {
         // Não sobrescreve uma sessão em andamento; IDs desconhecidos não viram ad-hoc.
         if (get().activeNativeSession) return undefined;
         const requestedId = templateId?.trim();
         const template = requestedId ? get().templates.find((item) => item.id === requestedId) : undefined;
         if (requestedId && !template) return undefined;
-        if (!validEffort(template?.effortLevel)) return undefined;
+        if (!validEffort(effortLevel ?? template?.effortLevel)) return undefined;
         const session: NativeWorkoutSession = {
-          effortLevel: template?.effortLevel ?? 1,
+          effortLevel: effortLevel ?? template?.effortLevel ?? 1,
           id: nativeId(), templateId: template?.id, nameSnapshot: template?.name ?? 'Treino avulso',
           status: 'in_progress', startedAt: new Date().toISOString(), durationSeconds: 0,
           exerciseResults: template ? [...template.exercises].sort((a, b) => a.order - b.order).map(executedClone) : [],
@@ -1157,10 +1157,11 @@ export const useWorkoutStore = create<WorkoutState>()(
         return true;
       },
 
-      finishSession: () => {
+      finishSession: (habitId) => {
         const session = get().activeNativeSession;
         if (!session || session.status !== 'in_progress') return undefined;
         if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a sessão antes de concluir.');
+        if (habitId && !useAppStore.getState().habits.some((habit) => habit.id === habitId && habit.sourceModule === 'modulo_treino' && habit.sourceRefId === session.templateId)) throw new Error('O ciclo não corresponde a esta sessão.');
         const completedAt = new Date().toISOString();
         const totalER = session.exerciseResults.reduce((total, exercise) => total + exercise.sets.reduce((sum, series) => {
           if (!series.completed || series.skipped) return sum;
@@ -1173,7 +1174,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           totalER: Number(totalER.toFixed(10)), baseValue: Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10)),
         };
         // O Core confirma primeiro; falhas mantêm a sessão ativa para nova tentativa.
-        const registered = completeFitnessSession(finished);
+        const registered = completeFitnessSession(finished, habitId);
         set((state) => updateNativeData(state, (data) => ({
           ...data, activeNativeSession: null,
           nativeHistory: [...data.nativeHistory.filter((item) => item.id !== registered.id), registered],
