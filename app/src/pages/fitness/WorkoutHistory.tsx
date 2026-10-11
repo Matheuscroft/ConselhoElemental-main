@@ -8,6 +8,8 @@ import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatMonthLabel } from '@/lib/fitness-kit/format';
 import { CATEGORY_ICONS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { NativeSessionHistory } from '@/components/workout/NativeSessionHistory';
+import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 
 export const WorkoutHistory: React.FC = () => {
   const embedded = useContext(FitnessEmbeddedContext);
@@ -17,6 +19,8 @@ export const WorkoutHistory: React.FC = () => {
   const sessions = useWorkoutStore(useShallow((state) => state.getWorkoutHistory()));
   const workouts = useWorkoutStore(useShallow((state) => state.getCompletedWorkouts()));
   const plannedWorkouts = useWorkoutStore(useShallow((state) => state.getPlannedWorkouts()));
+  const ledger = useWorkoutStore(useShallow((state) => state.accountDataById[state.currentAccountId ?? 'local']?.gamificationLedger ?? []));
+  const nativeHistory = useWorkoutStore((state) => state.nativeHistory);
 
   const items = useMemo(() => {
     const now = new Date();
@@ -36,6 +40,7 @@ export const WorkoutHistory: React.FC = () => {
   return (
     <FitnessPageShell withNav>
       <FitnessTopTabs />
+      <NativeSessionHistory />
       <SectionHeader
         level="page"
         title={FITNESS_COPY.workouts}
@@ -45,7 +50,7 @@ export const WorkoutHistory: React.FC = () => {
       />
 
       <div className="mt-8 space-y-5">
-        {items.length === 0 ? (
+        {items.length === 0 && nativeHistory.length > 0 ? null : items.length === 0 ? (
           <FitnessEmptyState
             message={hasAnyCompleted ? 'Nenhum treino registrado neste mês.' : FITNESS_COPY.empty.history}
             action={isMonthEmpty ? (
@@ -64,8 +69,8 @@ export const WorkoutHistory: React.FC = () => {
               key={item.id}
               name={item.name}
               dateLabel={item.dateLabel}
-              metricValue={item.metricValue}
-              metricUnit={item.metricUnit}
+              metricValue={ledger.find((entry) => entry.sessionId === item.id)?.xpAwarded != null ? formatEarthXp(ledger.find((entry) => entry.sessionId === item.id)!.xpAwarded) : item.metricValue}
+              metricUnit={ledger.some((entry) => entry.sessionId === item.id) ? 'XP 🌿' : item.metricUnit}
               icon={CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.mixed}
               onClick={() => navigate(`/treinos/resumo/${item.id}`)}
             />

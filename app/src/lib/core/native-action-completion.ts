@@ -9,6 +9,8 @@ export interface NativeActionCompletion {
   completedAt: string;
   effortLevel?: number;
   habitId?: string;
+  declaredPlannedExecution?: boolean;
+  fullCompletion?: boolean;
 }
 
 const effortRules: Record<number, { multiplier: number; cap: number; pranaCost: number }> = {
@@ -43,7 +45,7 @@ export function buildNativeCompletion(input: NativeActionCompletion, pranaBefore
   if (existing && (existing.lifecycleType !== 'ACTION' || existing.children.length || existing.isCompleted)) throw new Error('A ocorrência vinculada não pode ser concluída por este fluxo.');
   const minutes = input.durationSeconds / 60;
   const effortLevel = input.effortLevel ?? existing?.effortLevel ?? 1;
-  const { rawValue, executedValue, effortCap, pranaCost } = projectNativeLeafReward(input.baseValue, input.durationSeconds, effortLevel);
+  const { rawValue, executedValue, effortCap, pranaCost } = projectNativeLeafReward(input.baseValue, input.durationSeconds, effortLevel, input.declaredPlannedExecution && input.durationSeconds > 0);
   const pranaAfter = Math.max(0, Math.min(100, pranaBefore - pranaCost));
   const action: Task = {
     id: existing?.id ?? crypto.randomUUID(), title: input.title, type: 'TASK', lifecycleType: 'ACTION', semanticType: null,
@@ -58,9 +60,10 @@ export function buildNativeCompletion(input: NativeActionCompletion, pranaBefore
   const log: ExecutionLog = {
     id: crypto.randomUUID(), subjectId: action.id, subjectType: 'ACTION', timestamp,
     sourceModule: 'modulo_treino', sourceRefId: input.sessionId, actualTimeMinutes: minutes, actualEffortLevel: effortLevel,
-    completedItemIds: [], executedValue, fullCompletion: true, bonusApplied: 0,
+    completedItemIds: [], executedValue, fullCompletion: input.fullCompletion ?? true, bonusApplied: 0,
+    durationSource: input.declaredPlannedExecution ? 'DECLARED_PLANNED' : 'MEASURED',
     baseValue: input.baseValue, rawValue, effortCap, pranaDeltaApplied: pranaAfter - pranaBefore,
-    ruleVersion: 'core-native-leaf-v2',
+    ruleVersion: 'core-native-leaf-v3',
   };
   return { action, log, pranaAfter };
 }

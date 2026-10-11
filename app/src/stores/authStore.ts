@@ -165,9 +165,10 @@ const startCloudAutoSync = (
 ) => {
   stopCloudAutoSync();
   currentFingerprint = getCloudSyncFingerprint();
+  let writingCloud = false;
 
   const flushPendingChanges = async () => {
-    if (isHydratingCloudSnapshot || isRefreshingFromCloud) return;
+    if (isHydratingCloudSnapshot || isRefreshingFromCloud || writingCloud) return;
 
     const nextFingerprint = getCloudSyncFingerprint();
     if (nextFingerprint === currentFingerprint) return;
@@ -177,18 +178,27 @@ const startCloudAutoSync = (
       cloudSyncTimer = null;
     }
 
-    currentFingerprint = nextFingerprint;
-    await persistAppStoreToCloud(userId);
+    writingCloud = true;
+    try {
+      let pendingFingerprint = nextFingerprint;
+      do {
+        await persistAppStoreToCloud(userId);
+        currentFingerprint = pendingFingerprint;
+        pendingFingerprint = getCloudSyncFingerprint();
+      } while (pendingFingerprint !== currentFingerprint);
+    } finally {
+      writingCloud = false;
+    }
   };
 
   const refreshFromCloudIfIdle = async () => {
     if (isHydratingCloudSnapshot || isRefreshingFromCloud) return;
-    if (cloudSyncTimer) return;
+    if (cloudSyncTimer || writingCloud || getCloudSyncFingerprint() !== currentFingerprint) return;
 
     try {
       isRefreshingFromCloud = true;
       isHydratingCloudSnapshot = true;
-      await hydrateAppStoreFromCloud(userId);
+      await hydrateAppStoreFromCloud(userId, currentFingerprint);
       currentFingerprint = getCloudSyncFingerprint();
     } catch (error) {
       if (error instanceof Error) {
@@ -199,6 +209,9 @@ const startCloudAutoSync = (
     } finally {
       isHydratingCloudSnapshot = false;
       isRefreshingFromCloud = false;
+      if (getCloudSyncFingerprint() !== currentFingerprint) {
+        void flushPendingChanges().catch((error) => console.error('Falha ao salvar alterações locais:', error));
+      }
     }
   };
 
@@ -208,15 +221,14 @@ const startCloudAutoSync = (
     const nextFingerprint = getCloudSyncFingerprint();
     if (nextFingerprint === currentFingerprint) return;
 
-    currentFingerprint = nextFingerprint;
-
     if (cloudSyncTimer) {
       clearTimeout(cloudSyncTimer);
     }
 
     cloudSyncTimer = setTimeout(async () => {
+      cloudSyncTimer = null;
       try {
-        await persistAppStoreToCloud(userId);
+        await flushPendingChanges();
       } catch (error) {
         const errorText = error instanceof Error ? error.message : '';
         // Cloud sync error - could be logged but no user-facing message
@@ -233,7 +245,7 @@ const startCloudAutoSync = (
 
   onVisibilityChangeHandler = () => {
     if (document.visibilityState === 'hidden') {
-      void flushPendingChanges();
+      void flushPendingChanges().catch((error) => console.error('Falha ao salvar alterações locais:', error));
       return;
     }
 

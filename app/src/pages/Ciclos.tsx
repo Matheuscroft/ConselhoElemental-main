@@ -163,6 +163,7 @@ export const Ciclos: React.FC = () => {
   const [quickCreateCycleDaysOfWeek, setQuickCreateCycleDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [showQuickCreateSequence, setShowQuickCreateSequence] = useState(false);
   const [quickCreateSequenceName, setQuickCreateSequenceName] = useState('');
+  const [quickSequenceRestriction, setQuickSequenceRestriction] = useState<'ANY' | 'WORKOUT'>('ANY');
   const [quickCreateSequenceDaysOfWeek, setQuickCreateSequenceDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [draggedMixedCard, setDraggedMixedCard] = useState<{ type: 'habit' | 'sequence'; id: string } | null>(null);
   const [dragOverMixedCard, setDragOverMixedCard] = useState<{ type: 'habit' | 'sequence'; id: string } | null>(null);
@@ -266,12 +267,14 @@ export const Ciclos: React.FC = () => {
 
     createCycleSequence({
       name: quickCreateSequenceName.trim(),
+      memberRestriction: quickSequenceRestriction,
       startDate: creationDate,
       recurrenceType: 'DAILY',
       recurrenceConfig: { daysOfWeek: quickCreateSequenceDaysOfWeek },
     });
 
     setQuickCreateSequenceName('');
+    setQuickSequenceRestriction('ANY');
     setQuickCreateSequenceDaysOfWeek([0, 1, 2, 3, 4, 5, 6]);
     setShowQuickCreateSequence(false);
   };
@@ -984,7 +987,7 @@ export const Ciclos: React.FC = () => {
       .sort((a, b) => a.position - b.position);
   };
 
-  const sequenceSummaries = cycleSequences.map((sequence, index) => {
+  const sequenceSummaries = cycleSequences.filter((sequence) => sequence.status !== 'PLANNING').map((sequence, index) => {
     const members = getMembersForSequence(sequence.id);
     const totalMembers = members.length;
     const basePosition = totalMembers > 0
@@ -1820,6 +1823,12 @@ export const Ciclos: React.FC = () => {
               />
               <Button size="sm" className="h-8" onClick={handleQuickCreateSequence}>Criar</Button>
             </div>
+            <label className="block text-xs text-white/60">Tipo de sequência
+              <select aria-label="Tipo de sequência" className="mt-1 h-9 w-full rounded-lg border border-white/10 bg-mystic-purple px-2" value={quickSequenceRestriction} onChange={(event) => setQuickSequenceRestriction(event.target.value as 'ANY' | 'WORKOUT')}>
+                <option value="ANY">Geral — qualquer ciclo</option>
+                <option value="WORKOUT">Treinos — apenas treinos</option>
+              </select>
+            </label>
             <div>
               <p className="text-[11px] text-white/55 mb-1">Dias da semana</p>
               <div className="flex flex-wrap gap-1.5">
@@ -1887,7 +1896,7 @@ export const Ciclos: React.FC = () => {
                       size="sm"
                       variant="outline"
                       className="h-7 px-2 text-[10px] shrink-0"
-                      onClick={() => setSelectedSequenceId(item.sequence.id)}
+                      onClick={() => item.currentHabit?.sourceModule === 'modulo_treino' ? navigate('/fitness') : setSelectedSequenceId(item.sequence.id)}
                     >
                       Detalhes
                     </Button>
@@ -2012,7 +2021,7 @@ export const Ciclos: React.FC = () => {
                     );
                   }
 
-                  if (sequenceHabit.sourceModule === 'modulo_treino') return <div key={`sequence-${item.sequence.id}`} className="space-y-2"><p className="text-sm text-white/60">{item.sequence.name}</p><FitnessHabitWidget habit={sequenceHabit} date={selectedDate} /></div>;
+                  const isFitnessSequence = sequenceHabit.sourceModule === 'modulo_treino';
                   const completed = isHabitCompleted(sequenceHabit);
                   const completion = getCompletionForDate(sequenceHabit);
                   const childHabits = sequenceHabit.childHabits || [];
@@ -2030,7 +2039,7 @@ export const Ciclos: React.FC = () => {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      draggable
+                      draggable={!isFitnessSequence}
                       onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
                       onDragOver={(event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
                       onDrop={() => handleMixedCardDrop('sequence', item.sequence.id)}
@@ -2054,6 +2063,11 @@ export const Ciclos: React.FC = () => {
                         </div>
                       )}
 
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="min-w-0"><p className="break-words font-medium">{item.sequence.name}</p><p className="mt-1 text-xs text-white/50">Passo {item.currentPositionLabel}</p></div>
+                        {isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
+                      </div>
+                      {isFitnessSequence ? <FitnessHabitWidget habit={sequenceHabit} date={selectedDate} embedded showAdministrativeActions={false} /> : (
                       <div className="flex items-start gap-3">
                         {!completed ? (
                           <button
@@ -2274,6 +2288,8 @@ export const Ciclos: React.FC = () => {
                           )}
                         </div>
                       </div>
+                      )}
+                      {isFitnessSequence && <ol aria-label="Fila de treinos" className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/10 pt-2">{sequenceMemberships.filter((membership) => membership.sequenceId === item.sequence.id).sort((a, b) => a.position - b.position).map((membership, index) => { const member = findHabitById(habits, membership.habitId); return <li key={membership.id} aria-current={membership.habitId === sequenceHabit.id ? 'step' : undefined} className={`flex min-w-0 items-center gap-2 text-xs ${membership.habitId === sequenceHabit.id ? 'font-medium text-emerald-300' : 'text-white/50'}`}>{index > 0 && <span aria-hidden="true" className="text-white/30">→</span>}<span className="break-words">{member?.title || member?.name || 'Treino indisponível'}</span></li>; })}</ol>}
                     </motion.div>
                   );
                 }
@@ -2458,7 +2474,8 @@ export const Ciclos: React.FC = () => {
                                   ) : (
                                     cycleSequences.length > 0 && (
                                       <>
-                                        {cycleSequences.map((sequence) => (
+                                        {cycleSequences.filter((sequence) => sequence.status !== 'PLANNING' &&
+                                          (sequence.memberRestriction !== 'WORKOUT' || habit.sourceModule === 'modulo_treino')).map((sequence) => (
                                           <DropdownMenuItem
                                             key={`${habit.id}-${sequence.id}`}
                                             onClick={() => addHabitToSequence(sequence.id, habit.id)}
@@ -3128,7 +3145,7 @@ export const Ciclos: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-mystic-purple border-white/10">
                       <SelectItem value="none">Selecione...</SelectItem>
-                      {availableStandaloneHabits.map((habit) => (
+                      {availableStandaloneHabits.filter((habit) => selectedSequenceSummary.sequence.memberRestriction !== 'WORKOUT' || habit.sourceModule === 'modulo_treino').map((habit) => (
                         <SelectItem key={habit.id} value={habit.id}>{habit.name}</SelectItem>
                       ))}
                     </SelectContent>

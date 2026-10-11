@@ -259,3 +259,55 @@ F06 implementada: constante compartilhada0.10, nova conversão em preview/conclu
 F12 — ativação semanal Fitness implementada: modal de dias, Adapter via addHabit e indicador por template. Core mantém fonte/valores na Action e projeção Habit. Sem publicação, commit ou migração; reservas encerradas. Revisão funcional de Ciclos pendente.
 
 F13 — rich widget Fitness integrado em hábitos/rotacões da tela Ciclos. Preview Core e despacho HABIT único, sem subtarefas/duplicação de recompensa. Revisão funcional pendente; sem commit/push.
+
+F14 — sequências Fitness em execução: reserva sequencial de formulário/biblioteca, modal compartilhado, Adapter, stores/types e documentação. Criação local >=2 treinos; ativação Core atômica com membros próprios e origem da sequência. Sem publicação.
+
+F14 implementado: criação/ordenação local >=2, modal compartilhado, Adapter e operação atômica Core. ESLint sete arquivos passou; validação visual/funcional pendente. Reservas liberadas; sem publicação/commit/push.
+
+F17 — card original de rotação com membro Fitness embedded e dispatcher fullscreen vinculado ao hábito; fila sem XP futuro e administração no módulo. Reservas sequenciais encerradas, validação visual pendente.
+
+F18 — reserva sequencial: supabaseCloudSync/authStore e documentação. Investigar perda de membros comuns/Fitness; preservar alterações F14–F17 e dados existentes.
+
+F18 implementado — supabaseCloudSync/authStore: preservação de membros internos e gravações sem limpeza antecipada; refresh protegido. ESLint passou. Reservas encerradas. Pendentes: validar persistência real e conferir backup para membros previamente perdidos; sem migração remota/commit/push.
+
+F19 — compatibilidade position e exclusão não destrutiva de sequência implementadas. Reservas service/appStore/migration encerradas; aplicação remota e validação funcional pendentes.
+
+F20 — sequência compartilhada implementada, reservas types/stores/adapter/library/Ciclos/docs encerradas. Planejamento cloud sem ocorrências, ativação por UUID, reativação idempotente e importação legado. Validar funcionalmente em navegador; templates/sessões ainda sem sync cloud.
+
+F21 — FitnessHabitWidget ajustado visualmente, exercícios recolhíveis e séries concluídas compactas/editáveis. Reserva encerrada; validação visual pendente.
+
+F22 — reserva stores/types/Adapter/Core completion/widget/history/docs para registro CHECKIN versus LIVE, conclusão integral/parcial/automática. Implementado; validação estática final em andamento, funcional pendente.
+
+F22 concluído localmente — TypeScript completo e ESLint aprovados; reservas encerradas, validação funcional pendente.
+
+F23 — badges acumulados treino/exercício e helper compartilhado implementados. Reservas liberadas, TypeScript/ESLint aprovados; validação visual pendente.
+
+F24 — FitnessHabitWidget badge único planejado/progresso/real e estados meta/parcial. Reserva encerrada; TypeScript/ESLint aprovados, visual pendente.
+
+F25 — desfazer sessão/ciclo preservando séries implementado; reserva stores/widget/types/Adapter/docs, validação estática final e visual pendente.
+
+F25 — TypeScript/ESLint aprovados; reservas liberadas, funcional pendente.
+
+F26 — recolhimento após última série implementado em FitnessHabitWidget; reserva encerrada, sem testes executados.
+
+F27 — feedback XP flutuante e centralização do card implementados; reserva widget encerrada, TypeScript/ESLint aprovados.
+
+F28 — overlay global e balão menor implementados; reserva encerrada, visual pendente.
+
+F29 — recolhimento de exercício completo implementado; reserva encerrada, visual pendente.
+
+F30 — checkbox agregador de exercício implementado; reserva encerrada, TypeScript/ESLint aprovados, visual pendente.
+
+F31 — encerramento parcial do exercício implementado; reserva encerrada, ESLint aprovado, funcional pendente.
+
+F32 — visual parcial por exercício implementado; reserva encerrada, ESLint aprovado.
+
+F33 — checkbox não expande exercício ao desmarcar; reserva encerrada.
+
+F34 — feedback parcial imediato por exercício implementado; reserva encerrada.
+
+F35 — badge/séries empilhados no exercício, reserva encerrada.
+
+F36 — separação visual CHECKIN/LIVE reforçada, reserva widget encerrada; lint final em andamento.
+
+F37 — fila de treinos compacta com setas implementada; reserva Ciclos encerrada.

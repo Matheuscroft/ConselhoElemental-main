@@ -178,6 +178,7 @@ export interface WorkoutTemplate {
 }
 
 /** Sequência ordenada de blueprints, sem HabitRotation até ativação explícita. */
+/** Compatibility view of the shared Core sequence; not a separate persisted blueprint. */
 export interface WorkoutSequence {
   id: UUIDv4;
   name: string;
@@ -251,6 +252,10 @@ export interface LegacyWorkoutSession {
 
 /** Sessão nativa real; templateId ausente representa uma sessão ad-hoc. */
 export interface NativeWorkoutSession {
+  /** Receipt snapshot permits exact undo even after Core cloud hydration. */
+  coreReceipt?: import('@/types').ExecutionLog;
+  executionMode?: 'LIVE' | 'CHECKIN';
+  durationSource?: 'MEASURED' | 'DECLARED_PLANNED';
   /** Snapshot do esforço global escolhido no planejamento. */
   effortLevel?: number;
   id: UUIDv4;
@@ -258,6 +263,8 @@ export interface NativeWorkoutSession {
   sequenceId?: UUIDv4;
   /** Vínculo Core ativo (Action/Habit/ocorrência), quando aplicável. */
   coreEntityId?: UUIDv4;
+  /** Hábito a concluir com esta sessão nativa, inclusive na execução fullscreen. */
+  coreHabitId?: UUIDv4;
   nameSnapshot: string;
   status: WorkoutSessionStatus;
   startedAt: ISODateString;
@@ -269,6 +276,8 @@ export interface NativeWorkoutSession {
   baseValue?: number;
   /** Correlação do único ExecutionLog emitido para esta sessão. */
   coreExecutionLogId?: UUIDv4;
+  /** XP real retornado pelo Core na conclusão; nunca uma projeção recalculada. */
+  earnedXp?: number;
 }
 
 /** Mantém compatibilidade até a migração de Store/UI para o modelo canônico. */

@@ -4,6 +4,9 @@ import { AREAS } from '@/constants';
 
 type AnyRecord = Record<string, unknown>;
 let isSchemaReady: boolean | null = null;
+let cycleSequenceActiveColumnAvailable = true;
+let membershipUsesLocalColumns = true;
+let membershipPositionColumnAvailable = true;
 const CLOUD_EMERGENCY_BACKUP_PREFIX = 'ce:cloud-emergency-backup:';
 
 const saveEmergencyCloudBackup = (userId: string, snapshot: CloudSnapshot) => {
@@ -211,8 +214,11 @@ const sanitizeSequenceSnapshot = (
       .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
   );
 
+  const flattenHabits = (items: AnyRecord[]): AnyRecord[] => items.flatMap((habit) => [
+    habit, ...flattenHabits(Array.isArray(habit.childHabits) ? habit.childHabits as AnyRecord[] : []),
+  ]);
   const habitIds = new Set(
-    habits
+    flattenHabits(habits)
       .map((habit) => habit.id)
       .filter((id): id is string => typeof id === 'string' && id.trim().length > 0)
   );
@@ -356,7 +362,7 @@ const fetchPayloadRows = async (table: string, userId: string): Promise<AnyRecor
   const dataColumn = getDataColumnForTable(table);
   const selectColumns =
     table === 'sequence_memberships'
-      ? `local_id, sequence_id, habit_id, ${dataColumn}`
+      ? '*'
       : `local_id, ${dataColumn}`;
   const { data, error } = await supabase
     .from(table)
@@ -381,8 +387,10 @@ const fetchPayloadRows = async (table: string, userId: string): Promise<AnyRecor
 
     if (table === 'sequence_memberships') {
       const sequenceLocalId =
-        typeof record.sequence_id === 'string' ? record.sequence_id : undefined;
-      const habitLocalId = typeof record.habit_id === 'string' ? record.habit_id : undefined;
+        typeof record.sequence_local_id === 'string' ? record.sequence_local_id :
+          typeof record.sequence_id === 'string' ? record.sequence_id : undefined;
+      const habitLocalId = typeof record.habit_local_id === 'string' ? record.habit_local_id :
+        typeof record.habit_id === 'string' ? record.habit_id : undefined;
 
       if (sequenceLocalId) {
         normalized.sequenceId = sequenceLocalId;
@@ -491,17 +499,45 @@ const fetchCloudSnapshot = async (userId: string): Promise<CloudSnapshot> => {
   return dedupedSnapshot;
 };
 
-const deleteUserRows = async (table: string, userId: string) => {
-  if (!supabase) return;
-  const { error } = await supabase.from(table).delete().eq('user_id', userId);
-  if (error) throw new Error(`Falha ao limpar ${table}: ${error.message}`);
-};
-
 const insertInChunks = async (table: string, rows: AnyRecord[]) => {
   if (!supabase || rows.length === 0) return;
 
   for (const batch of chunk(rows)) {
-    const { error } = await supabase.from(table).insert(batch);
+    const withoutActiveColumn = (entries: AnyRecord[]) => entries.map((entry) => {
+      const copy = { ...entry }; delete copy.is_active; return copy;
+    });
+    const membershipColumns = (entries: AnyRecord[]) => entries.map((entry) => {
+      const copy = { ...entry, sequence_id: entry.sequence_local_id, habit_id: entry.habit_local_id };
+      delete (copy as AnyRecord).sequence_local_id; delete (copy as AnyRecord).habit_local_id;
+      return copy;
+    });
+    let compatibleBatch = table === 'cycle_sequences' && !cycleSequenceActiveColumnAvailable ? withoutActiveColumn(batch) : batch;
+    if (table === 'sequence_memberships' && !membershipUsesLocalColumns) compatibleBatch = membershipColumns(batch);
+    const withoutPosition = (entries: AnyRecord[]) => entries.map((entry) => {
+      const copy = { ...entry }; delete copy.position; return copy;
+    });
+    if (table === 'sequence_memberships' && !membershipPositionColumnAvailable) compatibleBatch = withoutPosition(compatibleBatch);
+    let { error } = await supabase.from(table).upsert(compatibleBatch, { onConflict: 'id' });
+    // Each absent projection is optional; the canonical references/order remain in payload.
+    // Retry both schema differences even when PostgREST reports position first.
+    for (let attempt = 0; table === 'sequence_memberships' && error?.code === 'PGRST204' && attempt < 2; attempt++) {
+      if (membershipPositionColumnAvailable && error.message.includes("'position'")) {
+        membershipPositionColumnAvailable = false;
+        compatibleBatch = withoutPosition(compatibleBatch);
+      } else if (membershipUsesLocalColumns &&
+        (error.message.includes("'sequence_local_id'") || error.message.includes("'habit_local_id'"))) {
+        membershipUsesLocalColumns = false;
+        compatibleBatch = membershipColumns(compatibleBatch);
+      } else break;
+      ({ error } = await supabase.from(table).upsert(compatibleBatch, { onConflict: 'id' }));
+    }
+    // Bancos anteriores à coluna projetada ainda persistem isActive no payload.
+    // Só este erro de coluna conhecida admite retry; autenticação e demais falhas propagam.
+    if (table === 'cycle_sequences' && cycleSequenceActiveColumnAvailable && error &&
+      error.code === 'PGRST204' && error.message.includes("'is_active'") && error.message.includes("'cycle_sequences'")) {
+      cycleSequenceActiveColumnAvailable = false;
+      ({ error } = await supabase.from(table).upsert(withoutActiveColumn(batch), { onConflict: 'id' }));
+    }
     if (error) throw new Error(`Falha ao inserir ${table}: ${error.message}`);
   }
 };
@@ -672,8 +708,8 @@ const buildRowsFromStore = (userId: string) => {
   const sequenceMembershipRows = merged.sequenceMemberships.map((membership) => ({
     user_id: userId,
     local_id: String(membership.id),
-    sequence_id: membership.sequenceId ? String(membership.sequenceId) : null,
-    habit_id: membership.habitId ? String(membership.habitId) : null,
+    sequence_local_id: membership.sequenceId ? String(membership.sequenceId) : null,
+    habit_local_id: membership.habitId ? String(membership.habitId) : null,
     position: Number(membership.position ?? 0),
     payload: membership,
   }));
@@ -719,11 +755,14 @@ export const getCloudSyncFingerprint = (): string => {
   });
 };
 
-export const hydrateAppStoreFromCloud = async (userId: string): Promise<{ hadCloudData: boolean; hasProfile: boolean }> => {
+export const hydrateAppStoreFromCloud = async (userId: string, expectedFingerprint?: string): Promise<{ hadCloudData: boolean; hasProfile: boolean }> => {
   if (!isSupabaseAuthEnabled || !supabase) return { hadCloudData: false, hasProfile: false };
   if (!(await ensureSchemaReady())) return { hadCloudData: false, hasProfile: false };
 
   const snapshot = await fetchCloudSnapshot(userId);
+  if (expectedFingerprint !== undefined && getCloudSyncFingerprint() !== expectedFingerprint) {
+    throw new Error('Atualização da nuvem adiada: existem alterações locais feitas durante a leitura.');
+  }
   const hadCloudData = hasAnyCloudData(snapshot);
   const hasProfile = Boolean(snapshot.profile);
 
@@ -797,23 +836,34 @@ export const persistAppStoreToCloud = async (userId: string): Promise<void> => {
     throw new Error(`Falha ao sincronizar perfil: ${profileError.message}`);
   }
 
-  await deleteUserRows('custom_areas', userId);
-  await deleteUserRows('custom_subareas', userId);
-  await deleteUserRows('tasks', userId);
-  await deleteUserRows('habits', userId);
-  await deleteUserRows('projects', userId);
-  await deleteUserRows('quests', userId);
-  await deleteUserRows('drafts', userId);
-  await deleteUserRows('cycle_sequences', userId);
-  await deleteUserRows('sequence_memberships', userId);
-
-  await insertInChunks('custom_areas', rows.customAreaRows);
-  await insertInChunks('custom_subareas', rows.customSubareaRows);
-  await insertInChunks('tasks', rows.taskRows);
-  await insertInChunks('habits', rows.habitRows);
-  await insertInChunks('projects', rows.projectRows);
-  await insertInChunks('quests', rows.questRows);
-  await insertInChunks('drafts', rows.draftRows);
-  await insertInChunks('cycle_sequences', rows.cycleSequenceRows);
-  await insertInChunks('sequence_memberships', rows.sequenceMembershipRows);
+  // Preserve existing rows until every table has accepted the new snapshot.
+  // Reuse DB identities; local_id is not backed by a unique index in older schemas.
+  const tables: [string, AnyRecord[]][] = [
+    ['custom_areas', rows.customAreaRows], ['custom_subareas', rows.customSubareaRows],
+    ['tasks', rows.taskRows], ['habits', rows.habitRows], ['projects', rows.projectRows],
+    ['quests', rows.questRows], ['drafts', rows.draftRows],
+    ['cycle_sequences', rows.cycleSequenceRows], ['sequence_memberships', rows.sequenceMembershipRows],
+  ];
+  const obsoleteRows: [string, string[]][] = [];
+  for (const [table, entries] of tables) {
+    const { data, error } = await supabase.from(table).select('id, local_id').eq('user_id', userId);
+    if (error) throw new Error(`Falha ao preparar ${table}: ${error.message}`);
+    const existing = data ?? [];
+    const retainedIds = new Set<string>();
+    const prepared = entries.map((entry) => {
+      const previous = existing.find((row) => row.local_id === entry.local_id && !retainedIds.has(row.id));
+      const id = previous?.id ?? crypto.randomUUID();
+      retainedIds.add(id);
+      return { ...entry, id };
+    });
+    await insertInChunks(table, prepared);
+    obsoleteRows.push([table, existing.filter((row) => !retainedIds.has(row.id)).map((row) => row.id)]);
+  }
+  // Explicit local deletions are propagated only after successful writes.
+  for (const [table, ids] of obsoleteRows.reverse()) {
+    for (const batch of chunk(ids.map((id) => ({ id })))) {
+      const { error } = await supabase.from(table).delete().eq('user_id', userId).in('id', batch.map((row) => String(row.id)));
+      if (error) throw new Error(`Falha ao remover registros antigos de ${table}: ${error.message}`);
+    }
+  }
 };

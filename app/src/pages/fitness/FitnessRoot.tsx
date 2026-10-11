@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarDays, Dumbbell, Flower2, PersonStanding, Footprints, Plus, Play, Repeat2, Layers3, Pencil, ChevronDown, Trash2 } from 'lucide-react';
+import { CalendarDays, Dumbbell, Flower2, PersonStanding, Footprints, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
@@ -10,6 +10,7 @@ import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, Fit
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeTemplateDialog } from '@/components/workout/NativeTemplateDialog';
+import { WorkoutSequenceLibrary } from '@/components/workout/WorkoutSequenceLibrary';
 import { MakeCycleModal } from '@/components/workout/MakeCycleModal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ExerciseDetailSheet } from '@/components/workout/ExerciseDetailSheet';
@@ -37,7 +38,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
     }
   }, [params, setParams, template.id]);
   const [cycleOpen, setCycleOpen] = useState(false);
-  const hasCycle = useAppStore((state) => state.habits.some((habit) => habit.sourceModule === 'modulo_treino' && habit.sourceRefId === template.id));
+  const hasCycle = useAppStore((state) => state.habits.some((habit) => habit.sourceModule === 'modulo_treino' && habit.sourceRefId === template.id && !habit.controlledBySequenceId));
   const deleteTemplate = useWorkoutStore((state) => state.deleteTemplate);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
@@ -92,15 +93,6 @@ export function FitnessRoot() {
   return <FitnessLibraryRoot key={accountId ?? 'local'} />;
 }
 
-function NativeSessionHistory() {
-  const history = useWorkoutStore((state) => state.nativeHistory);
-  const logs = useAppStore((state) => state.executionLogs);
-  return <section className="mb-8 space-y-4" aria-label="Histórico de sessões nativas"><SectionHeader title="Sessões registradas" />{history.length === 0 ? <p className="text-sm text-fitness-muted">Seus treinos concluídos aparecerão aqui.</p> : history.slice().sort((a, b) => Date.parse(b.completedAt ?? b.startedAt) - Date.parse(a.completedAt ?? a.startedAt)).map((session) => {
-    const log = logs.find((item) => item.id === session.coreExecutionLogId || (item.sourceModule === 'modulo_treino' && item.sourceRefId === session.id));
-    return <FitnessCard key={session.id} className="space-y-3 p-5"><h3 className="font-semibold">{session.nameSnapshot}</h3><p className="text-sm text-fitness-muted">{new Date(session.completedAt ?? session.startedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })} · {Math.floor(session.durationSeconds / 60)}min {session.durationSeconds % 60}s</p>{log ? <p className="flex flex-wrap items-center gap-2 text-2xl font-semibold text-emerald-300">Ganho: +{formatEarthXp(log.executedValue)} XP <span aria-label="Terra">🌿</span></p> : <p className="text-sm text-fitness-muted">Recompensa sem registro ativo no Core.</p>}<p className="text-xs text-fitness-muted">({session.totalER.toLocaleString('pt-BR', { maximumFractionDigits: 2 })} ER)</p></FitnessCard>;
-  })}</section>;
-}
-
 function FitnessLibraryRoot() {
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
@@ -109,7 +101,6 @@ function FitnessLibraryRoot() {
   const modality = modalities.find((item) => item.id === requested);
   const catalog = useWorkoutStore((state) => state.nativeCatalog);
   const templates = useWorkoutStore((state) => state.templates);
-  const sequences = useWorkoutStore((state) => state.sequences);
   const active = useWorkoutStore((state) => state.activeNativeSession);
   const ensureCatalog = useWorkoutStore((state) => state.ensureNativeCatalog);
   const [createOpen, setCreateOpen] = useState(false);
@@ -118,8 +109,6 @@ function FitnessLibraryRoot() {
   useEffect(() => { ensureCatalog(); }, [ensureCatalog]);
   const selectedCatalog = useMemo(() => catalog.filter((exercise) => exercise.modality === modality?.id), [catalog, modality]);
   const selectedTemplates = templates.filter((template) => template.modality === modality?.id);
-  const selectedIds = new Set(selectedTemplates.map((template) => template.id));
-  const selectedSequences = sequences.filter((sequence) => sequence.templateIds.some((id) => selectedIds.has(id)));
   const updateParam = (key: string, value?: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); setParams(next); };
   const selectTab = (value: string) => {
     const next = new URLSearchParams(params);
@@ -146,12 +135,12 @@ function FitnessLibraryRoot() {
           {!modality ? <><SectionHeader title="Explorar modalidades" subtitle="Encontre seus exercícios e organize seus treinos." /><FitnessCategoryGrid options={modalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} /></> : <>
 
             <section className="space-y-4"><SectionHeader title="Meus Treinos" />{selectedTemplates.length ? selectedTemplates.map((template) => <TemplateCard key={template.id} template={template} catalog={selectedCatalog} />) : <FitnessEmptyState message="Monte seu primeiro treino com os exercícios desta modalidade." action={<FitnessButton size="md" onClick={() => { setPresetId(undefined); setCreateOpen(true); }}>Criar treino</FitnessButton>} />}</section>
-            <section className="space-y-4"><SectionHeader title="Sequências" />{selectedSequences.length ? selectedSequences.map((sequence) => <FitnessCard key={sequence.id} className="p-5"><div className="flex items-center gap-3"><Layers3 className="text-fitness-primary" size={21} /><h3 className="font-semibold">{sequence.name}</h3></div><ol className="mt-3 space-y-2">{sequence.templateIds.map((id, index) => <li key={`${id}-${index}`} className="flex gap-3 text-sm text-fitness-muted"><span className="text-fitness-primary">{index + 1}</span>{templates.find((template) => template.id === id)?.name ?? 'Treino indisponível'}</li>)}</ol></FitnessCard>) : <p className="rounded-fit bg-fitness-surface/50 p-5 text-sm text-fitness-muted">Suas sequências de treinos aparecerão aqui, na ordem planejada.</p>}</section>
             <section className="space-y-4"><SectionHeader title="Catálogo" subtitle={`${selectedCatalog.length} exercícios de ${modality.label}`} />{selectedCatalog.length ? selectedCatalog.map((exercise) => <FitnessListRow key={exercise.id} icon={CATEGORY_ICONS[exercise.modality]} title={exercise.name} subtitle={exercise.focus} onClick={() => setDetail(exercise)} ariaLabel={`Ver ${exercise.name}`} />) : <FitnessEmptyState message="Esta modalidade ainda não tem exercícios no catálogo." />}</section>
           </>}
+          <WorkoutSequenceLibrary modality={modality?.id} />
         </TabsContent>
         <FitnessEmbeddedContext.Provider value>
-          <TabsContent value="history" className="mt-6"><NativeSessionHistory /><WorkoutHistory /></TabsContent>
+          <TabsContent value="history" className="mt-6"><WorkoutHistory /></TabsContent>
           <TabsContent value="body" className="mt-6"><Corpo /></TabsContent>
         </FitnessEmbeddedContext.Provider>
       </Tabs>

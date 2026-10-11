@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
-import { completeFitnessSession, scheduleWorkoutAsHabit } from '@/lib/workout/fitness-core-adapter';
+import { completeFitnessSession, scheduleWorkoutAsHabit, scheduleSequenceAsRotation } from '@/lib/workout/fitness-core-adapter';
 import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
+import { projectWorkoutProgress } from '@/lib/workout/native-progress-reward';
+import { saveSharedWorkoutSequence, importLegacyWorkoutSequences } from '@/lib/workout/shared-sequences';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
 import { SPORT_ACTIVITIES } from '@/constants/sport-activities';
 import { YOGA_POSES } from '@/constants/yoga-poses';
@@ -628,6 +630,7 @@ const getAverage = (values: number[]): number => roundFinite(averageNumbers(valu
 
 // Estado canônico separado do WorkoutAccountData legado e isolado por conta.
 interface NativeWorkoutData {
+  nativeCheckins: Record<string, NativeWorkoutSession>;
   nativeCatalog: Exercise[];
   templates: WorkoutTemplate[];
   sequences: WorkoutSequence[];
@@ -649,6 +652,7 @@ interface NativeSetUpdate {
 }
 
 const emptyNativeData = (): NativeWorkoutData => ({
+  nativeCheckins: {},
   nativeCatalog: [], templates: [], sequences: [], activeNativeSession: null, nativeHistory: [],
 });
 const validEffort = (value: number | undefined) => value === undefined || (Number.isInteger(value) && value >= 1 && value <= 5);
@@ -687,12 +691,17 @@ const executedClone = (exercise: PlannedExercise, order: number): ExecutedExerci
       completed: false, skipped: false, completedAt: undefined,
     };
     return series.measureMode === 'reps'
-      ? { ...series, ...common, reps: 0 }
-      : { ...series, ...common, durationSeconds: 0 };
+      ? { ...series, ...common, reps: series.targetReps ?? series.reps ?? 0 }
+      : { ...series, ...common, durationSeconds: series.targetDurationSeconds ?? series.durationSeconds ?? 0 };
   }),
 });
 
 interface WorkoutState {
+  nativeCheckins: Record<string, NativeWorkoutSession>;
+  updateHabitCheckin: (habitId: string, exerciseIndex: number, setIndex: number, updates: NativeSetUpdate) => NativeWorkoutSession;
+  finishHabitCheckin: (habitId: string) => NativeWorkoutSession;
+  undoHabitWorkout: (habitId: string, date: Date) => void;
+  beginHabitWorkout: (habitId: string) => NativeWorkoutSession;
   currentAccountId: string | null;
   accountDataById: Record<string, WorkoutAccountData>;
   nativeDataById: Record<string, NativeWorkoutData>;
@@ -702,6 +711,7 @@ interface WorkoutState {
   nativeHistory: NativeWorkoutSession[];
   nativeCatalog: Exercise[];
   ensureNativeCatalog: () => void;
+  migrateLegacySequences: () => void;
   saveTemplate: (input: SaveTemplateInput) => WorkoutTemplate | undefined;
   deleteTemplate: (templateId: string) => void;
   saveSequence: (input: SaveSequenceInput) => WorkoutSequence | undefined;
@@ -710,7 +720,9 @@ interface WorkoutState {
   addExerciseToSession: (exercise: PlannedExercise | Exercise) => ExecutedExercise | undefined;
   logSet: (exerciseInstanceId: string, setId: string, updates: NativeSetUpdate) => NativeWorkoutSession | undefined;
   finishSession: (habitId?: string) => NativeWorkoutSession | undefined;
+  attachSessionToHabit: (habitId: string) => NativeWorkoutSession;
   scheduleWorkoutAsHabit: (templateId: string, daysOfWeek: number[]) => string;
+  scheduleSequenceAsRotation: (sequenceId: string, daysOfWeek: number[]) => string;
   discardNativeSession: (sessionId: string) => boolean;
   previewTemplateReward: (templateId: string) => ReturnType<typeof projectTemplateReward> | undefined;
   syncAccountContext: (accountId: string | null) => void;
@@ -791,7 +803,7 @@ const updateAccountData = (
 const updateNativeData = (
   state: WorkoutState,
   updater: (data: NativeWorkoutData) => NativeWorkoutData,
-): Pick<WorkoutState, 'nativeDataById' | 'nativeCatalog' | 'templates' | 'sequences' | 'activeNativeSession' | 'nativeHistory'> => {
+): Pick<WorkoutState, 'nativeDataById' | 'nativeCatalog' | 'templates' | 'sequences' | 'activeNativeSession' | 'nativeHistory' | 'nativeCheckins'> => {
   const accountId = getCurrentAccountId(state.currentAccountId);
   const data = updater({ ...emptyNativeData(), ...state.nativeDataById[accountId] });
   return { nativeDataById: { ...state.nativeDataById, [accountId]: data }, ...data };
@@ -1045,8 +1057,15 @@ export const useWorkoutStore = create<WorkoutState>()(
         })));
       },
 
+      migrateLegacySequences: () => {
+        if ((get().currentAccountId ?? 'local') !== (useAppStore.getState().currentAccountId ?? 'local') || !get().sequences.length) return;
+        importLegacyWorkoutSequences(get().sequences);
+        set((state) => updateNativeData(state, (data) => ({ ...data, sequences: [] })));
+      },
+
       saveSequence: (input) => {
         if (!input.name.trim() || (input.id !== undefined && !isUuidV4(input.id)) ||
+          input.templateIds.length < 2 || new Set(input.templateIds).size !== input.templateIds.length ||
           !input.templateIds.every((id) => isUuidV4(id) && get().templates.some((template) => template.id === id))) return undefined;
         const now = new Date().toISOString();
         const existing = input.id ? get().sequences.find((sequence) => sequence.id === input.id) : undefined;
@@ -1054,16 +1073,105 @@ export const useWorkoutStore = create<WorkoutState>()(
           ...structuredClone(input), id: input.id ?? nativeId(), name: input.name.trim(),
           createdAt: existing?.createdAt ?? now, updatedAt: now,
         };
-        set((state) => updateNativeData(state, (data) => ({
-          ...data, sequences: [...data.sequences.filter((item) => item.id !== sequence.id), sequence],
-        })));
-        return structuredClone(sequence);
+        if ((get().currentAccountId ?? 'local') !== (useAppStore.getState().currentAccountId ?? 'local')) throw new Error('A conta mudou. Reabra a biblioteca.');
+        return saveSharedWorkoutSequence(sequence);
       },
 
       deleteSequence: (sequenceId) => {
+        useAppStore.getState().deleteCycleSequence(sequenceId);
         set((state) => updateNativeData(state, (data) => ({
           ...data, sequences: data.sequences.filter((sequence) => sequence.id !== sequenceId),
         })));
+      },
+
+      undoHabitWorkout: (habitId, date) => {
+        const core = useAppStore.getState();
+        if (get().currentAccountId !== resolveAccountId(core.currentAccountId)) throw new Error('A conta mudou.');
+        if (date.toDateString() !== new Date().toDateString()) throw new Error('Desmarque o treino no dia de execução.');
+        const session = get().nativeHistory.find((item) => item.coreHabitId === habitId && new Date(item.completedAt ?? item.startedAt).toDateString() === date.toDateString());
+        if (!session?.coreExecutionLogId) throw new Error('O registro nativo deste treino não está disponível.');
+        if (get().activeNativeSession?.coreHabitId === habitId) throw new Error('Existe uma sessão ativa para este treino.');
+        core.undoNativeHabitCompletion(habitId, session.coreExecutionLogId, session.coreReceipt);
+        const draft: NativeWorkoutSession = { ...structuredClone(session), id: nativeId(), status: 'in_progress',
+          executionMode: 'CHECKIN', durationSource: 'DECLARED_PLANNED', completedAt: undefined,
+          coreExecutionLogId: undefined, coreEntityId: undefined, coreReceipt: undefined, earnedXp: undefined, durationSeconds: 0, totalER: 0, baseValue: undefined };
+        set((state) => updateNativeData(state, (data) => ({ ...data,
+          nativeHistory: data.nativeHistory.filter((item) => item.id !== session.id),
+          nativeCheckins: { ...data.nativeCheckins, [habitId]: draft } })));
+      },
+
+      updateHabitCheckin: (habitId, exerciseIndex, setIndex, updates) => {
+        const core = useAppStore.getState();
+        const habit = core.habits.find((item) => item.id === habitId && item.sourceModule === 'modulo_treino');
+        const template = get().templates.find((item) => item.id === habit?.sourceRefId);
+        if (!habit || !template || get().currentAccountId !== resolveAccountId(core.currentAccountId)) throw new Error('Treino ou conta indisponível.');
+        if (habit.completions.some((item) => new Date(item.completionDate).toDateString() === new Date().toDateString())) throw new Error('Este treino já foi registrado hoje.');
+        const previous = get().nativeCheckins[habitId];
+        const draft: NativeWorkoutSession = previous && new Date(previous.startedAt).toDateString() === new Date().toDateString()
+          ? structuredClone(previous) : { id: nativeId(), templateId: template.id, coreHabitId: habitId as UUIDv4,
+            nameSnapshot: template.name, effortLevel: habit.effortLevel ?? 3, executionMode: 'CHECKIN', durationSource: 'DECLARED_PLANNED',
+            status: 'in_progress', startedAt: new Date().toISOString(), durationSeconds: 0, totalER: 0,
+            exerciseResults: [...template.exercises].sort((a,b) => a.order-b.order).map(executedClone) };
+        const series = draft.exerciseResults[exerciseIndex]?.sets[setIndex];
+        if (!series) throw new Error('Série não encontrada.');
+        const next = { ...series, ...updates } as WorkoutSet;
+        if (!validNativeSet(next)) throw new Error('Confira os valores da série.');
+        if (next.skipped) next.completed = false;
+        const amount = next.measureMode === 'reps' ? next.reps : next.durationSeconds;
+        if (next.completed && !(typeof amount === 'number' && amount > 0)) throw new Error('Informe reps ou tempo para concluir a série.');
+        next.completedAt = next.completed ? new Date().toISOString() : undefined;
+        draft.exerciseResults[exerciseIndex].sets[setIndex] = next;
+        set((state) => updateNativeData(state, (data) => ({ ...data, nativeCheckins: { ...data.nativeCheckins, [habitId]: draft } })));
+        return structuredClone(draft);
+      },
+
+      finishHabitCheckin: (habitId) => {
+        const core = useAppStore.getState();
+        const habit = core.habits.find((item) => item.id === habitId && item.sourceModule === 'modulo_treino');
+        const template = get().templates.find((item) => item.id === habit?.sourceRefId);
+        if (!habit || !template || get().currentAccountId !== resolveAccountId(core.currentAccountId)) throw new Error('Treino ou conta indisponível.');
+        if (get().activeNativeSession?.coreHabitId === habitId) throw new Error('Conclua a sessão com cronômetro pelo fluxo de execução.');
+        if (!template.exercises.some((exercise) => exercise.sets.length)) throw new Error('Este treino não tem séries.');
+        let draft = get().nativeCheckins[habitId];
+        if (!draft || new Date(draft.startedAt).toDateString() !== new Date().toDateString()) draft = get().updateHabitCheckin(habitId, 0, 0, {});
+        const exercises = structuredClone(draft.exerciseResults);
+        const hasMarked = exercises.some((exercise) => exercise.sets.some((series) => series.completed || series.skipped));
+        for (const exercise of exercises) for (const series of exercise.sets) {
+          if (!hasMarked) { series.completed = true; series.skipped = false; }
+          else if (!series.completed) series.skipped = true;
+          series.completedAt = series.completed ? series.completedAt ?? new Date().toISOString() : undefined;
+        }
+        const metrics = projectWorkoutProgress(exercises, habit.plannedTimeMinutes ?? template.estimatedDurationMinutes, draft.effortLevel ?? 3);
+        const completedAt = new Date().toISOString();
+        const registered = completeFitnessSession({ ...draft, exerciseResults: exercises, status: 'completed', completedAt,
+          executionMode: 'CHECKIN', durationSource: 'DECLARED_PLANNED', durationSeconds: metrics.durationSeconds,
+          totalER: metrics.totalER, baseValue: metrics.baseValue }, habitId);
+        set((state) => updateNativeData(state, (data) => {
+          const checkins = { ...data.nativeCheckins }; delete checkins[habitId];
+          return { ...data, nativeCheckins: checkins, nativeHistory: [...data.nativeHistory, registered] };
+        }));
+        return structuredClone(registered);
+      },
+
+      beginHabitWorkout: (habitId) => {
+        const core = useAppStore.getState();
+        const habit = core.habits.find((item) => item.id === habitId);
+        if (!habit || habit.sourceModule !== 'modulo_treino') throw new Error('Ciclo de treino não encontrado.');
+        if (get().activeNativeSession) {
+          if (get().activeNativeSession?.coreHabitId !== habitId) throw new Error('Existe outro treino em andamento.');
+          return structuredClone(get().activeNativeSession!);
+        }
+        const started = get().startSession(habit.sourceRefId, habit.effortLevel ?? 3);
+        if (!started) throw new Error('Não foi possível iniciar o treino.');
+        const previous = get().nativeCheckins[habitId];
+        const session = { ...started, executionMode: 'LIVE' as const, durationSource: 'MEASURED' as const,
+          coreHabitId: habitId as UUIDv4, ...(previous && new Date(previous.startedAt).toDateString() === new Date().toDateString()
+            ? { exerciseResults: structuredClone(previous.exerciseResults) } : {}) };
+        set((state) => updateNativeData(state, (data) => {
+          const checkins = { ...data.nativeCheckins }; delete checkins[habitId];
+          return { ...data, nativeCheckins: checkins, activeNativeSession: session };
+        }));
+        return structuredClone(session);
       },
 
       startSession: (templateId, effortLevel) => {
@@ -1077,6 +1185,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           effortLevel: effortLevel ?? template?.effortLevel ?? 1,
           id: nativeId(), templateId: template?.id, nameSnapshot: template?.name ?? 'Treino avulso',
           status: 'in_progress', startedAt: new Date().toISOString(), durationSeconds: 0,
+          executionMode: 'LIVE', durationSource: 'MEASURED',
           exerciseResults: template ? [...template.exercises].sort((a, b) => a.order - b.order).map(executedClone) : [],
           totalER: 0,
         };
@@ -1141,6 +1250,8 @@ export const useWorkoutStore = create<WorkoutState>()(
         return template ? projectTemplateReward(template) : undefined;
       },
 
+      scheduleSequenceAsRotation: (sequenceId, daysOfWeek) => scheduleSequenceAsRotation(sequenceId, daysOfWeek).id,
+
       scheduleWorkoutAsHabit: (templateId, daysOfWeek) => {
         if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a biblioteca.');
         const template = get().templates.find((item) => item.id === templateId);
@@ -1157,9 +1268,21 @@ export const useWorkoutStore = create<WorkoutState>()(
         return true;
       },
 
-      finishSession: (habitId) => {
+      attachSessionToHabit: (habitId) => {
+        const session = get().activeNativeSession;
+        const core = useAppStore.getState();
+        const habit = core.habits.find((item) => item.id === habitId && item.sourceModule === 'modulo_treino' && item.sourceRefId === session?.templateId);
+        if (!session || !habit || get().currentAccountId !== resolveAccountId(core.currentAccountId) || (session.coreHabitId && session.coreHabitId !== habitId)) throw new Error('A sessão pertence a outro ciclo ou conta.');
+        const linked = { ...session, coreHabitId: habit.id as UUIDv4 };
+        set((state) => updateNativeData(state, (data) => ({ ...data, activeNativeSession: linked })));
+        return structuredClone(linked);
+      },
+
+      finishSession: (requestedHabitId) => {
         const session = get().activeNativeSession;
         if (!session || session.status !== 'in_progress') return undefined;
+        if (requestedHabitId && session.coreHabitId && requestedHabitId !== session.coreHabitId) throw new Error('A sessão está vinculada a outro ciclo.');
+        const habitId = session.coreHabitId ?? requestedHabitId;
         if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a sessão antes de concluir.');
         if (habitId && !useAppStore.getState().habits.some((habit) => habit.id === habitId && habit.sourceModule === 'modulo_treino' && habit.sourceRefId === session.templateId)) throw new Error('O ciclo não corresponde a esta sessão.');
         const completedAt = new Date().toISOString();
@@ -1988,4 +2111,3 @@ useAppStore.subscribe((state, previousState) => {
 });
 
 useWorkoutStore.getState().syncAccountContext(useAppStore.getState().currentAccountId);
-
