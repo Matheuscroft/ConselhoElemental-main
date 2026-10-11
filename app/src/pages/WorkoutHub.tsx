@@ -24,6 +24,7 @@ import {
   Shapes,
   Sparkles,
   Plus,
+  Pencil,
   History,
   Activity,
   LayoutGrid,
@@ -53,7 +54,7 @@ import {
   formatVolume,
   formatWorkoutDateTime,
 } from '@/lib/workout';
-import type { WorkoutExercise, WorkoutExerciseCategory } from '@/types/workout';
+import type { Workout, WorkoutExercise, WorkoutExerciseCategory } from '@/types/workout';
 import type { LucideIcon } from 'lucide-react';
 import { formatDurationCompact } from '@/lib/fitness/fitness-format';
 
@@ -101,6 +102,7 @@ export const WorkoutHub: React.FC = () => {
   const historySessions = useMemo(() => getWorkoutHistory(), [getWorkoutHistory]);
 
   const [createOpen, setCreateOpen] = useState(false);
+  const [editingWorkout, setEditingWorkout] = useState<Workout | undefined>(undefined);
   const [createPresetExerciseId, setCreatePresetExerciseId] = useState<string | undefined>(undefined);
   const [createDefaultCategory, setCreateDefaultCategory] = useState<WorkoutExerciseCategory | undefined>(undefined);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -153,6 +155,7 @@ export const WorkoutHub: React.FC = () => {
 
   const handleAddToWorkout = (exercise: WorkoutExercise) => {
     handleExerciseDetailOpenChange(false);
+    setEditingWorkout(undefined);
     setCreatePresetExerciseId(exercise.id);
     setCreateDefaultCategory(exercise.category);
     setCreateOpen(true);
@@ -160,6 +163,7 @@ export const WorkoutHub: React.FC = () => {
 
   const handleCreateOpenChange = (open: boolean) => {
     setCreateOpen(open);
+    if (!open) setEditingWorkout(undefined);
     if (open || !createRequestedByNav) return;
     setSearchParams(
       (prev) => {
@@ -172,6 +176,7 @@ export const WorkoutHub: React.FC = () => {
   };
 
   const openCreateDialog = () => {
+    setEditingWorkout(undefined);
     setCreatePresetExerciseId(undefined);
     setCreateDefaultCategory(selectedCategory ?? undefined);
     setCreateOpen(true);
@@ -271,7 +276,7 @@ export const WorkoutHub: React.FC = () => {
             <p className="text-fitness-muted text-center text-[15px]">
               Nenhum treino planejado ainda.
             </p>
-            <FitnessButton variant="primary" size="sm" onClick={() => setCreateOpen(true)}>
+            <FitnessButton variant="primary" size="sm" onClick={openCreateDialog}>
               Criar meu primeiro treino
             </FitnessButton>
           </div>
@@ -281,13 +286,25 @@ export const WorkoutHub: React.FC = () => {
               const Icon = CATEGORY_ICON_MAP[workout.category] ?? Dumbbell;
               const isTall = TALL_CATEGORIES.includes(workout.category);
               return (
-                <WorkoutCategoryCard
-                  key={workout.id}
-                  icon={Icon}
-                  label={workout.name}
-                  onClick={() => handleSelectCategory(workout.id)}
-                  tall={isTall}
-                />
+                <div key={workout.id} className="relative">
+                  <WorkoutCategoryCard
+                    icon={Icon}
+                    label={workout.name}
+                    onClick={() => handleSelectCategory(workout.id)}
+                    tall={isTall}
+                  />
+                  {workout.status === 'planned' && <button
+                    type="button"
+                    aria-label={`Editar treino ${workout.name}`}
+                    title={`Editar ${workout.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setEditingWorkout(workout);
+                      setCreateOpen(true);
+                    }}
+                    className="absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-fitness-canvas/90 text-fitness-text shadow-md hover:text-fitness-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
+                  ><Pencil className="h-4 w-4" aria-hidden="true" /></button>}
+                </div>
               );
             })}
           </div>
@@ -389,6 +406,7 @@ export const WorkoutHub: React.FC = () => {
         onOpenChange={handleCreateOpenChange}
         defaultCategory={createDefaultCategory}
         presetExerciseId={createPresetExerciseId}
+        workoutToEdit={editingWorkout}
       />
 
       <ExerciseDetailSheet

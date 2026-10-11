@@ -4,6 +4,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { buildNativeCompletion, type NativeActionCompletion } from '@/lib/core/native-action-completion';
 import type {
   Area,
   Task,
@@ -22,6 +23,7 @@ import type {
   OnboardingState,
   HabitCompletion,
   Action,
+  ExecutionLog,
   TaskItem,
   SemanticType,
   Mission,
@@ -35,6 +37,7 @@ import { LevelingCalculatorService } from '@/services/leveling-calculator';
 // ============================================
 
 const initialUser: User = {
+  pranaLevel: 100,
   id: crypto.randomUUID(),
   name: 'Mago Iniciante',
   avatar: AVATARS[0],
@@ -292,7 +295,7 @@ const calculateStreakFromCompletionDays = (completionDays: Set<number>) => {
 };
 
 const calculateUserProgressFromState = (state: Pick<AppState, 'tasks' | 'habits' | 'projects' | 'quests'>) => {
-  const taskScore = state.tasks.reduce((sum, task) => { if (!task.isCompleted) return sum; return sum + Math.round((task.baseValue || 1) * EFFORT_MULTIPLIERS[task.effortLevel || 1]); }, 0);
+  const taskScore = state.tasks.reduce((sum, task) => { if (!task.isCompleted) return sum; if (task.sourceModule === 'modulo_treino') return sum + (task.completedScore ?? 0); return sum + Math.round((task.baseValue || 1) * EFFORT_MULTIPLIERS[task.effortLevel || 1]); }, 0);
   const { totalHabitScore, completionDays } = collectHabitScoresAndCompletionDays(state.habits);
   state.tasks.forEach((task) => { if (task.isCompleted) { const day = toDayStamp(task.updatedAt); if (day != null) completionDays.add(day); } });
   const projectScore = state.projects.reduce((sum, project) => sum + (project.isCompleted ? project.xpBonus || 0 : 0), 0);
@@ -442,6 +445,8 @@ const normalizeSequenceState = (
 // ============================================
 
 interface AppState {
+  executionLogs: ExecutionLog[];
+  completeNativeAction: (input: NativeActionCompletion) => ExecutionLog;
   // ========== CONTAS ==========
   accounts: AccountProfile[];
   currentAccountId: string | null;
@@ -626,6 +631,7 @@ interface AccountProfile {
 }
 
 interface AccountScopedData {
+  executionLogs: ExecutionLog[];
   user: User;
   onboarding: OnboardingState;
   customAreas: Area[];
@@ -643,6 +649,7 @@ interface AccountScopedData {
 }
 
 const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => ({
+  executionLogs: [],
   user: {
     ...initialUser,
     id: crypto.randomUUID(),
@@ -669,6 +676,7 @@ const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => (
 });
 
 const captureAccountData = (state: AppState, profile: AccountProfile): AccountScopedData => ({
+  executionLogs: state.executionLogs,
   user: {
     ...state.user,
     id: crypto.randomUUID(),
@@ -768,12 +776,31 @@ export const useAppStore = create<AppState>()(
               [accountId]: nextAccountData,
             },
             ...nextAccountData,
+            executionLogs: nextAccountData.executionLogs ?? [],
             timer: initialTimer,
           };
         });
       },
 
       // ========== USUÁRIO ==========
+      executionLogs: [],
+      completeNativeAction: (input) => {
+        const state = get();
+        const previous = state.executionLogs.find((log) => log.sourceModule === 'modulo_treino' && log.sourceRefId === input.sessionId);
+        if (previous) return previous;
+        const existing = input.coreEntityId ? state.actions.find((action) => action.id === input.coreEntityId) : undefined;
+        if (input.coreEntityId && !existing) throw new Error('A ocorrência vinculada não foi encontrada.');
+        const { action, log, pranaAfter } = buildNativeCompletion(input, state.user.pranaLevel ?? 100, existing);
+        // Um despacho para Action, projeção, ledger e energia. Repetições retornam o mesmo log.
+        set((current) => ({
+          actions: [...current.actions.filter((item) => item.id !== action.id), action],
+          tasks: [action, ...current.tasks.filter((item) => item.id !== action.id)],
+          executionLogs: [...current.executionLogs, log],
+          user: { ...current.user, totalScore: current.user.totalScore + log.executedValue,
+            xp_earth: current.user.xp_earth + log.executedValue, pranaLevel: pranaAfter },
+        }));
+        return log;
+      },
       user: initialUser,
       
       updateUser: (updates) => {
@@ -1053,6 +1080,13 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task || task.isCompleted) return 0;
+        if (task.sourceModule === 'modulo_treino' && task.sourceRefId) {
+          return get().completeNativeAction({ sessionId: task.sourceRefId, coreEntityId: task.id,
+            effortLevel: task.effortLevel ?? 1,
+            title: task.title, baseValue: task.baseValue ?? 0,
+            durationSeconds: (actualTimeMinutes ?? task.actualTimeMinutes ?? 0) * 60,
+            completedAt: new Date().toISOString() }).executedValue;
+        }
         
         // Helper: Contar descendentes completos recursivamente
         const countCompletedDescendants = (items: TaskItem[]): { completed: number; total: number } => {
@@ -1229,6 +1263,19 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const task = state.tasks.find((t) => t.id === taskId);
         if (!task || !task.isCompleted) return;
+        if (task.sourceModule === 'modulo_treino') {
+          const log = state.executionLogs.find((item) => item.subjectId === taskId);
+          if (!log) return;
+          set((current) => ({
+            actions: current.actions.map((item) => item.id === taskId ? { ...item, isCompleted: false, completedAt: null, completedScore: null } : item),
+            tasks: current.tasks.map((item) => item.id === taskId ? { ...item, isCompleted: false, completedAt: null, completedScore: null } : item),
+            executionLogs: current.executionLogs.filter((item) => item.id !== log.id),
+            user: { ...current.user, totalScore: Math.max(0, current.user.totalScore - log.executedValue),
+              xp_earth: Math.max(0, current.user.xp_earth - log.executedValue),
+              pranaLevel: Math.max(0, Math.min(100, (current.user.pranaLevel ?? 100) - (log.pranaDeltaApplied ?? 0))) },
+          }));
+          return;
+        }
 
         // Helper: Contar descendentes completos
         const countCompletedDescendants = (items: TaskItem[]): { completed: number; total: number } => {
@@ -4305,7 +4352,7 @@ export const useAppStore = create<AppState>()(
           if (task.isCompleted) {
             const baseValue = task.baseValue || 1;
             const effortMultiplier = EFFORT_MULTIPLIERS[task.effortLevel || 1];
-            const points = Math.round(baseValue * effortMultiplier);
+            const points = task.sourceModule === 'modulo_treino' ? task.completedScore ?? 0 : Math.round(baseValue * effortMultiplier);
             scores[task.elementId].score += points;
             scores[task.elementId].taskCount++;
           }
@@ -4362,7 +4409,7 @@ export const useAppStore = create<AppState>()(
             }
             const baseValue = task.baseValue || 1;
             const effortMultiplier = EFFORT_MULTIPLIERS[task.effortLevel || 1];
-            areaMap[task.areaPrimaryId].score += Math.round(baseValue * effortMultiplier);
+            areaMap[task.areaPrimaryId].score += task.sourceModule === 'modulo_treino' ? task.completedScore ?? 0 : Math.round(baseValue * effortMultiplier);
             areaMap[task.areaPrimaryId].taskCount++;
           }
         });
@@ -4506,6 +4553,7 @@ export const useAppStore = create<AppState>()(
         state.recomputeUserProgress();
       },
       partialize: (state) => ({
+        executionLogs: state.executionLogs,
         accounts: state.accounts,
         currentAccountId: state.currentAccountId,
         accountDataById: state.accountDataById,

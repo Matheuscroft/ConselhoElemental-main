@@ -4,6 +4,7 @@
 
 | ID | Escopo e dono | Dependências | Estado | Aceite verificável |
 |---|---|---|---|---|
+| UI04 | Editor de template de treino e projeção ER — Astro Boy, papel Interface | UI-SHELL; contratos canônicos ER/Adapter | em revisão | Preservar páginas/rotas atuais; ligar edição à tela realmente montada em `/treinos` (`pages/fitness/WorkoutSelect.tsx`) e ao Hub alternativo; permitir criar e editar template com exercícios ordenados e configuração individual por série (repetições ou isometria, carga, fator canônico e descanso); exibir projeção ER/base_value sem confundir com recompensa final; salvar via store existente. Corrigir alias TDZ de FitnessModuleFab identificado no HEAD. Sem nova fórmula, migração, Adapter ou exclusão de tela. Evidência: revisão estática e `git diff --check`; testes/build/lint e revisão visual ainda não executados. Campo opcional `loadFactor` exige regressão de compatibilidade antes do aceite final. |
 | UI-SHELL | AppLayout/BottomNav e navegação Fitness — Astro Boy, papel Interface | Nenhuma | em revisão | Confirmar quatro itens globais na ordem Santuário/Ciclos/Pilares/Mais, acesso ao hub Mais, top tabs Treinos/Histórico/Saúde e FAB acima da navegação global; revisar 360/390/768px e desktop. Build/lint aprovados; navegador ainda pendente. Sem alteração de stores/contratos. |
 
 Coordenação: Astro Boy. Protocolo em [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md). Donos abaixo são papéis; o coordenador registra agente concreto e reserva ao despachar. Todos os lotes futuros permanecem sem reserva e não iniciados. C00 foi aceita por Astro Boy e integrada documentalmente ao checkout original em 08/10/2026.
@@ -226,3 +227,31 @@ Autorização expressa de Fábio: revisar todas as pastas, otimizar sem perder c
 ## Aceite técnico P01 — 0.1.21
 
 Implementação portável e auditoria aceitas no escopo: oito skills com auxiliares existentes, regras raiz e CLI local sem IP, documentação atual e publicação preparada. Testes de perfil/apresentação/idempotência/troca/entrada inválida passaram; cópia limpa do índice com instalação (scripts desativados), build e testes passou, documentos/regras/oito skills conferidos. Build local/lint/diff-check e Deno 7/7 com mocks passaram. Sem revalidação visual ou integração remota nova. Pacotes dev não usados removidos; 25 achados npm audit registrados sem fix forçado. Helper e exemplos webapp-testing presentes, --help/sintaxe verificados; Puppeteer preservado. Reservas liberadas após fechar documentação; commit 4f180f9 publicado por push sem force em main, confirmado pelo GitHub. P01 aceita e encerrada; o fechamento documental acompanha a publicação. Próximo lote backend sugerido: contrato/teste de reversão/idempotência, sem migrar dados.
+
+## F02 — Fitness paralelo, fase 1
+
+Escopo: nova raiz Fitness, navegação via Pilares/Terra, entrada do legado no Mais, três abas, planejamento canônico na primeira aba. Executor sequencial. Arquivos: App/rotas, Pilares/AreaCard, Mapa/menu global, FitnessRoot/NativeTemplateDialog, contexto embutido do kit e WorkoutHistory (somente destino condicionado), workoutStore (identidade do catálogo). Alterações anteriores preservadas. Biblioteca local sem Core; execução inicia sessão nativa e não implementa registro nesta fase. Histórico/Corpo existentes reutilizados. Pendências: revisão visual do usuário; UI de execução nativa e Adapter em lotes posteriores. Build global bloqueado pelos contratos preexistentes; detalhes em CONTINUIDADE. Sem publicação.
+
+## F03 — execução nativa e Adapter (em execução)
+
+Reserva sequencial: ActiveFitnessSession, FitnessRoot, App/rotas, FitnessPageShell, workoutStore, appStore, tipos de Action/ExecutionLog/User, novo serviço Core de conclusão e Adapter, histórico nativo, continuidade. UI legada preservada. Divergência encontrada: completeTask legado não escreve ExecutionLog/Prana e usa fórmula de tempo anterior; novo despacho Core explícito deve seguir capítulo canônico sem reescrever recompensas históricas. source_ref_id da Action executada aponta para sessão; templateId permanece no histórico nativo. Não publicar.
+
+F03 implementada no código: execução fullscreen, histórico nativo, Adapter e despacho único Core com ledger/XP/Prana e isolamento por conta. ESLint passou; compilação global permanece bloqueada por contratos anteriores. Sem testes funcionais/navegador neste lote. Limites/decisões em CONTINUIDADE; reservas liberadas, sem publicação.
+
+## F04 — feedback de XP Terra (em execução)
+
+Reserva sequencial: Core native-action-completion (extração da fórmula existente), native-reward-preview, workoutStore (previewTemplateReward), FitnessRoot (templates/histórico), ActiveFitnessSession (extrato de conclusão), NativeTemplateDialog (duração opcional) e continuidade. Fonte: Motor de Pontuação e Energia. Nenhuma fórmula/recompensa antiga será alterada. Preview deve usar mesmo esforço/presença/tempo/teto do despacho Core. Extratos usam ExecutionLog real; ER passa a informação secundária. Sem publicação.
+
+F04 implementada: preview Core compartilhado, duração estimada opcional, badge verde nos templates, XP do ledger no histórico e modal de recompensa antes de Ver Histórico. ESLint seis arquivos passou. Sem testes funcionais/navegador/publicação; continuidade atualizada e reservas liberadas.
+
+## F05 — esforço global e duração automática (em execução)
+
+Reserva sequencial: tipos workout, utilitário de duração, cálculo Core/preview nativo, Adapter, stores workout/app (passagem do esforço), NativeTemplateDialog, badge FitnessRoot, docs canônicas/continuidade. Verificado: ER/multiplicadores/tetos já normativos; autoestimador 4s/rep+descansos+transições e default3 de formulário ausentes. Preview atual já aplicava tempo/presença, mas esforço1 fixo e ausência de estimativa limitavam recompensa. Natureza heurística de planejamento deve ser explícita; tempo real e presença por faixa permanecem canônicos na conclusão. Histórico não recalculado e páginas legadas preservadas. Sem publicação.
+
+F05 implementada: duração automática com override, seletor global padrão3 nos novos planos, snapshot do esforço e Core aplicando tabelas de XP/cap/Prana, preview1.5 de presença explicitado. Motor seções5.4/5.5 e contrato Native Modules atualizados. ESLint onze arquivos/diff-check passaram; tsc global bloqueado por erros preexistentes, sem novos erros filtrados dos arquivos nativos. Sem testes funcionais/navegador/publicação; reservas liberadas.
+
+## F06 — balance patch ER 0.10 (em execução)
+
+Autorização atual do usuário: conversão 1ER=0.10, atualização dos exemplos e seletor fator0.8/1/1.5 no planejamento/execução. Reserva sequencial: Motor/Native Modules, workout-balance, workout-equivalents, native-reward-preview, workoutStore, NativeTemplateDialog, ActiveFitnessSession, docs continuidade/fila. Prévio .03 é histórico; nenhuma recompensa já emitida será recalculada. Core aplica mesmos multiplicadores/caps sobre novo baseValue. Sem publicação.
+
+F06 implementada: constante compartilhada0.10, nova conversão em preview/conclusão/helpers ER, seletor fator de carga em planejamento e execução, exemplos/docs canônicos atualizados. ESLint sete arquivos/diff-check passaram; sem testes funcionais/navegador/publicação. Histórico preservado, reservas liberadas.

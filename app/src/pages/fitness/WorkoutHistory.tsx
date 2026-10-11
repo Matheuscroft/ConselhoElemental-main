@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useContext, useMemo, useState } from 'react';
+import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { FitnessButton, FitnessTopTabs, FitnessEmptyState, FitnessPageShell, SectionHeader, WorkoutHistoryCard } from '@/components/fitness-kit';
@@ -9,6 +10,7 @@ import { CATEGORY_ICONS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 
 export const WorkoutHistory: React.FC = () => {
+  const embedded = useContext(FitnessEmbeddedContext);
   const navigate = useNavigate();
   const [showAll, setShowAll] = useState(false);
 
@@ -51,7 +53,7 @@ export const WorkoutHistory: React.FC = () => {
                 Ver todo o histórico
               </FitnessButton>
             ) : !hasAnyCompleted ? (
-              <FitnessButton variant="primary" onClick={() => navigate('/treinos')}>
+              <FitnessButton variant="primary" onClick={() => navigate(embedded ? '/fitness' : '/treinos')}>
                 Iniciar treino
               </FitnessButton>
             ) : undefined}

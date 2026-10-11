@@ -1,6 +1,10 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
+import { completeFitnessSession } from '@/lib/workout/fitness-core-adapter';
+import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
+import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
+import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
 import { SPORT_ACTIVITIES } from '@/constants/sport-activities';
 import { YOGA_POSES } from '@/constants/yoga-poses';
@@ -8,6 +12,14 @@ import type {
   BodyMeasurement,
   BodyMeasurementInput,
   ExerciseMeasureMode,
+  Exercise,
+  ExecutedExercise,
+  NativeWorkoutSession,
+  PlannedExercise,
+  UUIDv4,
+  WorkoutTemplate,
+  WorkoutSequence,
+  WorkoutSet,
   ISODateString,
   MuscleContribution,
   MuscleGroupId,
@@ -430,6 +442,7 @@ const cloneSetPlan = (setPlan: WorkoutSetPlan, setNumber: number, keepId = false
     setPlan.targetDurationSeconds == null ? undefined : sanitizeNonNegative(setPlan.targetDurationSeconds),
   targetLoadKg: sanitizeNonNegative(setPlan.targetLoadKg),
   restSeconds: sanitizeNonNegative(setPlan.restSeconds),
+  loadFactor: setPlan.loadFactor === 0.8 || setPlan.loadFactor === 1.5 ? setPlan.loadFactor : 1,
 });
 
 const cloneExercisePlan = (
@@ -542,6 +555,7 @@ const makePerformedSet = (
     effectiveLoadKg: calculation.effectiveLoadKg,
     volume: 0,
     formulaVersion: FORMULA_VERSION,
+    loadFactor: setPlan.loadFactor === 0.8 || setPlan.loadFactor === 1.5 ? setPlan.loadFactor : 1,
   };
 };
 
@@ -612,9 +626,92 @@ const getCompletedSessions = (data: WorkoutAccountData): WorkoutSession[] =>
 
 const getAverage = (values: number[]): number => roundFinite(averageNumbers(values, 0));
 
+// Estado canônico separado do WorkoutAccountData legado e isolado por conta.
+interface NativeWorkoutData {
+  nativeCatalog: Exercise[];
+  templates: WorkoutTemplate[];
+  sequences: WorkoutSequence[];
+  activeNativeSession: NativeWorkoutSession | null;
+  nativeHistory: NativeWorkoutSession[];
+}
+
+type SaveTemplateInput = Omit<WorkoutTemplate, 'id' | 'createdAt' | 'updatedAt'> &
+  Partial<Pick<WorkoutTemplate, 'id' | 'createdAt' | 'updatedAt'>>;
+type SaveSequenceInput = Omit<WorkoutSequence, 'id' | 'createdAt' | 'updatedAt'> &
+  Partial<Pick<WorkoutSequence, 'id' | 'createdAt' | 'updatedAt'>>;
+interface NativeSetUpdate {
+  reps?: number;
+  durationSeconds?: number;
+  loadKg?: number;
+  loadFactor?: 0.8 | 1 | 1.5;
+  completed?: boolean;
+  skipped?: boolean;
+}
+
+const emptyNativeData = (): NativeWorkoutData => ({
+  nativeCatalog: [], templates: [], sequences: [], activeNativeSession: null, nativeHistory: [],
+});
+const validEffort = (value: number | undefined) => value === undefined || (Number.isInteger(value) && value >= 1 && value <= 5);
+const isUuidV4 = (id: string): id is UUIDv4 =>
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id);
+const nativeId = (): UUIDv4 => {
+  // Não reutiliza createId: IDs nativos são UUID v4 sem prefixo legado.
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}` as UUIDv4;
+};
+const validNativeNumber = (value: number | undefined, integer = false): boolean =>
+  value === undefined || (Number.isFinite(value) && value >= 0 && (!integer || Number.isInteger(value)));
+const validNativeSet = (series: WorkoutSet): boolean =>
+  isUuidV4(series.id) && Number.isInteger(series.setNumber) && series.setNumber > 0 &&
+  validNativeNumber(series.loadKg) && validNativeNumber(series.targetLoadKg) &&
+  validNativeNumber(series.restSeconds, true) &&
+  (series.loadFactor === undefined || [0.8, 1, 1.5].includes(series.loadFactor)) &&
+  (series.measureMode === 'reps'
+    ? validNativeNumber(series.reps, true) && validNativeNumber(series.targetReps, true) && series.durationSeconds === undefined && series.targetDurationSeconds === undefined
+    : series.measureMode === 'duration' && validNativeNumber(series.durationSeconds, true) && validNativeNumber(series.targetDurationSeconds, true) && series.reps === undefined && series.targetReps === undefined);
+const validNativeExercise = (exercise: PlannedExercise): boolean =>
+  isUuidV4(exercise.id) && isUuidV4(exercise.exerciseId) &&
+  Number.isInteger(exercise.order) && exercise.order >= 0 &&
+  exercise.sets.every(validNativeSet) &&
+  new Set(exercise.sets.map((series) => series.id)).size === exercise.sets.length;
+const executedClone = (exercise: PlannedExercise, order: number): ExecutedExercise => ({
+  ...structuredClone(exercise), id: nativeId(), order, instanceMode: 'executed',
+  sets: exercise.sets.map((series, index): WorkoutSet => {
+    const common = {
+      id: nativeId(), setNumber: index + 1,
+      loadKg: series.targetLoadKg ?? series.loadKg ?? 0,
+      loadFactor: series.loadFactor ?? 1,
+      completed: false, skipped: false, completedAt: undefined,
+    };
+    return series.measureMode === 'reps'
+      ? { ...series, ...common, reps: 0 }
+      : { ...series, ...common, durationSeconds: 0 };
+  }),
+});
+
 interface WorkoutState {
   currentAccountId: string | null;
   accountDataById: Record<string, WorkoutAccountData>;
+  nativeDataById: Record<string, NativeWorkoutData>;
+  templates: WorkoutTemplate[];
+  sequences: WorkoutSequence[];
+  activeNativeSession: NativeWorkoutSession | null;
+  nativeHistory: NativeWorkoutSession[];
+  nativeCatalog: Exercise[];
+  ensureNativeCatalog: () => void;
+  saveTemplate: (input: SaveTemplateInput) => WorkoutTemplate | undefined;
+  deleteTemplate: (templateId: string) => void;
+  saveSequence: (input: SaveSequenceInput) => WorkoutSequence | undefined;
+  deleteSequence: (sequenceId: string) => void;
+  startSession: (templateId?: string | null) => NativeWorkoutSession | undefined;
+  addExerciseToSession: (exercise: PlannedExercise | Exercise) => ExecutedExercise | undefined;
+  logSet: (exerciseInstanceId: string, setId: string, updates: NativeSetUpdate) => NativeWorkoutSession | undefined;
+  finishSession: () => NativeWorkoutSession | undefined;
+  discardNativeSession: (sessionId: string) => boolean;
+  previewTemplateReward: (templateId: string) => ReturnType<typeof projectTemplateReward> | undefined;
   syncAccountContext: (accountId: string | null) => void;
 
   getExerciseById: (exerciseId: string) => WorkoutExercise | undefined;
@@ -688,6 +785,15 @@ const updateAccountData = (
       [accountId]: updater(currentData),
     },
   };
+};
+
+const updateNativeData = (
+  state: WorkoutState,
+  updater: (data: NativeWorkoutData) => NativeWorkoutData,
+): Pick<WorkoutState, 'nativeDataById' | 'nativeCatalog' | 'templates' | 'sequences' | 'activeNativeSession' | 'nativeHistory'> => {
+  const accountId = getCurrentAccountId(state.currentAccountId);
+  const data = updater({ ...emptyNativeData(), ...state.nativeDataById[accountId] });
+  return { nativeDataById: { ...state.nativeDataById, [accountId]: data }, ...data };
 };
 
 const buildBodyMeasurement = (input: BodyMeasurementInput): BodyMeasurement => {
@@ -891,10 +997,189 @@ export const useWorkoutStore = create<WorkoutState>()(
     (set, get) => ({
       currentAccountId: resolveAccountId(useAppStore.getState().currentAccountId),
       accountDataById: {},
+      nativeDataById: {},
+      ...emptyNativeData(),
+
+      ensureNativeCatalog: () => {
+        // Ponte de identidade para o catálogo preservado; UUIDs persistem por conta.
+        const existing = get().nativeCatalog;
+        const missing = get().getExerciseCatalog().filter((exercise) => !existing.some((item) => item.legacyId === exercise.id));
+        if (!missing.length) return;
+        const entries: Exercise[] = missing.map(({ category, ...exercise }) => ({
+          ...structuredClone(exercise), id: nativeId(), legacyId: exercise.id, modality: category,
+        }));
+        set((state) => updateNativeData(state, (data) => ({ ...data, nativeCatalog: [...data.nativeCatalog, ...entries] })));
+      },
+
+      saveTemplate: (input) => {
+        if (!input.name.trim() || !validEffort(input.effortLevel) || (input.id !== undefined && !isUuidV4(input.id)) ||
+          !input.exercises.every(validNativeExercise) ||
+          new Set(input.exercises.map((exercise) => exercise.id)).size !== input.exercises.length ||
+          !validNativeNumber(input.estimatedDurationMinutes)) return undefined;
+        const now = new Date().toISOString();
+        const existing = input.id ? get().templates.find((template) => template.id === input.id) : undefined;
+        const durationEstimateMode = input.durationEstimateMode ?? (input.estimatedDurationMinutes > 0 ? 'manual' : 'auto');
+        const template: WorkoutTemplate = {
+          ...structuredClone(input), id: input.id ?? nativeId(), name: input.name.trim(),
+          durationEstimateMode,
+          estimatedDurationMinutes: durationEstimateMode === 'auto' ? calculateEstimatedDuration(input.exercises) : input.estimatedDurationMinutes,
+          createdAt: existing?.createdAt ?? now, updatedAt: now,
+          exercises: structuredClone(input.exercises).sort((a, b) => a.order - b.order).map((exercise, order) => ({
+            ...exercise, order, instanceMode: 'planned',
+            sets: exercise.sets.map((series) => ({ ...series, completed: false, skipped: false, completedAt: undefined })),
+          })),
+        };
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, templates: [...data.templates.filter((item) => item.id !== template.id), template],
+        })));
+        return structuredClone(template);
+      },
+
+      deleteTemplate: (templateId) => {
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, templates: data.templates.filter((template) => template.id !== templateId),
+          sequences: data.sequences.map((sequence) => sequence.templateIds.includes(templateId as UUIDv4)
+            ? { ...sequence, templateIds: sequence.templateIds.filter((id) => id !== templateId), updatedAt: new Date().toISOString() }
+            : sequence),
+        })));
+      },
+
+      saveSequence: (input) => {
+        if (!input.name.trim() || (input.id !== undefined && !isUuidV4(input.id)) ||
+          !input.templateIds.every((id) => isUuidV4(id) && get().templates.some((template) => template.id === id))) return undefined;
+        const now = new Date().toISOString();
+        const existing = input.id ? get().sequences.find((sequence) => sequence.id === input.id) : undefined;
+        const sequence: WorkoutSequence = {
+          ...structuredClone(input), id: input.id ?? nativeId(), name: input.name.trim(),
+          createdAt: existing?.createdAt ?? now, updatedAt: now,
+        };
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, sequences: [...data.sequences.filter((item) => item.id !== sequence.id), sequence],
+        })));
+        return structuredClone(sequence);
+      },
+
+      deleteSequence: (sequenceId) => {
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, sequences: data.sequences.filter((sequence) => sequence.id !== sequenceId),
+        })));
+      },
+
+      startSession: (templateId) => {
+        // Não sobrescreve uma sessão em andamento; IDs desconhecidos não viram ad-hoc.
+        if (get().activeNativeSession) return undefined;
+        const requestedId = templateId?.trim();
+        const template = requestedId ? get().templates.find((item) => item.id === requestedId) : undefined;
+        if (requestedId && !template) return undefined;
+        if (!validEffort(template?.effortLevel)) return undefined;
+        const session: NativeWorkoutSession = {
+          effortLevel: template?.effortLevel ?? 1,
+          id: nativeId(), templateId: template?.id, nameSnapshot: template?.name ?? 'Treino avulso',
+          status: 'in_progress', startedAt: new Date().toISOString(), durationSeconds: 0,
+          exerciseResults: template ? [...template.exercises].sort((a, b) => a.order - b.order).map(executedClone) : [],
+          totalER: 0,
+        };
+        set((state) => updateNativeData(state, (data) => ({ ...data, activeNativeSession: session })));
+        return structuredClone(session);
+      },
+
+      addExerciseToSession: (input) => {
+        const session = get().activeNativeSession;
+        if (!session || session.status !== 'in_progress') return undefined;
+        let plan: PlannedExercise;
+        if ('sets' in input) {
+          if (!validNativeExercise(input)) return undefined;
+          plan = input;
+        } else {
+          if (!isUuidV4(input.id) || !Number.isInteger(input.defaultSets) || input.defaultSets < 1) return undefined;
+          plan = {
+            id: nativeId(), exerciseId: input.id, exerciseNameSnapshot: input.name,
+            modality: input.modality, order: session.exerciseResults.length,
+            muscleDistribution: structuredClone(input.muscleDistribution),
+            sets: Array.from({ length: input.defaultSets }, (_, index): WorkoutSet => ({
+              id: nativeId(), setNumber: index + 1, targetLoadKg: input.defaultLoadKg,
+              completed: false, loadFactor: 1,
+              ...(input.measureMode === 'reps'
+                ? { measureMode: 'reps', targetReps: input.defaultReps }
+                : { measureMode: 'duration', targetDurationSeconds: input.defaultDurationSeconds }),
+            })),
+          };
+          if (!validNativeExercise(plan)) return undefined;
+        }
+        const exercise = executedClone(plan, session.exerciseResults.length);
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, activeNativeSession: { ...session, exerciseResults: [...session.exerciseResults, exercise] },
+        })));
+        return structuredClone(exercise);
+      },
+
+      logSet: (exerciseInstanceId, setId, updates) => {
+        const session = get().activeNativeSession;
+        if (!session || session.status !== 'in_progress') return undefined;
+        const exercise = session.exerciseResults.find((item) => item.id === exerciseInstanceId);
+        const series = exercise?.sets.find((item) => item.id === setId);
+        if (!series || (series.measureMode === 'reps' && updates.durationSeconds !== undefined) ||
+          (series.measureMode === 'duration' && updates.reps !== undefined)) return undefined;
+        const nextSet = { ...series, ...updates } as WorkoutSet;
+        if (!validNativeSet(nextSet)) return undefined;
+        if (nextSet.skipped) nextSet.completed = false;
+        const amount = nextSet.measureMode === 'reps' ? nextSet.reps : nextSet.durationSeconds;
+        if (nextSet.completed && !(typeof amount === 'number' && amount > 0)) return undefined;
+        nextSet.completedAt = nextSet.completed ? series.completedAt ?? new Date().toISOString() : undefined;
+        const nextSession: NativeWorkoutSession = {
+          ...session, exerciseResults: session.exerciseResults.map((item) => item.id !== exerciseInstanceId ? item : {
+            ...item, sets: item.sets.map((itemSet) => itemSet.id === setId ? nextSet : itemSet),
+          }),
+        };
+        set((state) => updateNativeData(state, (data) => ({ ...data, activeNativeSession: nextSession })));
+        return structuredClone(nextSession);
+      },
+
+      previewTemplateReward: (templateId) => {
+        const template = get().templates.find((item) => item.id === templateId);
+        return template ? projectTemplateReward(template) : undefined;
+      },
+
+      discardNativeSession: (sessionId) => {
+        const session = get().activeNativeSession;
+        if (!session || session.id !== sessionId || session.status !== 'in_progress') return false;
+        if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) return false;
+        // Descartar não conclui a sessão, não grava histórico e não despacha ao Core.
+        set((state) => updateNativeData(state, (data) => ({ ...data, activeNativeSession: null })));
+        return true;
+      },
+
+      finishSession: () => {
+        const session = get().activeNativeSession;
+        if (!session || session.status !== 'in_progress') return undefined;
+        if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a sessão antes de concluir.');
+        const completedAt = new Date().toISOString();
+        const totalER = session.exerciseResults.reduce((total, exercise) => total + exercise.sets.reduce((sum, series) => {
+          if (!series.completed || series.skipped) return sum;
+          const er = series.measureMode === 'reps' ? series.reps ?? 0 : (series.durationSeconds ?? 0) / 2;
+          return sum + er * (series.loadFactor ?? 1);
+        }, 0), 0);
+        const finished: NativeWorkoutSession = {
+          ...structuredClone(session), status: 'completed', completedAt,
+          durationSeconds: Math.max(0, Math.floor((Date.parse(completedAt) - Date.parse(session.startedAt)) / 1000)),
+          totalER: Number(totalER.toFixed(10)), baseValue: Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10)),
+        };
+        // O Core confirma primeiro; falhas mantêm a sessão ativa para nova tentativa.
+        const registered = completeFitnessSession(finished);
+        set((state) => updateNativeData(state, (data) => ({
+          ...data, activeNativeSession: null,
+          nativeHistory: [...data.nativeHistory.filter((item) => item.id !== registered.id), registered],
+        })));
+        return structuredClone(registered);
+      },
 
       syncAccountContext: (accountId) => {
         const resolvedAccountId = resolveAccountId(accountId);
-        set((state) => updateAccountData(state, resolvedAccountId, (data) => data));
+        set((state) => ({
+          ...updateAccountData(state, resolvedAccountId, (data) => data),
+          ...emptyNativeData(),
+          ...state.nativeDataById[resolvedAccountId],
+        }));
       },
 
       getExerciseById: (exerciseId) => {
@@ -916,13 +1201,14 @@ export const useWorkoutStore = create<WorkoutState>()(
 
       createWorkout: (input) => {
         const accountId = getCurrentAccountId(get().currentAccountId);
-        if (!accountId || !input.name.trim()) return undefined;
+        if (!accountId || !input.name.trim() || !validEffort(input.effortLevel)) return undefined;
 
         const nowIso = new Date().toISOString();
         const category = input.category ?? 'mixed';
         const source = input.source ?? 'custom';
         const exercises = normalizeWorkoutExercises(input.exercises ?? []);
         const workout: Workout = {
+          effortLevel: input.effortLevel,
           id: createId('workout'),
           name: input.name.trim(),
           category,
@@ -943,7 +1229,7 @@ export const useWorkoutStore = create<WorkoutState>()(
 
       updateWorkout: (workoutId, updates) => {
         const accountId = getCurrentAccountId(get().currentAccountId);
-        if (!accountId) return undefined;
+        if (!accountId || !validEffort(updates.effortLevel)) return undefined;
         const nowIso = new Date().toISOString();
         let updatedWorkout: Workout | undefined;
 
@@ -954,6 +1240,7 @@ export const useWorkoutStore = create<WorkoutState>()(
               if (workout.id !== workoutId) return workout;
               updatedWorkout = {
                 ...workout,
+                ...(updates.effortLevel !== undefined ? { effortLevel: updates.effortLevel } : {}),
                 ...(updates.name !== undefined ? { name: updates.name.trim() } : {}),
                 ...(updates.category !== undefined ? { category: updates.category } : {}),
                 ...(updates.source !== undefined ? { source: updates.source } : {}),
@@ -1672,6 +1959,12 @@ export const useWorkoutStore = create<WorkoutState>()(
     }),
     {
       name: WORKOUT_STORAGE_KEY,
+      // As projeções da conta ativa são reconstruídas ao hidratar/trocar conta.
+      partialize: (state) => ({
+        currentAccountId: state.currentAccountId,
+        accountDataById: state.accountDataById,
+        nativeDataById: state.nativeDataById,
+      }),
       onRehydrateStorage: () => () => {
         useWorkoutStore.getState().syncAccountContext(useAppStore.getState().currentAccountId);
       },

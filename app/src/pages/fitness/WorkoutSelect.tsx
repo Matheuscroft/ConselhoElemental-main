@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RunningReferenceIcon, CoreReferenceIcon, SwimmingReferenceIcon, MartialArtsReferenceIcon, YogaReferenceIcon, CyclingReferenceIcon } from '@/components/fitness-kit/WorkoutReferenceIcons';
-import { Play } from 'lucide-react';
+import { Pencil, Play } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import {
   FitnessButton,
@@ -59,6 +59,7 @@ export const WorkoutSelect: React.FC = () => {
   const selectedCategory: WorkoutExerciseCategory | null =
     userCategory !== undefined ? userCategory : sourceParam ? SOURCE_TO_CATEGORY[sourceParam] ?? null : 'running';
   const [createRequested, setCreateRequested] = useState(false);
+  const [editingWorkout, setEditingWorkout] = useState<Workout | undefined>(undefined);
   const [createPresetExerciseId, setCreatePresetExerciseId] = useState<string | undefined>(undefined);
   const [showAllExercises, setShowAllExercises] = useState(false);
   const createOpen = createRequested || createParam;
@@ -106,6 +107,7 @@ export const WorkoutSelect: React.FC = () => {
 
   const handleCreateOpenChange = (open: boolean) => {
     setCreateRequested(open);
+    if (!open) setEditingWorkout(undefined);
     if (!open && createdWorkout.current) {
       const id = createdWorkout.current;
       createdWorkout.current = null;
@@ -137,6 +139,7 @@ export const WorkoutSelect: React.FC = () => {
 
   const handleAddToWorkout = (exercise: WorkoutExercise) => {
     handleExerciseDetailOpenChange(false);
+    setEditingWorkout(undefined);
     setCreatePresetExerciseId(exercise.id);
     setUserCategory(exercise.category);
     setCreateRequested(true);
@@ -190,14 +193,22 @@ export const WorkoutSelect: React.FC = () => {
             {visibleWorkouts.map((workout) => {
               const Icon = CATEGORY_ICONS[workout.category] ?? CATEGORY_ICONS.mixed;
               return (
-                <FitnessListRow
-                  key={workout.id}
-                  icon={Icon}
-                  title={workout.name}
-                  subtitle={`${formatMinutes(workout.estimatedDurationMinutes)} · ${workout.exercises.length} ${workout.exercises.length === 1 ? 'exercício' : 'exercícios'}`}
-                  onClick={() => navigate(`/treinos/preview/${workout.id}`)}
-                  ariaLabel={`Abrir treino ${workout.name}`}
-                />
+                <div key={workout.id} className={workout.status === 'planned' ? 'grid grid-cols-[minmax(0,1fr)_44px] items-stretch gap-2' : undefined}>
+                  <FitnessListRow
+                    icon={Icon}
+                    title={workout.name}
+                    subtitle={`${formatMinutes(workout.estimatedDurationMinutes)} · ${workout.exercises.length} ${workout.exercises.length === 1 ? 'exercício' : 'exercícios'}`}
+                    onClick={() => navigate(`/treinos/preview/${workout.id}`)}
+                    ariaLabel={`Abrir treino ${workout.name}`}
+                  />
+                  {workout.status === 'planned' && <button
+                    type="button"
+                    aria-label={`Editar treino ${workout.name}`}
+                    title={`Editar ${workout.name}`}
+                    onClick={() => { setEditingWorkout(workout); setCreateRequested(true); }}
+                    className="grid min-h-[76px] w-11 place-items-center self-stretch rounded-fit border border-white/10 bg-fitness-surface text-fitness-muted hover:text-fitness-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
+                  ><Pencil className="h-4 w-4" aria-hidden="true" /></button>}
+                </div>
               );
             })}
           </div>
@@ -282,7 +293,8 @@ export const WorkoutSelect: React.FC = () => {
         onOpenChange={handleCreateOpenChange}
         defaultCategory={selectedCategory ?? undefined}
         presetExerciseId={createPresetExerciseId}
-        onCreated={(workout) => { createdWorkout.current = workout.id; }}
+        workoutToEdit={editingWorkout}
+        onCreated={(workout) => { if (!editingWorkout) createdWorkout.current = workout.id; }}
       />
 
       <ExerciseDetailSheet

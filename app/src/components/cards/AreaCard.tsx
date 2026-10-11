@@ -26,6 +26,9 @@ export const AreaCard: React.FC<AreaCardProps> = ({
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         onClick={onClick}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
         className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 
                    hover:border-white/20 transition-colors cursor-pointer"
       >

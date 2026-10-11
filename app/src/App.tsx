@@ -1,4 +1,6 @@
 import { WorkoutSelect as WorkoutHub } from '@/pages/fitness/WorkoutSelect';
+import { FitnessRoot } from '@/pages/fitness/FitnessRoot';
+import { ActiveFitnessSession } from '@/pages/fitness/ActiveFitnessSession';
 import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
 import { WorkoutHistory } from '@/pages/fitness/WorkoutHistory';
 import { HealthWeeklySummary as WorkoutWeekly } from '@/pages/fitness/HealthWeeklySummary';
@@ -30,9 +32,7 @@ import {
   Pilares,
   Dominios,
   DominioDetalhe,
-  Yoga,
   YogaPoseDetail,
-  Calistenia,
   CalisteniaExerciseDetail,
   CassinoArcano,
   Mapa,
@@ -149,6 +149,9 @@ function App() {
             <Route path="/temporal/calendario" element={<TemporalCalendarPage />} />
             <Route path="/pilares" element={<Pilares />} />
             <Route path="/treinos" element={<WorkoutHub />} />
+            <Route path="/treinos/legado" element={<WorkoutHub />} />
+            <Route path="/fitness" element={<FitnessRoot />} />
+            <Route path="/fitness/ativo/:sessionId" element={<ActiveFitnessSession />} />
             <Route path="/treinos/painel" element={<HealthDashboard />} />
             <Route path="/treinos/plano/:workoutId" element={<WorkoutPreview />} />
             <Route path="/treinos/preview/:workoutId" element={<WorkoutPreview />} />
@@ -160,9 +163,9 @@ function App() {
             <Route path="/treinos/ativo/:sessionId" element={<ActiveWorkout />} />
             <Route path="/treinos/resumo/:sessionId" element={<WorkoutSummary />} />
             <Route path="/dominios" element={<Dominios />} />
-            <Route path="/dominios/yoga" element={<Yoga />} />
+            <Route path="/dominios/yoga" element={<Navigate to="/fitness?modalidade=yoga" replace />} />
             <Route path="/dominios/yoga/:poseId" element={<YogaPoseDetail />} />
-            <Route path="/dominios/calistenia" element={<Calistenia />} />
+            <Route path="/dominios/calistenia" element={<Navigate to="/fitness?modalidade=calisthenics" replace />} />
             <Route path="/dominios/calistenia/:exerciseId" element={<CalisteniaExerciseDetail />} />
             <Route path="/dominios/:areaId" element={<DominioDetalhe />} />
             {/* Fase 4: Cassino Arcano — navegação ativa, lógica na Fase 5 */}

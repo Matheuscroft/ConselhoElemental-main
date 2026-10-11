@@ -1,12 +1,15 @@
 import { LayoutGrid } from 'lucide-react';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { FitnessEmbeddedContext } from './FitnessEmbeddedContext';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { useAppStore } from '@/stores/appStore';
 import { cn } from '@/lib/utils';
 
 interface FitnessPageShellProps {
+  /** Execução imersiva sem navegação global. */
+  fullscreen?: boolean;
   children: React.ReactNode;
   /** Fluxo de escolha mobile, centralizado como tablet também no PC. */
   focused?: boolean;
@@ -15,6 +18,7 @@ interface FitnessPageShellProps {
   withNav?: boolean;
   /** Reserva espaço no rodapé para um CTA fixo (ex.: barra de ações). */
   withFixedAction?: boolean;
+  fixedActionHeight?: number;
   /** Conteúdo sem padding lateral (heroes de largura total). */
   bleed?: boolean;
   /** Remove o espaçamento superior (hero encosta no topo da tela). */
@@ -29,25 +33,30 @@ interface FitnessPageShellProps {
  */
 export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
   children,
+  fullscreen = false,
   focused = false,
   showPageMap = true,
   withNav = false,
   withFixedAction = false,
+  fixedActionHeight,
   bleed = false,
   flushTop = false,
   className,
 }) => {
   const [routesOpen, setRoutesOpen] = useState(false);
+  const embedded = useContext(FitnessEmbeddedContext);
   const timerRunning = useAppStore((state) => state.timer.isRunning);
   const tickTimer = useAppStore((state) => state.tickTimer);
 
   // O AppLayout normalmente mantém o relógio do timer global; como esta casca
   // substitui o AppLayout no módulo, preservamos esse comportamento.
   useEffect(() => {
-    if (!timerRunning) return undefined;
+    if (!timerRunning || embedded) return undefined;
     const interval = setInterval(tickTimer, 1000);
     return () => clearInterval(interval);
-  }, [timerRunning, tickTimer]);
+  }, [timerRunning, tickTimer, embedded]);
+
+  if (embedded) return <>{children}</>;
 
   const bottomPadding = withNav
     ? 'pb-[calc(8rem+env(safe-area-inset-bottom))]'
@@ -57,13 +66,14 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
 
   return (
     <div className={cn('min-h-dvh font-sans text-fitness-text antialiased overflow-x-hidden', focused ? 'bg-fitness-canvas' : 'bg-transparent')}>
-      <Sidebar />
+      {!fullscreen && <Sidebar />}
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main
         id="main-content"
+        style={withFixedAction && fixedActionHeight !== undefined ? { paddingBottom: `calc(${fixedActionHeight}px + 1.5rem)` } : undefined}
         className={cn(
           'relative mx-auto',
-          focused ? 'mx-auto max-w-xl md:ml-72 md:mr-0 md:max-w-none' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
+          fullscreen ? 'max-w-xl' : focused ? 'mx-auto max-w-xl md:ml-72 md:mr-0 md:max-w-none' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
           !flushTop && 'pt-[calc(1.5rem+env(safe-area-inset-top))]',
           bottomPadding,
           className
@@ -76,7 +86,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
         </div>}
         <div className={cn('mx-auto w-full', !focused && 'md:max-w-md', !bleed && 'px-6')}>{children}</div>
       </main>
-      <MobileBottomNav />
+      {!fullscreen && <MobileBottomNav />}
     </div>
   );
 };

@@ -34,19 +34,45 @@ O módulo pode manter seus próprios dados operacionais (por exemplo, catálogo 
 
 O vínculo entre módulo e Área define contexto e experiência de planejamento; não altera as regras de pontuação. A área primária continua sujeita à distribuição multiárea do Core, e efeitos de Ressonância Elemental são calculados separadamente conforme [02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md).
 
-### Templates de Módulo e agendamento no Core
+### Planejamento nativo e ativação explícita no Core
 
-Um Módulo Nativo pode manter **Templates** reutilizáveis em seu próprio armazenamento. Template é uma definição de planejamento do módulo (por exemplo, treino A com exercícios e séries); não é, por si só, uma ocorrência gamificada nem substitui uma entidade do Core. Ao agendar um template, o adapter cria ou associa uma entidade estrutural no Core:
+O Módulo Nativo separa dois ambientes. **Planejamento** é a biblioteca interna de blueprints reutilizáveis; **Execução** é a ocorrência ativada no Core e exibida na Lista Diária/Ciclos. Criar ou editar conteúdo na biblioteca nunca agenda, publica ou conclui algo no Core automaticamente. A ponte só é acionada por uma escolha explícita do usuário: executar agora, agendar, enviar para recorrência ou ativar uma sequência.
 
-| Agendamento | Entidade Core | Comportamento |
+#### Glossário do Módulo de Treino
+
+- **Modalidade**: classificação nativa do catálogo — por exemplo, Yoga, Calistenia ou Musculação. Não é uma `Area` do Core nem cria uma subárea elemental; o vínculo com áreas válidas é escolhido ao ativar a atividade.
+- **`Exercise` (catálogo)**: referência reutilizável com instruções, mídia e valores sugeridos. É conteúdo de consulta; executar não altera o exercício de catálogo.
+- **`WorkoutExercise<'planned'>` / `WorkoutExercise<'executed'>`**: instância de um exercício dentro de um plano ou sessão. Guarda snapshot identificável do exercício e agrega as séries configuradas ou realizadas.
+- **`WorkoutSet`**: uma série. Pode registrar repetições dinâmicas ou duração/isometria, carga, conclusão e, no planejamento, valores-alvo. Séries puladas ou não concluídas não integram o volume executado.
+- **`WorkoutTemplate` (treino)**: blueprint ordenado de instâncias planejadas de exercícios na biblioteca do módulo. Sua existência não cria uma `Action` ou `Habit`.
+- **`WorkoutSequence` (sequência)**: blueprint ordenado de referências a `WorkoutTemplate`. Continua na biblioteca até ativação; não é, por si, uma `HabitRotation`.
+- **`WorkoutSession` (execução nativa)**: snapshot dos exercícios e séries realmente registrados. `templateId` é opcional: sua ausência representa uma sessão avulsa, sem template. Catálogo e plano permanecem preservados.
+
+#### Ativação solicitada e entidade estrutural
+
+| Ação explícita do usuário | Resultado no Core | Efeito |
 |---|---|---|
-| Tarefa única | `Action`, `lifecycle_type = 'ACTION'`, `due_date` definida | Uma ocorrência. Após conclusão, a pendência diária desaparece; o Template continua disponível no módulo para novo agendamento. |
-| Recorrência avulsa | `Action`, `lifecycle_type = 'HABIT'`, `recurrence_config` definida | Uma ocorrência em cada data programada. |
-| Recorrência em sequência | `Action`, `lifecycle_type = 'HABIT'`, associada a `HabitRotation` | Ciclos escolhe um membro por data programada; conclusão ou Skip resolve a ocorrência e avança a rotação. |
+| Executar agora ou agendar um treino para uma data | `Action`, `lifecycle_type = 'ACTION'` | Uma ocorrência na data escolhida. O template continua reutilizável após a execução. |
+| Enviar um treino para frequência regular | `Action`, `lifecycle_type = 'HABIT'` | O Core define e mantém a recorrência; o módulo mantém o template e seus dados ricos. |
+| Ativar uma sequência | `HabitRotation` e um `Habit` vinculado para cada template ordenado | Ciclos aplica agenda, membro corrente e avanço da rotação. Uma sequência só existe no Core depois dessa ativação. |
 
-O adapter persiste os dados ricos do Template e suas sessões nas tabelas isoladas do módulo. No Core, cada vínculo agendado permanece uma `Action` ou `Habit` normal, com `source_module` e `source_ref_id` apontando para o módulo e o Template de origem. Ao concluir uma sessão, o módulo consolida a métrica (no Módulo de Treino, ER → `base_value`) e o Core aplica suas próprias regras de execução. Remover ou concluir um vínculo não apaga o Template.
+O Adapter mantém a relação entre o blueprint nativo e a entidade ativada no Core. Para treino, `source_module = 'modulo_treino'`. Na Action avulsa criada ao concluir uma sessão, `source_ref_id = session.id`; o vínculo ao blueprint permanece em `session.templateId`. Para ativação recorrente/agendada, a referência de planejamento deve permanecer separada da correlação de execução. IDs de template, sessão e entidade Core são UUID v4 distintos. O contrato de persistência/API precisa conservar essas relações sem sobrescrever a referência de planejamento.
+
+#### Execução e consolidação
+
+Uma sessão iniciada a partir de treino agendado conclui a ocorrência Core já vinculada; não cria uma segunda `Action`. A execução avulsa, sem template, também pode ser registrada. Nesse caso, concluir a sessão é a ativação explícita daquela ocorrência: o Adapter cria/resolve uma `Action` única para a data e registra um único `ExecutionLog` no Core. Nunca se cria um `Habit` por inferência de uma execução isolada.
+
+O módulo guarda os detalhes nativos — exercícios, séries, repetições, duração/isometria e carga — e consolida somente séries efetivamente concluídas em ER e `base_value`, conforme [02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md#5-módulo-de-treino-equivalentes-de-repetição). Uma sessão completa produz exatamente um `ExecutionLog` no Core, não um por exercício ou série. O Core permanece responsável por pontuação, Prana, recorrência, data de execução e idempotência. A execução na Lista Diária/Ciclos e o histórico do módulo referenciam a mesma sessão, sem duplicar conclusão ou recompensa.
+
+Templates e sequências permanecem na biblioteca ao ativar ou concluir um vínculo. Desativar/remover um vínculo do Core não apaga os blueprints nem as sessões do módulo.
 
 Quando uma Action única originada de um Template é ignorada, o usuário pode escolher Snooze para alterar seu `due_date`; a política padrão de Snooze/Rollover e a exceção de Skip para ocorrências de Módulos Nativos estão em [03-A-Lista-Diaria.md](./03-A-Lista-Diaria.md).
+
+### Planejamento de duração, esforço e feedback de Fitness
+
+O template mantém esforço global opcional (1–5) e duração estimada em modo automático ou override manual. Formulários novos sugerem esforço 3; dados sem esforço explícito mantêm padrão Core 1. O autoestimador usa 4 segundos por repetição dinâmica, duração exata de séries por tempo, descansos e 60 segundos de transição após o primeiro exercício. Trata-se de heurística de planejamento, não medição clínica. Fórmula, arredondamento e hipótese de presença do preview estão nas seções 5.4 e 5.5 de [02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md).
+
+Iniciar a sessão copia o esforço para o snapshot nativo. Na conclusão, o Adapter transmite o esforço e a duração real ao Core, junto com o base_value consolidado; duração estimada nunca substitui duração real. O preview e o despacho compartilham multiplicadores e teto do Core; preview assume presença ×1.5, enquanto o despacho calcula presença pela faixa real. A biblioteca continua inerte: calcular preview não cria Action/Habit/ExecutionLog ou recompensa. Cards de histórico e modal de conclusão obtêm XP exclusivamente do log canônico, com destaque verde Terra 🌿 e ER secundário. Registros anteriores não são recalculados.
 
 ### Classificação de Rascunhos e Adapter de domínio
 
@@ -72,7 +98,7 @@ Rascunho genérico → usuário escolhe área controlada → Dispatcher abre mod
 │   Grimório (Leitura)   │ Módulo de Treino  │  Diário de   │
 │   • páginas lidas      │ • séries/reps     │  Sonhos      │
 │   • progresso/capítulo │ • carga/volume    │  • lucidez   │
-│   • base_value derivado│ • ER × 0.03       │  • temas     │
+│   • base_value derivado│ • ER × 0.10       │  • temas     │
 │                        │     por repetição  │  recorrentes │
 └───────────┬────────────┴─────────┬──────────┴──────┬───────┘
             │                      │                 │

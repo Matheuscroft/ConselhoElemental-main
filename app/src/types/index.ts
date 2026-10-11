@@ -75,6 +75,8 @@ export interface BaseItem {
 // ============================================
 // ACTION: linha raiz ou descendente da tabela actions, ligada por parentId.
 export interface Action extends BaseItem {
+  sourceModule?: 'modulo_treino';
+  sourceRefId?: string;
   type: 'TASK' | 'HABIT';
   lifecycleType: ActionLifecycleType | null;
   semanticType: SemanticType | LegacySemanticType | null;
@@ -308,6 +310,13 @@ export interface Draft {
 // LOG DE EXECUÇÃO
 // ============================================
 export interface ExecutionLog {
+  sourceModule?: 'modulo_treino';
+  sourceRefId?: string;
+  baseValue?: number;
+  rawValue?: number;
+  effortCap?: number;
+  pranaDeltaApplied?: number;
+  ruleVersion?: string;
   id: string;
   subjectId: string; // UUID v4; persisted as subject_id
   subjectType: LifecycleType; // persisted as subject_type
@@ -324,6 +333,8 @@ export interface ExecutionLog {
 // USUÁRIO
 // ============================================
 export interface User {
+  /** Energia canônica; perfis anteriores iniciam em 100 ao primeiro despacho. */
+  pranaLevel?: number;
   id: string;
   name: string;
   avatar: string;

@@ -42,7 +42,8 @@ export const APP_ROUTES: AppRoute[] = [
   { id: 'lua', label: 'Lua', path: '/lua', group: 'Tempo e ciclos', icon: Moon, description: 'Fases da lua', sidebar: true, mobile: 'more' },
   { id: 'estacoes', label: 'Estações', path: '/estacoes', group: 'Tempo e ciclos', icon: Leaf, description: 'Estações do ano', sidebar: true, mobile: 'more' },
 
-  { id: 'treinos', label: 'Treinos', path: '/treinos', group: 'Treino', icon: Dumbbell, description: 'Selecionar, criar e iniciar treinos', sidebar: true, mobile: 'more' },
+  { id: 'fitness', label: 'Exercício Físico', path: '/fitness', group: 'Treino', icon: Dumbbell, description: 'Biblioteca de modalidades, treinos e sequências', via: 'Pilares → Terra' },
+  { id: 'treinos', label: 'Treino — Legado', path: '/treinos/legado', group: 'Treino', icon: Dumbbell, description: 'Fluxo original de treinos', mobile: 'more' },
   { id: 'treinos-painel', label: 'Treinos · Painel', path: '/treinos/painel', group: 'Treino', icon: Activity, description: 'Recursos e atividade diária', via: 'Navegação de treinos' },
   { id: 'treinos-semana', label: 'Treinos · Semana', path: '/treinos/semana', group: 'Treino', icon: CalendarDays, description: 'Resumo dos últimos 7 dias', via: 'Navegação de treinos' },
   { id: 'treinos-historico', label: 'Treinos · Histórico', path: '/treinos/historico', group: 'Treino', icon: History, description: 'Sessões por mês', via: 'Navegação de treinos' },
@@ -66,9 +67,9 @@ export const INTERNAL_ROUTES: InternalRoute[] = [
   { pattern: '/treinos/ativo/:sessionId', label: 'Treino em andamento', opensFrom: 'Prévia do treino' },
   { pattern: '/treinos/resumo/:sessionId', label: 'Resumo do treino', opensFrom: 'Treino em andamento / Histórico' },
   { pattern: '/dominios/:areaId', label: 'Detalhe do domínio', opensFrom: 'Domínios' },
-  { pattern: '/dominios/yoga', label: 'Yoga (redireciona para /treinos?source=yoga)', opensFrom: 'Domínios' },
+  { pattern: '/dominios/yoga', label: 'Yoga (redireciona para a biblioteca de Fitness)', opensFrom: 'Domínios' },
   { pattern: '/dominios/yoga/:poseId', label: 'Detalhe da pose de yoga', opensFrom: 'Yoga' },
-  { pattern: '/dominios/calistenia', label: 'Calistenia (redireciona para /treinos?source=calistenia)', opensFrom: 'Domínios' },
+  { pattern: '/dominios/calistenia', label: 'Calistenia (redireciona para a biblioteca de Fitness)', opensFrom: 'Domínios' },
   { pattern: '/dominios/calistenia/:exerciseId', label: 'Detalhe do exercício de calistenia', opensFrom: 'Calistenia' },
 ];
 

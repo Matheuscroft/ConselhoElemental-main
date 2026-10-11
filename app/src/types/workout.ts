@@ -1,5 +1,9 @@
 export type ISODateString = string;
 
+/** UUID v4 como string com marca de tipo; a fronteira de I/O valida o formato. */
+declare const uuidV4Brand: unique symbol;
+export type UUIDv4 = string & { readonly [uuidV4Brand]: 'UUIDv4' };
+
 export type MuscleGroupId =
   | 'chest'
   | 'upper_back'
@@ -41,7 +45,8 @@ export type ExerciseMeasureMode = 'reps' | 'duration';
 export type WorkoutExerciseLevel = 'beginner' | 'intermediate' | 'advanced' | 'custom';
 export type ExerciseLoadMode = 'weighted' | 'bodyweight' | 'none';
 
-export interface WorkoutExercise {
+/** Formato antigo do catálogo, mantido para Store/UI ainda não migradas. */
+export interface LegacyWorkoutExercise {
   id: string;
   name: string;
   source: WorkoutExerciseSource;
@@ -68,6 +73,57 @@ export interface WorkoutExercise {
   legacyId?: string;
 }
 
+export type WorkoutExerciseMode = 'catalog' | 'planned' | 'executed';
+
+/** Exercício de referência do catálogo; a modalidade não é uma Core Area. */
+export type Exercise = Omit<LegacyWorkoutExercise, 'category' | 'id'> & {
+  id: UUIDv4;
+  modality: WorkoutExerciseCategory;
+};
+
+interface WorkoutSetBase {
+  id: UUIDv4;
+  setNumber: number;
+  targetLoadKg?: number;
+  loadKg?: number;
+  restSeconds?: number;
+  loadFactor?: 0.8 | 1 | 1.5;
+  completed: boolean;
+  skipped?: boolean;
+  completedAt?: ISODateString;
+}
+
+/** Série dinâmica ou isométrica, sem permitir as duas métricas ao mesmo tempo. */
+export type WorkoutSet = WorkoutSetBase & (
+  | { measureMode: 'reps'; reps?: number; targetReps?: number; durationSeconds?: never; targetDurationSeconds?: never }
+  | { measureMode: 'duration'; durationSeconds?: number; targetDurationSeconds?: number; reps?: never; targetReps?: never }
+);
+
+/** Instância que agrega séries, planejada ou registrada numa sessão. */
+export interface WorkoutExerciseInstance<Mode extends 'planned' | 'executed' = 'planned'> {
+  id: UUIDv4;
+  exerciseId: UUIDv4;
+  order: number;
+  exerciseNameSnapshot: string;
+  modality?: WorkoutExerciseCategory;
+  sets: WorkoutSet[];
+  notes?: string;
+  muscleDistribution?: MuscleContribution[];
+  muscleDistributionOverride?: MuscleContribution[];
+  instanceMode?: Mode;
+}
+
+export type PlannedExercise = WorkoutExerciseInstance<'planned'>;
+export type ExecutedExercise = WorkoutExerciseInstance<'executed'>;
+
+/**
+ * Sem parâmetro preserva o tipo de catálogo legado. Novas instâncias declaram
+ * WorkoutExercise<'planned'> ou WorkoutExercise<'executed'> explicitamente;
+ * novos catálogos usam Exercise, com `modality`.
+ */
+export type WorkoutExercise<Mode extends WorkoutExerciseMode = 'catalog'> =
+  Mode extends 'catalog' ? LegacyWorkoutExercise : WorkoutExerciseInstance<Mode & ('planned' | 'executed')>;
+
 export interface WorkoutSetPlan {
   id: string;
   setNumber: number;
@@ -75,6 +131,8 @@ export interface WorkoutSetPlan {
   targetDurationSeconds?: number;
   targetLoadKg: number;
   restSeconds: number;
+  /** Fator de carga canônico do Módulo de Treino; dados anteriores usam 1.0. */
+  loadFactor?: 0.8 | 1 | 1.5;
 }
 
 export interface WorkoutExercisePlan {
@@ -89,6 +147,7 @@ export interface WorkoutExercisePlan {
 export type WorkoutStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
 
 export interface Workout {
+  effortLevel?: number;
   id: string;
   name: string;
   category: WorkoutExerciseCategory;
@@ -100,6 +159,43 @@ export interface Workout {
   estimatedDurationMinutes: number;
   exercises: WorkoutExercisePlan[];
   lastSessionId?: string;
+}
+
+/** Blueprint inerte na biblioteca; existir aqui não cria item no Core. */
+export interface WorkoutTemplate {
+  /** Inteiro 1–5; formulários novos sugerem 3, ausência mantém padrão Core 1. */
+  effortLevel?: number;
+  durationEstimateMode?: 'auto' | 'manual';
+  id: UUIDv4;
+  name: string;
+  modality: WorkoutExerciseCategory;
+  source: WorkoutExerciseSource;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+  estimatedDurationMinutes: number;
+  exercises: WorkoutExercise<'planned'>[];
+  description?: string;
+}
+
+/** Sequência ordenada de blueprints, sem HabitRotation até ativação explícita. */
+export interface WorkoutSequence {
+  id: UUIDv4;
+  name: string;
+  /** A ordem do array é a ordem da sequência; IDs são UUID v4. */
+  templateIds: UUIDv4[];
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+  description?: string;
+}
+
+/** Relação rastreável produzida pelo Adapter durante ativação solicitada. */
+export interface WorkoutCoreActivation {
+  id: UUIDv4;
+  sourceTemplateId?: UUIDv4;
+  sourceSequenceId?: UUIDv4;
+  coreEntityId: UUIDv4;
+  kind: 'ACTION' | 'HABIT' | 'HABIT_ROTATION';
+  activatedAt: ISODateString;
 }
 
 export interface PerformedSet {
@@ -114,6 +210,8 @@ export interface PerformedSet {
   effectiveLoadKg: number;
   volume: number;
   formulaVersion: string;
+  /** Snapshot do fator usado na série planejada, para projeção ER rastreável. */
+  loadFactor?: 0.8 | 1 | 1.5;
   perceivedExertion?: number;
   distanceMeters?: number;
   activityNotes?: string;
@@ -130,7 +228,7 @@ export interface WorkoutExerciseResult {
 
 export type WorkoutSessionStatus = 'in_progress' | 'completed' | 'cancelled';
 
-export interface WorkoutSession {
+export interface LegacyWorkoutSession {
   id: string;
   workoutId: string;
   workoutNameSnapshot: string;
@@ -150,6 +248,32 @@ export interface WorkoutSession {
   gamificationApplied: boolean;
   formulaVersion: string;
 }
+
+/** Sessão nativa real; templateId ausente representa uma sessão ad-hoc. */
+export interface NativeWorkoutSession {
+  /** Snapshot do esforço global escolhido no planejamento. */
+  effortLevel?: number;
+  id: UUIDv4;
+  templateId?: UUIDv4;
+  sequenceId?: UUIDv4;
+  /** Vínculo Core ativo (Action/Habit/ocorrência), quando aplicável. */
+  coreEntityId?: UUIDv4;
+  nameSnapshot: string;
+  status: WorkoutSessionStatus;
+  startedAt: ISODateString;
+  completedAt?: ISODateString;
+  scheduledAt?: ISODateString;
+  durationSeconds: number;
+  exerciseResults: WorkoutExercise<'executed'>[];
+  totalER: number;
+  baseValue?: number;
+  /** Correlação do único ExecutionLog emitido para esta sessão. */
+  coreExecutionLogId?: UUIDv4;
+}
+
+/** Mantém compatibilidade até a migração de Store/UI para o modelo canônico. */
+export type WorkoutSession<Mode extends 'legacy' | 'native' = 'legacy'> =
+  Mode extends 'native' ? NativeWorkoutSession : LegacyWorkoutSession;
 
 export interface WorkoutRating {
   sessionId: string;
@@ -241,6 +365,7 @@ export interface WorkoutAccountData {
 }
 
 export interface WorkoutCreateInput {
+  effortLevel?: number;
   name: string;
   category?: WorkoutExerciseCategory;
   source?: WorkoutExerciseSource;
@@ -250,6 +375,7 @@ export interface WorkoutCreateInput {
 }
 
 export interface WorkoutUpdateInput {
+  effortLevel?: number;
   name?: string;
   category?: WorkoutExerciseCategory;
   source?: WorkoutExerciseSource;

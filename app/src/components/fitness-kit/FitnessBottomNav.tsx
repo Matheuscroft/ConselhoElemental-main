@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { FitnessEmbeddedContext } from './FitnessEmbeddedContext';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { BarChart3, Dumbbell, History, Plus, type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,6 +24,8 @@ export const NEW_WORKOUT_PATH = '/treinos?novo=1';
 export const FitnessTopTabs: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const embedded = useContext(FitnessEmbeddedContext);
+  if (embedded) return null;
 
   return (
     <div className="mb-7 mt-2 flex justify-center">
@@ -44,8 +47,6 @@ export const FitnessTopTabs: React.FC = () => {
 /** @deprecated Kept as an alias for legacy page imports; renders top tabs. */
 export const FitnessBottomNav = FitnessTopTabs;
 
-export const FitnessModuleFab: React.FC = () => <FitnessCreateWorkoutFab />;
-
 /** Ação primária do módulo, elevada acima da navegação global. */
 export const FitnessCreateWorkoutFab: React.FC = () => {
   const navigate = useNavigate();
@@ -56,3 +57,6 @@ export const FitnessCreateWorkoutFab: React.FC = () => {
     </button>
   );
 };
+
+/** Alias compatível com imports existentes; declarado após o componente para evitar TDZ. */
+export const FitnessModuleFab = FitnessCreateWorkoutFab;

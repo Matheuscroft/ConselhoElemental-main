@@ -1,5 +1,9 @@
 # Retomada vigente — P01 / 0.1.21, 10/10/2026
 
+## UI04 — Editor de template de treino (em revisão)
+
+Pedido: preservar todas as telas e prosseguir com o primeiro ponto da proposta (catálogo/editor). Checkout `C:\Users\mathe\Downloads\Dominio-Atualizado\ConselhoElemental-main`; base `55d3e17 navbar`. Contratos lidos: `02-Platform-Architecture/01-Core-vs-Native-Modules.md` e `01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md`. O formulário existente agora aceita editar template planejado na rota ativa `/treinos` (`pages/fitness/WorkoutSelect.tsx`) e no Hub alternativo (`pages/WorkoutHub.tsx`), manter exercício/plano IDs, configurar cada série individualmente (repetições inteiras ou isometria inteira em segundos, carga, descanso e fator canônico), adicionar/remover séries e programar data; templates com exercício ausente no catálogo ficam bloqueados para preservar dados. A projeção mostra ER e `base_value` com fatores 0.8/1.0/1.5, sem anunciar XP/Prana concedidos. Campo opcional `loadFactor` é normalizado para 1.0 em planos antigos e copiado ao snapshot da série iniciada. Impacto Frontend: editor e projeção no Módulo de Treino. Impacto Core/Backend: contrato de planejamento/snapshot estendido sem mudança nas fórmulas, recompensa, adapter, recorrência ou persistência remota; o fluxo atual de pontuação continua separado e a integração canônica segue pendente. Todas as páginas e rotas anteriores foram mantidas. Também foi corrigida a ordem do alias `FitnessModuleFab` que causava TDZ no HEAD `55d3e17`. Skill aplicada: `app/.agents/skills/frontend-design/SKILL.md`; direção manteve Inter, canvas escuro, grafite e violeta existentes. `git diff --check` passou. Testes, build, lint e verificação visual não executados; regressão de leitura dos dados persistidos antigos pendente antes de aceitar o campo opcional.
+
 ## App Shell / Fitness — implementação local pendente de revisão visual (10/10/2026)
 
 Checkout `C:\Users\mathe\Downloads\Dominio-Atualizado\ConselhoElemental-main`; perfil explícito Matheus/fullstack. Implementado shell global com quatro destinos fixos (Santuário, Ciclos, Pilares, Mais), e FitnessPageShell agora preserva navegação global mesmo em páginas focadas. Antiga barra inferior Fitness removida: o componente compatível renderiza top tabs Treinos/Histórico/Saúde; ação Criar treino é FAB nas telas de hub/dashboard. `hideNav` não suprime mais a navegação global. Arquivos de layout e páginas Fitness alterados; sem mudança em stores/contratos.
@@ -131,3 +135,84 @@ Usuário confirmou Sol 6.1 médio; foco exclusivo agora /treinos e referência 2
 ## UI02-A entregue — 0.1.17
 
 Escolher treino agora segue composição da referência adaptada às duas categorias existentes. Evidências em conselheiro-backups/fitness-select-20261009 e topo de STATUS-FRONTEND-FITNESS. Modelo Sol 6.1 médio confirmado; não houve troca. Reservas liberadas. Prioridade permanece revisão/finalização desta tela antes de preview/edição. Diretriz mobile/tablet registrada no manual e roteiro; o layout tablet no PC foi aplicado à seleção, demais páginas aguardam seus lotes. Versão sincronizada, sem commit/push/deploy.
+
+## F02 — Fitness paralelo: biblioteca e navegação (10/10/2026)
+
+Nova raiz `/fitness`, acessada por Pilares → Terra → Exercício Físico. Fluxo original preservado nas URLs `/treinos/*`, com entrada Mais → Treino — Legado (`/treinos/legado`); removida entrada da sidebar e atalhos secundários do mapa/menu. Redirecionamentos de modalidade Yoga/Calistenia agora abrem a biblioteca. Nenhuma página original apagada.
+
+FitnessRoot usa kit visual existente (cards, botões, catálogo, ficha de exercício), navegação global fixa e abas Treinos / Histórico / O Corpo. Histórico/Corpo reutilizam as páginas atuais em contexto embutido; o contexto suprime somente casca/abas duplicadas. A ação vazia do histórico embutido retorna à biblioteca; modo legado mantém destino original.
+
+Aba Treinos: modalidades → Meus Treinos filtrados, Sequências que referenciam treinos da modalidade (ordem integral preservada), Catálogo real. NativeTemplateDialog configura exercícios ordenados, séries, repetições/duração, carga e fator; saveTemplate salva somente na biblioteca. Executar Agora chama startSession, com banner de sessão ativa. Registro completo da execução permanece etapa futura. Agendar/Tornar Ciclo contêm TODO Core e aviso de indisponibilidade.
+
+Store ganhou nativeCatalog/ensureNativeCatalog: reaproveita catálogo original em cópias com UUIDv4 e legacyId, dentro da persistência nativa existente por conta; registros anteriores recebem lista vazia por fallback. Não altera histórico legado nem envia planejamento ao Core. Modalidades sem catálogo mostram estado vazio.
+
+Verificação: TypeScript identificou erros preexistentes de contratos do Core (Habit/User/TaskItem etc.) e helper legado workout-ids; import não usado na nova raiz corrigido. Compilação global continua bloqueada. Sem testes de navegador ou aprovação visual neste lote. Não publicado.
+F02: ESLint dos 14 arquivos do lote passou sem erros/avisos; diff-check passou antes do fechamento documental. Sem testes funcionais ou inspeção de navegador; confirmação de comportamento em execução ainda pendente.
+
+## F03 — execução nativa e conclusão Core (10/10/2026)
+
+Implementação: `/fitness/ativo/:sessionId` usa ActiveFitnessSession e o kit legado ExerciseCard/Header/StickyAction. Casca fullscreen remove Sidebar/BottomNav somente nesta rota. Séries editáveis reps ou segundos e kg; check reversível, pular/retomar, confirmação de séries pendentes, cronômetro por startedAt, retorno sem apagar sessão e botão Retomar na biblioteca. Executar Agora inicia sessão e navega. Conclusão retorna `/fitness?tab=history`, agora com nativeHistory (nome/data/duração/ER) acima do histórico legado preservado.
+
+finishSession consolida séries concluídas e chama fitness-core-adapter antes de remover a sessão ativa. Adapter traduz sessão para completeNativeAction na appStore. Despacho Core grava Action concluída (`sourceModule=modulo_treino`, `sourceRefId=session.id`), projeção Task e um ExecutionLog com timestamp, baseValue/rawValue/teto/valor aplicado/Prana/regra. Atualiza totalScore e xp_earth em uma única mudança de estado; Action e log IDs voltam à sessão. Idempotência por referência de sessão, logs persistidos e isolados por conta; guarda de conta na conclusão. Falha mantém sessão ativa para tentativa posterior. Recompute/projeções de áreas/elementos preservam completedScore nativo; Undo remove log e reverte valores efetivamente aplicados; recompilação da mesma Action usa despacho Core.
+
+Escopo energético explícito desta fase: folha neutra em Terra, esforço padrão 1 (sem inferência por modalidade). Core usa presença/tempo/teto canônicos, conserva valor fracionário e debita até 5 Prana, com clamp 0–100 e delta efetivo no log. Perfis anteriores sem pranaLevel recebem 100 como ponto inicial do campo novo. Fórmulas e históricos legados preservados. Não implementa ativação de Habit/Rotation, naturezas energéticas configuráveis, bônus de ressonância/fechamento diário ou sync remoto do novo ledger nesta etapa.
+
+Verificações: ESLint dos arquivos do lote passou. TypeScript continua bloqueado pelas divergências preexistentes User/Habit/TaskItem e helper legado; a saída filtrada não apontou erros nos novos componentes/serviços/workoutStore. Sem testes funcionais ou navegador executados; integração verificada apenas por leitura/tipagem/lint, sem alegar validação ponta a ponta ou publicação. Reservas liberadas; pendente revisão visual e funcional do usuário.
+
+## F04 — XP Terra no planejamento e no extrato (10/10/2026)
+
+Core: projectNativeLeafReward foi extraída da conclusão já existente; preview e buildNativeCompletion usam a mesma função pura (presença, faixas de tempo, esforço padrão 1 e teto 10). Fórmula e efeitos do despacho preservados. native-reward-preview consolida targets de reps ou segundos/2 com fatores 0.8/1/1.5, baseValue ER×0.03 com mesma precisão da conclusão; store expõe previewTemplateReward. Duração estimada opcional no NativeTemplateDialog; sem estimativa, preview usa tempo zero e declara essa ausência, sem duração inventada.
+
+FitnessRoot: badge 🌿 ~XP (Terra), emerald-100/800, rótulo de estimativa e tempo/esforço usados. Histórico destaca Ganho +XP verde e ER secundário cinza; ganho vem do ExecutionLog canônico, sem recalcular história. Log ausente (por exemplo Undo) não é apresentado como recompensa recebida.
+
+ActiveFitnessSession: conclusão abre modal de sucesso com XP grande, ícone Terra e animação respeitando reduced-motion. Resultado concluído fica na página pai, evitando que remoção da sessão ativa cause redirect antes do feedback. Ver Histórico conclui a transição explicitamente; troca de conta não conserva extrato de outra conta. Nenhum novo despacho de recompensa no modal.
+
+Verificações: ESLint dos seis arquivos alterados passou; sem testes funcionais/navegador executados. Compilação global permanece limitada pelas divergências anteriormente documentadas. Sem publicação, commit ou migração de histórico. Reservas liberadas. Próximo passo: revisão visual/funcional pelo usuário.
+
+F04 ajuste visual solicitado: badge do template simplificado para pontuação + XP + 🌿 (ex.: 2,46 XP 🌿), removendo til e (Terra). Indicação de estimativa permanece no texto de apoio. Cálculo preservado.
+
+## F05 — esforço global e autoestimador entregues (10/10/2026)
+
+Auditoria: Motor já documentava ER, esforço 1–5, presença por faixa, tempo e tetos. Não havia a heurística solicitada nem default3 no formulário. Preview anterior aplicava presença/tempo quando recebia duração, mas só esforço1; diagnóstico de ignorar todos os multiplicadores não corresponde integralmente ao código. Adicionadas seções 5.4/5.5 ao Motor e seção de planejamento/feedback ao contrato de Módulos Nativos.
+
+calculateEstimatedDuration aceita planos nativos e legados por estrutura: reps×4s ou duração exata + cada descanso + 60s após primeiro exercício; retorna CEIL(minutos), zero para lista vazia. Legacy estimateWorkoutDurationMinutes continua preservado. Formulário nativo usa cálculo derivado reativo, modo auto/manual explícito, botão de restauração automática e descanso editável. Override não muda com séries até ser removido. Novos formulários sugerem esforço3, com escolha 1–5 e preview verde ao vivo.
+
+Tipos adicionaram esforço opcional em WorkoutTemplate/NativeWorkoutSession/WorkoutCreateInput/WorkoutUpdateInput/Workout e modo de duração no template. Store valida inteiro1–5, computa estimativa auto ao salvar e copia esforço para sessão. Entrada legada guarda o campo opcional sem trocar cálculo legado. Dados anteriores sem esforço mantêm fallback1; template antigo sem tempo passa a obter preview automático, sem reescrever registros concluídos. Duração positiva antiga é respeitada como manual.
+
+Core: multiplicadores/caps/prana por esforço da tabela canônica, effortLevel no Adapter e no despacho/Undo-reconclusão, ruleVersion core-native-leaf-v2 somente em novos logs. Preview usa ER×0.03×presença1.5×esforço×tempo, limitado pelo cap. Mesma função Core concentra esforço/tempo/teto; flag de preview explicita presença presumida1.5. Conclusão usa presença por duração REAL, nunca estimativa. Histórico/modal continuam lendo XP do ExecutionLog; header ativo mostra esforço snapshot. Nenhum histórico recalculado.
+
+Verificações: ESLint onze arquivos passou; diff-check passou; TypeScript global segue bloqueado pelas divergências anteriores, saída filtrada sem erros nos novos/alterados arquivos nativos. Sem testes funcionais ou navegador; não afirmar validação ponta a ponta. Reservas liberadas, sem publicação/commit. Impacto para frontend/backend: campos opcionais de esforço/modo, despacho e custo energético por esforço, detalhes canônicos atualizados.
+
+F05 ajuste de apresentação: XP Terra exibido com uma casa decimal em cards, formulário e modal pelo formatEarthXp compartilhado. Precisão de cálculo e logs preservada.
+
+F05 ajuste de campos: FitnessIntegerField compartilhado no planejamento e execução nativos, botões subir/descer e teclas ArrowUp/ArrowDown. Valor vazio preservado durante edição; conversão de string vazia em zero removida, zeros à esquerda normalizados. Duração inteira usa o mesmo controle. Campos obrigatórios de planejamento impedem salvar séries vazias.
+
+## F06 — balance patch ER 0.10 (10/10/2026)
+
+Conversão oficial centralizada em WORKOUT_ER_BASE_VALUE=0.10 (workout-balance.ts), consumida por finishSession, projectTemplateReward e helper de equivalentes de planejamento. Core continua aplicando esforço/presença/tempo/caps sobre o novo baseValue; histórico/logs concluídos preservados, sem recomputação retroativa. Cálculo legado computeSessionImpactMetrics permanece isolado conforme parallel run, não é o caminho de recompensa da sessão nativa.
+
+Planejamento e treino ativo expõem seletor por série Leve×0.8 / Manutenção×1.0 padrão / Progressão-PR×1.5. Na execução a alteração usa logSet e entra na consolidação das séries concluídas. Carga absoluta em kg não infere intensidade. XP verde e apresentação com uma casa decimal mantidos.
+
+Motor atualizado em 5.1/5.3/5.5 com nova constante e exemplos (prancha60s→30ER→3 baseValue; 72ER/esforço3/12min→19.44XP; força6séries×6reps×1.5→54ER→5.4baseValue→14.58XP com esforço3/10min estimados). Diagrama do contrato Native Modules atualizado. Nota de balanceamento explicita data/aplicação a previews e novas conclusões.
+
+Verificações: ESLint dos sete arquivos de código passou; diff-check passou; buscas conferiram ausência da conversão0.03 no código de cálculo abrangido. Não executados testes funcionais, navegador ou nova compilação global (limitação anterior permanece documentada). Reservas liberadas; sem publicação/commit/migração de dados.
+
+F06 ajuste UX: nome de cada exercício no formulário nativo agora é botão de expandir/recolher séries, com seta, contagem e aria-expanded/controls. Dados permanecem montados; campos inválidos recolhidos são reabertos ao tentar salvar.
+
+F06 polimento: XP inteiro não exibe decimal (10 XP), fracionário mantém até uma casa (14,6 XP). Séries do planejamento agora expandem/recolhem independentemente, com resumo compacto de reps/segundos, kg quando informado, pausa e PR/Leve. Valores preservados; validação reabre campos recolhidos.
+
+F06 ajuste do modal: criação nativa reserva 64px da navegação global mais safe-area inferior. Modal centralizado na área útil, com altura máxima e rolagem interna; overlay termina acima da barra. DialogContent aceita overlayClassName opcional, mantendo os demais modais com comportamento anterior. Sem testes funcionais ou navegador executados.
+
+F06 polimento de séries: resumo de reps/tempo/carga/pausa exibido somente quando a série está recolhida. Aberta mantém título e campos editáveis, sem duplicar os valores no cabeçalho. Sem testes executados.
+
+F06 navegação: selecionar Treinos no segmented control remove modalidade da URL e retorna à grade inicial, inclusive ao clicar na aba já ativa. Troca por teclado usa o mesmo reset. Fecha detalhes/formulário transitórios; biblioteca e sessão ativa preservadas. Sem testes executados.
+
+F07 cancelamento nativo: ação discardNativeSession valida sessão/conta e remove apenas sessão ativa, sem histórico, Adapter ou recompensa. Tela ativa oferece Cancelar treino com confirmação explícita, disponível inclusive nos primeiros segundos, sem limite artificial de duração. Template preservado e retorno à biblioteca. Sem testes executados.
+
+F08 biblioteca editável: TemplateCard mostra composição ordenada e pílulas por série (reps/tempo, kg, descanso, fator). Editar treino reutiliza NativeTemplateDialog com cópia local dos planos, nome, esforço e duração auto/manual. Salvar usa mesmo UUID via saveTemplate, preservando referências das sequências, metadados e snapshots de sessões/histórico; fechar não salva. Permite incluir/remover/reordenar exercícios e incluir/remover/editar séries. Sem testes funcionais ou navegador executados.
+
+F08 cards recolhíveis: treinos em Meus Treinos fechados por padrão. Nome/cabeçalho alterna composição e ações, com chevron e aria-expanded/controls. Nome, contagem e XP permanecem visíveis no resumo. Sem testes executados.
+
+F08 ação primária: Executar Agora movido para fora do conteúdo recolhível, visível com card aberto ou fechado. Guardas de sessão ativa e início nativo mantidas. Sem testes executados.
+
+F09 espaço da execução: FitnessStickyAction informa altura real via ResizeObserver; tela ativa reserva essa altura mais 24px no fim do conteúdo. Medição inclui safe-area, dois botões e responde a mudanças de largura/tamanho. Último card pode rolar acima da barra; outros consumidores mantêm reserva anterior. Sem testes funcionais/navegador executados.

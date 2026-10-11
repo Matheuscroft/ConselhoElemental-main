@@ -67,7 +67,7 @@ export const Mapa: React.FC = () => {
         <section key={group} aria-label={group} className="mb-6">
           <h3 className="font-mystic text-sm text-mystic-gold mb-2.5">{group}</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {APP_ROUTES.filter((route) => route.group === group).map((route) => (
+            {APP_ROUTES.filter((route) => route.group === group && (group !== 'Treino' || route.id === 'fitness')).map((route) => (
               <button
                 key={route.id}
                 type="button"

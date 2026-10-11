@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Info } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 
 export const Pilares: React.FC = () => {
+  const navigate = useNavigate();
   const { getElementScores, getAreaScores } = useAppStore();
   const [selectedElement, setSelectedElement] = useState<ElementId | null>(null);
 
@@ -175,6 +177,7 @@ export const Pilares: React.FC = () => {
                           area={area}
                           score={areaScore?.score || 0}
                           taskCount={areaScore?.taskCount || 0}
+                          onClick={area.name === 'Exercício Físico' && area.elementId === 'terra' ? () => navigate('/fitness') : undefined}
                           compact
                         />
                       );

@@ -49,7 +49,7 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
             <section key={group} aria-label={group}>
               <h3 className={cn('text-xs font-semibold mb-2', styles.group)}>{group}</h3>
               <div className="grid grid-cols-3 gap-2.5">
-                {APP_ROUTES.filter((route) => route.group === group).map((route) => {
+                {APP_ROUTES.filter((route) => route.group === group && (route.group !== 'Treino' || route.id === 'treinos')).map((route) => {
                   const isActive = pathname === route.path;
                   return (
                     <button

@@ -220,7 +220,7 @@ Um **Equivalente de Repetição (ER)** é a unidade normalizada de trabalho do M
 
 - Uma repetição dinâmica = `1 ER`.
 - Dois segundos de isometria = `1 ER`.
-- `1 ER = 0.03` de `base_value`.
+- `1 ER = 0.10` de `base_value`.
 
 Para isometria, a duração válida é inteira em segundos; o total de ER pode ser fracionário se o tempo não for múltiplo de dois. A precisão numérica aplicada deve ser consistente na consolidação.
 
@@ -246,12 +246,48 @@ series_er = repetition_count
 
 weighted_er = series_er × load_factor
 session_er = SUM(weighted_er for completed sets and exercises)
-base_value = session_er × 0.03
+base_value = session_er × 0.10
 ```
 
-Exemplo: uma prancha de 60 segundos classificada como Manutenção gera `30 ER × 1.0 = 30 ER`, equivalente a `0.9 base_value`. O módulo envia um único item consolidado por sessão concluída; não cria um item pontuável por repetição ou por série. Séries incompletas, puladas ou canceladas não entram na soma.
+Exemplo: uma prancha de 60 segundos classificada como Manutenção gera `30 ER × 1.0 = 30 ER`, equivalente a `3.0 base_value`. O módulo envia um único item consolidado por sessão concluída; não cria um item pontuável por repetição ou por série. Séries incompletas, puladas ou canceladas não entram na soma.
+
+Balance patch aprovado em 10/10/2026: a conversão de ER para valor-base passou de 0.03 para 0.10 em novos previews e conclusões. ExecutionLogs e recompensas já registrados conservam seus valores. A carga em kg não determina automaticamente o fator relativo: cada série expõe Leve (×0.8), Manutenção (×1.0, padrão) ou Progressão / PR (×1.5), tanto no planejamento quanto no treino em andamento.
 
 O Core valida que o valor seja numérico e maior ou igual a zero para sessões sem trabalho concluído, ou estritamente maior que zero para uma execução que gere pontos. O `base_value` originado do módulo é somente leitura na interface genérica. O teto por esforço continua aplicável após os multiplicadores do Core; o volume da sessão não remove o teto.
+
+### 5.4 Estimativa de duração no planejamento de Fitness
+
+O planejamento usa uma heurística configurável de duração; ela não mede a execução real nem representa uma avaliação fisiológica individual. Para cada série, somam-se `targetReps × 4` segundos nos exercícios dinâmicos, ou `targetDurationSeconds` exatos nos exercícios por duração/isometria, e `restSeconds` de cada série (inclusive a última). Somam-se 60 segundos de transição por exercício após o primeiro.
+
+```text
+estimated_seconds = SUM(dynamic_reps × 4 OR target_duration_seconds)
+                  + SUM(rest_seconds)
+                  + MAX(exercise_count - 1, 0) × 60
+estimated_minutes = CEIL(estimated_seconds / 60)
+```
+
+Sem exercícios, a estimativa é zero. O campo de duração atualiza ao adicionar/remover exercícios ou modificar séries, repetições, duração e descansos. O usuário pode substituir a estimativa por um valor manual; esse override permanece durante alterações do plano até escolher retornar ao cálculo automático. O modo `auto`/`manual` é preservado no template. A estimativa nunca substitui `actual_time` ao concluir uma sessão.
+
+### 5.5 Esforço global e preview de recompensa Terra
+
+`effortLevel` é opcional, inteiro de 1 a 5, no planejamento e na sessão nativa. O formulário de um treino novo sugere explicitamente 3 (moderado); o usuário pode alterar. A sessão guarda um snapshot do esforço escolhido, que o Adapter transmite ao Core. Ausência de escolha em dados anteriores ou sessão avulsa mantém o padrão de domínio 1 da seção 2.1; não se infere esforço pelo título/modalidade e não se recalcula histórico.
+
+O fator de carga da série (0.8/1/1.5) modifica o ER; o esforço global (1–5) modifica a recompensa e o débito de Prana. São parâmetros distintos e não substituem um ao outro.
+
+```text
+preview_xp = MIN(
+  (planned_er × 0.10) × 1.5 × effort_multiplier × time_multiplier(estimated_minutes),
+  effort_cap
+)
+```
+
+O preview assume presença ×1.5 e a conclusão de todas as séries. Essa presença é uma hipótese de planejamento; na execução real permanecem as faixas da seção 2.3 (somente 120 segundos ou mais alcançam ×1.5). Tempo/esforço/teto seguem as seções 2.1, 2.2 e 2.4, com limites exatos para minutos fracionários. Preview não concede XP nem debita Prana. O ganho real usa somente séries concluídas, duração real e esforço da sessão; o histórico e o feedback de conclusão exibem o valor imutável do ExecutionLog, nunca recalculam uma estimativa como ganho.
+
+Exemplo de planejamento: dois exercícios com três séries de 12 repetições cada, fator 1 e 60 segundos de descanso por série produzem 72 ER. Tempo: 288 segundos ativos + 360 de descanso + 60 de transição = 708 segundos, arredondados para 12 minutos. Com esforço 3: `7.2 × 1.5 × 1.5 × 1.2 = 19.44 XP`, abaixo do teto 50.
+
+Exemplo de força com baixo volume: dois exercícios, três séries de seis repetições por exercício, todas em Progressão / PR, geram `36 × 1.5 = 54 ER` e `5.4 base_value`. Com 60 segundos de descanso por série, tempo estimado é `144 + 360 + 60 = 564 segundos`, arredondados para 10 minutos. Com esforço global 3, preview: `MIN(5.4 × 1.5 × 1.5 × 1.2, 50) = 14.58 XP` (14,6 XP na UI). O ganho final depende das séries concluídas e da duração real.
+
+A interface destaca `pontuação + XP + 🌿` em verde, informa que o preview é estimado e mostra ER como dado secundário no extrato. A conclusão apresenta a recompensa confirmada antes do acesso ao histórico. Sem log ativo, não exibir XP estimado como se tivesse sido recebido.
 
 ## 6. Undo e imutabilidade do `ExecutionLog`
 
