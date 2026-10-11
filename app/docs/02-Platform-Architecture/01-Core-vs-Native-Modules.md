@@ -216,3 +216,6 @@ Quando o usuário interage com o item **a partir da Lista Diária** (ex.: conclu
 - Fórmulas de pontuação e `base_value` fracionário → [../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md)
 - Lista Diária como funil agnóstico → [03-A-Lista-Diaria.md](./03-A-Lista-Diaria.md)
 - Interface `IActionLike` (base para Action/Habit unificados) → [02-Acoes-e-Habitos.md](./02-Acoes-e-Habitos.md)
+
+### Ativação semanal de template Fitness (2026-10-10)
+Tornar Ciclo pede dias 0–6 (domingo–sábado), todos inicialmente selecionados e ao menos um obrigatório. WorkoutStore delega ao Adapter scheduleWorkoutAsHabit, que resolve Exercício Físico/Terra no catálogo global/customizado e cria raiz HABIT neutra via addHabit. Estado TypeScript usa camelCase (recurrenceConfig.daysOfWeek, sourceModule/sourceRefId), equivalente ao contrato snake_case. BaseValue é ER×0.10, esforço ausente assume3 nesta ativação, tempo planejado vem do template. Core grava actions e projeção habits com mesmo UUIDv4. Vínculo aponta ao template; repetição da ativação retorna ciclo existente sem duplicar. Criação não gera ExecutionLog, XP ou Prana. Treino/valores são snapshot na ativação; editar ou excluir blueprint não modifica ciclo já criado. IDs de área seguem catálogo existente (ainda legado, sem migração nesta etapa).

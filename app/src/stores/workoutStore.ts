@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
-import { completeFitnessSession } from '@/lib/workout/fitness-core-adapter';
+import { completeFitnessSession, scheduleWorkoutAsHabit } from '@/lib/workout/fitness-core-adapter';
 import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
@@ -710,6 +710,7 @@ interface WorkoutState {
   addExerciseToSession: (exercise: PlannedExercise | Exercise) => ExecutedExercise | undefined;
   logSet: (exerciseInstanceId: string, setId: string, updates: NativeSetUpdate) => NativeWorkoutSession | undefined;
   finishSession: () => NativeWorkoutSession | undefined;
+  scheduleWorkoutAsHabit: (templateId: string, daysOfWeek: number[]) => string;
   discardNativeSession: (sessionId: string) => boolean;
   previewTemplateReward: (templateId: string) => ReturnType<typeof projectTemplateReward> | undefined;
   syncAccountContext: (accountId: string | null) => void;
@@ -1138,6 +1139,13 @@ export const useWorkoutStore = create<WorkoutState>()(
       previewTemplateReward: (templateId) => {
         const template = get().templates.find((item) => item.id === templateId);
         return template ? projectTemplateReward(template) : undefined;
+      },
+
+      scheduleWorkoutAsHabit: (templateId, daysOfWeek) => {
+        if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a biblioteca.');
+        const template = get().templates.find((item) => item.id === templateId);
+        if (!template) throw new Error('Treino não encontrado na biblioteca.');
+        return scheduleWorkoutAsHabit(template, daysOfWeek).id;
       },
 
       discardNativeSession: (sessionId) => {

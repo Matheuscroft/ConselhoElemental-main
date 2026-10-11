@@ -43,6 +43,7 @@ import {
   TemporalCalendarPage,
 } from '@/pages';
 import './App.css';
+import { ScrollToTop } from '@/components/layout/ScrollToTop';
 
 function ProtectedRoute() {
   const location = useLocation();
@@ -120,6 +121,7 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AnimatePresence mode="wait">
         <Routes>
           {/* Redirect root to Santuário */}

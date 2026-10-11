@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarDays, Dumbbell, Flower2, PersonStanding, Footprints, Plus, Play, Repeat2, Layers3, Pencil, ChevronDown } from 'lucide-react';
+import { CalendarDays, Dumbbell, Flower2, PersonStanding, Footprints, Plus, Play, Repeat2, Layers3, Pencil, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
+import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, FitnessHeader, FitnessListRow, FitnessPageShell, SectionHeader } from '@/components/fitness-kit';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeTemplateDialog } from '@/components/workout/NativeTemplateDialog';
+import { MakeCycleModal } from '@/components/workout/MakeCycleModal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ExerciseDetailSheet } from '@/components/workout/ExerciseDetailSheet';
 import { WorkoutHistory } from './WorkoutHistory';
 import { Corpo } from '@/pages/Corpo';
@@ -26,6 +29,10 @@ const modalities = [
 
 function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalog: Exercise[] }) {
   const [editing, setEditing] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [cycleOpen, setCycleOpen] = useState(false);
+  const hasCycle = useAppStore((state) => state.habits.some((habit) => habit.sourceModule === 'modulo_treino' && habit.sourceRefId === template.id));
+  const deleteTemplate = useWorkoutStore((state) => state.deleteTemplate);
   const [expanded, setExpanded] = useState(false);
   const navigate = useNavigate();
   const startSession = useWorkoutStore((state) => state.startSession);
@@ -43,9 +50,23 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
     }}><Play size={17} />{active?.templateId === template.id ? 'Sessão em andamento' : 'Executar Agora'}</FitnessButton>
     <div id={`template-content-${template.id}`} hidden={!expanded} className="space-y-4">
     <ol aria-label={`Composição de ${template.name}`} className="space-y-3 rounded-xl bg-fitness-canvas/60 p-3">
-      {template.exercises.slice().sort((a, b) => a.order - b.order).map((exercise, index) => <li key={exercise.id} className="space-y-2"><p className="text-sm font-medium"><span className="mr-2 text-fitness-primary">{index + 1}.</span>{exercise.exerciseNameSnapshot}</p><div className="flex flex-wrap gap-1.5">{exercise.sets.map((set) => <span key={set.id} className="rounded-lg bg-fitness-primary/10 px-2 py-1 text-xs text-fitness-muted">{set.setNumber} · {set.measureMode === 'reps' ? `${set.targetReps ?? '—'} reps` : `${set.targetDurationSeconds ?? '—'}s`}{(set.targetLoadKg ?? 0) > 0 ? ` · ${set.targetLoadKg?.toLocaleString('pt-BR')} kg` : ''} · {set.restSeconds ?? 0}s pausa{set.loadFactor === 1.5 ? ' · PR' : set.loadFactor === 0.8 ? ' · Leve' : ''}</span>)}</div></li>)}
+      {template.exercises.slice().sort((a, b) => a.order - b.order).map((exercise) => {
+        const summary = (['reps', 'duration'] as const).flatMap((mode) => {
+          const sets = exercise.sets.filter((set) => set.measureMode === mode);
+          if (!sets.length) return [];
+          const amounts = sets.map((set) => set.measureMode === 'reps' ? set.targetReps ?? 0 : set.targetDurationSeconds ?? 0);
+          const average = amounts.reduce((sum, amount) => sum + amount, 0) / sets.length;
+          const varies = amounts.some((amount) => amount !== amounts[0]);
+          return [`${sets.length} × ${varies ? '~' : ''}${average.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}${mode === 'reps' ? ' reps' : 's'}`];
+        }).join(' + ');
+        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
+      })}
     </ol>
-    <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => setEditing(true)}><Pencil size={16} />Editar treino</FitnessButton>
+    <div className="grid grid-cols-2 gap-2">
+      <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm" onClick={() => setEditing(true)}><Pencil size={16} />Editar</FitnessButton>
+      <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm text-fitness-red" onClick={() => setConfirmDelete(true)}><Trash2 size={16} />Excluir</FitnessButton>
+    </div>
+    <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}><AlertDialogContent className="border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Excluir este treino?</AlertDialogTitle><AlertDialogDescription>“{template.name}” será removido da biblioteca e das sequências que o utilizam. Sessões em andamento e o histórico de treinos realizados serão preservados.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Manter treino</AlertDialogCancel><AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={() => { deleteTemplate(template.id); toast.success('Treino excluído da biblioteca.'); }}>Excluir treino</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     {editing && <NativeTemplateDialog template={template} catalog={catalog} modality={template.modality} onClose={() => setEditing(false)} />}
 
     <div className="grid grid-cols-2 gap-2">
@@ -53,12 +74,10 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
         // TODO: Integrar Core
         toast.info('O agendamento estará disponível na próxima etapa.');
       }}><CalendarDays size={16} />Agendar</FitnessButton>
-      <FitnessButton size="md" variant="secondary" className="px-2 text-sm" onClick={() => {
-        // TODO: Integrar Core
-        toast.info('A criação de ciclos estará disponível na próxima etapa.');
-      }}><Repeat2 size={16} />Tornar Ciclo</FitnessButton>
+      <FitnessButton size="md" variant="secondary" className={`px-2 text-sm ${hasCycle ? 'text-emerald-300' : ''}`} disabled={hasCycle} onClick={() => setCycleOpen(true)}><Repeat2 size={16} />{hasCycle ? '✓ Ciclo ativo' : 'Tornar Ciclo'}</FitnessButton>
     </div>
     </div>
+    {cycleOpen && <MakeCycleModal template={template} onClose={() => setCycleOpen(false)} />}
   </FitnessCard>;
 }
 

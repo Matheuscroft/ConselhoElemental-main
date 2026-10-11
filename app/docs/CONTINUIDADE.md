@@ -216,3 +216,15 @@ F08 cards recolhíveis: treinos em Meus Treinos fechados por padrão. Nome/cabe�
 F08 ação primária: Executar Agora movido para fora do conteúdo recolhível, visível com card aberto ou fechado. Guardas de sessão ativa e início nativo mantidas. Sem testes executados.
 
 F09 espaço da execução: FitnessStickyAction informa altura real via ResizeObserver; tela ativa reserva essa altura mais 24px no fim do conteúdo. Medição inclui safe-area, dois botões e responde a mudanças de largura/tamanho. Último card pode rolar acima da barra; outros consumidores mantêm reserva anterior. Sem testes funcionais/navegador executados.
+
+F10 navegação no topo: ScrollToTop global dentro de BrowserRouter reposiciona window antes da pintura a cada entrada de navegação (key/path/search), incluindo modalidades/abas via query e voltar/avançar. Restauração automática do navegador desativada enquanto montado; comportamento instantâneo. Sem testes funcionais/navegador executados. Alteração posterior ao commit 8d39966, ainda sem commit/push.
+
+F11 exclusão na biblioteca: cards expandidos de Meus Treinos oferecem Excluir treino com confirmação. Usa deleteTemplate existente; remove blueprint e referências nas sequências, preservando sessão ativa, histórico e recompensas. Confirmação informa alcance antes de excluir. Sem testes executados; alteração sem commit/push.
+
+F11 organização visual: Editar e Excluir no card expandido compartilham linha em duas colunas iguais, com ícones, labels curtas e exclusão em vermelho. Confirmação mantida. Sem testes executados.
+
+F11 composição compacta: card aberto mostra nome e resumo por exercício (3×10 reps · minutos totais estimados incluindo pausas). Séries com valores distintos mostram média com til e até uma casa decimal. Isometria usa segundos, grupos mistos separam reps/duração. Reutiliza autoestimador por exercício sem transição; formulário de edição mantém detalhes completos. Sem testes executados.
+
+F11 alinhamento: resumo de séries/reps/tempo sempre em linha abaixo do nome do exercício, inclusive nomes curtos. Sem testes executados.
+
+F12 ponte planejamento→Ciclos: MakeCycleModal seleciona dias 0–6, valida seleção não vazia; WorkoutStore valida conta e delega ao Adapter. Cria Habit/Action raiz com fonte/template, ER×0.10, esforço, tempo e área Terra real do catálogo. addHabit preserva campos canônicos/fonte e neutralidade nativa. Indicador Ciclo ativo por habits e deduplicação no Adapter. Não emite recompensas, não sincroniza futuras edições, sem migração de IDs de área. Sem testes funcionais/navegador executados; sem commit/push.

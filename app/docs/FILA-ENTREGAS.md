@@ -255,3 +255,5 @@ F05 implementada: duração automática com override, seletor global padrão3 no
 Autorização atual do usuário: conversão 1ER=0.10, atualização dos exemplos e seletor fator0.8/1/1.5 no planejamento/execução. Reserva sequencial: Motor/Native Modules, workout-balance, workout-equivalents, native-reward-preview, workoutStore, NativeTemplateDialog, ActiveFitnessSession, docs continuidade/fila. Prévio .03 é histórico; nenhuma recompensa já emitida será recalculada. Core aplica mesmos multiplicadores/caps sobre novo baseValue. Sem publicação.
 
 F06 implementada: constante compartilhada0.10, nova conversão em preview/conclusão/helpers ER, seletor fator de carga em planejamento e execução, exemplos/docs canônicos atualizados. ESLint sete arquivos/diff-check passaram; sem testes funcionais/navegador/publicação. Histórico preservado, reservas liberadas.
+
+F12 — ativação semanal Fitness implementada: modal de dias, Adapter via addHabit e indicador por template. Core mantém fonte/valores na Action e projeção Habit. Sem publicação, commit ou migração; reservas encerradas. Revisão funcional de Ciclos pendente.
