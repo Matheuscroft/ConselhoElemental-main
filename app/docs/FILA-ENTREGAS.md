@@ -311,3 +311,19 @@ F35 — badge/séries empilhados no exercício, reserva encerrada.
 F36 — separação visual CHECKIN/LIVE reforçada, reserva widget encerrada; lint final em andamento.
 
 F37 — fila de treinos compacta com setas implementada; reserva Ciclos encerrada.
+
+F38 — ampliação catálogo Calistenia implementada, reservas constants/workoutStore/docs encerradas. ESLint aprovado, TypeScript filtrado sem erros nos arquivos alterados; funcional pendente.
+
+F39 — tags musculares e filtros catálogo implementados, reserva constants/types/store/components/FitnessRoot/docs; validação estática final em andamento, visual pendente.
+
+F39 — reservas liberadas; ESLint aprovado, TypeScript filtrado sem erros nos arquivos alterados, funcional pendente.
+
+F40 — tags/emoji corrigidos, reserva constants/catalog/store encerrada, lint final em andamento.
+
+F41 — emoji predominante treino implementado, reserva helper/Root/widget encerrada; ESLint aprovado.
+
+F42 — emojis internos implementados, reserva helper/Root/widget encerrada; lint final em andamento.
+
+F43 — filtros compactos emoji no modal implementados, reservas constants/modal/catalog encerradas; ESLint aprovado.
+
+F44 — emojis na lista catálogo modal implementados, reserva encerrada.

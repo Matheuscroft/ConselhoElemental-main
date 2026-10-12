@@ -1,9 +1,18 @@
+import { CALISTENIA_MUSCLE_PROFILES } from './calistenia-muscles';
+import type { MuscleGroupId } from '@/types/workout';
+
 export type CalisteniaExercise = {
+  primaryMuscles?: MuscleGroupId[];
+  secondaryMuscles?: MuscleGroupId[];
   id: string;
   namePt: string;
   category: string;
   focus: string;
-  level: 'Iniciante' | 'Intermediário';
+  level: 'Iniciante' | 'Intermediário' | 'Avançado';
+  measureMode?: 'reps' | 'duration';
+  defaultSets?: number;
+  defaultReps?: number;
+  defaultDurationSeconds?: number;
   benefits: string[];
   technique: string[];
   breathing: string;
@@ -12,7 +21,7 @@ export type CalisteniaExercise = {
   variations?: string[];
 };
 
-export const CALISTENIA_EXERCISES: CalisteniaExercise[] = [
+const CALISTENIA_EXERCISE_DEFINITIONS: CalisteniaExercise[] = [
   {
     id: 'incline-push-up',
     namePt: 'Flexão Inclinada',
@@ -283,7 +292,255 @@ export const CALISTENIA_EXERCISES: CalisteniaExercise[] = [
     contraindications: ['Condição cardíaca sem liberação médica'],
     variations: ['Burpee sem salto', 'Burpee com salto', 'Burpee lateral'],
   },
+{
+  "id": "diamond-push-up",
+  "namePt": "Flexão Diamante",
+  "category": "Empurrar",
+  "focus": "tríceps e porção interna do peitoral",
+  "level": "Intermediário",
+  "benefits": [
+    "Forte hipertrofia e ganho de força no tríceps",
+    "Reduz a carga sobre os ombros em comparação com a flexão aberta",
+    "Aumenta a força de bloqueio dos cotovelos"
+  ],
+  "technique": [
+    "Mãos juntas formando um diamante (ou triângulo) com indicadores e polegares",
+    "Corpo em linha reta",
+    "Desça até o peito tocar (ou quase tocar) as mãos",
+    "Mantenha os cotovelos próximos ao corpo, não os deixe abrir excessivamente"
+  ],
+  "breathing": "Inspire ao descer, expire empurrando com força.",
+  "contraindications": [
+    "Dores nos punhos ou epicondilite (cotovelo)"
+  ],
+  "duration": "3-4 séries de 8-12 repetições",
+  "variations": [
+    "Flexão diamante com joelhos (iniciante)",
+    "Flexão diamante declinada (avançado)"
+  ]
+},
+{
+  "id": "dips",
+  "namePt": "Mergulho nas Paralelas",
+  "category": "Empurrar",
+  "focus": "peitoral inferior, tríceps e ombros frontais",
+  "level": "Intermediário",
+  "benefits": [
+    "Um dos maiores construtores de massa muscular para a parte superior",
+    "Exige grande estabilização do core e ombros",
+    "Prepara articulações para movimentos mais complexos (ex: Muscle-up)"
+  ],
+  "technique": [
+    "Apoie-se nas barras paralelas com os braços esticados",
+    "Incline o tronco levemente para frente (foca mais no peito) ou fique reto (foca no tríceps)",
+    "Desça controladamente até os ombros passarem a linha dos cotovelos (ângulo de 90º)",
+    "Empurre de volta à posição inicial travando os cotovelos"
+  ],
+  "breathing": "Inspire profundamente na descida, expire na subida.",
+  "contraindications": [
+    "Lesões no manguito rotador ou dores nos ombros"
+  ],
+  "duration": "3-5 séries de 5-10 repetições",
+  "variations": [
+    "Mergulho no banco (iniciante)",
+    "Mergulho com peso extra (avançado)"
+  ]
+},
+{
+  "id": "chin-up",
+  "namePt": "Barra Fixa Supinada (Chin-up)",
+  "category": "Puxar",
+  "focus": "bíceps e dorsais",
+  "level": "Intermediário",
+  "benefits": [
+    "O melhor exercício de peso corporal para o bíceps",
+    "Desenvolve a espessura das costas",
+    "Mais fácil de progredir inicialmente do que a barra pronada"
+  ],
+  "technique": [
+    "Segure a barra com as palmas viradas para você, largura dos ombros",
+    "Inicie pendurado (dead hang) com ombros relaxados",
+    "Puxe o corpo para cima até o queixo passar da barra",
+    "Desça de forma controlada até esticar os braços totalmente"
+  ],
+  "breathing": "Expire ao puxar, inspire controlando a descida.",
+  "contraindications": [
+    "Tendinite crônica no cotovelo"
+  ],
+  "duration": "3-4 séries de 5-10 repetições",
+  "variations": [
+    "Isometria no topo (iniciante)",
+    "Pull-up pronado (intermediário)"
+  ]
+},
+{
+  "id": "muscle-up-transition",
+  "namePt": "Transição para Muscle-Up",
+  "category": "Puxar",
+  "focus": "explosão dorsal e técnica de transição",
+  "level": "Avançado",
+  "benefits": [
+    "Treina a potência de puxada (High Pull-up)",
+    "Prepara os pulsos e ombros para a subida acima da barra",
+    "Conecta movimentos de puxar com empurrar"
+  ],
+  "technique": [
+    "Use uma pegada falsa ou pegada forte e profunda na barra",
+    "Faça um leve balanço (kip) ou puxe de forma estrita e explosiva",
+    "Puxe a barra em direção ao abdômen/peito inferior, não em direção ao queixo",
+    "Pratique o giro dos cotovelos por cima da barra"
+  ],
+  "breathing": "Inspire antes de puxar, expire no momento explosivo.",
+  "contraindications": [
+    "Falta de base sólida (mínimo de 10 barras estritas necessárias antes de tentar)"
+  ],
+  "duration": "4-5 séries de 3-5 repetições",
+  "variations": [
+    "Muscle-up com elástico",
+    "High pull-ups"
+  ]
+},
+{
+  "id": "bulgarian-split-squat",
+  "namePt": "Agachamento Búlgaro",
+  "category": "Pernas",
+  "focus": "quadríceps, glúteos e estabilidade",
+  "level": "Intermediário",
+  "benefits": [
+    "Trabalho unilateral intenso que corrige assimetrias",
+    "Exige e desenvolve extremo equilíbrio",
+    "Gera alta hipertrofia nas pernas sem necessidade de barra pesada nas costas"
+  ],
+  "technique": [
+    "Em pé, apoie o peito de um dos pés num banco ou cadeira atrás de você",
+    "Dê um passo à frente com a outra perna",
+    "Desça flexionando o joelho da frente até a coxa ficar paralela ao chão",
+    "Mantenha o peito estufado e o joelho da frente alinhado com o pé"
+  ],
+  "breathing": "Inspire descendo, expire subindo.",
+  "contraindications": [
+    "Problemas de joelho não reabilitados"
+  ],
+  "duration": "3-4 séries de 8-15 repetições (cada perna)",
+  "variations": [
+    "Passada/Avanço (iniciante)",
+    "Búlgaro com salto (avançado)"
+  ]
+},
+{
+  "id": "pistol-squat",
+  "namePt": "Agachamento Pistol",
+  "category": "Pernas",
+  "focus": "força unilateral extrema, mobilidade de tornozelo",
+  "level": "Avançado",
+  "benefits": [
+    "Demonstração máxima de controle corporal e força nas pernas",
+    "Exige grande flexibilidade do quadril e tornozelo",
+    "Ativa intensamente o core para não cair para trás"
+  ],
+  "technique": [
+    "Fique em um pé só, esticando a outra perna reta para frente",
+    "Estique os braços para frente para fazer contrapeso",
+    "Desça controladamente o máximo possível (até encostar a coxa na panturrilha)",
+    "Empurre o chão com o pé inteiro para voltar à posição inicial"
+  ],
+  "breathing": "Inspire fundo e segure a pressão no abdômen ao descer, expire subindo.",
+  "contraindications": [
+    "Falta de mobilidade ou dores patelares (joelho)"
+  ],
+  "duration": "3-5 séries de 3-8 repetições (cada perna)",
+  "variations": [
+    "Pistol apoiado em um batente (iniciante)",
+    "Pistol descendo até um banco (intermediário)"
+  ]
+},
+{
+  "id": "glute-bridge",
+  "namePt": "Elevação Pélvica",
+  "category": "Pernas",
+  "focus": "glúteos, posteriores de coxa e lombar",
+  "level": "Iniciante",
+  "benefits": [
+    "Fortalece os glúteos, essenciais para a postura",
+    "Alivia tensões na lombar fortalecendo a cadeia posterior",
+    "Fácil execução para todos os níveis"
+  ],
+  "technique": [
+    "Deite de costas com os joelhos dobrados e pés no chão, perto dos glúteos",
+    "Aperte o abdômen e empurre o chão com os calcanhares",
+    "Eleve os quadris até o corpo formar uma linha reta dos ombros aos joelhos",
+    "Contraia os glúteos no topo por 2 segundos e desça"
+  ],
+  "breathing": "Inspire embaixo, expire empurrando para cima.",
+  "contraindications": [],
+  "duration": "3-4 séries de 15-20 repetições",
+  "variations": [
+    "Elevação pélvica unilateral (intermediário)",
+    "Elevação pélvica com peso (intermediário)"
+  ]
+},
+{
+  "id": "v-up",
+  "namePt": "Abdominal Canivete (V-Up)",
+  "category": "Core",
+  "focus": "abdômen completo (reto e inferior)",
+  "level": "Intermediário",
+  "benefits": [
+    "Trabalha a parte superior e inferior do abdômen simultaneamente",
+    "Desenvolve coordenação explosiva",
+    "Fortalece os flexores do quadril"
+  ],
+  "technique": [
+    "Deite de costas com pernas esticadas e braços estendidos acima da cabeça",
+    "Suba o tronco e as pernas ao mesmo tempo, formando um V com o corpo",
+    "Tente tocar os pés com as mãos no topo do movimento",
+    "Desça de forma controlada sem deixar os pés despencarem no chão"
+  ],
+  "breathing": "Expire forte ao subir fechando o V, inspire controlando a descida.",
+  "contraindications": [
+    "Lombalgia severa (dores agudas na lombar)"
+  ],
+  "duration": "3-4 séries de 10-20 repetições",
+  "variations": [
+    "Canivete alternado (iniciante)",
+    "Tuck-up abraçando os joelhos (iniciante)"
+  ]
+},
+{
+  "id": "dragon-flag",
+  "namePt": "Dragon Flag",
+  "category": "Isometrias e Skills",
+  "focus": "força extrema do core",
+  "level": "Avançado",
+  "benefits": [
+    "Movimento icônico (popularizado por Bruce Lee)",
+    "Recruta o abdômen inteiro como um bloco de concreto",
+    "Constrói imensa estabilidade na coluna"
+  ],
+  "technique": [
+    "Deite num banco e segure firmemente atrás da cabeça",
+    "Eleve as pernas e o tronco até ficar apoiado apenas pela parte superior das costas/ombros",
+    "O corpo deve ser uma linha reta sólida dos ombros aos pés",
+    "Desça o corpo inteiro lentamente sem dobrar o quadril (fase excêntrica)"
+  ],
+  "breathing": "Inspire e trave o abdômen no topo, expire controladamente no final da descida.",
+  "contraindications": [
+    "Fraqueza na lombar ou falta de força abdominal básica"
+  ],
+  "duration": "3-5 séries de 3-6 descidas (excêntricas) ou isometria de 10-20s",
+  "variations": [
+    "Dragon flag com joelhos encolhidos (intermediário)",
+    "Descidas lentas - Negativas (intermediário)"
+  ],
+  "measureMode": "reps",
+  "defaultSets": 4,
+  "defaultReps": 5
+},
 ];
+
+export const CALISTENIA_EXERCISES: CalisteniaExercise[] = CALISTENIA_EXERCISE_DEFINITIONS.map((exercise) => ({
+  ...exercise, ...CALISTENIA_MUSCLE_PROFILES[exercise.id],
+}));
 
 export const CALISTENIA_GROUP_ORDER = [
   'Empurrar',

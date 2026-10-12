@@ -6,6 +6,7 @@ import { FitnessIconBadge } from './FitnessIconBadge';
 
 interface FitnessListRowProps {
   icon: LucideIcon;
+  leading?: React.ReactNode;
   title: string;
   subtitle?: string;
   trailing?: React.ReactNode;
@@ -14,10 +15,10 @@ interface FitnessListRowProps {
 }
 
 /** Linha genérica (badge + título + subtítulo + chevron) para listas de treinos/exercícios. */
-export const FitnessListRow: React.FC<FitnessListRowProps> = ({ icon, title, subtitle, trailing, onClick, ariaLabel }) => {
+export const FitnessListRow: React.FC<FitnessListRowProps> = ({ icon, leading, title, subtitle, trailing, onClick, ariaLabel }) => {
   const content = (
     <>
-      <FitnessIconBadge icon={icon} size="sm" />
+      {leading ?? <FitnessIconBadge icon={icon} size="sm" />}
       <span className="min-w-0 flex-1 text-left">
         <span className="block truncate text-[17px] font-medium text-fitness-text">{title}</span>
         {subtitle && <span className="block truncate text-sm text-fitness-muted">{subtitle}</span>}

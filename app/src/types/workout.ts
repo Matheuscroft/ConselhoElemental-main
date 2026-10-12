@@ -70,6 +70,9 @@ export interface LegacyWorkoutExercise {
   defaultLoadKg: number;
   loadMode: ExerciseLoadMode;
   muscleDistribution: MuscleContribution[];
+  /** Search/display tags, independent of contribution percentages. */
+  primaryMuscles?: MuscleGroupId[];
+  secondaryMuscles?: MuscleGroupId[];
   legacyId?: string;
 }
 

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ArrowUp, ChevronDown, Plus, Trash2 } from 'lucide-react';
+import { ArrowUp, ChevronDown, Grid2X2, Plus, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FitnessButton, FitnessCard } from '@/components/fitness-kit';
 import { useWorkoutStore } from '@/stores/workoutStore';
@@ -7,6 +7,8 @@ import type { Exercise, PlannedExercise, UUIDv4, WorkoutExerciseCategory, Workou
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { formatEarthXp, projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { FitnessIntegerField } from './FitnessIntegerField';
+import { MUSCLE_REGIONS } from '@/constants/muscle-regions';
+import { getExerciseFocus } from '@/lib/workout/workout-focus';
 
 const newId = () => crypto.randomUUID() as UUIDv4;
 const field = 'h-11 w-full min-w-0 rounded-xl border border-white/10 bg-fitness-canvas px-3 text-fitness-text outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary';
@@ -34,6 +36,7 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, on
   const [manualMinutes, setManualMinutes] = useState<string | null>(() => template && (template.durationEstimateMode === 'manual' || (!template.durationEstimateMode && (template.estimatedDurationMinutes ?? 0) > 0)) ? String(template.estimatedDurationMinutes ?? 0) : null);
   const [effortLevel, setEffortLevel] = useState(template ? template.effortLevel ?? 1 : 3);
   const [search, setSearch] = useState('');
+  const [muscleFilter, setMuscleFilter] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [collapsedExercises, setCollapsedExercises] = useState<Set<string>>(() => new Set());
   const [collapsedSeries, setCollapsedSeries] = useState<Set<string>>(() => new Set());
@@ -42,7 +45,8 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, on
     const preset = catalog.find((exercise) => exercise.id === presetId);
     return preset ? [plannedExercise(preset, 0)] : [];
   });
-  const matches = useMemo(() => catalog.filter((exercise) => exercise.name.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR'))), [catalog, search]);
+  const matches = useMemo(() => catalog.filter((exercise) => exercise.name.toLocaleLowerCase('pt-BR').includes(search.toLocaleLowerCase('pt-BR')) &&
+    (!muscleFilter || MUSCLE_REGIONS.find((region) => region.id === muscleFilter)?.muscles.some((muscle) => exercise.primaryMuscles?.includes(muscle)))), [catalog, search, muscleFilter]);
   const automaticMinutes = calculateEstimatedDuration(plans);
   const estimatedMinutes = manualMinutes ?? String(automaticMinutes);
   const safeMinutes = Math.max(0, Number(estimatedMinutes) || 0);
@@ -96,8 +100,8 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, on
             </div>
           </FitnessCard>)}
         </fieldset>
-        <section className="space-y-3"><h3 className="font-semibold">Adicionar do catálogo</h3><label className="block"><span className="sr-only">Buscar exercícios</span><input className={field} placeholder="Buscar exercício" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-          <div className="max-h-52 space-y-2 overflow-y-auto">{matches.map((exercise) => <button type="button" key={exercise.id} disabled={plans.some((plan) => plan.exerciseId === exercise.id)} className="flex min-h-12 w-full items-center justify-between rounded-xl bg-fitness-surface px-4 text-left text-sm disabled:opacity-40" onClick={() => setPlans((current) => [...current, plannedExercise(exercise, current.length)])}>{exercise.name}<Plus size={16} /></button>)}{matches.length === 0 && <p className="py-3 text-sm text-fitness-muted">Nenhum exercício encontrado nesta modalidade.</p>}</div>
+        <section className="space-y-3"><h3 className="font-semibold">Adicionar do catálogo</h3>{catalog.some((exercise) => exercise.primaryMuscles?.length) && <div role="group" aria-label="Filtrar exercícios por região muscular" className="flex flex-wrap gap-1.5"><button type="button" title="Todos os exercícios" aria-label="Todos os exercícios" aria-pressed={!muscleFilter} onClick={() => setMuscleFilter(null)} className={`grid h-10 w-10 place-items-center rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${!muscleFilter ? 'border-fitness-primary bg-fitness-primary/15 text-fitness-primary' : 'border-white/10 text-fitness-muted'}`}><Grid2X2 size={16} /></button>{MUSCLE_REGIONS.map((region) => <button key={region.id} type="button" title={region.label} aria-label={`Filtrar por ${region.label}`} aria-pressed={muscleFilter === region.id} onClick={() => setMuscleFilter((current) => current === region.id ? null : region.id)} className={`grid h-10 w-10 place-items-center rounded-xl border text-lg outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${muscleFilter === region.id ? 'border-fitness-primary bg-fitness-primary/15' : 'border-white/10 bg-fitness-surface'}`}><span aria-hidden="true">{region.emoji}</span></button>)}</div>}<label className="block"><span className="sr-only">Buscar exercícios</span><input className={field} placeholder="Buscar exercício" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
+          <div className="max-h-52 space-y-2 overflow-y-auto">{matches.map((exercise) => { const focus = getExerciseFocus(exercise.id, catalog); return <button type="button" key={exercise.id} disabled={plans.some((plan) => plan.exerciseId === exercise.id)} className="flex min-h-12 w-full items-center justify-between rounded-xl bg-fitness-surface px-4 text-left text-sm disabled:opacity-40" onClick={() => setPlans((current) => [...current, plannedExercise(exercise, current.length)])}><span className="min-w-0 flex-1 break-words">{focus && <span role="img" aria-label={`Foco: ${focus.label}`} className="mr-2">{focus.emoji}</span>}{exercise.name}</span><Plus size={16} className="ml-2 shrink-0" /></button>; })}{matches.length === 0 && <p className="py-3 text-sm text-fitness-muted">Nenhum exercício encontrado nesta modalidade.</p>}</div>
         </section>
         {error && <p role="alert" className="text-sm text-fitness-coral">{error}</p>}
         <FitnessButton type="submit" size="md" className="w-full" disabled={!plans.length}>Salvar treino</FitnessButton>

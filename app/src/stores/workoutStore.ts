@@ -8,6 +8,7 @@ import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
 import { projectWorkoutProgress } from '@/lib/workout/native-progress-reward';
 import { saveSharedWorkoutSequence, importLegacyWorkoutSequences } from '@/lib/workout/shared-sequences';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
+import { correctPreviousMuscleTags } from '@/constants/calistenia-muscles';
 import { SPORT_ACTIVITIES } from '@/constants/sport-activities';
 import { YOGA_POSES } from '@/constants/yoga-poses';
 import type {
@@ -314,14 +315,20 @@ const calisteniaFallbackDistribution = (category: string): MuscleContribution[] 
   }
 };
 
-const mapLevel = (level: 'Iniciante' | 'Intermediário'): WorkoutExercise['level'] =>
-  level === 'Iniciante' ? 'beginner' : 'intermediate';
+const mapLevel = (level: 'Iniciante' | 'Intermediário' | 'Avançado'): WorkoutExercise['level'] =>
+  level === 'Iniciante' ? 'beginner' : level === 'Avançado' ? 'advanced' : 'intermediate';
 
 const normalizeLegacyExercise = (
   exercise: {
     id: string;
     namePt: string;
-    level: 'Iniciante' | 'Intermediário';
+    level: 'Iniciante' | 'Intermediário' | 'Avançado';
+    measureMode?: 'reps' | 'duration';
+    defaultSets?: number;
+    defaultReps?: number;
+    defaultDurationSeconds?: number;
+    primaryMuscles?: MuscleGroupId[];
+    secondaryMuscles?: MuscleGroupId[];
     focus: string;
     benefits: string[];
     breathing: string;
@@ -337,12 +344,12 @@ const normalizeLegacyExercise = (
     muscleFallback: MuscleContribution[];
   }
 ): WorkoutExercise => {
-  const durationSeconds = parseDurationSeconds(exercise.duration);
+  const durationSeconds = exercise.defaultDurationSeconds ?? parseDurationSeconds(exercise.duration);
   const hasReps = /repeti(?:ç|c)[õo]es?/i.test(exercise.duration ?? '');
   const hasDuration = durationSeconds > 0;
-  const measureMode: ExerciseMeasureMode = hasReps ? 'reps' : hasDuration ? 'duration' : 'reps';
-  const defaultSets = parseSetCount(exercise.duration);
-  const defaultReps = parseRepCount(exercise.duration);
+  const measureMode: ExerciseMeasureMode = exercise.measureMode ?? (hasReps ? 'reps' : hasDuration ? 'duration' : 'reps');
+  const defaultSets = exercise.defaultSets ?? parseSetCount(exercise.duration);
+  const defaultReps = exercise.defaultReps ?? parseRepCount(exercise.duration);
 
   return {
     id: `${options.source}-${exercise.id}`,
@@ -367,6 +374,8 @@ const normalizeLegacyExercise = (
     defaultLoadKg: 0,
     loadMode: 'bodyweight',
     muscleDistribution: normalizeMuscleDistribution(options.muscleFallback),
+    primaryMuscles: exercise.primaryMuscles ? [...exercise.primaryMuscles] : undefined,
+    secondaryMuscles: exercise.secondaryMuscles ? [...exercise.secondaryMuscles] : undefined,
   };
 };
 
@@ -406,6 +415,15 @@ const cloneExercise = (exercise: WorkoutExercise): WorkoutExercise => ({
   variations: [...exercise.variations],
   muscleDistribution: cloneContributions(exercise.muscleDistribution),
 });
+
+const extendDefaultCatalog = (existing: WorkoutExercise[]): WorkoutExercise[] => [
+  ...existing.map((saved) => {
+    const exercise = correctPreviousMuscleTags(saved);
+    const reference = DEFAULT_WORKOUT_CATALOG.find((item) => item.id === exercise.id);
+    return { ...exercise, primaryMuscles: exercise.primaryMuscles ?? reference?.primaryMuscles,
+      secondaryMuscles: exercise.secondaryMuscles ?? reference?.secondaryMuscles };
+  }), ...DEFAULT_WORKOUT_CATALOG.filter((exercise) => !existing.some((item) => item.id === exercise.id)).map(cloneExercise),
+];
 
 const createEmptyAccountData = (): WorkoutAccountData => ({
   workouts: [],
@@ -468,7 +486,7 @@ const normalizeWorkoutExercises = (exercises: WorkoutExercisePlan[]): WorkoutExe
     .sort((left, right) => left.order - right.order);
 
 const getExerciseByIdFromData = (data: WorkoutAccountData | null, id: string): WorkoutExercise | undefined =>
-  data?.exercisesCatalog.find((exercise) => exercise.id === id) ?? SPORT_ACTIVITIES.find((exercise) => exercise.id === id);
+  data?.exercisesCatalog.find((exercise) => exercise.id === id) ?? DEFAULT_WORKOUT_CATALOG.find((exercise) => exercise.id === id) ?? SPORT_ACTIVITIES.find((exercise) => exercise.id === id);
 
 const getLatestWeightAt = (data: WorkoutAccountData, at: ISODateString): number | undefined => {
   const atTime = new Date(at).getTime();
@@ -1014,7 +1032,16 @@ export const useWorkoutStore = create<WorkoutState>()(
       ...emptyNativeData(),
 
       ensureNativeCatalog: () => {
+        const accountId = getCurrentAccountId(get().currentAccountId);
+        set((state) => updateAccountData(state, accountId, (data) => ({ ...data, exercisesCatalog: extendDefaultCatalog(data.exercisesCatalog) })));
         // Ponte de identidade para o catálogo preservado; UUIDs persistem por conta.
+        const references = get().getExerciseCatalog();
+        set((state) => updateNativeData(state, (data) => ({ ...data, nativeCatalog: data.nativeCatalog.map((saved) => {
+          const exercise = correctPreviousMuscleTags(saved);
+          const reference = references.find((item) => item.id === exercise.legacyId);
+          return { ...exercise, primaryMuscles: exercise.primaryMuscles ?? reference?.primaryMuscles,
+            secondaryMuscles: exercise.secondaryMuscles ?? reference?.secondaryMuscles };
+        }) })));
         const existing = get().nativeCatalog;
         const missing = get().getExerciseCatalog().filter((exercise) => !existing.some((item) => item.legacyId === exercise.id));
         if (!missing.length) return;
@@ -1308,7 +1335,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       syncAccountContext: (accountId) => {
         const resolvedAccountId = resolveAccountId(accountId);
         set((state) => ({
-          ...updateAccountData(state, resolvedAccountId, (data) => data),
+          ...updateAccountData(state, resolvedAccountId, (data) => ({ ...data, exercisesCatalog: extendDefaultCatalog(data.exercisesCatalog) })),
           ...emptyNativeData(),
           ...state.nativeDataById[resolvedAccountId],
         }));
@@ -1323,7 +1350,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       getExerciseCatalog: () => {
         const accountId = getCurrentAccountId(get().currentAccountId);
         const data = getCurrentAccountData(get().accountDataById, accountId);
-        const existing = data?.exercisesCatalog ?? [];
+        const existing = extendDefaultCatalog(data?.exercisesCatalog ?? []);
         return [...existing, ...SPORT_ACTIVITIES.filter((activity) => !existing.some((exercise) => exercise.id === activity.id))];
       },
 

@@ -6,11 +6,13 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
-import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, FitnessHeader, FitnessListRow, FitnessPageShell, SectionHeader } from '@/components/fitness-kit';
+import { getWorkoutFocus, getExerciseFocus } from '@/lib/workout/workout-focus';
+import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, FitnessHeader, FitnessPageShell, SectionHeader } from '@/components/fitness-kit';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { NativeTemplateDialog } from '@/components/workout/NativeTemplateDialog';
 import { WorkoutSequenceLibrary } from '@/components/workout/WorkoutSequenceLibrary';
+import { MuscleExerciseCatalog } from '@/components/workout/MuscleExerciseCatalog';
 import { MakeCycleModal } from '@/components/workout/MakeCycleModal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { ExerciseDetailSheet } from '@/components/workout/ExerciseDetailSheet';
@@ -47,8 +49,9 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
   const previewReward = useWorkoutStore((state) => state.previewTemplateReward);
   const reward = previewReward(template.id);
   const series = template.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
+  const focus = getWorkoutFocus(template, catalog);
   return <FitnessCard className="space-y-4 p-5">
-    <h3><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary"><Dumbbell size={21} /></span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
+    <h3><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary">{focus ? <span role="img" aria-label={`Foco predominante: ${focus.label}`} className="text-2xl">{focus.emoji}</span> : <Dumbbell size={21} />}</span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
     {reward && <div className="space-y-2"><span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 font-semibold text-emerald-800">{formatEarthXp(reward.earthXp)} XP <span aria-label="Terra">🌿</span></span><p className="text-xs text-fitness-muted">Estimativa · {reward.estimatedDurationMinutes} min planejados · esforço {reward.effortLevel}. O ganho depende do que você concluir.</p></div>}
     <FitnessButton size="md" className="w-full" disabled={!!active || template.exercises.length === 0} onClick={() => {
       const session = startSession(template.id);
@@ -58,6 +61,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
     <div id={`template-content-${template.id}`} hidden={!expanded} className="space-y-4">
     <ol aria-label={`Composição de ${template.name}`} className="space-y-3 rounded-xl bg-fitness-canvas/60 p-3">
       {template.exercises.slice().sort((a, b) => a.order - b.order).map((exercise) => {
+        const exerciseFocus = getExerciseFocus(exercise.exerciseId, catalog);
         const summary = (['reps', 'duration'] as const).flatMap((mode) => {
           const sets = exercise.sets.filter((set) => set.measureMode === mode);
           if (!sets.length) return [];
@@ -66,7 +70,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
           const varies = amounts.some((amount) => amount !== amounts[0]);
           return [`${sets.length} × ${varies ? '~' : ''}${average.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}${mode === 'reps' ? ' reps' : 's'}`];
         }).join(' + ');
-        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
+        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <span role="img" aria-label={`Foco: ${exerciseFocus.label}`} className="mr-2">{exerciseFocus.emoji}</span>}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
       })}
     </ol>
     <div className="grid grid-cols-2 gap-2">
@@ -135,7 +139,7 @@ function FitnessLibraryRoot() {
           {!modality ? <><SectionHeader title="Explorar modalidades" subtitle="Encontre seus exercícios e organize seus treinos." /><FitnessCategoryGrid options={modalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} /></> : <>
 
             <section className="space-y-4"><SectionHeader title="Meus Treinos" />{selectedTemplates.length ? selectedTemplates.map((template) => <TemplateCard key={template.id} template={template} catalog={selectedCatalog} />) : <FitnessEmptyState message="Monte seu primeiro treino com os exercícios desta modalidade." action={<FitnessButton size="md" onClick={() => { setPresetId(undefined); setCreateOpen(true); }}>Criar treino</FitnessButton>} />}</section>
-            <section className="space-y-4"><SectionHeader title="Catálogo" subtitle={`${selectedCatalog.length} exercícios de ${modality.label}`} />{selectedCatalog.length ? selectedCatalog.map((exercise) => <FitnessListRow key={exercise.id} icon={CATEGORY_ICONS[exercise.modality]} title={exercise.name} subtitle={exercise.focus} onClick={() => setDetail(exercise)} ariaLabel={`Ver ${exercise.name}`} />) : <FitnessEmptyState message="Esta modalidade ainda não tem exercícios no catálogo." />}</section>
+            <section className="space-y-4"><SectionHeader title="Catálogo" subtitle={`Exercícios de ${modality.label}`} /><MuscleExerciseCatalog key={modality.id} icon={CATEGORY_ICONS[modality.id]} exercises={selectedCatalog} onSelect={setDetail} /></section>
           </>}
           <WorkoutSequenceLibrary modality={modality?.id} />
         </TabsContent>

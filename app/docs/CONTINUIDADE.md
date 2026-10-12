@@ -294,3 +294,21 @@ F36 — removido Concluir Treino redundante do widget Ciclos. Checkbox continua 
 F37 — fila Fitness na rotação Ciclos compacta em linha com setas entre nomes, wrap responsivo, sem números/Hoje redundantes. Membro atual verde e aria-current step; Passo no cabeçalho preservado. Sem testes executados.
 
 Publicação F14–F37 solicitada pelo usuário: lote inclui sequências compartilhadas, proteção sync, histórico XP, CHECKIN/LIVE, reversão e refinamentos widget. Commit/push para origin/main nesta operação. Migrações SQL apenas versionadas, sem aplicação remota; validação visual pendente.
+
+F38 — 9novos exercícios enviados pelo usuário adicionados ao catálogo Calistenia, total21. Pike original preservada. Avançado aceito/mapeado; defaults explícitos opcionais precedem parser, Dragon Flag reps4×5. Catálogos existentes recebem defaults ausentes por ID e nativeCatalog gera UUID apenas para novos itens. Templates/histórico/customizações preservados. Primeira inserção detectou sintaxe inválida na validação, corrigida antes de concluir. ESLint dois arquivos passou; tsc -p tsconfig.app.json global segue com falhas preexistentes, saída filtrada sem erros em calistenia/workoutStore. Sem testes funcionais/browser, commit/push ou sync cloud.
+
+F39 — tags primaryMuscles/secondaryMuscles por ID em21 exercícios Calistenia, preservadas no converter e preenchidas nos catálogos salvos apenas quando ausentes, sem alterar muscleDistribution/pontos/UUIDs/templates/histórico. MuscleExerciseCatalog usa FitnessListRow com leading opcional, pílulas regiões multiseleção OR, opção secundários, count/empty/Todos e nomes/emoji principais. FitnessRoot mantém catálogo integral disponível ao criador de treinos. ESLint primeira rodada passou, final em andamento; tsc app filtrado em andamento. Sem teste funcional/browser/commit/push.
+
+F39 final: ESLint sete arquivos aprovado; tsc -p tsconfig.app.json continua limitado por falhas globais preexistentes, saída filtrada sem diagnósticos nos arquivos desta alteração. Reservas encerradas; validar UI no navegador.
+
+F40 — revisão tags: Burpee controlado principais quadríceps/glúteos, peito secundário; Diamante inclui tríceps/peito como principais. Emoji agora segue primeiro principal, não ordem fixa dos filtros. Correção de perfis salvos somente se arrays coincidem exatamente com defaults antigos, preservando customizações/UUIDs e distribuição/XP. Pike foco Ombros mantido; percentuais Empurrar são fallback genérico, não calculam foco principal. Sem teste visual.
+
+F41 — treino exibe emoji da região predominante no card biblioteca e widget Ciclos. getWorkoutFocus conta um voto por exercício pelo primeiro primaryMuscles do catálogo; agrupa músculos na mesma região, empate segue ordem dos exercícios; sem tags mantém ícone padrão. Sem ponderar séries/carga/percentuais, sem alterar pontos. ESLint passou; sem teste browser.
+
+F42 — exercícios internos mostram emoji do primeiro músculo principal, helper getExerciseFocus compartilhado em composição da biblioteca e widget Ciclos. Sem tags omite emoji; preserva séries/badges. Sem teste visual.
+
+F43 — modal criar/editar treino: Adicionar do catálogo tem botões40px apenas emoji por região, com title/aria-pressed/aria-label, Todos por ícone e toggle para limpar. Filtra músculos principais junto à busca, sem afetar exercícios já no plano; regiões compartilhadas com catálogo via muscle-regions.ts. ESLint três arquivos passou; sem teste visual.
+
+F44 — exercícios listados em Adicionar do catálogo no modal exibem emoji principal junto ao nome, compartilhando getExerciseFocus; sem tags omite. Nome quebra linha, botão adicionar preservado. Sem testes executados.
+
+Publicação F38–F44 solicitada: ampliação Calistenia, tags musculares e filtros/emoji em catálogo, cards e modal. Commit/push origin/main nesta operação; sem migração remota ou mudança de pontuação.
