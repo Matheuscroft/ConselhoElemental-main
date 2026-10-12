@@ -1,8 +1,11 @@
+import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
+import { toast } from 'sonner';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { SequenceLibraryCard } from '@/components/workout/SequenceLibraryCard';
 import { 
-  Plus, 
+  Plus, SkipForward,
   Flame, 
   Calendar,
   ChevronLeft, 
@@ -109,7 +112,7 @@ export const Ciclos: React.FC = () => {
     toggleCycleSequenceActive,
     moveHabitInSequence,
     reorderHabitsInSequence,
-    resetCycleSequenceToStart,
+    resetCycleSequenceToStart, skipCycleSequence,
     deleteCycleSequence,
     addHabitToSequence,
     removeHabitFromSequence,
@@ -492,7 +495,7 @@ export const Ciclos: React.FC = () => {
   // Get habits for selected date
   const habitsForDate = getHabitsForDate(selectedDate);
 
-  const { getWorkoutsForDate, getSessionById: getWorkoutSessionById, getSessionRating, startWorkout } = useWorkoutStore();
+  const { getWorkoutsForDate, getSessionById: getWorkoutSessionById, getSessionRating, startWorkout, activeNativeSession } = useWorkoutStore();
   const workoutsForSelectedDate = getWorkoutsForDate(selectedDate);
 
   const handleWorkoutCardAction = (workout: Workout) => {
@@ -986,31 +989,27 @@ export const Ciclos: React.FC = () => {
       .filter((membership) => membership.sequenceId === sequenceId)
       .sort((a, b) => a.position - b.position);
   };
+  const canSkipSequence = (sequence: typeof cycleSequences[number]) => {
+    const members = getMembersForSequence(sequence.id);
+    return selectedDate.toDateString() === new Date().toDateString() && sequence.isActive && members.length > 0 &&
+      (!sequence.lastCompletedDate || new Date(sequence.lastCompletedDate).toDateString() !== selectedDate.toDateString()) &&
+      !members.some((member) => {
+        const habit = findHabitById(habits, member.habitId);
+        return habit?.completions.some((completion) => new Date(completion.completionDate).toDateString() === selectedDate.toDateString()) ||
+          habit?.isInProgress || (activeNativeSession && (activeNativeSession.coreHabitId === member.habitId || (!activeNativeSession.coreHabitId && activeNativeSession.templateId === habit?.sourceRefId)));
+      });
+  };
+  const handleSkipSequence = (sequenceId: string) => {
+    const sequence = cycleSequences.find((item) => item.id === sequenceId);
+    if (!sequence || !canSkipSequence(sequence)) return;
+    try { skipCycleSequence(sequenceId, selectedDate); }
+    catch (error) { toast.error(error instanceof Error ? error.message : 'Não foi possível pular a vez.'); }
+  };
 
   const sequenceSummaries = cycleSequences.filter((sequence) => sequence.status !== 'PLANNING').map((sequence, index) => {
     const members = getMembersForSequence(sequence.id);
     const totalMembers = members.length;
-    const basePosition = totalMembers > 0
-      ? ((sequence.currentPosition % totalMembers) + totalMembers) % totalMembers
-      : 0;
-    const selectedDayStamp = new Date(
-      selectedDate.getFullYear(),
-      selectedDate.getMonth(),
-      selectedDate.getDate()
-    ).getTime();
-    const lastCompletedDate = sequence.lastCompletedDate ? new Date(sequence.lastCompletedDate) : null;
-    const lastCompletedStamp = lastCompletedDate && !Number.isNaN(lastCompletedDate.getTime())
-      ? new Date(
-          lastCompletedDate.getFullYear(),
-          lastCompletedDate.getMonth(),
-          lastCompletedDate.getDate()
-        ).getTime()
-      : null;
-    const displayPosition = totalMembers > 0
-      ? (lastCompletedStamp != null && selectedDayStamp > lastCompletedStamp
-          ? (basePosition + 1) % totalMembers
-          : basePosition)
-      : 0;
+    const displayPosition = getSequencePositionForDate(sequence, totalMembers, selectedDate);
     const currentMembership = totalMembers > 0
       ? members[displayPosition]
       : null;
@@ -1861,48 +1860,19 @@ export const Ciclos: React.FC = () => {
           <div className="space-y-2">
             <p className="text-[11px] text-white/45">Arraste as sequências na lista principal abaixo para posicionar entre os ciclos.</p>
             {sequenceSummaries.map((item) => (
-              <div
-                key={item.sequence.id}
-                className="rounded-xl border border-white/10 bg-black/20 px-3 py-2"
-              >
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-medium break-words">{item.sequence.name}</p>
-                    </div>
-                    <p className="text-xs text-white/60 break-words">Atual: {item.currentHabitName}</p>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <Badge variant="outline" className="bg-white/5 text-[10px] shrink-0">
-                      Posição {item.currentPositionLabel}
-                    </Badge>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-[10px] shrink-0"
-                      onClick={() => toggleCycleSequenceActive(item.sequence.id)}
-                    >
-                      {item.sequence.isActive ? 'Pausar' : 'Retomar'}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-[10px] shrink-0"
-                      onClick={() => resetCycleSequenceToStart(item.sequence.id)}
-                    >
-                      Reiniciar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 px-2 text-[10px] shrink-0"
-                      onClick={() => item.currentHabit?.sourceModule === 'modulo_treino' ? navigate('/fitness') : setSelectedSequenceId(item.sequence.id)}
-                    >
-                      Detalhes
-                    </Button>
-                  </div>
+              <SequenceLibraryCard key={item.sequence.id} compact onOpen={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : setSelectedSequenceId(item.sequence.id)} name={item.sequence.name} description={item.sequence.description}
+                headerExtra={<Badge variant="outline" className="shrink-0 bg-white/5 text-[10px]">Passo {item.currentPositionLabel}</Badge>}
+                members={getMembersForSequence(item.sequence.id).map((membership) => {
+                  const member = findHabitById(habits, membership.habitId);
+                  return { id: membership.id, name: member?.title || member?.name || 'Ciclo indisponível', current: member?.id === item.currentHabit?.id };
+                })}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-fitness-primary hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>
+                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => toggleCycleSequenceActive(item.sequence.id)}>{item.sequence.isActive ? 'Pausar' : 'Retomar'}</Button>
+                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => resetCycleSequenceToStart(item.sequence.id)}>Reiniciar</Button>
+                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : setSelectedSequenceId(item.sequence.id)}>Detalhes</Button>
                 </div>
-              </div>
+              </SequenceLibraryCard>
             ))}
           </div>
         )}
@@ -2065,7 +2035,7 @@ export const Ciclos: React.FC = () => {
 
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0"><p className="break-words font-medium">{item.sequence.name}</p><p className="mt-1 text-xs text-white/50">Passo {item.currentPositionLabel}</p></div>
-                        {isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
+                        <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 text-violet-300 hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>{isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
                       </div>
                       {isFitnessSequence ? <FitnessHabitWidget habit={sequenceHabit} date={selectedDate} embedded showAdministrativeActions={false} /> : (
                       <div className="flex items-start gap-3">

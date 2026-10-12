@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
-import { completeFitnessSession, scheduleWorkoutAsHabit, scheduleSequenceAsRotation } from '@/lib/workout/fitness-core-adapter';
+import { completeFitnessSession, scheduleWorkoutAsHabit, scheduleSequenceAsRotation, workoutHabitData } from '@/lib/workout/fitness-core-adapter';
 import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
@@ -1101,7 +1101,14 @@ export const useWorkoutStore = create<WorkoutState>()(
           createdAt: existing?.createdAt ?? now, updatedAt: now,
         };
         if ((get().currentAccountId ?? 'local') !== (useAppStore.getState().currentAccountId ?? 'local')) throw new Error('A conta mudou. Reabra a biblioteca.');
-        return saveSharedWorkoutSequence(sequence);
+        const core = useAppStore.getState();
+        const shared = core.cycleSequences.find((item) => item.id === sequence.id);
+        const linked = core.sequenceMemberships.some((member) => member.sequenceId === sequence.id);
+        const active = get().activeNativeSession;
+        if (active?.coreHabitId && core.sequenceMemberships.some((member) => member.sequenceId === sequence.id && member.habitId === active.coreHabitId) &&
+          !sequence.templateIds.includes(active.templateId!)) throw new Error('Conclua ou cancele o treino em andamento antes de removê-lo da sequência.');
+        const days = shared?.recurrenceConfig.daysOfWeek ?? [0,1,2,3,4,5,6];
+        return saveSharedWorkoutSequence(sequence, linked ? sequence.templateIds.map((id) => workoutHabitData(get().templates.find((item) => item.id === id)!, days)) : undefined);
       },
 
       deleteSequence: (sequenceId) => {

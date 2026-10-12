@@ -1,28 +1,26 @@
 import { useAppStore } from '@/stores/appStore';
-import type { CycleSequence } from '@/types';
+import type { CycleSequence, Habit } from '@/types';
 import type { WorkoutSequence, UUIDv4 } from '@/types/workout';
 
 /** Compatibility DTO for existing Fitness forms; Core is the only authority. */
 export function asWorkoutSequence(sequence: CycleSequence): WorkoutSequence {
   return { id: sequence.id as UUIDv4, name: sequence.name, description: sequence.description,
     templateIds: (sequence.templateIds ?? []) as UUIDv4[],
-    createdAt: new Date(sequence.createdAt).toISOString(), updatedAt: new Date(sequence.updatedAt).toISOString() };
+    createdAt: new Date(sequence.createdAt).toISOString(), updatedAt: new Date(sequence.updatedAt ?? sequence.createdAt).toISOString() };
 }
 
-export function saveSharedWorkoutSequence(input: WorkoutSequence): WorkoutSequence {
+export function saveSharedWorkoutSequence(input: WorkoutSequence, members?: Partial<Habit>[]): WorkoutSequence {
   const core = useAppStore.getState();
   const existing = core.cycleSequences.find((sequence) => sequence.id === input.id);
-  if (existing && existing.status !== 'PLANNING' && existing.isActive) {
-    throw new Error('Desative a sequência antes de alterar sua composição.');
-  }
-  if (existing && core.sequenceMemberships.some((member) => member.sequenceId === existing.id) &&
-    JSON.stringify(existing.templateIds) !== JSON.stringify(input.templateIds)) {
-    throw new Error('Esta sequência possui histórico de ativação. Preserve sua composição ou crie uma nova sequência.');
+  if (existing && core.sequenceMemberships.some((member) => member.sequenceId === existing.id)) {
+    if (!members) throw new Error('Não foi possível resolver os treinos da sequência.');
+    return asWorkoutSequence(core.createRotationWithMembers({ name: input.name, description: input.description,
+      sourceRefId: existing.id, daysOfWeek: existing.recurrenceConfig.daysOfWeek ?? [0,1,2,3,4,5,6], replaceMembers: true }, members));
   }
   const sequence: CycleSequence = { ...(existing ?? {}), id: input.id, name: input.name,
     description: input.description, templateIds: [...input.templateIds], memberRestriction: 'WORKOUT',
     sourceModule: 'modulo_treino', sourceRefId: input.id, status: existing?.status ?? 'PLANNING',
-    isActive: false, displayOrder: existing?.displayOrder ?? core.cycleSequences.length + 1,
+    isActive: existing?.isActive ?? false, displayOrder: existing?.displayOrder ?? core.cycleSequences.length + 1,
     recurrenceType: existing?.recurrenceType ?? 'WEEKLY', recurrenceConfig: existing?.recurrenceConfig ?? {},
     currentPosition: existing?.currentPosition ?? 0, lastCompletedDate: existing?.lastCompletedDate ?? null,
     createdAt: existing?.createdAt ?? new Date(input.createdAt), updatedAt: new Date() };

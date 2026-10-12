@@ -368,3 +368,6 @@ Quando o treino é concluído a partir do Módulo de Treino ou da Lista Diária,
 - LEAF/AGGREGATOR, tipos semânticos → [../01-Domain-Core/01-Hierarquia-e-Tipos.md](../01-Domain-Core/01-Hierarquia-e-Tipos.md)
 - Prana, `task_energy_type`, `base_value` fracionário → [../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md](../01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md)
 - Decisão histórica de modelagem (correção do modelo temporal) → [../04-ADRs/ADR-001-Habits-as-Actions.md](../04-ADRs/ADR-001-Habits-as-Actions.md)
+
+### Pular a vez da sequência (F48)
+Comando explícito skipCycleSequence avança cursor circular (posição+1)%N sem completar membro, alterar histórico, creditar XP ou Prana. Pode repetir indefinidamente no dia atual antes de conclusão; último volta ao índice0/Passo1/N. cursorDate distingue cursor manual da regra temporal de avanço após execução, preservando lastCompletedDate. UI e Core compartilham getSequencePositionForDate. Conclusão parcial ou integral do dia bloqueia novos pulos; desfazer conclusão libera novamente. Execução ativa bloqueia pulo, rascunhos CHECKIN permanecem por hábito/dia e retomam ao voltar ao membro. Pulos não criam treinos executados/logs de recompensa. Não há limite de voltas nem contador cumulativo.

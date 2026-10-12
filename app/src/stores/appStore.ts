@@ -1,3 +1,4 @@
+import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
 // ============================================
 // CONSELHO ELEMENTAL - STORE ZUSTAND
 // ============================================
@@ -354,25 +355,6 @@ const sequenceMatchesDate = (sequence: CycleSequence, date: Date | string | numb
   return true;
 };
 
-const getSequencePositionForDate = (
-  sequence: CycleSequence,
-  totalMembers: number,
-  date: Date | string | number
-): number => {
-  if (totalMembers <= 0) return 0;
-
-  const basePosition = ((sequence.currentPosition % totalMembers) + totalMembers) % totalMembers;
-  const lastCompletedStamp = toDayStamp(sequence.lastCompletedDate);
-  const targetStamp = toDayStamp(date);
-
-  if (lastCompletedStamp == null || targetStamp == null) return basePosition;
-  if (targetStamp > lastCompletedStamp) {
-    return (basePosition + 1) % totalMembers;
-  }
-
-  return basePosition;
-};
-
 const findHabitByIdDeep = (habits: Habit[], habitId: string): Habit | null => {
   for (const habit of habits) {
     if (habit.id === habitId) return habit;
@@ -568,7 +550,7 @@ interface AppState {
     recurrenceType?: CycleSequence['recurrenceType'];
     recurrenceConfig?: CycleSequence['recurrenceConfig'];
   }) => CycleSequence;
-  createRotationWithMembers: (input: { name: string; description?: string; sourceRefId: string; daysOfWeek: number[] }, members: Partial<Habit>[]) => CycleSequence;
+  createRotationWithMembers: (input: { name: string; description?: string; sourceRefId: string; daysOfWeek: number[]; replaceMembers?: boolean }, members: Partial<Habit>[]) => CycleSequence;
   updateCycleSequence: (sequenceId: string, updates: Partial<Omit<CycleSequence, 'id' | 'createdAt'>>) => void;
   deleteCycleSequence: (sequenceId: string) => void;
   reorderCycleSequences: (orderedSequenceIds: string[]) => void;
@@ -576,6 +558,7 @@ interface AppState {
   moveHabitInSequence: (sequenceId: string, habitId: string, direction: 'up' | 'down') => void;
   reorderHabitsInSequence: (sequenceId: string, orderedHabitIds: string[]) => void;
   resetCycleSequenceToStart: (sequenceId: string) => void;
+  skipCycleSequence: (sequenceId: string, date: Date) => void;
   addHabitToSequence: (sequenceId: string, habitId: string) => void;
   removeHabitFromSequence: (sequenceId: string, habitId: string) => void;
   
@@ -818,7 +801,7 @@ export const useAppStore = create<AppState>()(
           const sequence = membership ? state.cycleSequences.find((item) => item.id === membership.sequenceId && item.isActive) : undefined;
           const members = sequence ? state.sequenceMemberships.filter((item) => item.sequenceId === sequence.id).sort((a, b) => a.position - b.position) : [];
           const position = sequence && members.length ? getSequencePositionForDate(sequence, members.length, timestamp) : -1;
-          if (sequence) log.rotationBefore = { id: sequence.id, currentPosition: sequence.currentPosition, lastCompletedDate: sequence.lastCompletedDate };
+          if (sequence) log.rotationBefore = { id: sequence.id, currentPosition: sequence.currentPosition, lastCompletedDate: sequence.lastCompletedDate, cursorDate: sequence.cursorDate };
           // Um único ledger e uma única recompensa; nenhuma Action avulsa ou subtarefa extra.
           set((current) => ({ habits: current.habits.map((item) => item.id === habit.id ? updated : item),
             actions: current.actions.map((item) => item.id === habit.id ? { ...item, completions: updated.completions, lastCompletedAt: timestamp, streak, longestStreak: updated.longestStreak, updatedAt: timestamp } : item),
@@ -867,7 +850,7 @@ export const useAppStore = create<AppState>()(
             if (sequence.id !== membership?.sequenceId || !sequence.lastCompletedDate || !isSameDay(sequence.lastCompletedDate, new Date(log.timestamp))) return sequence;
             const before = log.rotationBefore;
             return { ...sequence, currentPosition: before?.currentPosition ?? sequence.currentPosition,
-              lastCompletedDate: before?.lastCompletedDate ?? null, updatedAt: new Date() };
+              lastCompletedDate: before?.lastCompletedDate ?? null, cursorDate: before?.cursorDate, updatedAt: new Date() };
           }),
           user: { ...current.user, totalScore: Math.max(0, current.user.totalScore-log.executedValue),
             xp_earth: Math.max(0, current.user.xp_earth-log.executedValue),
@@ -3673,7 +3656,7 @@ export const useAppStore = create<AppState>()(
         const state = get();
         const existing = state.cycleSequences.find((item) => item.id === input.sourceRefId ||
           (item.sourceModule === 'modulo_treino' && item.sourceRefId === input.sourceRefId));
-        if (existing?.isActive) return existing;
+        if (existing?.isActive && !input.replaceMembers) return existing;
         if (!input.name.trim() || members.length < 2 || new Set(members.map((item) => item.sourceRefId)).size !== members.length) throw new Error('Escolha ao menos dois treinos diferentes.');
         const days = [...new Set(input.daysOfWeek)].sort((a, b) => a - b);
         if (!days.length || days.some((day) => !Number.isInteger(day) || day < 0 || day > 6)) throw new Error('Selecione dias válidos.');
@@ -3681,19 +3664,27 @@ export const useAppStore = create<AppState>()(
         const now = new Date();
         const displayOrder = Math.max(0, ...state.habits.map((item) => 'sortOrder' in item && typeof item.sortOrder === 'number' ? item.sortOrder : item.displayOrder ?? 0), ...state.cycleSequences.map((item) => item.displayOrder)) + 1;
         const rotation: CycleSequence = { id: existing?.id ?? input.sourceRefId, name: input.name.trim(), description: input.description,
-          status: 'ACTIVE', memberRestriction: 'WORKOUT', templateIds: members.map((item) => item.sourceRefId!),
+          status: input.replaceMembers ? existing?.status ?? 'ACTIVE' : 'ACTIVE', memberRestriction: 'WORKOUT', templateIds: members.map((item) => item.sourceRefId!),
           sourceModule: 'modulo_treino', sourceRefId: input.sourceRefId, displayOrder,
           recurrenceType: 'WEEKLY', recurrenceConfig: { daysOfWeek: days }, currentPosition: 0,
-          lastCompletedDate: existing?.lastCompletedDate ?? null, isActive: true, createdAt: existing?.createdAt ?? now, updatedAt: now };
+          lastCompletedDate: existing?.lastCompletedDate ?? null, isActive: input.replaceMembers ? existing?.isActive ?? true : true, createdAt: existing?.createdAt ?? now, updatedAt: now };
+        if (input.replaceMembers && existing) {
+          rotation.cursorDate = existing.cursorDate; rotation.recurrenceType = existing.recurrenceType;
+          rotation.recurrenceConfig = structuredClone(existing.recurrenceConfig);
+        }
         const priorMemberships = existing ? state.sequenceMemberships.filter((item) => item.sequenceId === existing.id) : [];
-        if (priorMemberships.length && priorMemberships.length === members.length && priorMemberships.sort((a,b) => a.position-b.position).every((membership, index) =>
+        if (!input.replaceMembers && priorMemberships.length && priorMemberships.length === members.length && priorMemberships.sort((a,b) => a.position-b.position).every((membership, index) =>
           findHabitByIdDeep(state.habits, membership.habitId)?.sourceRefId === members[index].sourceRefId)) {
           set((current) => ({ cycleSequences: current.cycleSequences.map((item) => item.id === rotation.id
             ? { ...rotation, currentPosition: item.currentPosition } : item) }));
           return get().cycleSequences.find((item) => item.id === rotation.id)!;
         }
-        if (priorMemberships.length) throw new Error('A composição ativada difere do planejamento. Preserve os membros ou crie outra sequência.');
-        const habits: Habit[] = members.map((data, index) => Object.assign({
+        if (priorMemberships.length && !input.replaceMembers) throw new Error('A composição ativada difere do planejamento. Preserve os membros ou crie outra sequência.');
+        const habits: Habit[] = members.map((data, index) => {
+          const retained = priorMemberships.map((membership) => findHabitByIdDeep(state.habits, membership.habitId))
+            .find((habit) => habit?.sourceRefId === data.sourceRefId);
+          if (retained) return { ...retained, controlledBySequenceId: rotation.id, updatedAt: now };
+          return Object.assign({
           ...data, id: crypto.randomUUID(), title: data.title!, name: data.title!, type: 'HABIT' as const,
           lifecycleType: 'HABIT' as const, semanticType: null, parentId: null, children: [], childHabits: [],
           isAggregator: false, aggregatedScore: 0, isCompleted: false, createdAt: now, updatedAt: now,
@@ -3703,10 +3694,27 @@ export const useAppStore = create<AppState>()(
           recurrenceType: 'WEEKLY' as const, recurrenceConfig: { daysOfWeek: [...days] }, controlledBySequenceId: rotation.id,
           completions: [], streak: 0, longestStreak: 0, lastCompletedAt: null, isInProgress: false,
           elapsedSeconds: 0, lastStartedAt: null, isExpanded: false, displayOrder: displayOrder + index,
-        }, { sortOrder: displayOrder + index, startDate: now }));
-        const memberships: SequenceMembership[] = habits.map((habit, position) => ({ id: crypto.randomUUID(), sequenceId: rotation.id, habitId: habit.id, position, addedAt: now }));
-        set((current) => ({ cycleSequences: [...current.cycleSequences.filter((item) => item.id !== rotation.id), rotation], habits: [...current.habits, ...habits],
-          actions: [...current.actions, ...habits], sequenceMemberships: [...current.sequenceMemberships, ...memberships] }));
+        }, { sortOrder: displayOrder + index, startDate: now });
+        });
+        const memberships: SequenceMembership[] = habits.map((habit, position) => {
+          const previous = priorMemberships.find((member) => member.habitId === habit.id);
+          return { id: previous?.id ?? crypto.randomUUID(), sequenceId: rotation.id, habitId: habit.id, position, addedAt: previous?.addedAt ?? now };
+        });
+        const removedIds = new Set(priorMemberships.filter((member) => !habits.some((habit) => habit.id === member.habitId)).map((member) => member.habitId));
+        const previousCurrent = priorMemberships.find((member) => member.position === existing?.currentPosition);
+        rotation.currentPosition = Math.max(0, memberships.findIndex((member) => member.habitId === previousCurrent?.habitId));
+        if (existing) rotation.displayOrder = existing.displayOrder;
+        set((current) => ({ cycleSequences: current.cycleSequences.some((item) => item.id === rotation.id)
+          ? current.cycleSequences.map((item) => item.id === rotation.id ? rotation : item) : [...current.cycleSequences, rotation],
+          habits: [...current.habits.map((habit) => habits.find((item) => item.id === habit.id) ??
+            (removedIds.has(habit.id) ? { ...habit, controlledBySequenceId: null, updatedAt: now } : habit)),
+            ...habits.filter((habit) => !current.habits.some((item) => item.id === habit.id))],
+          actions: [...current.actions.map((action) => {
+            const retained = habits.find((habit) => habit.id === action.id);
+            return retained ? { ...action, controlledBySequenceId: rotation.id, updatedAt: now } :
+              removedIds.has(action.id) ? { ...action, controlledBySequenceId: null, updatedAt: now } : action;
+          }), ...habits.filter((habit) => !current.actions.some((action) => action.id === habit.id))],
+          sequenceMemberships: [...current.sequenceMemberships.filter((member) => member.sequenceId !== rotation.id), ...memberships] }));
         return rotation;
       },
 
@@ -3927,6 +3935,23 @@ export const useAppStore = create<AppState>()(
             sequenceMemberships: nextMemberships,
             cycleSequences: syncWorkoutSequenceOrder(nextSequences, nextMemberships, state.habits),
           };
+        });
+      },
+
+      skipCycleSequence: (sequenceId, date) => {
+        if (!isSameDay(date, new Date())) throw new Error('Pule a vez no dia de hoje.');
+        set((state) => {
+          const sequence = state.cycleSequences.find((item) => item.id === sequenceId);
+          const members = state.sequenceMemberships.filter((item) => item.sequenceId === sequenceId).sort((a,b) => a.position-b.position);
+          if (!sequence?.isActive || !members.length) throw new Error('A sequência não tem membros ativos.');
+          if ((sequence.lastCompletedDate && isSameDay(new Date(sequence.lastCompletedDate), date)) ||
+            members.some((member) => findHabitByIdDeep(state.habits, member.habitId)?.completions.some((completion) => isSameDay(new Date(completion.completionDate), date)))) {
+            throw new Error('A sequência já foi concluída hoje. Desfaça a conclusão antes de pular.');
+          }
+          if (members.some((member) => findHabitByIdDeep(state.habits, member.habitId)?.isInProgress)) throw new Error('Pare a execução antes de pular.');
+          const nextPosition = (getSequencePositionForDate(sequence, members.length, date) + 1) % members.length;
+          return { cycleSequences: state.cycleSequences.map((item) => item.id === sequenceId
+            ? { ...item, currentPosition: nextPosition, cursorDate: new Date(date), updatedAt: new Date() } : item) };
         });
       },
 

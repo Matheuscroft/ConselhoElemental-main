@@ -312,3 +312,17 @@ F43 — modal criar/editar treino: Adicionar do catálogo tem botões40px apenas
 F44 — exercícios listados em Adicionar do catálogo no modal exibem emoji principal junto ao nome, compartilhando getExerciseFocus; sem tags omite. Nome quebra linha, botão adicionar preservado. Sem testes executados.
 
 Publicação F38–F44 solicitada: ampliação Calistenia, tags musculares e filtros/emoji em catálogo, cards e modal. Commit/push origin/main nesta operação; sem migração remota ou mudança de pontuação.
+
+F45 — extraído SequenceLibraryCard compartilhado de WorkoutSequenceLibrary; seção Sequências em Ciclos usa mesma superfície FitnessCard/padding/ícone/typografia/composição. Core preserva passo, membro atual verde e Pausar/Retomar/Reiniciar/Detalhes com mesmos handlers; lista de execução/widget abaixo preservada. Sem mudança de stores/pontuação/persistência. ESLint3arquivos sem erros,2avisos hooks preexistentes Ciclos; sem validação visual/browser/commit/push.
+
+F46 — resumo Sequências em Ciclos compacto com membros em linha/setas sem números, padding/ações menores. Clique no corpo da sequência WORKOUT abre /fitness?sequence=id; biblioteca centraliza/foca/destaca card correspondente após importar legado. Botões administrativos separados do botão corpo, sem navegação acidental. Sequências genéricas abrem detalhes Core. ESLint sem erros,2avisos hooks preexistentes Ciclos; sem teste browser.
+
+F46 verificação: primeiro lint detectou sintaxe no link Detalhes; corrigida, segundo lint passou sem erros (2avisos preexistentes).
+
+F47 — edição sequência: formulário preenche nome/descrição/templates/ordem, permite add/remove/reordenar com mínimo2 e valida disponibilidade; botão Editar sequência no card Treinos. saveSharedWorkoutSequence permite edição ativa e reconcilia via Core replaceMembers; preserva IDs/histórico/membershipIDs dos retidos, cria apenas novos hábitos, libera removidos sem apagar registros/agendas. Agenda/status/ID da sequência preservados; posição acompanha membro anterior quando retido, senão primeiro. Impede remover membro com sessão ativa. Planejamento sem vínculos não cria hábitos. ESLint5arquivos passou; tsc app limitado por contratos preexistentes, corrigido fallback updatedAt no DTO; revisão filtrada final em andamento. Sem teste funcional/browser/Supabase/commit/push.
+
+F48 — botão SkipForward pequeno em resumo e card execução da rotação; skipCycleSequence valida hoje/ativa/membros/não concluída/não em progresso e avança circular ilimitado sem recompensas/histórico. cursorDate evita duplo avanço automático após pulos; cálculo posição extraído e compartilhado Core/Ciclos. UI bloqueia sessão nativa ativa; drafts por hábito preservados. Snapshot de rotação no recibo inclui cursorDate e undo restaura. ESLint sem erros2avisos hooks preexistentes; tsc app filtrado em andamento, sem testes funcionais/browser/Supabase/commit/push.
+
+F48 verificação: tsc app mantém falhas legadas Habit semantic/startDate/sortOrder e TaskItem; nenhum diagnóstico na nova resolução/ação skip. Removida declaração updatedAt duplicada de CycleSequence detectada na checagem. Não declarar compilação global aprovada.
+
+F49 — ordem global solicitada: Santuário/Pilares/Ciclos/Mais (Pilares2º, Ciclos3º). Commit/push F45–F49 solicitado nesta operação; cards compartilhados/edição e pulo circular incluídos, sem migração remota. Validação funcional pendente.

@@ -152,6 +152,8 @@ export interface Habit extends Action {
 // SEQUENCIA DE CICLOS
 // ============================================
 export interface CycleSequence {
+  /** Date of explicit cursor selection; skipping never changes completion history. */
+  cursorDate?: Date;
   /** Shared planning/execution entity; absent status means a legacy Core sequence. */
   status?: 'PLANNING' | 'ACTIVE' | 'PAUSED';
   memberRestriction?: 'ANY' | 'WORKOUT';
@@ -159,7 +161,6 @@ export interface CycleSequence {
   sourceModule?: 'modulo_treino';
   sourceRefId?: string;
   description?: string;
-  updatedAt?: Date;
   id: string;
   name: string;
   displayOrder: number;
@@ -318,7 +319,7 @@ export interface Draft {
 // LOG DE EXECUÇÃO
 // ============================================
 export interface ExecutionLog {
-  rotationBefore?: { id: string; currentPosition: number; lastCompletedDate: Date | null };
+  rotationBefore?: { id: string; currentPosition: number; lastCompletedDate: Date | null; cursorDate?: Date };
   durationSource?: 'MEASURED' | 'DECLARED_PLANNED';
   sourceModule?: 'modulo_treino';
   sourceRefId?: string;

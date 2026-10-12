@@ -5,7 +5,7 @@ import type { Habit, CycleSequence } from '@/types';
 import { AREAS } from '@/constants';
 import { projectTemplateReward } from './native-reward-preview';
 
-function workoutHabitData(template: WorkoutTemplate, daysOfWeek: number[]): Partial<Habit> {
+export function workoutHabitData(template: WorkoutTemplate, daysOfWeek: number[]): Partial<Habit> {
   const core = useAppStore.getState();
   const area = [...core.customAreas, ...AREAS].find((item) => item.elementId === 'terra' && item.name === 'Exercício Físico');
   if (!area) throw new Error('A área Exercício Físico de Terra não foi encontrada.');

@@ -5,7 +5,7 @@
 | ID | Escopo e dono | Dependências | Estado | Aceite verificável |
 |---|---|---|---|---|
 | UI04 | Editor de template de treino e projeção ER — Astro Boy, papel Interface | UI-SHELL; contratos canônicos ER/Adapter | em revisão | Preservar páginas/rotas atuais; ligar edição à tela realmente montada em `/treinos` (`pages/fitness/WorkoutSelect.tsx`) e ao Hub alternativo; permitir criar e editar template com exercícios ordenados e configuração individual por série (repetições ou isometria, carga, fator canônico e descanso); exibir projeção ER/base_value sem confundir com recompensa final; salvar via store existente. Corrigir alias TDZ de FitnessModuleFab identificado no HEAD. Sem nova fórmula, migração, Adapter ou exclusão de tela. Evidência: revisão estática e `git diff --check`; testes/build/lint e revisão visual ainda não executados. Campo opcional `loadFactor` exige regressão de compatibilidade antes do aceite final. |
-| UI-SHELL | AppLayout/BottomNav e navegação Fitness — Astro Boy, papel Interface | Nenhuma | em revisão | Confirmar quatro itens globais na ordem Santuário/Ciclos/Pilares/Mais, acesso ao hub Mais, top tabs Treinos/Histórico/Saúde e FAB acima da navegação global; revisar 360/390/768px e desktop. Build/lint aprovados; navegador ainda pendente. Sem alteração de stores/contratos. |
+| UI-SHELL | AppLayout/BottomNav e navegação Fitness — Astro Boy, papel Interface | Nenhuma | em revisão | Confirmar quatro itens globais na ordem Santuário/Pilares/Ciclos/Mais, acesso ao hub Mais, top tabs Treinos/Histórico/Saúde e FAB acima da navegação global; revisar 360/390/768px e desktop. Build/lint aprovados; navegador ainda pendente. Sem alteração de stores/contratos. |
 
 Coordenação: Astro Boy. Protocolo em [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md). Donos abaixo são papéis; o coordenador registra agente concreto e reserva ao despachar. Todos os lotes futuros permanecem sem reserva e não iniciados. C00 foi aceita por Astro Boy e integrada documentalmente ao checkout original em 08/10/2026.
 
@@ -327,3 +327,13 @@ F42 — emojis internos implementados, reserva helper/Root/widget encerrada; lin
 F43 — filtros compactos emoji no modal implementados, reservas constants/modal/catalog encerradas; ESLint aprovado.
 
 F44 — emojis na lista catálogo modal implementados, reserva encerrada.
+
+F45 — estilo de sequência compartilhado Treinos/Ciclos implementado, reserva componente/library/Ciclos encerrada, visual pendente.
+
+F46 — card compacto/setas e link para sequência em Treinos implementados, reservas card/library/Ciclos encerradas, visual pendente.
+
+F47 — edição sequências e reconciliação Core implementadas, reservas modal/library/helper/Adapter/stores/docs encerradas; ESLint aprovado, validação funcional pendente.
+
+F48 — pular fila circular implementado, reservas Core/types/temporal/Ciclos/docs encerradas; lint aprovado, validação funcional pendente.
+
+F49 — navegação reordenada, reserva encerrada; publicação F45–F49 autorizada pelo usuário.
