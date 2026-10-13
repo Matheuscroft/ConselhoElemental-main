@@ -2,6 +2,7 @@
  * Presentation-only aggregations over existing workout sessions.
  * No domain rules (XP, Terra, stamina) live here.
  */
+import { sessionActivity, type FitnessSession } from './activity-history';
 import type { WorkoutSession } from '@/types/workout';
 
 export interface DayBucket {
@@ -26,10 +27,10 @@ export const toLocalDayKey = (value: Date | string): string => {
   return `${date.getFullYear()}-${month}-${day}`;
 };
 
-export const isCompletedSession = (session: WorkoutSession): boolean => session.status === 'completed';
+export const isCompletedSession = (session: FitnessSession): boolean => session.status === 'completed';
 
 /** Last `days` calendar days ending today, oldest first. */
-export const buildDayBuckets = (sessions: WorkoutSession[], days = 7, today = new Date()): DayBucket[] => {
+export const buildDayBuckets = (sessions: FitnessSession[], days = 7, today = new Date()): DayBucket[] => {
   const buckets: DayBucket[] = [];
   for (let offset = days - 1; offset >= 0; offset -= 1) {
     const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - offset);
@@ -48,8 +49,8 @@ export const buildDayBuckets = (sessions: WorkoutSession[], days = 7, today = ne
   sessions.filter(isCompletedSession).forEach((session) => {
     const bucket = byKey.get(toLocalDayKey(session.completedAt ?? session.startedAt));
     if (!bucket) return;
-    bucket.minutes += session.durationSeconds / 60;
-    bucket.volume += session.totalVolume;
+    bucket.minutes += sessionActivity(session).seconds / 60;
+    bucket.volume += 'totalVolume' in session ? session.totalVolume : 0;
     bucket.workouts += 1;
   });
 

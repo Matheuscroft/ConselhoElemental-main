@@ -182,7 +182,7 @@ export const ActiveWorkout: React.FC = () => {
               expanded={expandedExerciseId === result.exerciseId}
               onToggle={() => setExpandedExerciseId((current) => (current === result.exerciseId ? null : result.exerciseId))}
             >
-              {getExercisePoster(exercise) && <VideoExercisePlayer title={result.exerciseNameSnapshot} poster={getExercisePoster(exercise)} />}
+              <VideoExercisePlayer title={result.exerciseNameSnapshot} src={result.videoUrl ?? exercise?.videoUrl} poster={result.imageUrl ?? exercise?.imageUrl ?? getExercisePoster(exercise)} />
               {result.sets.filter((set) => set.completed || set.skipped || set.id === currentSet?.id).map((set) => (
                 <ExerciseSetRow
                   key={set.id}
@@ -229,7 +229,7 @@ export const ActiveWorkout: React.FC = () => {
           {isPaused ? 'Ver relógio' : 'Ocultar relógio'}
         </FitnessButton>
         <FitnessButton variant="coral" className="flex-1 !h-12 !px-3 !text-sm" onClick={handleFinishClick}>
-          {FITNESS_COPY.finish}
+          {hasIncompleteSets ? 'Finalizar treino' : 'Concluir treino'}
         </FitnessButton>
       </FitnessStickyAction>
 

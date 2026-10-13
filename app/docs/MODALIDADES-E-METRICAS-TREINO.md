@@ -16,6 +16,14 @@ Criação filtra categoria e arte; catálogo misto fica disponível apenas em Tr
 
 ## Medidas, distribuição e recompensas
 
+### F51 — execução Native por bloco e recompensa versionada (13/10/2026)
+
+No fluxo Native integrado ao Core, cada série precisa registrar esforço percebido (RPE 1–10) e só séries concluídas/não puladas entram no cálculo. O Core mapeia RPE para esforço 1–5, usa ER/fator de carga por série e aplica seu multiplicador e teto a cada bloco. Tempo ativo e presença são contabilizados uma vez na sessão; repetições estimam 4 segundos cada, duração informada usa o tempo de bloco, descansos não contam. Os valores são convenção gamificada, não avaliação fisiológica. Um único ExecutionLog registra XP total, esforço ponderado e custo de Prana aplicado uma vez. Sessão sem blocos válidos rende zero e não debita Prana. Identificador: `core-native-workout-block-v1`; logs antigos e regras legadas permanecem intactos. O detalhamento normativo está em [Motor de Pontuação, seção 5.6](01-Domain-Core/02-Motor-de-Pontuacao-e-Energia.md#56-execução-native-por-bloco--core-native-workout-block-v1) e [ADR-003](04-ADRs/ADR-003-Recompensa-Native-Treino-Por-Bloco.md).
+
+- Evidência de navegador 390px com perfil Puppeteer temporário: treino de Corrida, duas séries de 300s, RPE 2 e 9; as duas foram concluídas e o fluxo registrou +85,6 XP, 2 blocos, 10 minutos ativos, esforço ponderado 3/5, sem erros de página. O teste não usou nem alterou perfil persistido do usuário.
+- A divisão em séries pode alterar o total porque cada série tem teto próprio; a UI não infere intensidade a partir de notas/texto. Distribuição por grupo muscular segue os percentuais do perfil como estimativa e não é medição anatômica.
+- Testes Deno cobrem blocos concluídos/pulados, intensidades diferentes, caminhada leve, mistura, ausência de trabalho e RPE inválido. Build/lint e estado final do lote registrados na fila e continuidade.
+
 - Cada bloco pode registrar tempo ativo real, esforço percebido 1–10, distância opcional (metros na natação, km convertidos para metros na corrida/ciclismo) e descrição. Native exige tempo >0 e esforço válido na UI e store; descrição não é interpretada automaticamente.
 - `activityLoad = tempoAtivoSegundos / 60 × esforço`, em unidades arbitrárias (u.a.). Somente concluídos/não pulados entram. Intervalos e relógio da sessão são medidas separadas. Notas não aumentam pontos.
 - Native não produz volume de carga externa nem recorde de 1RM. Perfis musculares editoriais aproximados variam por nado/arte. Usuário pode ajustar os 14 grupos no planejamento; soma precisa ser 100%, snapshot preservado na sessão. Isso distribui trabalho estimado, não mede ativação ou desenvolvimento muscular.

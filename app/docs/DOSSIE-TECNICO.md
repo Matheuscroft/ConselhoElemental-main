@@ -1,6 +1,6 @@
 # Dossiê técnico — Conselho Elemental / Domínio do Mago
 
-> Atualizado em 09/10/2026 após I03. Para estado operacional e próximo passo, consultar CONTINUIDADE.md; este dossiê registra escopo e limites arquiteturais.
+> Atualizado em 13/10/2026 após a sincronização de Matheus. Para estado operacional e próximo passo, consultar CONTINUIDADE.md; este dossiê registra escopo e limites arquiteturais.
 
 Edição documental: 09/10/2026. Custódia: Versionamento e documentação; decisões: Astro Boy. Descreve origem verificável, escopo e evidências; não substitui os contratos canônicos ou a fila operacional.
 
@@ -36,6 +36,10 @@ Inventário detalhado está em FILA-ENTREGAS; atualizar sua evidência quando o 
 Em 09/10/2026, o lote I03 implementou em `src/pages/Invocar.tsx` uma ajuda opcional para redigir título e descrição e a Edge Function `supabase/functions/assistant-suggest`. O envio requer consentimento explícito e autenticação; o modelo só propõe campos de rascunho, que a pessoa edita e confirma pelo `addDraft` existente. A função não consulta perfil nem executa operações de domínio. Detalhes, controles e evidências estão em [ASSISTENTE-PROTOTIPO.md](ASSISTENTE-PROTOTIPO.md).
 
 O capítulo canônico de LLM e voz especifica conversa, Gemini, ferramentas de consulta/classificação/conclusão executadas no backend e auditoria. I03 não implementa esses fluxos: usa Cloudflare para uma sugestão fechada e gravação local após confirmação humana. Portanto, é uma etapa parcial de protótipo, sem chamada live, secrets configurados ou deploy; não certifica a arquitetura conversacional completa.
+
+## Sincronização de Matheus — 13/10/2026
+
+origin/main foi integrado por fast-forward em b1575e4. A linha atual inclui templates e sessões de Fitness, integração nativa de conclusão com Core, sequências compartilhadas com Ciclos, histórico e mudanças na navegação. Build, lint e teste isolado do protótipo I03 foram executados localmente; revisão visual/funcional dos novos fluxos continua pendente. As migrations de sequência estão versionadas, não aplicadas remotamente. A revisão identificou incompatibilidade inicial entre os novos tipos de domínio e telas/stores legados; a compatibilidade foi recomposta e o build passou. A divergência semântica/XP com a fonte externa está registrada em CONTINUIDADE.md.
 
 ## Invariantes e divergências
 

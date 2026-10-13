@@ -1,4 +1,4 @@
-import { activityMetrics } from '@/lib/workout/activity-metrics';
+import { sessionActivity, type FitnessSession } from '@/lib/fitness/activity-history';
 /**
  * Adapters de APRESENTAÇÃO do módulo Fitness.
  *
@@ -23,7 +23,7 @@ export interface MetricItem extends FormattedMetric {
   label: string;
 }
 
-const isCompleted = (session: WorkoutSession): boolean => session.status === 'completed';
+const isCompleted = (session: FitnessSession): boolean => session.status === 'completed';
 
 /* -------------------------------------------------------------------------- */
 /* Resumo de uma sessão                                                        */
@@ -61,14 +61,14 @@ export interface DayBucket {
   sessionCount: number;
   activityLoad: number;
   observedSessions: number;
-  /** Volume de cada série concluída, na ordem em que foi feita (para sparkline). */
+  /** Carga percebida dos blocos registrados (u.a.), em ordem, para sparkline. */
   setVolumes: number[];
 }
 
-const sessionDate = (session: WorkoutSession): Date => new Date(session.completedAt ?? session.startedAt);
+const sessionDate = (session: FitnessSession): Date => new Date(session.completedAt ?? session.startedAt);
 
 export const buildWeekBuckets = (
-  sessions: WorkoutSession[],
+  sessions: FitnessSession[],
   weekStartsOn: 0 | 1,
   reference: Date = new Date()
 ): DayBucket[] => {
@@ -81,9 +81,8 @@ export const buildWeekBuckets = (
       .filter((session) => isSameDay(sessionDate(session), date))
       .sort((left, right) => sessionDate(left).getTime() - sessionDate(right).getTime());
 
-    const setVolumes = daySessions.flatMap((session) =>
-      session.exerciseResults.flatMap((result) => result.sets.filter((set) => set.completed).map((set) => set.volume))
-    );
+    const activities = daySessions.map(sessionActivity);
+    const setVolumes = activities.flatMap(activity => activity.series);
 
     return {
       key: format(date, 'yyyy-MM-dd'),
@@ -92,10 +91,10 @@ export const buildWeekBuckets = (
       shortLabel: formatShortDayLabel(date),
       fullLabel: formatDayLabel(date),
       isToday: isSameDay(date, reference),
-      minutes: daySessions.reduce((sum, session) => {const actual=activityMetrics(session);return sum + (actual.observations ? actual.seconds : session.durationSeconds);}, 0) / 60,
-      activityLoad: daySessions.reduce((sum,session)=>sum+activityMetrics(session).load,0),
-      observedSessions: daySessions.filter((session)=>activityMetrics(session).observations>0).length,
-      volume: daySessions.reduce((sum, session) => sum + session.totalVolume, 0),
+      minutes: activities.reduce((sum, activity) => sum + activity.seconds, 0) / 60,
+      activityLoad: activities.reduce((sum, activity) => sum + activity.load, 0),
+      observedSessions: activities.filter(activity => activity.observed).length,
+      volume: daySessions.reduce((sum, session) => sum + ('totalVolume' in session ? session.totalVolume : 0), 0),
       sessionCount: daySessions.length,
       setVolumes,
     };
@@ -103,11 +102,11 @@ export const buildWeekBuckets = (
 };
 
 /** Minutos de exercício concluídos hoje (soma de sessões concluídas). */
-export const getTodayExerciseMinutes = (sessions: WorkoutSession[], reference: Date = new Date()): number =>
+export const getTodayExerciseMinutes = (sessions: FitnessSession[], reference: Date = new Date()): number =>
   sessions
     .filter(isCompleted)
     .filter((session) => isSameDay(sessionDate(session), reference))
-    .reduce((sum, session) => {const actual=activityMetrics(session);return sum+(actual.observations ? actual.seconds : session.durationSeconds);}, 0) / 60;
+    .reduce((sum, session) => sum + sessionActivity(session).seconds, 0) / 60;
 
 /* -------------------------------------------------------------------------- */
 /* Histórico                                                                   */

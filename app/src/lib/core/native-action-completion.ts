@@ -1,4 +1,5 @@
 import type { Action, ExecutionLog, Task } from '@/types';
+import { calculateNativeWorkoutReward, type NativeWorkoutRewardBlock } from './native-workout-reward';
 
 export interface NativeActionCompletion {
   sessionId: string;
@@ -11,6 +12,9 @@ export interface NativeActionCompletion {
   habitId?: string;
   declaredPlannedExecution?: boolean;
   fullCompletion?: boolean;
+  /** Per-series values, scored by Core and consolidated into one session log. */
+  workoutRewardBlocks?: NativeWorkoutRewardBlock[];
+  durationSource?: 'MEASURED' | 'DECLARED_PLANNED' | 'ESTIMATED_ACTIVE' | 'MIXED_ACTIVE';
 }
 
 const effortRules: Record<number, { multiplier: number; cap: number; pranaCost: number }> = {
@@ -44,8 +48,13 @@ export function buildNativeCompletion(input: NativeActionCompletion, pranaBefore
   if (Number.isNaN(timestamp.getTime()) || !input.title.trim()) throw new Error('Conclusão inválida.');
   if (existing && (existing.lifecycleType !== 'ACTION' || existing.children.length || existing.isCompleted)) throw new Error('A ocorrência vinculada não pode ser concluída por este fluxo.');
   const minutes = input.durationSeconds / 60;
-  const effortLevel = input.effortLevel ?? existing?.effortLevel ?? 1;
-  const { rawValue, executedValue, effortCap, pranaCost } = projectNativeLeafReward(input.baseValue, input.durationSeconds, effortLevel, input.declaredPlannedExecution && input.durationSeconds > 0);
+  const fallbackEffortLevel = input.effortLevel ?? existing?.effortLevel ?? 1;
+  const workoutReward = input.workoutRewardBlocks
+    ? calculateNativeWorkoutReward(input.workoutRewardBlocks, input.durationSeconds, fallbackEffortLevel, input.declaredPlannedExecution && input.durationSeconds > 0)
+    : undefined;
+  if (workoutReward && Math.abs(workoutReward.totalBaseValue - input.baseValue) > 1e-7) throw new Error('O valor-base não corresponde aos blocos concluídos.');
+  const effortLevel = workoutReward?.effortLevel ?? fallbackEffortLevel;
+  const { rawValue, executedValue, effortCap, pranaCost } = workoutReward ?? projectNativeLeafReward(input.baseValue, input.durationSeconds, effortLevel, input.declaredPlannedExecution && input.durationSeconds > 0);
   const pranaAfter = Math.max(0, Math.min(100, pranaBefore - pranaCost));
   const action: Task = {
     id: existing?.id ?? crypto.randomUUID(), title: input.title, type: 'TASK', lifecycleType: 'ACTION', semanticType: null,
@@ -61,9 +70,9 @@ export function buildNativeCompletion(input: NativeActionCompletion, pranaBefore
     id: crypto.randomUUID(), subjectId: action.id, subjectType: 'ACTION', timestamp,
     sourceModule: 'modulo_treino', sourceRefId: input.sessionId, actualTimeMinutes: minutes, actualEffortLevel: effortLevel,
     completedItemIds: [], executedValue, fullCompletion: input.fullCompletion ?? true, bonusApplied: 0,
-    durationSource: input.declaredPlannedExecution ? 'DECLARED_PLANNED' : 'MEASURED',
+    durationSource: input.declaredPlannedExecution ? 'DECLARED_PLANNED' : input.durationSource ?? 'MEASURED',
     baseValue: input.baseValue, rawValue, effortCap, pranaDeltaApplied: pranaAfter - pranaBefore,
-    ruleVersion: 'core-native-leaf-v3',
+    ruleVersion: workoutReward ? 'core-native-workout-block-v2' : 'core-native-leaf-v3',
   };
   return { action, log, pranaAfter };
 }

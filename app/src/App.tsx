@@ -1,13 +1,8 @@
-import { WorkoutSelect as WorkoutHub } from '@/pages/fitness/WorkoutSelect';
 import { FitnessRoot } from '@/pages/fitness/FitnessRoot';
 import { ActiveFitnessSession } from '@/pages/fitness/ActiveFitnessSession';
 import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
-import { WorkoutHistory } from '@/pages/fitness/WorkoutHistory';
-import { HealthWeeklySummary as WorkoutWeekly } from '@/pages/fitness/HealthWeeklySummary';
-import { HealthInsights as WorkoutInsights } from '@/pages/fitness/HealthInsights';
 import { ActiveWorkout } from '@/pages/fitness/ActiveWorkout';
 import { WorkoutSummary } from '@/pages/fitness/WorkoutSummary';
-import { HealthDashboard } from '@/pages/fitness/HealthDashboard';
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
@@ -36,7 +31,6 @@ import {
   CalisteniaExerciseDetail,
   CassinoArcano,
   Mapa,
-  Corpo,
   TemporalWeekPage,
   TemporalMonthPage,
   TemporalYearPage,
@@ -150,18 +144,18 @@ function App() {
             <Route path="/temporal/ano" element={<TemporalYearPage />} />
             <Route path="/temporal/calendario" element={<TemporalCalendarPage />} />
             <Route path="/pilares" element={<Pilares />} />
-            <Route path="/treinos" element={<WorkoutHub />} />
-            <Route path="/treinos/legado" element={<WorkoutHub />} />
+            <Route path="/treinos" element={<FitnessRoot />} />
+            <Route path="/treinos/legado" element={<FitnessRoot />} />
             <Route path="/fitness" element={<FitnessRoot />} />
             <Route path="/fitness/ativo/:sessionId" element={<ActiveFitnessSession />} />
-            <Route path="/treinos/painel" element={<HealthDashboard />} />
+            <Route path="/treinos/painel" element={<Navigate to="/treinos?tab=health" replace />} />
             <Route path="/treinos/plano/:workoutId" element={<WorkoutPreview />} />
             <Route path="/treinos/preview/:workoutId" element={<WorkoutPreview />} />
-            <Route path="/treinos/historico" element={<WorkoutHistory />} />
-            <Route path="/treinos/semana" element={<WorkoutWeekly />} />
-            <Route path="/treinos/insights" element={<WorkoutInsights />} />
+            <Route path="/treinos/historico" element={<Navigate to="/treinos?tab=history" replace />} />
+            <Route path="/treinos/semana" element={<Navigate to="/treinos?tab=health&view=week" replace />} />
+            <Route path="/treinos/insights" element={<Navigate to="/treinos?tab=health&view=insights" replace />} />
             <Route path="/mapa" element={<Mapa />} />
-            <Route path="/treinos/corpo" element={<Corpo />} />
+            <Route path="/treinos/corpo" element={<Navigate to="/treinos?tab=body" replace />} />
             <Route path="/treinos/ativo/:sessionId" element={<ActiveWorkout />} />
             <Route path="/treinos/resumo/:sessionId" element={<WorkoutSummary />} />
             <Route path="/dominios" element={<Dominios />} />

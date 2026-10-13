@@ -1,3 +1,65 @@
+## 0.1.31 — 13/10/2026
+
+- Integração das quatro abas Treinos/Histórico/Corpo/Saúde e aliases; painel, evolução e semana recuperados com históricos Native e legado.
+- Prévia visual Native com programa/mídia/instruções/edição/início; capa compartilhada com prévia legada. Planejar data abre editor existente.
+- Pausa persistida do relógio, distância/descrição por bloco, resumo de corrida e fallback de mídia Yoga. Sem mudança de fórmula ou recálculo de XP.
+- Navegação semanal por período/dia, Prana real do Core, CTAs responsivos e FAB contextual preservado.
+- 8 testes Deno, fluxo UI em perfil temporário e verificações 360/390/768px. Limites/evidências completos em CONTINUIDADE/F59.
+
+## 0.1.30 — F58, 13/10/2026
+
+- Cartão Corpo alinhado à referência: figura humana clara, proporções compactas e grade de medidas legível.
+- Removido cabeçalho duplicado na aba embutida; mantidos registros, histórico, gráficos e ação de avaliação.
+- Evidências e limites em CONTINUIDADE/FILA.
+
+## 0.1.29 — F57, 13/10/2026
+
+- Resumo Native com avaliação persistida no registro compartilhado, séries detalhadas, esforço, volume de carga, mídia/notas, perfil muscular estimado e evolução por plano.
+- Salvar e iniciar direto do editor; sessão ativa bloqueia início de outro treino, mas permite salvar planejamento.
+- Regra Core Native block-v2 normaliza repetições por tempo ativo equivalente sem mudar ER ou recibos antigos. Prévia compartilha o construtor da conclusão; duração planejada e ativa aparecem separadas.
+- Verificações do lote registradas em CONTINUIDADE/FILA; nenhuma publicação ou migração remota.
+
+## 0.1.28 — 13/10/2026
+
+- Menu Treinos e URL legada passam a usar FitnessRoot; o editor canônico prioriza exercícios/mídia e recolhe esforço/estimativa. Data opcional de planejamento local preservada no template/snapshot, sem criar agenda Core.
+- Criação de exercício próprio desbloqueia modalidades sem catálogo. Usa catálogos existentes da conta com ponte de identidade, sem atribuir perfil muscular automático. Overrides explícitos continuam opcionais e devem somar 100%.
+- Imagem, vídeo direto e observações configuráveis por exercício, preservados no plano e execução. Yoga mantém mídia original; execução legada também recebe mídia do plano. Esportes por tempo usam minutos e descanso, sem campo de carga em kg.
+- Testes de navegador: editor idêntico nas três entradas; exercício próprio, reload, imagem carregada, vínculo de vídeo/data persistidos e conclusão com XP, sem page errors. Vídeo testado por vínculo/elemento; reprodução real não testada. Build passou; lint sem erros/4 avisos antigos; recompensa Deno 3/3; minutos→segundos verificado. Evidências em F56/CONTINUIDADE.
+
+## 0.1.27 — 13/10/2026
+
+- Terra e Mais/Treinos usam a mesma biblioteca Fitness, ícones de referência, criação e edição canônicas. Planos legados aparecem na biblioteca e usam o editor compartilhado com adaptação de apresentação; IDs, séries, data, notas e distribuição são preservados, sem migração.
+- FAB de criação some quando Montar treino está utilizável e reaparece ao sair da tela. Editor compartilha cabeçalho e rodapé fixos; execução nativa preserva navegação global, ilustrações Yoga e fechamento claro.
+- Corrigido redirecionamento concorrente após finishSession: a rota reconhece a sessão gravada e abre o resumo de XP. Histórico/Corpo usam a mesma casca nas duas entradas.
+- Fluxo e FAB testados em perfil temporário 390px; edição legada preservou ID/séries; 360/768px sem overflow; build final passou e lint 0 erros/4 avisos preexistentes. Evidências e limites em CONTINUIDADE/F55.
+
+## 0.1.26 — 13/10/2026
+
+- Histórico Fitness reúne sessões Core e legadas em uma lista cronológica; todos os registros concluídos abrem o mesmo resumo visual. A conclusão nativa também abre esse resumo, que exibe somente XP comprovado pelo recibo ou ledger e mantém valores antigos sem recalcular.
+- Histórico e resumo validados no navegador com registros de 50 XP (Core) e 11 XP (legado); build passou, lint sem erros e 4 avisos anteriores. Revisão documental independente pendente por indisponibilidade do responsável.
+
+## 0.1.25 — 13/10/2026
+
+- Barra de ação da execução Fitness fica acima da navegação inferior e respeita a safe area; conteúdo mantém espaço para alcançar o fim sem esconder ações.
+- Sessão ativa em Escolher treino destaca “Continuar treino”; CTA explicita “Finalizar treino” com blocos pendentes e “Concluir treino” quando todos são processados. Build, lint e smoke mobile registrados na continuidade/F53.
+
+## 0.1.24 — 13/10/2026
+
+- Centraliza o ícone do botão de fechar na ficha de exercício Fitness dentro do alvo de 44px, preservando posição e ação.
+- Build e verificações de interface registrados na continuidade/F52.
+
+## 0.1.23 — 13/10/2026
+
+- Recompensa Native de Fitness passa a considerar volume e esforço percebido por série concluída; presença/tempo ativo são aplicados uma vez e Prana uma vez por sessão. Séries puladas não pontuam; sessões sem bloco concluído geram zero.
+- Execução e histórico exibem XP do recibo Core, blocos, minutos ativos e esforço ponderado. Regra versionada `core-native-workout-block-v1`; históricos anteriores preservados.
+- ADR-003 e capítulos Core/Adapter documentam mapeamento, fontes de duração e limite de teto por série. Build, lint, testes Deno e fluxo temporário de navegador registrados na continuidade/F51.
+
+## 0.1.22 — 13/10/2026
+
+- Sincroniza a branch principal de Matheus por fast-forward, preservando a branch local divergente e o worktree separado.
+- Recompõe compatibilidade de tipos entre o Core unificado e as telas/stores existentes; nível e XP passam a ler o cálculo atual e os ganhos usam as chaves corretas dos quatro elementos.
+- TypeScript passou após a reconciliação. Revisão visual, fluxos funcionais e persistência remota ainda pendentes; nenhuma migração foi aplicada ao Supabase.
+
 ## 0.1.21 — 10/10/2026
 
 - Entrada portável do Astro Boy para Fábio/frontend e Matheus/backend: regras Codex/Cursor/Claude, perfil local explícito, apresentação inicial e comandos status/welcome/ack.

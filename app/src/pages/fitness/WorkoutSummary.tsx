@@ -1,3 +1,4 @@
+import { NativeSessionDetails } from '@/components/workout/NativeSessionDetails';
 import { ActivitySessionMetrics } from '@/components/workout/ActivitySessionMetrics';
 import { activityMetrics } from '@/lib/workout/activity-metrics';
 import React, { useMemo, useState } from 'react';
@@ -19,6 +20,9 @@ import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatLongClock, formatTimeRange } from '@/lib/fitness-kit/format';
 import { CATEGORY_ICONS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
+import { useAppStore } from '@/stores/appStore';
+import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
+import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 
 const shortDate = (value: string): string => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
@@ -27,6 +31,15 @@ export const WorkoutSummary: React.FC = () => {
   const { sessionId } = useParams<{ sessionId: string }>();
 
   const session = useWorkoutStore((state) => (sessionId ? state.getSessionById(sessionId) : undefined));
+  const nativeSession = useWorkoutStore((state) => sessionId ? state.nativeHistory.find((item) => item.id === sessionId) : undefined);
+  const nativeHistory = useWorkoutStore((state) => state.nativeHistory);
+  const nativeTemplates = useWorkoutStore((state) => state.templates);
+  const coreState = {
+    executionLogs: useAppStore((state) => state.executionLogs),
+    actions: useAppStore((state) => state.actions),
+    tasks: useAppStore((state) => state.tasks),
+    habits: useAppStore((state) => state.habits),
+  };
   const workout = useWorkoutStore((state) => (session ? state.getWorkoutById(session.workoutId) : undefined));
   const rating = useWorkoutStore((state) => (sessionId ? state.getSessionRating(sessionId) : undefined));
   const averageRating = useWorkoutStore((state) => state.getAverageRating());
@@ -35,6 +48,7 @@ export const WorkoutSummary: React.FC = () => {
   const accountData = useWorkoutStore((state) => state.accountDataById);
   const rateWorkout = useWorkoutStore((state) => state.rateWorkout);
   const applyGamificationForSession = useWorkoutStore((state) => state.applyGamificationForSession);
+  const legacyReward = useWorkoutStore((state) => sessionId ? state.accountDataById[state.currentAccountId ?? 'local']?.gamificationLedger.find((entry) => entry.sessionId === sessionId)?.xpAwarded : undefined);
 
   const exerciseOptions = useMemo(() => {
     if (!session) return [];
@@ -74,6 +88,38 @@ export const WorkoutSummary: React.FC = () => {
     const measured=activityMetrics(session);
     return [{id:'active-time',label:'Tempo ativo',value:(measured.seconds/60).toFixed(1),unit:'min'},{id:'activity-load',label:'Carga percebida',value:measured.load.toFixed(1),unit:'u.a.'},{id:'earth',label:'Terra',value:String(session.earthPoints)},{id:'distance',label:'Distância',value:measured.distance>0?String(measured.distance):'—',unit:'m'}];
   }, [session]);
+
+  if (nativeSession) {
+    const Icon = CATEGORY_ICONS[nativeSession.exerciseResults[0]?.modality ?? nativeTemplates.find((template) => template.id === nativeSession.templateId)?.modality ?? 'mixed'] ?? CATEGORY_ICONS.mixed;
+    const xp = resolveNativeSessionXp(nativeSession, coreState);
+    const completedSets = nativeSession.exerciseResults.flatMap((exercise) => exercise.sets).filter((set) => set.completed && !set.skipped);
+    const coreLog = coreState.executionLogs.find((log) => log.id === nativeSession.coreExecutionLogId) ?? nativeSession.coreReceipt;
+    const timeRange = formatTimeRange(nativeSession.startedAt, nativeSession.completedAt);
+    const distance = completedSets.reduce((sum, set) => sum + (set.distanceMeters ?? 0), 0);
+    const distanceSets = completedSets.filter(set => set.measureMode === 'duration' && (set.distanceMeters ?? 0) > 0);
+    const distanceSeconds = distanceSets.reduce((sum, set) => sum + (set.durationSeconds ?? 0), 0);
+    const nativeMetrics = [
+      { id: 'duration', label: 'Tempo cronometrado', value: formatLongClock(nativeSession.durationSeconds) },
+      ...(nativeSession.activeDurationSeconds != null ? [{ id: 'active', label: coreLog?.durationSource === 'ESTIMATED_ACTIVE' ? 'Tempo ativo estimado' : coreLog?.durationSource === 'MIXED_ACTIVE' ? 'Tempo ativo misto' : 'Tempo ativo informado', value: formatLongClock(nativeSession.activeDurationSeconds) }] : []),
+      { id: 'blocks', label: 'Blocos concluídos', value: String(completedSets.length) },
+      ...(distance > 0 ? [{ id: 'distance', label: 'Distância informada', value: (distance / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 }), unit: 'km' }] : []),
+      ...(distance > 0 && distanceSeconds > 0 && nativeSession.exerciseResults.every(exercise => exercise.modality === 'running') ? [{ id: 'pace', label: 'Ritmo dos blocos com distância', value: formatLongClock(distanceSeconds / (distance / 1000)), unit: '/km' }] : []),
+    ];
+    const share = async () => {
+      const text = `${nativeSession.nameSnapshot} · ${new Date(nativeSession.completedAt ?? nativeSession.startedAt).toLocaleString('pt-BR')} · ${formatLongClock(nativeSession.durationSeconds)}${xp == null ? '' : ` · +${formatEarthXp(xp)} XP Terra`}`;
+      try { if (typeof navigator.share === 'function') await navigator.share({ title: nativeSession.nameSnapshot, text }); else { await navigator.clipboard.writeText(text); toast.success('Resumo copiado'); } }
+      catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) toast.error('Não foi possível compartilhar o resumo'); }
+    };
+    return <WorkoutSummaryView name={nativeSession.nameSnapshot} icon={Icon} timeRange={timeRange} metrics={nativeMetrics} onBack={() => navigate('/treinos/historico')} onShare={() => void share()} onSave={() => navigate('/treinos/historico')}>
+      <FitnessCard radius="lg" className="overflow-hidden border border-fitness-green/25 bg-gradient-to-br from-fitness-green/15 via-fitness-surface to-fitness-surface p-6">
+        <p className="text-sm font-medium text-fitness-muted">Recompensa conquistada</p>
+        {xp == null ? <p className="mt-2 text-base text-fitness-muted">XP indisponível neste registro histórico.</p> : <p className="mt-1 text-3xl font-bold text-fitness-green">+{formatEarthXp(xp)} XP <span aria-label="Terra">🌿</span></p>}
+        <p className="mt-1 text-sm text-fitness-muted">Terra · registrada ao concluir</p>
+        {coreLog?.ruleVersion?.startsWith('core-native-workout-block-') && <p className="mt-4 text-sm text-fitness-text-soft">{completedSets.length} blocos concluídos · {formatLongClock(coreLog.actualTimeMinutes * 60)} ativos · esforço ponderado {coreLog.actualEffortLevel}/5</p>}
+      </FitnessCard>
+      <NativeSessionDetails session={nativeSession} history={nativeHistory} stars={rating?.stars ?? 0} onRate={(stars) => rateWorkout(nativeSession.id, stars)} />
+    </WorkoutSummaryView>;
+  }
 
   if (!sessionId || !session) {
     return (
@@ -129,7 +175,7 @@ export const WorkoutSummary: React.FC = () => {
 
   const handleSave = () => {
     applyGamificationForSession(session.id);
-    navigate('/treinos');
+    navigate('/treinos/historico');
   };
 
   return (
@@ -138,11 +184,16 @@ export const WorkoutSummary: React.FC = () => {
       icon={Icon}
       timeRange={timeRange}
       metrics={metrics}
-      onBack={() => navigate('/treinos')}
+      onBack={() => navigate('/treinos/historico')}
       onShare={() => void handleShare()}
       onSave={handleSave}
     >
       <ActivitySessionMetrics session={session} />
+      <FitnessCard radius="lg" className="border border-fitness-green/25 bg-fitness-green/10 p-5">
+        <p className="text-sm font-medium text-fitness-muted">Recompensa registrada</p>
+        {legacyReward == null ? <p className="mt-1 text-sm text-fitness-muted">XP indisponível neste registro histórico.</p> : <p className="mt-1 text-2xl font-bold text-fitness-green">+{formatEarthXp(legacyReward)} XP <span aria-label="Terra">🌿</span></p>}
+        <p className="mt-1 text-sm text-fitness-muted">Terra · registrada ao concluir</p>
+      </FitnessCard>
       <FitnessCard radius="lg" className="flex flex-col items-center p-6 text-center">
         <h3 className="font-sans text-xl font-semibold text-fitness-text">Como foi este treino?</h3>
         <div className="mt-4">

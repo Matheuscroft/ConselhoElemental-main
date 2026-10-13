@@ -47,6 +47,8 @@ export type ExerciseLoadMode = 'weighted' | 'bodyweight' | 'none';
 
 /** Formato antigo do catálogo, mantido para Store/UI ainda não migradas. */
 export interface LegacyWorkoutExercise {
+  imageUrl?: string;
+  videoUrl?: string;
   id: string;
   name: string;
   source: WorkoutExerciseSource;
@@ -85,12 +87,17 @@ export type Exercise = Omit<LegacyWorkoutExercise, 'category' | 'id'> & {
 };
 
 interface WorkoutSetBase {
+  /** Optional manual observations; do not alter the reward formula. */
+  distanceMeters?: number;
+  activityNotes?: string;
   id: UUIDv4;
   setNumber: number;
   targetLoadKg?: number;
   loadKg?: number;
   restSeconds?: number;
   loadFactor?: 0.8 | 1 | 1.5;
+  /** RPE individual (1–10) informado na execução; ausente em sessões antigas. */
+  perceivedExertion?: number;
   completed: boolean;
   skipped?: boolean;
   completedAt?: ISODateString;
@@ -104,6 +111,8 @@ export type WorkoutSet = WorkoutSetBase & (
 
 /** Instância que agrega séries, planejada ou registrada numa sessão. */
 export interface WorkoutExerciseInstance<Mode extends 'planned' | 'executed' = 'planned'> {
+  imageUrl?: string;
+  videoUrl?: string;
   id: UUIDv4;
   exerciseId: UUIDv4;
   order: number;
@@ -139,6 +148,8 @@ export interface WorkoutSetPlan {
 }
 
 export interface WorkoutExercisePlan {
+  imageUrl?: string;
+  videoUrl?: string;
   id: string;
   exerciseId: string;
   order: number;
@@ -166,6 +177,8 @@ export interface Workout {
 
 /** Blueprint inerte na biblioteca; existir aqui não cria item no Core. */
 export interface WorkoutTemplate {
+  /** Data de planejamento local; não cria agendamento no Core. */
+  scheduledAt?: ISODateString;
   /** Inteiro 1–5; formulários novos sugerem 3, ausência mantém padrão Core 1. */
   effortLevel?: number;
   durationEstimateMode?: 'auto' | 'manual';
@@ -223,6 +236,8 @@ export interface PerformedSet {
 }
 
 export interface WorkoutExerciseResult {
+  imageUrl?: string;
+  videoUrl?: string;
   exerciseId: string;
   exerciseNameSnapshot: string;
   order: number;
@@ -255,6 +270,8 @@ export interface LegacyWorkoutSession {
 
 /** Sessão nativa real; templateId ausente representa uma sessão ad-hoc. */
 export interface NativeWorkoutSession {
+  pausedAt?: ISODateString;
+  pausedSeconds?: number;
   /** Receipt snapshot permits exact undo even after Core cloud hydration. */
   coreReceipt?: import('@/types').ExecutionLog;
   executionMode?: 'LIVE' | 'CHECKIN';
@@ -277,6 +294,8 @@ export interface NativeWorkoutSession {
   exerciseResults: WorkoutExercise<'executed'>[];
   totalER: number;
   baseValue?: number;
+  /** Tempo ativo derivado dos blocos concluídos, separado do relógio total. */
+  activeDurationSeconds?: number;
   /** Correlação do único ExecutionLog emitido para esta sessão. */
   coreExecutionLogId?: UUIDv4;
   /** XP real retornado pelo Core na conclusão; nunca uma projeção recalculada. */

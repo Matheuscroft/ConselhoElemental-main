@@ -19,7 +19,11 @@ test('Perfil explícito, apresentação única, troca de colaborador e validaç�
     assert.equal(run('setup', '--name', 'Matheus', '--role', 'backend').status, 0);
     assert.equal(state().profile.name, 'Matheus');
     assert.equal(state().onboardingRequired, true);
-    assert.match(run('welcome').stdout, /Olá, Matheus!/);
+    const greeting = run('welcome').stdout;
+    assert.match(greeting, /Olá, Matheus!/);
+    assert.match(greeting, /F59/);
+    assert.match(greeting, /reversão\/idempotência/);
+    assert.match(greeting, /GPS\/mapa/);
     assert.equal(run('ack').status, 0);
     const timestamp = state().profile.introducedAt;
     assert.equal(state().onboardingRequired, false);

@@ -1,3 +1,4 @@
+import { NativeWorkoutPreview } from './NativeWorkoutPreview';
 import React, { useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -5,13 +6,14 @@ import {
   FitnessButton,
   FitnessEmptyState,
   FitnessListRow,
-  FitnessHeader,
+  WorkoutPreviewHero,
   FitnessPageShell,
   FitnessStickyAction,
   SectionHeader,
 
 } from '@/components/fitness-kit';
 import { ExerciseDetailSheet } from '@/components/workout';
+import { resolveExerciseMedia } from '@/lib/workout/exercise-media';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatClock, formatMinutes } from '@/lib/fitness-kit/format';
 import { CATEGORY_ICONS, CATEGORY_LABELS, LEVEL_LABELS } from '@/lib/workout';
@@ -34,6 +36,12 @@ const describePlan = (plan: WorkoutExercisePlan, exercise?: WorkoutExercise): st
 };
 
 export const WorkoutPreview: React.FC = () => {
+  const { workoutId } = useParams();
+  const template = useWorkoutStore(state => state.templates.find(item => item.id === workoutId));
+  return template ? <NativeWorkoutPreview template={template} /> : <LegacyWorkoutPreview />;
+};
+
+const LegacyWorkoutPreview: React.FC = () => {
   const navigate = useNavigate();
   const [detailExercise, setDetailExercise] = useState<WorkoutExercise | null>(null);
   const { workoutId } = useParams<{ workoutId: string }>();
@@ -89,10 +97,10 @@ export const WorkoutPreview: React.FC = () => {
   const actionDisabled = isCompleted ? !workout.lastSessionId : !canStart;
 
   return (
-    <FitnessPageShell focused withFixedAction>
-      <FitnessHeader title="Seu treino" onBack={() => navigate('/treinos')} />
+    <FitnessPageShell focused withFixedAction showPageMap={false} bleed flushTop>
+      <WorkoutPreviewHero title={workout.name} heroImage={rows.map(({ plan, exercise }) => resolveExerciseMedia(plan, exercise, exercise).poster).find(Boolean)} onBack={() => navigate(`/treinos?modalidade=${workout.category}`)} />
 
-      <div className="mt-8 bg-fitness-canvas">
+      <div className="relative -mt-8 rounded-t-[2rem] bg-fitness-canvas px-6 pt-7">
         <div className="flex items-baseline justify-between gap-4">
           <h2 className="min-w-0 break-words font-sans text-[28px] font-semibold leading-tight text-fitness-text">{workout.name}</h2>
           <span className="shrink-0 text-lg font-medium text-fitness-primary">{formatMinutes(workout.estimatedDurationMinutes)}</span>

@@ -1,3 +1,5 @@
+import { isNativeSession, sessionActivity } from '@/lib/fitness/activity-history';
+import { useFitnessHistory } from '@/lib/fitness/use-fitness-history';
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
@@ -21,12 +23,12 @@ import { buildDayBuckets } from '@/lib/fitness/fitness-insights';
 import { CATEGORY_ICONS, formatWorkoutDateTime } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 
-export const Corpo: React.FC = () => {
+export const Corpo: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const latest = useWorkoutStore((state) => state.getLatestBodyMeasurement());
   const history = useWorkoutStore(useShallow((state) => state.getBodyMeasurementHistory()));
-  const sessions = useWorkoutStore(useShallow((state) => state.getWorkoutHistory()));
+  const sessions = useFitnessHistory();
   const getWorkoutById = useWorkoutStore((state) => state.getWorkoutById);
   const deleteMeasurement = useWorkoutStore((state) => state.deleteBodyMeasurement);
   const metrics = useMemo(() => mapMeasurementToMetrics(latest), [latest]);
@@ -44,10 +46,10 @@ export const Corpo: React.FC = () => {
   const recent = sessions.filter((session) => session.status === 'completed').slice(0, 3);
 
   return (
-    <FitnessPageShell withNav>
+    <FitnessPageShell focused withNav showPageMap={false}>
       <FitnessTopTabs />
-      <FitnessHeader title="Meu corpo" onBack={() => navigate('/treinos/insights')} backLabel="Voltar para Saúde" />
-      <div className="mt-8 space-y-6">
+      {!embedded && <FitnessHeader title="Meu corpo" onBack={() => navigate('/treinos/insights')} backLabel="Voltar para Saúde" />}
+      <div className={embedded ? "space-y-5" : "mt-8 space-y-6"}>
         <BodyMetricsCard metrics={metrics} measuredAt={latest?.measuredAt} onRecord={() => setDialogOpen(true)} />
         {extraFields.length > 0 && (
           <FitnessCard radius="lg" className="p-6">
@@ -102,10 +104,10 @@ export const Corpo: React.FC = () => {
           <SectionHeader title="Treinos recentes" actionLabel="Ver histórico" onAction={() => navigate('/treinos/historico')} />
           <div className="mt-5 space-y-4">
             {recent.length === 0 ? <p className="py-4 text-base text-fitness-muted">Seus treinos concluídos aparecem aqui.</p> : recent.map((session) => (
-              <WorkoutHistoryCard key={session.id} name={session.workoutNameSnapshot}
+              <WorkoutHistoryCard key={session.id} name={isNativeSession(session) ? session.nameSnapshot : session.workoutNameSnapshot}
                 dateLabel={new Date(session.completedAt ?? session.startedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                icon={CATEGORY_ICONS[getWorkoutById(session.workoutId)?.category ?? 'mixed'] ?? CATEGORY_ICONS.mixed}
-                metricValue={String(Math.round(session.durationSeconds / 60))} metricUnit="min"
+                icon={CATEGORY_ICONS[(isNativeSession(session) ? session.exerciseResults[0]?.modality : getWorkoutById(session.workoutId)?.category) ?? 'mixed'] ?? CATEGORY_ICONS.mixed}
+                metricValue={String(Math.round(sessionActivity(session).seconds / 60))} metricUnit="min"
                 onClick={() => navigate(`/treinos/resumo/${session.id}`)} />
             ))}
           </div>

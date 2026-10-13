@@ -24,12 +24,14 @@ import {
 } from 'recharts';
 
 export const Grimorio: React.FC = () => {
-  const { user, updateUser, getElementScores, tasks, habits } = useAppStore();
+  const { user, updateUser, getElementScores, getLevelProgress, tasks, habits } = useAppStore();
   const [editName, setEditName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
 
   const elementScores = getElementScores();
+  const levelProgress = getLevelProgress();
+  const levelXp = levelProgress.xpTotal - levelProgress.xpAtLevelStart;
   const completedTasks = tasks.filter(t => t.isCompleted).length;
   const totalTasks = tasks.length;
   const activeHabits = habits.length;
@@ -114,7 +116,7 @@ export const Grimorio: React.FC = () => {
           <div className="flex items-center justify-center gap-2 mt-1">
             <Badge variant="outline" className="bg-mystic-gold/10 text-mystic-gold border-mystic-gold/30">
               <Trophy className="w-3 h-3 mr-1" />
-              Nível {user.level}
+              Nível {levelProgress.level}
             </Badge>
             <Badge variant="outline" className="bg-white/5">
               <Flame className="w-3 h-3 mr-1 text-orange-400" />
@@ -128,15 +130,15 @@ export const Grimorio: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm text-white/60">Experiência</span>
             <span className="text-sm text-mystic-gold">
-              {user.experience} / {user.experienceToNextLevel} XP
+              {levelXp} / {levelProgress.xpToNextLevel} XP
             </span>
           </div>
           <Progress 
-            value={(user.experience / user.experienceToNextLevel) * 100}
+            value={levelProgress.progressFraction * 100}
             className="h-2 bg-white/10"
           />
           <p className="text-xs text-white/40 mt-2 text-center">
-            Faltam {user.experienceToNextLevel - user.experience} XP para o nível {user.level + 1}
+            Faltam {levelProgress.xpToNextLevel - levelXp} XP para o nível {levelProgress.level + 1}
           </p>
         </motion.div>
 

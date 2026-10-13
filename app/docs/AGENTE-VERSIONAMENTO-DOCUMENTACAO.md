@@ -13,17 +13,17 @@ O responsável pode elaborar documentação e conferir versões dentro dos arqui
 ## Início de cada lote
 
 1. Ler AGENTS.md, o protocolo de coordenação, a entrada atribuída em FILA-ENTREGAS.md e o registro de continuidade vigente apontado pelo coordenador.
-2. Começar a consulta de domínio pelo índice `/Users/fabioandre/Developer/docs-conselho-master/README.md`; ler capítulos e ADRs pertinentes e BASE-CANONICA-E-EVOLUCAO.md. Se a fonte não estiver disponível, registrar a limitação; não substituí-la silenciosamente por relatório antigo.
+2. Começar a consulta de domínio pelo índice `/Users/fabioandre/Developer/docs-conselho-master/README.md`; ler capítulos e ADRs pertinentes e `docs/03-Project-Management/reports/BASE-CANONICA-E-EVOLUCAO.md`. Se a fonte não estiver disponível, registrar a limitação; não substituí-la silenciosamente por relatório antigo.
 3. Registrar checkout, revisão base, data local, estado do lote, arquivos reservados e alterações preexistentes. Comparar a fila do checkout com a fila operacional indicada pelo coordenador antes de escolher versão ou retomar um lote; snapshots de worktrees não são estado global. Inspecionar o código que sustenta qualquer nova afirmação.
 4. Conferir a existência dos documentos necessários. Criar somente os ausentes que pertençam ao escopo atribuído; se já existirem, atualizar preservando decisões e histórico. Não criar uma segunda fila ou manual concorrente.
 
 ## Versionamento do produto
 
-Fonte operacional: package.json, package-lock.json e docs/CHANGELOG.md. Na inspeção de 09/10/2026, package.json.version, package-lock.json.version, package-lock.json.packages[""].version e a primeira entrada do changelog indicam **0.1.12**. Isso identifica o checkout; não comprova release publicado nem aceite funcional.
+Fonte operacional: package.json, package-lock.json e o changelog vigente indicado em `docs/03-Project-Management/README.md`. Na inspeção de 09/10/2026, package.json.version, package-lock.json.version, package-lock.json.packages[""].version e a primeira entrada do changelog indicavam **0.1.12**. Isso identifica aquele checkout; não comprova release publicado nem aceite funcional.
 
 Ao concluir um lote de código, consultar a skill `.agents/skills/auto-versionamento/SKILL.md`, preservar o padrão numérico existente e escolher o incremento conforme impacto. Correção pequena normalmente incrementa patch; funcionalidade relevante exige avaliar incremento intermediário; incompatibilidade estrutural exige decisão explícita sobre escopo e impacto. Não escolher versão por quantidade de agentes, arquivos ou mensagens.
 
-Reservar os três arquivos antes de escrever. Se vários agentes contribuírem para uma mesma entrega integrada, consolidar um incremento no encerramento do lote; evitar bumps concorrentes. Sincronizar as três posições de versão e inserir entrada objetiva no topo de docs/CHANGELOG.md sem apagar o histórico. Não atualizar dependências ou regenerar o lockfile inteiro apenas para mudar a versão; revisar o diff para excluir alterações indiretas. Não executar comandos que produzam commit/tag implicitamente.
+Reservar os três arquivos antes de escrever. Se vários agentes contribuírem para uma mesma entrega integrada, consolidar um incremento no encerramento do lote; evitar bumps concorrentes. Sincronizar as três posições de versão e inserir entrada objetiva no topo do changelog vigente, sem apagar o histórico. Não atualizar dependências ou regenerar o lockfile inteiro apenas para mudar a versão; revisar o diff para excluir alterações indiretas. Não executar comandos que produzam commit/tag implicitamente.
 
 Documentação isolada, diagnóstico ou teste sem mudança de código não exige incrementar a versão do produto por esta skill. Registrar a data e o lote na continuidade. Nesta entrega documental, **0.1.12 permanece inalterada**. Se a versão divergir entre arquivos, relatar o estado inicial e reconciliar somente no escopo autorizado, preservando contribuições anteriores.
 

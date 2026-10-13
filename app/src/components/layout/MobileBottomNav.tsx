@@ -5,7 +5,7 @@ import { AllRoutesSheet } from './AllRoutesSheet';
 
 const ITEMS = [
   { label: 'Santuário', path: '/santuario', icon: Sparkles, active: (path: string) => path === '/santuario' },
-  { label: 'Pilares', path: '/pilares', icon: Layers3, active: (path: string) => path.startsWith('/pilares') || path.startsWith('/fitness') || path.startsWith('/jornadas') || path.startsWith('/grandes-obras') },
+  { label: 'Pilares', path: '/pilares', icon: Layers3, active: (path: string) => path.startsWith('/pilares') || path.startsWith('/jornadas') || path.startsWith('/grandes-obras') },
   { label: 'Ciclos', path: '/ciclos', icon: Flame, active: (path: string) => path.startsWith('/ciclos') },
 ] as const;
 
@@ -13,7 +13,7 @@ export const MobileBottomNav: React.FC = () => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [moreOpen, setMoreOpen] = useState(false);
-  const moreActive = ['/grimorio', '/rituais', '/invocar', '/forja', '/treinos', '/dominios', '/astrolabio'].some((path) => pathname.startsWith(path));
+  const moreActive = ['/grimorio', '/rituais', '/invocar', '/forja', '/treinos', '/fitness', '/dominios', '/astrolabio'].some((path) => pathname.startsWith(path));
 
   return (
     <>

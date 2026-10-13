@@ -11,7 +11,7 @@
 - Referência principal indicada pelo usuário: `/Users/fabioandre/Developer/docs-conselho-master/README.md`. Ao consultar documentação do app, comece por esse índice e leia os capítulos de domínio/arquitetura e ADRs pertinentes à tarefa.
 - Preserve o core funcional, dados e conteúdos existentes. Melhorias de frontend e novas ideias devem integrar-se às regras documentadas, sem criar um segundo motor de pontuação, modelo de hábitos ou persistência paralela.
 - Documentação descreve contratos e intenção; confirme implementação no código e comportamento por testes. Registre divergências antes de mudar regras. Exemplos contraditórios não autorizam migrações ou reescritas automáticas.
-- Consulte `docs/BASE-CANONICA-E-EVOLUCAO.md` para o alinhamento do plano. Relatórios antigos não substituem evidências atuais.
+- Consulte `docs/03-Project-Management/reports/BASE-CANONICA-E-EVOLUCAO.md` para o alinhamento do plano e `docs/README.md` para a estrutura documental atual. Relatórios antigos não substituem evidências atuais.
 
 ## Skills complementares instaladas no projeto
 
@@ -27,7 +27,7 @@ Antes de executar um lote, leia `docs/COORDENACAO-AGENTES.md` e a entrada corres
 
 Astro Boy é o coordenador e único interlocutor do usuário. Executores reportam no contexto da delegação; não criam chats para o usuário acompanhar nem enviam mensagens a outros chats sem autorização explícita.
 
-Preserve core, dados, progressão, conteúdos, funcionalidades e alterações preexistentes. Consulte `docs/BASE-CANONICA-E-EVOLUCAO.md` e a fonte canônica indicada ali antes de trabalhar no domínio. Documentação não comprova implementação. Registre somente testes executados e evidências atuais.
+Preserve core, dados, progressão, conteúdos, funcionalidades e alterações preexistentes. Consulte `docs/03-Project-Management/reports/BASE-CANONICA-E-EVOLUCAO.md` e a fonte canônica indicada ali antes de trabalhar no domínio. Documentação não comprova implementação. Registre somente testes executados e evidências atuais.
 
 Use subagentes somente no escopo autorizado e respeite a capacidade disponível. As instruções detalhadas de coordenação são um protocolo operacional, não um serviço automático nem uma configuração de modelos.
 

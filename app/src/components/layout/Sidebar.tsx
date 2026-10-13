@@ -13,13 +13,14 @@ const NAV_ITEMS = SIDEBAR_ROUTES;
 export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, getCompletedTasksToday, getCompletedHabitsToday, getStreak } = useAppStore();
+  const { user, getCompletedTasksToday, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
   const { signOut } = useAuthStore();
   const { getResourceSnapshot } = useWorkoutStore();
   
   const tasksToday = getCompletedTasksToday();
   const habitsToday = getCompletedHabitsToday();
   const streak = getStreak();
+  const levelProgress = getLevelProgress();
   
   const hp = Math.min(100, 70 + (habitsToday * 5) + (streak > 0 ? 10 : 0));
   const stamina = getResourceSnapshot().currentStamina;
@@ -43,7 +44,7 @@ export const Sidebar: React.FC = () => {
         <div className="p-4 rounded-2xl bg-black/50 border border-white/5 space-y-3">
           <div className="flex justify-between items-center mb-1">
             <span className="text-xs font-bold text-white truncate max-w-[120px]">{user?.name}</span>
-            <span className="text-[10px] font-mono text-mystic-gold bg-mystic-gold/10 px-2 py-0.5 rounded-md border border-mystic-gold/20">LVL {user?.level ?? 1}</span>
+            <span className="text-[10px] font-mono text-mystic-gold bg-mystic-gold/10 px-2 py-0.5 rounded-md border border-mystic-gold/20">LVL {levelProgress.level}</span>
           </div>
 
           <div className="space-y-1.5">

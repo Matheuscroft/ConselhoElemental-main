@@ -274,6 +274,16 @@ Sem exercícios, a estimativa é zero. O campo de duração atualiza ao adiciona
 
 O fator de carga da série (0.8/1/1.5) modifica o ER; o esforço global (1–5) modifica a recompensa e o débito de Prana. São parâmetros distintos e não substituem um ao outro.
 
+### 5.6 Execução Native por bloco — `core-native-workout-block-v1`
+
+Desde a versão 0.1.23, sessões iniciadas pelo fluxo Native Fitness registram esforço percebido por série/bloco concluído (RPE inteiro de 1 a 10). O Adapter converte RPE para o nível Core mais próximo (`round(RPE / 2)`, limitado a 1–5); séries sem valor observado usam o esforço global planejado como fallback. Apenas séries concluídas, não puladas e com quantidade positiva participam. Repetições e duração são convertidas em ER pela seção 5.3; `loadFactor` permanece independente do RPE.
+
+O Core recebe os blocos elegíveis dentro de uma conclusão de sessão e calcula cada bloco com seu próprio nível de esforço e teto da seção 2.4. Volume e esforço alteram o XP; blocos pulados/incompletos não geram valor. Tempo ativo e presença são determinados uma única vez para a sessão, sem incluir descansos: duração de blocos temporizados é observada; repetições usam estimativa de 4 segundos por repetição. O recibo registra a fonte (`MEASURED`, `ESTIMATED_ACTIVE` ou `MIXED_ACTIVE`) e conserva o tempo de relógio da sessão separadamente.
+
+O Core consolida o XP dos blocos em **um `ExecutionLog` por sessão**. O nível de esforço gravado no recibo é a média ponderada pelo `base_value` de cada bloco, arredondada para o nível inteiro mais próximo; o custo de Prana é aplicado uma única vez segundo esse nível. Sessão sem blocos elegíveis gera zero XP e zero custo de Prana. A prévia assume presença de planejamento e todas as séries, mas não concede recompensa.
+
+Essa regra é versionada: recibos `core-native-workout-block-v1` não são recalculados quando fórmulas futuras mudarem; recibos anteriores mantêm a regra original. Os limites por bloco tornam volume adicional significativo, inclusive quando séries têm intensidades diferentes. Isso também significa que a divisão do mesmo trabalho em séries distintas pode mudar o total, pois cada série é uma unidade de execução sujeita ao teto; o app não interpreta o texto da atividade para deduzir intensidade. Os valores são uma convenção gamificada do projeto, não medida fisiológica, calórica ou prescrição clínica. ADR-003 registra a decisão e seus limites.
+
 ```text
 preview_xp = MIN(
   (planned_er × 0.10) × 1.5 × effort_multiplier × time_multiplier(estimated_minutes),
@@ -505,3 +515,7 @@ Para a composição da tela, títulos e contratos de leitura do Grimório, ver [
 - Contrato de injeção de Módulos Nativos → [../02-Platform-Architecture/01-Core-vs-Native-Modules.md](../02-Platform-Architecture/01-Core-vs-Native-Modules.md)
 - Hábitos e rotações sequenciais → [../02-Platform-Architecture/02-Acoes-e-Habitos.md](../02-Platform-Architecture/02-Acoes-e-Habitos.md)
 - Decisão histórica sobre bônus de presença → [../04-ADRs/ADR-000-Presence-Bonus-Correction.md](../04-ADRs/ADR-000-Presence-Bonus-Correction.md)
+
+### Ajuste F57: equivalência Native por tempo ativo (0.1.29)
+
+A regra `core-native-workout-block-v2` preserva ER, mas normaliza a base de recompensa das repetições por sua duração estimada de 4s: `ER × 0.10 × 2`. Séries por duração mantêm `ER × 0.10`. Blocos com tempo ativo, fator e RPE equivalentes usam a mesma base. Mantidos multiplicadores/tetos por bloco, presença, Prana único e exclusão de descanso/pulados; dividir em mais blocos pode mudar o total por causa dos tetos. Tempo manual planejado não entra na recompensa. Registros anteriores não são recalculados. Ver [ADR-003](../04-ADRs/ADR-003-Recompensa-Native-Treino-Por-Bloco.md).

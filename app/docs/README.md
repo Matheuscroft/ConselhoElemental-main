@@ -29,7 +29,8 @@ A documentação de arquitetura é dividida por domínio. Comece por [00-Overvie
 04-ADRs/                          Histórico de decisões arquiteturais
 ├── ADR-000-Presence-Bonus-Correction.md
 ├── ADR-001-Habits-as-Actions.md
-└── ADR-002-Prana-e-Modulos.md
+├── ADR-002-Prana-e-Modulos.md
+└── ADR-003-Recompensa-Native-Treino-Por-Bloco.md
 ```
 
 Os registros de versões e execução foram arquivados em `03-Project-Management/`; não são fonte de regras atuais. A estrutura técnica canônica fica nas seções `00` a `02` e as decisões registradas ficam em `04-ADRs`.

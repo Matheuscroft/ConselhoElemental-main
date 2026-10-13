@@ -2,7 +2,6 @@ import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { RunningReferenceIcon, CoreReferenceIcon, SwimmingReferenceIcon, MartialArtsReferenceIcon, YogaReferenceIcon, CyclingReferenceIcon } from '@/components/fitness-kit/WorkoutReferenceIcons';
 import { Pencil, Play } from 'lucide-react';
-import { useShallow } from 'zustand/react/shallow';
 import {
   FitnessButton,
   FitnessCategoryGrid,
@@ -42,13 +41,22 @@ export const WorkoutSelect: React.FC = () => {
   const createdWorkout = useRef<string | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const catalog = useWorkoutStore(useShallow((state) => state.getExerciseCatalog()));
-  const plannedWorkouts = useWorkoutStore(useShallow((state) => state.getPlannedWorkouts()));
-  const strength = useWorkoutStore((state) => state.getStrengthStat());
-  const earth = useWorkoutStore((state) => state.getEarthPoints());
-  const averageRating = useWorkoutStore((state) => state.getAverageRating());
-  const completedCount = useWorkoutStore((state) => state.getCompletedWorkouts().length);
-  const activeSession = useWorkoutStore((state) => state.getActiveSession());
+  const {
+    getExerciseCatalog,
+    getPlannedWorkouts,
+    getStrengthStat,
+    getEarthPoints,
+    getAverageRating,
+    getCompletedWorkouts,
+    getActiveSession,
+  } = useWorkoutStore();
+  const catalog = getExerciseCatalog();
+  const plannedWorkouts = getPlannedWorkouts();
+  const strength = getStrengthStat();
+  const earth = getEarthPoints();
+  const averageRating = getAverageRating();
+  const completedCount = getCompletedWorkouts().length;
+  const activeSession = getActiveSession();
 
   const sourceParam = searchParams.get('source');
   const exerciseParam = searchParams.get('exercise');
@@ -169,7 +177,8 @@ export const WorkoutSelect: React.FC = () => {
           <FitnessListRow
             icon={Play}
             title={activeSession.workoutNameSnapshot}
-            subtitle="Sessão em andamento · continuar"
+            subtitle="Sessão em andamento"
+            trailing={<span className="shrink-0 rounded-full bg-fitness-primary/15 px-3 py-1.5 text-xs font-semibold text-fitness-primary">Continuar treino</span>}
             onClick={() => navigate(`/treinos/ativo/${activeSession.id}`)}
             ariaLabel={`Continuar treino ${activeSession.workoutNameSnapshot}`}
           />

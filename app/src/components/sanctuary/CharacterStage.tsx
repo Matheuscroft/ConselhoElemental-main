@@ -11,17 +11,18 @@ const slots = [
 ];
 
 export function CharacterStage() {
-  const { user, getCompletedHabitsToday, getStreak } = useAppStore();
+  const { user, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
   const resources = getResourceSnapshot();
   const [selected, setSelected] = useState<string | null>(null);
   const hp = Math.min(100, 70 + getCompletedHabitsToday() * 5 + (getStreak() > 0 ? 10 : 0));
-  const xp = user?.experience ?? 0;
-  const target = user?.experienceToNextLevel || 100;
+  const levelProgress = getLevelProgress();
+  const xp = levelProgress.xpTotal - levelProgress.xpAtLevelStart;
+  const target = levelProgress.xpToNextLevel;
   return (
     <section className="character-stage" aria-label="Personagem do Santuário">
       <header className="character-hud">
-        <div className="character-identity"><span className="character-level">{user?.level ?? 1}</span><div className="min-w-0"><h2>{user?.name || 'Mago Iniciante'}</h2><progress aria-label="Experiência" value={Math.min(xp, target)} max={target} /><small>{xp} / {target} XP</small></div></div>
+        <div className="character-identity"><span className="character-level">{levelProgress.level}</span><div className="min-w-0"><h2>{user?.name || 'Mago Iniciante'}</h2><progress aria-label="Experiência" value={Math.min(xp, target)} max={target} /><small>{xp} / {target} XP</small></div></div>
         <div className="character-energy"><Zap aria-hidden="true"/><span><small>Stamina</small><strong>{resources.currentStamina}</strong></span></div>
         <div className="character-energy prana"><Sparkles aria-hidden="true"/><span><small>Prana</small><strong>{resources.currentPrana}</strong></span></div>
       </header>
@@ -32,7 +33,7 @@ export function CharacterStage() {
           {slots.slice(side * 3, side * 3 + 3).map(({ label, Icon }) => <button key={label} type="button" className="character-slot" aria-pressed={selected === label} onClick={() => setSelected(selected === label ? null : label)} aria-label={`${label}: ver espaço de equipamento`}><span className="character-slot-mark"><Icon size={12}/></span><Icon className="character-item" strokeWidth={1.5} aria-hidden="true"/><span>{label}</span></button>)}
         </div>)}
       </div>
-      <div className="character-stats"><span><Heart aria-hidden="true"/> HP <strong>{hp}/100</strong></span><span><Sparkles aria-hidden="true"/> Nível <strong>{user?.level ?? 1}</strong></span></div>
+      <div className="character-stats"><span><Heart aria-hidden="true"/> HP <strong>{hp}/100</strong></span><span><Sparkles aria-hidden="true"/> Nível <strong>{levelProgress.level}</strong></span></div>
       <p className="character-note" aria-live="polite">{selected ? `${selected}: espaço visual. O inventário de equipamentos ainda não está disponível.` : 'Seu personagem evolui com suas atividades. HP, Stamina e Prana são recursos do jogo.'}</p>
     </section>
   );

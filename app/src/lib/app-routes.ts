@@ -43,7 +43,7 @@ export const APP_ROUTES: AppRoute[] = [
   { id: 'estacoes', label: 'Estações', path: '/estacoes', group: 'Tempo e ciclos', icon: Leaf, description: 'Estações do ano', sidebar: true, mobile: 'more' },
 
   { id: 'fitness', label: 'Exercício Físico', path: '/fitness', group: 'Treino', icon: Dumbbell, description: 'Biblioteca de modalidades, treinos e sequências', via: 'Pilares → Terra' },
-  { id: 'treinos', label: 'Treino — Legado', path: '/treinos/legado', group: 'Treino', icon: Dumbbell, description: 'Fluxo original de treinos', mobile: 'more' },
+  { id: 'treinos', label: 'Treinos', path: '/treinos', group: 'Treino', icon: Dumbbell, description: 'Modalidades, exercícios e biblioteca de treinos', mobile: 'more' },
   { id: 'treinos-painel', label: 'Treinos · Painel', path: '/treinos/painel', group: 'Treino', icon: Activity, description: 'Recursos e atividade diária', via: 'Navegação de treinos' },
   { id: 'treinos-semana', label: 'Treinos · Semana', path: '/treinos/semana', group: 'Treino', icon: CalendarDays, description: 'Resumo dos últimos 7 dias', via: 'Navegação de treinos' },
   { id: 'treinos-historico', label: 'Treinos · Histórico', path: '/treinos/historico', group: 'Treino', icon: History, description: 'Sessões por mês', via: 'Navegação de treinos' },

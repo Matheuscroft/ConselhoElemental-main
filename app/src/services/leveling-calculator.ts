@@ -1,4 +1,4 @@
-import type { ElementId, MasteryTitle } from '@/types';
+import type { MasteryTitle } from '@/types';
 
 export const LEVELING_RULESET_VERSION = 'provisional-v1';
 export const BASE_XP = 100;
@@ -26,7 +26,7 @@ export class LevelingCalculatorService {
     while (remaining >= xpToNextLevel) { remaining -= xpToNextLevel; xpAtLevelStart += xpToNextLevel; level += 1; xpToNextLevel = xpForNextLevel(level); }
     return { level, title: bracketFor(level).title, xpTotal, xpAtLevelStart, xpToNextLevel, progressFraction: remaining / xpToNextLevel };
   }
-  static calculateAvatar(user: Pick<Record<`xp_${ElementId}`, number>, `xp_${ElementId}`>): LevelProgress {
+  static calculateAvatar(user: { xp_fire: number; xp_earth: number; xp_water: number; xp_air: number }): LevelProgress {
     return this.calculate(user.xp_fire + user.xp_earth + user.xp_water + user.xp_air);
   }
 }

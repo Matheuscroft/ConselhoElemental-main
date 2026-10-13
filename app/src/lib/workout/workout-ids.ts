@@ -45,8 +45,8 @@ export const draftConfigsFromPlan = (
   durationSeconds: set.targetDurationSeconds ?? 0,
   loadKg: set.targetLoadKg,
   restSeconds: set.restSeconds,
-  loadFactor: set.loadFactor === 0.8 || set.loadFactor === 1.5 ? set.loadFactor : 1,
-})).map((config) => ({ ...createDefaultDraftConfig(exercise), ...config }));
+  loadFactor: (set.loadFactor === 0.8 || set.loadFactor === 1.5 ? set.loadFactor : 1) as ExerciseDraftConfig['loadFactor'],
+})).map((config): ExerciseDraftConfig => ({ ...createDefaultDraftConfig(exercise), ...config }));
 
 export const buildExercisePlan = (
   exercise: WorkoutExercise,

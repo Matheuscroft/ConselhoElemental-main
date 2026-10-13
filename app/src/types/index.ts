@@ -44,7 +44,7 @@ export type MasteryTitle = 'Iniciado' | 'Aprendiz' | 'Adepto' | 'Especialista' |
 // ============================================
 // TIPOS SEMÂNTICOS DE ITENS
 // ============================================
-export type SemanticType = 'VALUABLE' | 'VALUELESS' | 'NOTE';
+export type SemanticType = 'VALUABLE' | 'VALUELESS' | 'NOTE' | 'valuable' | 'structural' | 'text';
 export type LegacySemanticType = 'valuable' | 'structural' | 'text';
 
 // ============================================
@@ -77,7 +77,7 @@ export interface BaseItem {
 export interface Action extends BaseItem {
   sourceModule?: 'modulo_treino';
   sourceRefId?: string;
-  type: 'TASK' | 'HABIT';
+  type: 'TASK' | 'HABIT' | 'TASK_ITEM';
   lifecycleType: ActionLifecycleType | null;
   semanticType: SemanticType | LegacySemanticType | null;
   parentId: string | null;
@@ -107,6 +107,10 @@ export interface Action extends BaseItem {
   subareaId?: string | null;
   name?: string;
   childItems?: TaskItem[]; // projeção de interface legada; estrutura persistida usa parentId
+  areaTertiaryId1?: string | null;
+  areaTertiaryId2?: string | null;
+  subareaTertiaryId1?: string | null;
+  subareaTertiaryId2?: string | null;
   plannedPoints?: number;
   streak?: number;
   longestStreak?: number;
@@ -121,6 +125,7 @@ export interface TaskItem extends Action {
   semanticType: SemanticType | LegacySemanticType;
   taskId: string;
   sortOrder: number;
+  childItems: TaskItem[];
 }
 
 
@@ -147,6 +152,11 @@ export interface Habit extends Action {
   lastCompletedAt: Date | null;
   completions: HabitCompletion[];
   childHabits: Habit[];
+  /** Campos mantidos para leituras do estado local e views anteriores durante a migração. */
+  startDate?: Date;
+  sortOrder?: number;
+  semanticValueBackup?: { plannedPoints: number; plannedTimeMinutes: number } | null;
+  semanticStructuralBackup?: { plannedPoints: number; plannedTimeMinutes: number } | null;
 }
 
 // SEQUENCIA DE CICLOS
@@ -320,7 +330,7 @@ export interface Draft {
 // ============================================
 export interface ExecutionLog {
   rotationBefore?: { id: string; currentPosition: number; lastCompletedDate: Date | null; cursorDate?: Date };
-  durationSource?: 'MEASURED' | 'DECLARED_PLANNED';
+  durationSource?: 'MEASURED' | 'DECLARED_PLANNED' | 'ESTIMATED_ACTIVE' | 'MIXED_ACTIVE';
   sourceModule?: 'modulo_treino';
   sourceRefId?: string;
   baseValue?: number;
@@ -353,6 +363,10 @@ export interface User {
   xp_earth: number;
   xp_water: number;
   xp_air: number;
+  /** Campos derivados antigos; novos fluxos devem usar getLevelProgress(). */
+  level?: number;
+  experience?: number;
+  experienceToNextLevel?: number;
   totalScore: number;
   streak: number;
   longestStreak: number;

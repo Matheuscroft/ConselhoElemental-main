@@ -8,8 +8,8 @@ interface FitnessStickyActionProps {
   onHeightChange?: (height: number) => void;
 }
 
-/** Barra de ação fixa no rodapé com degradê escuro, respeitando a safe area. */
-export const FitnessStickyAction: React.FC<FitnessStickyActionProps> = ({ children, layout = 'button', focused = false, onHeightChange }) => {
+/** Barra de ação fixa acima da navegação global, respeitando a safe area. */
+export const FitnessStickyAction: React.FC<FitnessStickyActionProps> = ({ children, layout = 'button', onHeightChange }) => {
   const actionRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = actionRef.current;
@@ -21,7 +21,7 @@ export const FitnessStickyAction: React.FC<FitnessStickyActionProps> = ({ childr
     return () => observer.disconnect();
   }, [onHeightChange]);
   return (
-  <div ref={actionRef} className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 bg-fitness-canvas/95 border-t border-white/10 px-6 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 ${focused ? '' : 'md:left-72'}`}>
+  <div ref={actionRef} className={`pointer-events-none fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 border-t border-white/10 bg-fitness-canvas/95 px-6 pb-3 pt-3 md:pb-[calc(1rem+env(safe-area-inset-bottom))] md:left-72`}>
     <div className={layout === 'button' ? 'pointer-events-auto mx-auto flex max-w-md justify-center px-4' : 'pointer-events-auto mx-auto flex max-w-md gap-4'}>
       {children}
     </div>

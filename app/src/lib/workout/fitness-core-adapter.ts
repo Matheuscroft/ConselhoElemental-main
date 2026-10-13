@@ -1,6 +1,8 @@
 import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { NativeWorkoutSession, UUIDv4, WorkoutTemplate } from '@/types/workout';
+import { buildNativeWorkoutRewardBlocks } from '@/lib/core/native-workout-reward';
+import { WORKOUT_ER_BASE_VALUE } from './workout-balance';
 import type { Habit, CycleSequence } from '@/types';
 import { AREAS } from '@/constants';
 import { projectTemplateReward } from './native-reward-preview';
@@ -46,10 +48,13 @@ export function scheduleWorkoutAsHabit(template: WorkoutTemplate, daysOfWeek: nu
 /** Traduz a sessão concluída em uma única ocorrência Core; sem fórmulas de recompensa. */
 export function completeFitnessSession(session: NativeWorkoutSession, habitId?: string): NativeWorkoutSession {
   if (session.status !== 'completed' || !session.completedAt || session.baseValue == null) throw new Error('A sessão precisa estar consolidada.');
+  const rewardMetrics = buildNativeWorkoutRewardBlocks(session.exerciseResults, session.effortLevel ?? 1, WORKOUT_ER_BASE_VALUE);
   const log = useAppStore.getState().completeNativeAction({
     sessionId: session.id, coreEntityId: habitId ? undefined : session.coreEntityId, habitId, title: session.nameSnapshot,
-    baseValue: session.baseValue, durationSeconds: session.durationSeconds, completedAt: session.completedAt, effortLevel: session.effortLevel,
+    baseValue: rewardMetrics.baseValue, durationSeconds: rewardMetrics.activeDurationSeconds, completedAt: session.completedAt, effortLevel: session.effortLevel,
     declaredPlannedExecution: session.executionMode === 'CHECKIN',
+    workoutRewardBlocks: rewardMetrics.blocks,
+    durationSource: rewardMetrics.durationSource,
     fullCompletion: session.exerciseResults.every((exercise) => exercise.sets.every((series) => series.completed && !series.skipped)),
   });
   return { ...session, coreEntityId: log.subjectId as UUIDv4, coreExecutionLogId: log.id as UUIDv4, earnedXp: log.executedValue, coreReceipt: structuredClone(log) };

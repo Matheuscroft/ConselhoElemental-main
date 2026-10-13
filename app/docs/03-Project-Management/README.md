@@ -19,6 +19,8 @@ Esta pasta guarda registros datados de execução, validação e planejamento. E
 
 ## Como interpretar
 
+- Changelog vigente para novas versões: fitness/CHANGELOG.md. O changelog e os status nesta pasta descrevem evidências datadas; não substituem a continuidade atual.
+
 - Evidências são válidas apenas para as datas, versões, ambientes e cenários que cada relatório registra. Não presumir que caminhos locais, branches, serviços ou status antigos continuam válidos.
 - O `MAPA-IMPLEMENTACAO-ELEMENTAL.md` é uma inspeção estática de 05/10/2026 e pode divergir do código atual.
 - O `STATUS-FRONTEND-FITNESS.md` e `CHANGELOG.md` são registros de versões antigas do módulo, não um relatório atual de prontidão.

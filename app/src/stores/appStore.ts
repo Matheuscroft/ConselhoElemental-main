@@ -52,6 +52,8 @@ const initialUser: User = {
   joinedAt: new Date(),
 };
 
+const ELEMENT_XP_KEY = { terra: 'xp_earth', fogo: 'xp_fire', agua: 'xp_water', ar: 'xp_air' } as const;
+
 const initialOnboarding: OnboardingState = {
   step: 0,
   selectedAreas: [],
@@ -866,11 +868,11 @@ export const useAppStore = create<AppState>()(
       },
       
       addExperience: (amount, elementId = 'terra') => {
-        const xpKey = `xp_${elementId}` as const;
+        const xpKey = ELEMENT_XP_KEY[elementId];
         set((state) => ({ user: { ...state.user, [xpKey]: Math.max(0, state.user[xpKey] + amount) } }));
       },
       addElementExperience: (elementId, amount) => {
-        const xpKey = `xp_${elementId}` as const;
+        const xpKey = ELEMENT_XP_KEY[elementId];
         set((state) => ({ user: { ...state.user, [xpKey]: Math.max(0, state.user[xpKey] + amount) } }));
       },
       getLevelProgress: () => LevelingCalculatorService.calculateAvatar(get().user),
@@ -1086,6 +1088,7 @@ export const useAppStore = create<AppState>()(
           description: taskData.description || '',
           lifecycleType: 'ACTION',
           type: 'TASK',
+          semanticType: null,
           baseValue: taskData.baseValue ?? DEFAULT_SCORES.RITUAL.baseValue,
           effortLevel: taskData.effortLevel ?? DEFAULT_SCORES.RITUAL.effortLevel,
            plannedTimeMinutes: 'plannedTimeMinutes' in taskData ? (taskData.plannedTimeMinutes ?? null) : (DEFAULT_SCORES.RITUAL.plannedTimeMinutes ?? null),
@@ -1592,6 +1595,17 @@ export const useAppStore = create<AppState>()(
               : null,
             plannedTimeMinutes,
             plannedPoints,
+            baseValue: plannedPoints,
+            effortLevel: 1,
+            actualTimeMinutes: null,
+            areaPrimaryId: item.areaPrimaryId || task.areaPrimaryId || getDefaultAreaIdForElement(parentElementId),
+            areaSecondaryId1: null,
+            areaSecondaryId2: null,
+            subareaPrimaryId: item.subareaPrimaryId || null,
+            subareaSecondaryId1: null,
+            subareaSecondaryId2: null,
+            lastStartedAt: null,
+            displayOrder: item.sortOrder ?? 0,
             recurrenceType: 'DAILY',
             recurrenceConfig: {},
             startDate: new Date(habitStartDate),
@@ -1638,6 +1652,17 @@ export const useAppStore = create<AppState>()(
           semanticStructuralBackup: null,
           plannedTimeMinutes: task.plannedTimeMinutes ?? 0,
           plannedPoints: hasChildren ? 0 : (task.baseValue ?? 0),
+          baseValue: hasChildren ? 0 : (task.baseValue ?? 0),
+          effortLevel: task.effortLevel ?? 1,
+          actualTimeMinutes: null,
+          areaPrimaryId: task.areaPrimaryId || getDefaultAreaIdForElement(task.elementId),
+          areaSecondaryId1: task.areaSecondaryId1 ?? null,
+          areaSecondaryId2: task.areaSecondaryId2 ?? null,
+          subareaPrimaryId: task.subareaPrimaryId ?? null,
+          subareaSecondaryId1: task.subareaSecondaryId1 ?? null,
+          subareaSecondaryId2: task.subareaSecondaryId2 ?? null,
+          lastStartedAt: null,
+          displayOrder: Math.max(maxHabitOrder, maxSequenceOrder) + 1,
           recurrenceType: 'DAILY',
           recurrenceConfig: {},
           startDate: new Date(habitStartDate),
@@ -1699,12 +1724,19 @@ export const useAppStore = create<AppState>()(
           id: crypto.randomUUID(),
           taskId,
           type: 'TASK_ITEM',
+          lifecycleType: null,
           title: itemData.title || 'Novo Item',
           semanticType: itemData.semanticType || 'VALUABLE',
           isCompleted: false,
           baseValue: itemData.baseValue ?? 1,
           plannedTimeMinutes: itemData.plannedTimeMinutes ?? null,
           actualTimeMinutes: null,
+          effortLevel: null,
+          elementId: task?.elementId ?? parentItem?.elementId ?? 'terra',
+          isInProgress: false,
+          elapsedSeconds: 0,
+          lastStartedAt: null,
+          displayOrder: itemData.sortOrder ?? nextSortOrder,
           sortOrder: itemData.sortOrder ?? nextSortOrder,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -2696,6 +2728,17 @@ export const useAppStore = create<AppState>()(
           semanticStructuralBackup: null,
           plannedTimeMinutes: habitData.plannedTimeMinutes ?? 0,
           plannedPoints: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
+          baseValue: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
+          effortLevel: 1,
+          actualTimeMinutes: null,
+          areaPrimaryId: habitData.areaId ?? parentHabit?.areaId ?? 'sem-categoria',
+          areaSecondaryId1: null,
+          areaSecondaryId2: null,
+          subareaPrimaryId: habitData.subareaId ?? parentHabit?.subareaId ?? null,
+          subareaSecondaryId1: null,
+          subareaSecondaryId2: null,
+          lastStartedAt: null,
+          displayOrder: nextSortOrder,
           recurrenceType: habitData.recurrenceType || parentHabit?.recurrenceType || 'DAILY',
           recurrenceConfig: habitData.recurrenceConfig || parentHabit?.recurrenceConfig || {},
           startDate: habitData.startDate

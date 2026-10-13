@@ -49,9 +49,10 @@ const welcome = () => {
   console.log(`Versão ${current.version} | ${current.branch || 'sem branch'} | revisão ${current.commit || 'não disponível'}.`);
   console.log('Posso planejar etapas, implementar frontend/backend, revisar contratos, testar, versionar e manter a documentação, conforme as ferramentas desta IDE.');
   console.log('Equipe: Astro Boy coordena; Interface cuida da UX; Backend/Regras cuida de contratos e integrações; Validação verifica evidências; Versionamento/Documentação mantém versões e continuidade. Papéis executados em série ou delegados quando autorizado.');
-  console.log('Fábio: frontend. Matheus: backend e documentação. Entregas: seleção/criação/execução Fitness, contextos esportivos e métricas declaradas; protótipo local do assistente. Integração remota e aderência integral do core ainda têm pendências.');
-  console.log(`Próximo passo: ${current.profile?.role === 'backend' ? 'ler a auditoria de contratos e propor um teste reproduzível antes de alterar regras.' : 'ler continuidade e selecionar um lote da fila com critério de aceite.'}`);
-  console.log('Preview: cd app, npm ci, npm run dev; abra a URL exibida pelo Vite, /treinos e /treinos/painel.');
+  console.log('Desde o pull e a retomada de Fábio: unificamos Treinos, Terra e aliases numa experiência Fitness; criação livre de exercícios e mídia, prévia e execução com pausa, notas e distância; recompensa por blocos conectada ao Core sem recalcular histórico; resumo com avaliação e detalhes; Histórico, Saúde, Semana, Corpo e Evolução ligados aos registros existentes. O Astro Boy também recebeu continuidade, fila e onboarding portáveis.');
+  console.log('Limites conhecidos: GPS/mapa, sensores, calorias, sono/água automáticos, widgets configuráveis e sincronização remota não foram implementados neste lote. Mídia remota e execução legada completa ainda precisam de validação. Não há agentes continuamente ativos: a coordenação depende desta IDE, das instruções e das ferramentas disponíveis.');
+  console.log(`Próximo passo: ${current.profile?.role === 'backend' || current.profile?.role === 'documentacao' ? 'revisar a continuidade F59, a base canônica e a fila; retomar a trilha backend/documentação pelo teste reproduzível de reversão/idempotência já proposto, registrando divergências antes de qualquer mudança de regra.' : 'revisar o Fitness com os dados reais de Fábio e escolher o próximo lote da fila sem alterar fontes de dados.'}`);
+  console.log('Preview local: na raiz do repositório, entre em app, rode npm ci e npm run dev; abra a URL exibida pelo Vite e confira /treinos e /treinos/painel.');
   console.log('Guia: app/docs/ASTRO-BOY-BOAS-VINDAS.md. Consulte continuidade para o estado vigente; esta saída não executa testes nem inicia agentes.');
 };
 

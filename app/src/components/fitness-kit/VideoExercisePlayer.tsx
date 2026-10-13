@@ -18,6 +18,7 @@ interface VideoExercisePlayerProps {
 export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title, src, poster, className }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
 
   const showPoster = Boolean(poster) && !posterFailed;
@@ -25,9 +26,10 @@ export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title,
 
   const handlePlay = () => {
     setPlaying(true);
-    void videoRef.current?.play();
+    void videoRef.current?.play().catch(() => { setPlaying(false); setVideoFailed(true); });
   };
 
+  if (videoFailed) return <div className="rounded-2xl bg-fitness-surface-muted p-4 text-sm text-fitness-muted" role="status">Não foi possível reproduzir este vídeo. Confira o endereço na edição do treino.<button type="button" className="mt-2 block min-h-11 text-fitness-primary" onClick={() => { setVideoFailed(false); setPlaying(false); }}>Tentar novamente</button></div>;
   return (
     <div className={cn('relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-fitness-canvas shadow-fitness-card', className)}>
       {src ? (
@@ -38,6 +40,8 @@ export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title,
           preload="metadata"
           playsInline
           controls={playing}
+          onError={() => setVideoFailed(true)}
+          onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
           aria-label={`Vídeo: ${title}`}
           className="h-full w-full object-cover"

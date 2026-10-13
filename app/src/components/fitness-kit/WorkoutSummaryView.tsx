@@ -44,7 +44,7 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
     <FitnessHeader
       title={FITNESS_COPY.summary}
       onBack={onBack}
-      backLabel="Voltar para Treinos"
+      backLabel="Voltar ao histórico"
       action={
         <button
           type="button"
@@ -59,7 +59,7 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
 
     {routeSlot && <div className="mt-8 overflow-hidden rounded-fit-lg">{routeSlot}</div>}
 
-    <div className="mt-10 flex items-center gap-5">
+    <div className="mt-6 flex items-center gap-5">
       <FitnessIconBadge icon={icon} size="lg" />
       <div className="min-w-0">
         <h2 className="break-words font-sans text-2xl font-semibold text-fitness-text">{name}</h2>
@@ -67,19 +67,19 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
       </div>
     </div>
 
-    <WorkoutStatsGrid metrics={metrics} className="mt-12" />
+    <WorkoutStatsGrid metrics={metrics} className="mt-6" />
 
     {heartRate && heartRate.data.length > 0 && (
-      <div className="mt-12">
+      <div className="mt-6">
         <HeartRateChart data={heartRate.data} current={heartRate.current} />
       </div>
     )}
 
-    {children && <div className="mt-8 space-y-5">{children}</div>}
+    {children && <div className="mt-6 space-y-5">{children}</div>}
 
     <FitnessStickyAction focused>
       <FitnessButton className="w-full !shadow-none" onClick={onSave}>
-        Voltar aos treinos
+        Voltar ao histórico
       </FitnessButton>
     </FitnessStickyAction>
   </FitnessPageShell>

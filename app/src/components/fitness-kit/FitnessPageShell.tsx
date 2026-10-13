@@ -61,7 +61,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
   const bottomPadding = withNav
     ? 'pb-[calc(8rem+env(safe-area-inset-bottom))]'
     : withFixedAction
-      ? 'pb-[calc(7.5rem+env(safe-area-inset-bottom))]'
+      ? 'pb-[calc(9rem+env(safe-area-inset-bottom))]'
       : 'pb-[calc(2.5rem+env(safe-area-inset-bottom))]';
 
   return (
@@ -70,7 +70,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main
         id="main-content"
-        style={withFixedAction && fixedActionHeight !== undefined ? { paddingBottom: `calc(${fixedActionHeight}px + 1.5rem)` } : undefined}
+        style={withFixedAction && fixedActionHeight !== undefined ? { paddingBottom: `calc(${fixedActionHeight}px + 5.5rem + env(safe-area-inset-bottom))` } : undefined}
         className={cn(
           'relative mx-auto',
           fullscreen ? 'max-w-xl' : focused ? 'mx-auto max-w-xl md:ml-72 md:mr-0 md:max-w-none' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
@@ -84,7 +84,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
             <LayoutGrid className="h-5 w-5" aria-hidden="true" /> {!focused && 'Todas as páginas'}
           </button>
         </div>}
-        <div className={cn('mx-auto w-full', !focused && 'md:max-w-md', !bleed && 'px-6')}>{children}</div>
+        <div className={cn('mx-auto w-full', focused ? 'md:max-w-xl' : 'md:max-w-md', !bleed && 'px-6')}>{children}</div>
       </main>
       {!fullscreen && <MobileBottomNav />}
     </div>

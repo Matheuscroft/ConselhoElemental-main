@@ -1,3 +1,4 @@
+import { sessionClockSeconds } from '@/lib/workout/session-clock';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
@@ -5,6 +6,7 @@ import { completeFitnessSession, scheduleWorkoutAsHabit, scheduleSequenceAsRotat
 import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
+import { buildNativeWorkoutRewardBlocks } from '@/lib/core/native-workout-reward';
 import { projectWorkoutProgress } from '@/lib/workout/native-progress-reward';
 import { saveSharedWorkoutSequence, importLegacyWorkoutSequences } from '@/lib/workout/shared-sequences';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
@@ -474,6 +476,7 @@ const cloneExercisePlan = (
   exerciseId: plan.exerciseId,
   order,
   sets: plan.sets.map((setPlan, index) => cloneSetPlan(setPlan, index + 1, keepIds)),
+  imageUrl: plan.imageUrl, videoUrl: plan.videoUrl,
   notes: plan.notes,
   muscleDistributionOverride: plan.muscleDistributionOverride
     ? normalizeMuscleDistribution(plan.muscleDistributionOverride)
@@ -584,12 +587,12 @@ const makeExerciseResult = (
   exercise: WorkoutExercise | undefined,
   bodyweightKg: number | undefined
 ): WorkoutExerciseResult => ({
+  imageUrl: plan.imageUrl ?? exercise?.imageUrl, videoUrl: plan.videoUrl ?? exercise?.videoUrl,
   exerciseId: plan.exerciseId,
   exerciseNameSnapshot: exercise?.name ?? plan.exerciseId,
   order: plan.order,
-  muscleDistribution: normalizeMuscleDistribution(
-    plan.muscleDistributionOverride ?? exercise?.muscleDistribution ?? [{ muscleId: 'core', percentage: 100 }]
-  ),
+  muscleDistribution: (plan.muscleDistributionOverride ?? exercise?.muscleDistribution ?? []).length > 0
+    ? normalizeMuscleDistribution(plan.muscleDistributionOverride ?? exercise!.muscleDistribution) : [],
   sets: plan.sets.map((setPlan) =>
     makePerformedSet(
       setPlan,
@@ -661,10 +664,13 @@ type SaveTemplateInput = Omit<WorkoutTemplate, 'id' | 'createdAt' | 'updatedAt'>
 type SaveSequenceInput = Omit<WorkoutSequence, 'id' | 'createdAt' | 'updatedAt'> &
   Partial<Pick<WorkoutSequence, 'id' | 'createdAt' | 'updatedAt'>>;
 interface NativeSetUpdate {
+  distanceMeters?: number;
+  activityNotes?: string;
   reps?: number;
   durationSeconds?: number;
   loadKg?: number;
   loadFactor?: 0.8 | 1 | 1.5;
+  perceivedExertion?: number;
   completed?: boolean;
   skipped?: boolean;
 }
@@ -689,8 +695,10 @@ const validNativeNumber = (value: number | undefined, integer = false): boolean 
 const validNativeSet = (series: WorkoutSet): boolean =>
   isUuidV4(series.id) && Number.isInteger(series.setNumber) && series.setNumber > 0 &&
   validNativeNumber(series.loadKg) && validNativeNumber(series.targetLoadKg) &&
-  validNativeNumber(series.restSeconds, true) &&
+  validNativeNumber(series.restSeconds, true) && validNativeNumber(series.distanceMeters) &&
+  (series.activityNotes === undefined || (typeof series.activityNotes === 'string' && series.activityNotes.length <= 2000)) &&
   (series.loadFactor === undefined || [0.8, 1, 1.5].includes(series.loadFactor)) &&
+  (series.perceivedExertion === undefined || (Number.isInteger(series.perceivedExertion) && series.perceivedExertion >= 1 && series.perceivedExertion <= 10)) &&
   (series.measureMode === 'reps'
     ? validNativeNumber(series.reps, true) && validNativeNumber(series.targetReps, true) && series.durationSeconds === undefined && series.targetDurationSeconds === undefined
     : series.measureMode === 'duration' && validNativeNumber(series.durationSeconds, true) && validNativeNumber(series.targetDurationSeconds, true) && series.reps === undefined && series.targetReps === undefined);
@@ -729,6 +737,7 @@ interface WorkoutState {
   nativeHistory: NativeWorkoutSession[];
   nativeCatalog: Exercise[];
   ensureNativeCatalog: () => void;
+  saveCustomExercise: (input: { name: string; modality: WorkoutExerciseCategory; measureMode: 'reps' | 'duration' }) => Exercise | undefined;
   migrateLegacySequences: () => void;
   saveTemplate: (input: SaveTemplateInput) => WorkoutTemplate | undefined;
   deleteTemplate: (templateId: string) => void;
@@ -736,6 +745,7 @@ interface WorkoutState {
   deleteSequence: (sequenceId: string) => void;
   startSession: (templateId?: string | null, effortLevel?: number) => NativeWorkoutSession | undefined;
   addExerciseToSession: (exercise: PlannedExercise | Exercise) => ExecutedExercise | undefined;
+  toggleSessionPause: () => void;
   logSet: (exerciseInstanceId: string, setId: string, updates: NativeSetUpdate) => NativeWorkoutSession | undefined;
   finishSession: (habitId?: string) => NativeWorkoutSession | undefined;
   attachSessionToHabit: (habitId: string) => NativeWorkoutSession;
@@ -1051,6 +1061,23 @@ export const useWorkoutStore = create<WorkoutState>()(
         set((state) => updateNativeData(state, (data) => ({ ...data, nativeCatalog: [...data.nativeCatalog, ...entries] })));
       },
 
+      saveCustomExercise: (input) => {
+        const name = input.name.trim();
+        if (!name || name.length > 100 || !['reps', 'duration'].includes(input.measureMode)) return undefined;
+        const id = nativeId();
+        const exercise: Exercise = { id, legacyId: id, name, modality: input.modality, source: 'custom', level: 'custom',
+          instructions: [], benefits: [], contraindications: [], variations: [], muscleDistribution: [],
+          measureMode: input.measureMode, defaultSets: 1, defaultReps: 10, defaultDurationSeconds: 60,
+          defaultLoadKg: 0, loadMode: input.measureMode === 'reps' ? 'weighted' : 'none' };
+        const { modality, ...legacy } = exercise;
+        const accountId = getCurrentAccountId(get().currentAccountId);
+        set((state) => ({
+          ...updateAccountData(state, accountId, (data) => ({ ...data, exercisesCatalog: [...data.exercisesCatalog, { ...legacy, category: modality }] })),
+          ...updateNativeData(state, (data) => ({ ...data, nativeCatalog: [...data.nativeCatalog, exercise] })),
+        }));
+        return exercise;
+      },
+
       saveTemplate: (input) => {
         if (!input.name.trim() || !validEffort(input.effortLevel) || (input.id !== undefined && !isUuidV4(input.id)) ||
           !input.exercises.every(validNativeExercise) ||
@@ -1217,7 +1244,7 @@ export const useWorkoutStore = create<WorkoutState>()(
         if (!validEffort(effortLevel ?? template?.effortLevel)) return undefined;
         const session: NativeWorkoutSession = {
           effortLevel: effortLevel ?? template?.effortLevel ?? 1,
-          id: nativeId(), templateId: template?.id, nameSnapshot: template?.name ?? 'Treino avulso',
+          id: nativeId(), templateId: template?.id, scheduledAt: template?.scheduledAt, nameSnapshot: template?.name ?? 'Treino avulso',
           status: 'in_progress', startedAt: new Date().toISOString(), durationSeconds: 0,
           executionMode: 'LIVE', durationSource: 'MEASURED',
           exerciseResults: template ? [...template.exercises].sort((a, b) => a.order - b.order).map(executedClone) : [],
@@ -1255,6 +1282,16 @@ export const useWorkoutStore = create<WorkoutState>()(
           ...data, activeNativeSession: { ...session, exerciseResults: [...session.exerciseResults, exercise] },
         })));
         return structuredClone(exercise);
+      },
+
+      toggleSessionPause: () => {
+        const session = get().activeNativeSession;
+        if (!session || session.status !== 'in_progress') return;
+        const now = Date.now();
+        const next = session.pausedAt
+          ? { ...session, pausedAt: undefined, pausedSeconds: (session.pausedSeconds ?? 0) + Math.max(0, (now - Date.parse(session.pausedAt)) / 1000) }
+          : { ...session, pausedAt: new Date(now).toISOString() };
+        set(state => updateNativeData(state, data => ({ ...data, activeNativeSession: next })));
       },
 
       logSet: (exerciseInstanceId, setId, updates) => {
@@ -1320,15 +1357,12 @@ export const useWorkoutStore = create<WorkoutState>()(
         if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a sessão antes de concluir.');
         if (habitId && !useAppStore.getState().habits.some((habit) => habit.id === habitId && habit.sourceModule === 'modulo_treino' && habit.sourceRefId === session.templateId)) throw new Error('O ciclo não corresponde a esta sessão.');
         const completedAt = new Date().toISOString();
-        const totalER = session.exerciseResults.reduce((total, exercise) => total + exercise.sets.reduce((sum, series) => {
-          if (!series.completed || series.skipped) return sum;
-          const er = series.measureMode === 'reps' ? series.reps ?? 0 : (series.durationSeconds ?? 0) / 2;
-          return sum + er * (series.loadFactor ?? 1);
-        }, 0), 0);
+        const rewardMetrics = buildNativeWorkoutRewardBlocks(session.exerciseResults, session.effortLevel ?? 1, WORKOUT_ER_BASE_VALUE);
         const finished: NativeWorkoutSession = {
           ...structuredClone(session), status: 'completed', completedAt,
-          durationSeconds: Math.max(0, Math.floor((Date.parse(completedAt) - Date.parse(session.startedAt)) / 1000)),
-          totalER: Number(totalER.toFixed(10)), baseValue: Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10)),
+          durationSeconds: sessionClockSeconds(session, Date.parse(completedAt)),
+          totalER: rewardMetrics.totalER, baseValue: rewardMetrics.baseValue,
+          activeDurationSeconds: rewardMetrics.activeDurationSeconds,
         };
         // O Core confirma primeiro; falhas mantêm a sessão ativa para nova tentativa.
         const registered = completeFitnessSession(finished, habitId);
@@ -1924,7 +1958,7 @@ export const useWorkoutStore = create<WorkoutState>()(
         const accountId = getCurrentAccountId(get().currentAccountId);
         if (!accountId) return undefined;
         const data = getCurrentAccountData(get().accountDataById, accountId);
-        if (!data?.sessions.some((session) => session.id === sessionId)) return undefined;
+        if (!data?.sessions.some((session) => session.id === sessionId) && !get().nativeHistory.some((session) => session.id === sessionId && session.status === 'completed')) return undefined;
         const sanitizedStars = sanitizeStars(stars);
         const nowIso = new Date().toISOString();
         let resultRating: WorkoutRating | undefined;

@@ -25,11 +25,10 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   title,
   showBackButton = false,
   rightAction,
-  hideNav = false,
   showAura,
 }) => {
   const location = useLocation();
-  const { timer, tickTimer, user, getCompletedHabitsToday, getStreak } = useAppStore();
+  const { timer, tickTimer, user, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
 
   const habitsToday = getCompletedHabitsToday();
@@ -38,7 +37,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   
   const hp = Math.min(100, 70 + (habitsToday * 5) + (streak > 0 ? 10 : 0));
   const stamina = resourceSnapshot.currentStamina;
-  const xpPercent = Math.min(100, Math.round(((user?.experience || 0) / (user?.experienceToNextLevel || 100)) * 100));
+  const levelProgress = getLevelProgress();
+  const levelXp = levelProgress.xpTotal - levelProgress.xpAtLevelStart;
+  const xpPercent = Math.round(levelProgress.progressFraction * 100);
 
   const pranaLevel = resourceSnapshot.currentPrana;
   const renderAura = showAura ?? AURA_ROUTES.includes(location.pathname);
@@ -68,7 +69,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               <div className="flex justify-between items-end mb-2">
                 <div>
                   <p className="text-xl font-mystic text-glow-arcane font-bold text-white leading-none">{user?.name || 'Mago Iniciante'}</p>
-                  <p className="text-xs text-mystic-gold uppercase tracking-widest font-mono mt-1">Nível {user?.level ?? 1}</p>
+                  <p className="text-xs text-mystic-gold uppercase tracking-widest font-mono mt-1">Nível {levelProgress.level}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] text-white/50 uppercase tracking-widest">Prana</p>
@@ -104,7 +105,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                 <div className="space-y-1">
                   <div className="flex justify-between text-[10px] font-mono font-medium">
                     <span className="flex items-center gap-1 text-mystic-gold uppercase tracking-wider"><Star className="w-3 h-3 fill-mystic-gold" /> Experiência</span>
-                    <span className="text-mystic-gold/80">{user?.experience || 0} / {user?.experienceToNextLevel || 100}</span>
+                    <span className="text-mystic-gold/80">{levelXp} / {levelProgress.xpToNextLevel}</span>
                   </div>
                   <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-mystic-gold/20">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} className="h-full bg-gradient-to-r from-mystic-gold/50 to-mystic-gold" />

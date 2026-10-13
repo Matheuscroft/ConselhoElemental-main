@@ -6,6 +6,8 @@ Atualizado em 09/10/2026 por inspeção estática do checkout de coordenação. 
 
 ## Fontes e ordem de consulta
 
+Após a reestruturação de 11/10/2026, o alinhamento do plano fica em 03-Project-Management/reports/BASE-CANONICA-E-EVOLUCAO.md. O changelog vigente fica em 03-Project-Management/fitness/CHANGELOG.md; CONTINUIDADE.md registra a versão atual. Referências posteriores a docs/CHANGELOG.md e BASE-CANONICA-E-EVOLUCAO.md na raiz são históricas.
+
 AGENTS.md define as instruções locais. COORDENACAO-AGENTES.md e FILA-ENTREGAS.md definem atribuição, reserva de arquivos e aceite. BASE-CANONICA-E-EVOLUCAO.md conecta o app à referência principal `/Users/fabioandre/Developer/docs-conselho-master/README.md`. Consultar esse índice antes dos capítulos de domínio, plataforma e ADRs pertinentes. O dossiê técnico e o registro de continuidade indicados no índice local complementam a retomada; não substituem esses contratos nem o estado atual do código.
 
 A visão canônica é gestão pessoal gamificada com Terra, Fogo, Água e Ar. A camada visual deve preservar conteúdos, core, progressão e funcionalidades. Não criar pontuação, hábitos ou persistência paralelos para acomodar uma reformulação. As inconsistências de histórico/reversão, presença, rotação e valores decimais registradas na base canônica exigem reconciliação antes de mudanças de regra.
