@@ -11,6 +11,8 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
 import { useAppStore } from '@/stores/appStore';
+import { isEmptyShortNativeSession } from '@/lib/workout/empty-native-session';
+import { toast } from 'sonner';
 
 export const WorkoutHistory: React.FC = () => {
   const embedded = useContext(FitnessEmbeddedContext);
@@ -25,12 +27,14 @@ export const WorkoutHistory: React.FC = () => {
   const plannedWorkouts = useWorkoutStore(useShallow((state) => state.getPlannedWorkouts()));
   const ledger = useWorkoutStore(useShallow((state) => state.accountDataById[state.currentAccountId ?? 'local']?.gamificationLedger ?? []));
   const nativeHistory = useWorkoutStore((state) => state.nativeHistory);
+  const cleanupEmpty = useWorkoutStore((state) => state.cleanupEmptyNativeSessions);
   const templates = useWorkoutStore((state) => state.templates);
   const executionLogs = useAppStore((state) => state.executionLogs);
   const actions = useAppStore((state) => state.actions);
   const tasks = useAppStore((state) => state.tasks);
   const habits = useAppStore((state) => state.habits);
   const coreState = useMemo(() => ({ executionLogs, actions, tasks, habits }), [executionLogs, actions, tasks, habits]);
+  const emptyRecords = nativeHistory.filter((session) => isEmptyShortNativeSession(session, resolveNativeSessionXp(session, coreState)));
 
   const items = useMemo(() => {
     const now = new Date();
@@ -65,6 +69,15 @@ export const WorkoutHistory: React.FC = () => {
   return (
     <FitnessPageShell withNav>
       <FitnessTopTabs />
+      {emptyRecords.length > 0 && <div className="mb-4 rounded-xl border border-white/10 p-3">
+        <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => {
+          try { const result = cleanupEmpty();
+            if (result.removed) toast.success(`${result.removed} registro(s) vazio(s) removido(s).`);
+            if (result.unavailable) toast.info(`${result.unavailable} registro(s) preservado(s): recibo insuficiente para reverter com segurança.`);
+          } catch (error) { toast.error(error instanceof Error ? error.message : 'Não foi possível limpar os registros.'); }
+        }}>Remover {emptyRecords.length} registro(s) vazio(s)</FitnessButton>
+        <p className="mt-2 text-xs text-fitness-muted">Somente 0 XP, menos de 1 minuto e nenhuma série realizada. Eventual Prana é revertido pelo recibo original.</p>
+      </div>}
       <SectionHeader
         level={embedded ? 'section' : 'page'}
         title="Histórico de treinos"

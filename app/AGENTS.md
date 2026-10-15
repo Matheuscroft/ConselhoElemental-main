@@ -1,5 +1,7 @@
 # Preferências do projeto
 
+- Decisão explícita do proprietário (13/10/2026): Fábio atua em UX/UI. Mudanças de fórmulas de XP/Prana, fatores, tetos, fontes de tempo ou regras de pontuação precisam de aprovação explícita do proprietário. ADR marcado como aceito, documentação ou testes não substituem essa aprovação. Não presumir aprovação de mudanças de domínio por autorização para layout, pull ou push.
+
 - Para tarefas de frontend, avalie a pertinência da skill `frontend-design`. Em criação ou reformulação visual, leia e aplique `.agents/skills/frontend-design/SKILL.md` desde o início. Para alterações estritamente funcionais sem impacto visual, use apenas as orientações relevantes.
 - Referências e decisões visuais explícitas do usuário prevalecem sobre preferências estéticas genéricas da skill.
 - Visão do produto: gestão pessoal gamificada com magia elemental, incluindo atividades, hábitos, projetos, lazer, estudos, casa, treino, saúde e acompanhamento emocional, preservando os conteúdos existentes.

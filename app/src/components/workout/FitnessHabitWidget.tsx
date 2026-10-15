@@ -9,9 +9,10 @@ import type { Habit } from '@/types';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
 import { projectNativeLeafReward } from '@/lib/core/native-action-completion';
-import { formatEarthXp } from '@/lib/workout/native-reward-preview';
+import { formatEarthXp, projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { projectWorkoutProgress } from '@/lib/workout/native-progress-reward';
 import { getWorkoutFocus, getExerciseFocus } from '@/lib/workout/workout-focus';
+import { sessionClockSeconds } from '@/lib/workout/session-clock';
 import { FitnessButton } from '@/components/fitness-kit';
 import { FitnessIntegerField } from './FitnessIntegerField';
 
@@ -52,10 +53,13 @@ export function FitnessHabitWidget({ habit, date, embedded = false, showAdminist
   const currentCheckin = checkin && new Date(checkin.startedAt).toDateString() === today ? checkin : undefined;
   const sessionExercises = recorded?.exerciseResults ?? (matching ? active!.exerciseResults : currentCheckin?.exerciseResults ?? template?.exercises ?? []);
   const minutes = habit.plannedTimeMinutes ?? 0;
-  const preview = projectNativeLeafReward(habit.baseValue ?? habit.plannedPoints ?? 0, minutes * 60, habit.effortLevel ?? 3, minutes > 0).executedValue;
+  const plannedTemplate = template ? projectTemplateReward({ ...template, effortLevel: habit.effortLevel ?? 3,
+    estimatedDurationMinutes: minutes, durationEstimateMode: 'manual' }) : undefined;
+  const preview = projectNativeLeafReward(plannedTemplate?.baseValue ?? habit.baseValue ?? habit.plannedPoints ?? 0,
+    minutes * 60, habit.effortLevel ?? 3, minutes > 0).executedValue;
   const progressSession = recorded ?? (matching ? active : currentCheckin);
   const progress = progressSession ? projectWorkoutProgress(progressSession.exerciseResults, minutes, progressSession.effortLevel ?? habit.effortLevel ?? 3,
-    progressSession.executionMode !== 'CHECKIN' ? recorded?.durationSeconds ?? Math.max(0, Math.floor((Date.now() - Date.parse(progressSession.startedAt)) / 1000)) : undefined) : undefined;
+    progressSession.executionMode !== 'CHECKIN' ? recorded?.durationSeconds ?? sessionClockSeconds(progressSession) : undefined) : undefined;
   const dayCompletion = habit.completions.find((item) => new Date(item.completionDate).toDateString() === date.toDateString());
   const earnedXp = receipt?.executedValue ?? recorded?.earnedXp ?? dayCompletion?.executedScore ?? dayCompletion?.scoreEarned;
   const cumulativeXp = completed ? earnedXp : progress?.earthXp;

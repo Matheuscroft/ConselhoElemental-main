@@ -79,13 +79,16 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
   const pending = sets.some((series) => !series.completed && !series.skipped);
   const finish = () => {
     setFinishing(true);
-    try { const result = finishSession(); if (result) { onFinished(result); } else setFinishing(false); }
+    try { const result = finishSession(); if (result) { onFinished(result); } else {
+      setFinishing(false);
+      if (!useWorkoutStore.getState().activeNativeSession) { toast.info('Sessão vazia descartada, sem registro ou Prana.'); navigate('/fitness', { replace: true }); }
+    } }
     catch (error) { toast.error(error instanceof Error ? error.message : 'Não foi possível registrar o treino. Tente novamente.'); setFinishing(false); }
   };
   return <FitnessPageShell focused withFixedAction fixedActionHeight={actionHeight} showPageMap={false}>
     <FitnessHeader title={session.nameSnapshot} subtitle={`${formatClock(sessionClockSeconds(session, now))} ${session.pausedAt ? '· pausado' : 'decorridos'}`} onBack={() => navigate('/fitness')} backLabel="Voltar à biblioteca mantendo o treino" />
     <div className="mt-4 flex justify-center"><FitnessButton size="md" variant="secondary" onClick={togglePause}>{session.pausedAt ? 'Retomar relógio' : 'Pausar relógio'}</FitnessButton></div>
-    {session.pausedAt && <p className="mt-2 text-center text-xs text-fitness-muted">Relógio pausado. Você pode revisar seus registros.</p>}
+    <p className="mt-2 text-center text-xs text-fitness-muted">{session.pausedAt ? 'Interrupção pausada: este período não conta no treino.' : 'Descansos entre séries contam no tempo total. Pause apenas para interromper o treino.'}</p>
     <div className="mt-6"><p className="text-center text-sm text-fitness-muted" aria-live="polite">{completed} de {sets.length} séries concluídas</p><progress className="mt-3 h-1.5 w-full accent-fitness-green" value={completed} max={Math.max(1, sets.length)} aria-label="Progresso do treino" /></div>
     {doneSets.length > 0 && <dl className="mt-5 grid grid-cols-2 gap-4 rounded-2xl bg-fitness-surface p-4 text-sm"><div><dt className="text-fitness-muted">Tempo ativo registrado</dt><dd className="mt-1 text-xl text-fitness-primary">{activeMinutes.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min</dd></div><div><dt className="text-fitness-muted">Distância informada</dt><dd className="mt-1 text-xl text-fitness-primary">{distanceMeters > 0 ? `${(distanceMeters / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} km` : '—'}</dd></div></dl>}
     <div className="mt-6 space-y-5">{session.exerciseResults.slice().sort((a, b) => a.order - b.order).map((exercise) => {

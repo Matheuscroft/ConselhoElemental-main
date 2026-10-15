@@ -397,3 +397,9 @@ F47 — edição sequências e reconciliação Core implementadas, reservas moda
 F48 — pular fila circular implementado, reservas Core/types/temporal/Ciclos/docs encerradas; lint aprovado, validação funcional pendente.
 
 F49 — navegação reordenada, reserva encerrada; publicação F45–F49 autorizada pelo usuário.
+
+AUD-PULL13 — inventário73arquivos e diff integral entregues, políticas domínio reforçadas e acesso dedicado por modalidade restaurado localmente. Matemática block-v2 aguarda crivo do proprietário e segue ativa no código importado; não aprovada por anotação documental. Reservas docs/AGENTS/FitnessRoot encerradas, visual pendente.
+
+BACK-MAT13 — restauração da matemática autorizada concluída localmente; ER×0.10/sessão/teto único e regra b1575e4. Reservas Core/Adapter/store/previews/widget/docs/welcome encerradas. TypeScript app/ESLint aprovados; debater RPE, pausas, snapshots importados e dashboards antes de mudar domínio.
+
+BACK-MAT14 — pausas explícitas descontadas em LIVE, descansos incluídos; sessão nativa vazia sem registro/Prana. Limpeza opcional no Histórico: XP real0, <60s, nenhuma série realizada, recibo obrigatório e reversão de Prana. Sem acesso aos dados do navegador para executar limpeza real; histórico legado preservado. TypeScript/ESLint aprovados, sem testes funcionais. Pendente: discutir Prana ponderado, preservando custo global até aprovação.

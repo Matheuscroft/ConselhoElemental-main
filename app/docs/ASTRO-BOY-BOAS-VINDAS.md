@@ -29,7 +29,7 @@ O pull trouxe a base nativa de treino, catálogos e execução que agora foi int
 
 - Uma experiência única em Treinos, Terra e rotas compatíveis, com abas Treinos/Histórico/Corpo/Saúde; FAB contextual e navegação responsiva.
 - Editor e biblioteca permitem criar treinos e exercícios próprios, inclusive quando a busca não encontra itens; modalidades usam campos adequados ao contexto. Prévia preserva imagens disponíveis, vídeo configurável, instruções, séries, perfil muscular, edição e início.
-- Execução preserva relógio pausado após recarga, descrição e distância por bloco. A recompensa de blocos usa o Core existente; recibos antigos não são recalculados nem migrados.
+- Execução preserva relógio pausado após recarga, descrição e distância por bloco. A proposta importada de recompensa por blocos foi rejeitada para a regra vigente: Matheus restaurou sessão consolidada e ER×0.10. RPE por série fica informativo; recibos anteriores não são recalculados nem migrados.
 - Resumo reúne recompensa, avaliação por estrelas, atividades, detalhes observados e evolução disponível. Histórico unifica registros nativos/legados e abre o resumo.
 - Saúde, Hoje, Semana, Evolução e Corpo leem os stores e históricos existentes. O manequim é ilustrativo. Sem fonte real, não se inventam GPS, batimentos, calorias, sono ou água.
 - Documentação de contratos, métricas, ADR, continuidade e fila foi atualizada; versões 0.1.22–0.1.31 constam do changelog. A entrega funcional mais recente e evidências estão em `CONTINUIDADE.md`, seção F59.

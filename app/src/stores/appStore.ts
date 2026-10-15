@@ -516,6 +516,7 @@ interface AppState {
   ) => number;
   uncompleteHabit: (habitId: string, completionDate: Date) => void;
   undoNativeHabitCompletion: (habitId: string, logId: string, receipt?: ExecutionLog) => void;
+  removeEmptyNativeExecution: (receipt: ExecutionLog) => void;
   duplicateHabit: (habitId: string) => Habit;
   moveHabitUp: (habitId: string) => void;
   moveHabitDown: (habitId: string) => void;
@@ -857,6 +858,19 @@ export const useAppStore = create<AppState>()(
           user: { ...current.user, totalScore: Math.max(0, current.user.totalScore-log.executedValue),
             xp_earth: Math.max(0, current.user.xp_earth-log.executedValue),
             pranaLevel: Math.max(0, Math.min(100, (current.user.pranaLevel ?? 100)-(log.pranaDeltaApplied ?? 0))) },
+        }));
+      },
+      removeEmptyNativeExecution: (receipt) => {
+        const state = get();
+        const log = state.executionLogs.find((item) => item.id === receipt.id) ?? receipt;
+        if (log.sourceModule !== 'modulo_treino' || log.executedValue !== 0 || log.baseValue !== 0 || !Number.isFinite(log.actualTimeMinutes) || !Number.isFinite(log.pranaDeltaApplied) || log.actualTimeMinutes < 0 || log.actualTimeMinutes >= 1) throw new Error('Este registro não é uma sessão vazia curta.');
+        if (log.subjectType === 'HABIT') { get().undoNativeHabitCompletion(log.subjectId, log.id, log); return; }
+        if (log.subjectType !== 'ACTION' || !state.tasks.some((task) => task.id === log.subjectId && task.sourceModule === 'modulo_treino' && task.sourceRefId === log.sourceRefId && task.isCompleted && task.completedScore === 0)) throw new Error('O registro Core não está disponível para remover com segurança.');
+        set((current) => ({
+          tasks: current.tasks.filter((item) => item.id !== log.subjectId),
+          actions: current.actions.filter((item) => item.id !== log.subjectId),
+          executionLogs: current.executionLogs.filter((item) => item.id !== log.id),
+          user: { ...current.user, pranaLevel: Math.max(0, Math.min(100, (current.user.pranaLevel ?? 100) - (log.pranaDeltaApplied ?? 0))) },
         }));
       },
       user: initialUser,

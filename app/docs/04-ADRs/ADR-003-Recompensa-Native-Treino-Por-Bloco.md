@@ -1,10 +1,18 @@
 ---
 title: "ADR-003: Recompensa Native do Treino por Bloco"
 date: "2026-10-13"
-status: "Aceito"
+status: "Rejeitado para pontuação pelo proprietário — preservado como proposta histórica"
 ---
 
 # ADR-003: Recompensa Native do Treino por Bloco
+
+## Revisão do proprietário — 13/10/2026
+
+O proprietário informou que alterações de pontuação precisam passar por sua aprovação e que o papel de Fábio é UX/UI. O status anterior "Aceito" não comprova essa aprovação. As regras v1/v2 descritas abaixo já estão implementadas no commit fe1a8fe, mas ficam pendentes do crivo do proprietário. Esta anotação não altera a matemática nem recalcula recibos; eventual reversão exige uma mudança de código específica.
+
+### Decisão posterior de Matheus
+
+Matheus determinou restaurar ER × 0.10 e a pontuação de sessão consolidada do commit b1575e4. Preview, CHECKIN, LIVE e despacho Core voltam ao teto único/esforço global/tempo da sessão. O calculador por blocos permanece como código de proposta, sem chamadas de pontuação no fluxo atual. RPE pode permanecer como informação registrada, sem alterar XP/Prana. Recibos emitidos anteriormente não são recalculados. Texto abaixo descreve a proposta histórica rejeitada para a regra vigente, não o contrato em execução.
 
 ## Contexto
 

@@ -1,9 +1,9 @@
 import type { NativeWorkoutSession } from '@/types/workout';
 import { calculateEstimatedDuration } from './workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from './workout-balance';
-import { buildNativeWorkoutRewardBlocks, calculateNativeWorkoutReward } from '@/lib/core/native-workout-reward';
+import { projectNativeLeafReward } from '@/lib/core/native-action-completion';
 
-/** Same completed-block projection as fullscreen execution; planning only describes session time. */
+/** Consolidated reward of checked sets. Exercise shares split the one Core cap. */
 export function projectWorkoutProgress(exercises: NativeWorkoutSession['exerciseResults'], plannedMinutes: number,
   effortLevel: number, measuredSeconds?: number) {
   const exerciseER = exercises.map((exercise) => exercise.sets.reduce((sum, series) => sum +
@@ -15,11 +15,8 @@ export function projectWorkoutProgress(exercises: NativeWorkoutSession['exercise
       targetDurationSeconds: onlyCompleted && series.measureMode === 'duration' ? series.durationSeconds : series.targetDurationSeconds }))
   })).filter((exercise) => exercise.sets.length));
   const durationSeconds = measuredSeconds ?? Math.round(plannedMinutes * durationOf(true) / Math.max(1, durationOf(false)) * 60);
-  const metrics = buildNativeWorkoutRewardBlocks(exercises, effortLevel, WORKOUT_ER_BASE_VALUE);
-  const reward = calculateNativeWorkoutReward(metrics.blocks, metrics.activeDurationSeconds, effortLevel, measuredSeconds === undefined);
-  const exerciseXp = exercises.map((exercise) => {
-    const blocks = buildNativeWorkoutRewardBlocks([exercise], effortLevel, WORKOUT_ER_BASE_VALUE).blocks;
-    return calculateNativeWorkoutReward(blocks, metrics.activeDurationSeconds, effortLevel, measuredSeconds === undefined).executedValue;
-  });
-  return { totalER, baseValue: metrics.baseValue, durationSeconds, earthXp: reward.executedValue, exerciseXp, exerciseER };
+  const baseValue = Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10));
+  const earthXp = projectNativeLeafReward(baseValue, durationSeconds, effortLevel, measuredSeconds === undefined && durationSeconds > 0).executedValue;
+  return { totalER, baseValue, durationSeconds, earthXp,
+    exerciseXp: exerciseER.map((volume) => totalER > 0 ? earthXp * volume / totalER : 0), exerciseER };
 }

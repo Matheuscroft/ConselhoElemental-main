@@ -1,13 +1,14 @@
-import { sessionClockSeconds } from '@/lib/workout/session-clock';
 import { create } from 'zustand';
+import { sessionClockSeconds } from '@/lib/workout/session-clock';
 import { persist } from 'zustand/middleware';
 import { useAppStore } from '@/stores/appStore';
 import { completeFitnessSession, scheduleWorkoutAsHabit, scheduleSequenceAsRotation, workoutHabitData } from '@/lib/workout/fitness-core-adapter';
 import { projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from '@/lib/workout/workout-balance';
-import { buildNativeWorkoutRewardBlocks } from '@/lib/core/native-workout-reward';
 import { projectWorkoutProgress } from '@/lib/workout/native-progress-reward';
+import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
+import { isEmptyShortNativeSession } from '@/lib/workout/empty-native-session';
 import { saveSharedWorkoutSequence, importLegacyWorkoutSequences } from '@/lib/workout/shared-sequences';
 import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
 import { correctPreviousMuscleTags } from '@/constants/calistenia-muscles';
@@ -727,6 +728,7 @@ interface WorkoutState {
   updateHabitCheckin: (habitId: string, exerciseIndex: number, setIndex: number, updates: NativeSetUpdate) => NativeWorkoutSession;
   finishHabitCheckin: (habitId: string) => NativeWorkoutSession;
   undoHabitWorkout: (habitId: string, date: Date) => void;
+  cleanupEmptyNativeSessions: () => { removed: number; unavailable: number };
   beginHabitWorkout: (habitId: string) => NativeWorkoutSession;
   currentAccountId: string | null;
   accountDataById: Record<string, WorkoutAccountData>;
@@ -1145,6 +1147,22 @@ export const useWorkoutStore = create<WorkoutState>()(
         })));
       },
 
+      cleanupEmptyNativeSessions: () => {
+        const core = useAppStore.getState();
+        if (get().currentAccountId !== resolveAccountId(core.currentAccountId)) throw new Error('A conta mudou.');
+        const candidates = get().nativeHistory.filter((session) => isEmptyShortNativeSession(session, resolveNativeSessionXp(session, core)));
+        const removed = new Set<string>(); let unavailable = 0;
+        for (const session of candidates) {
+          const receipt = useAppStore.getState().executionLogs.find((log) => log.id === session.coreExecutionLogId ||
+            (log.sourceModule === 'modulo_treino' && log.sourceRefId === session.id)) ?? session.coreReceipt;
+          if (!receipt) { unavailable++; continue; }
+          try { useAppStore.getState().removeEmptyNativeExecution(receipt); removed.add(session.id); }
+          catch { unavailable++; }
+        }
+        if (removed.size) set((state) => updateNativeData(state, (data) => ({ ...data, nativeHistory: data.nativeHistory.filter((session) => !removed.has(session.id)) })));
+        return { removed: removed.size, unavailable };
+      },
+
       undoHabitWorkout: (habitId, date) => {
         const core = useAppStore.getState();
         if (get().currentAccountId !== resolveAccountId(core.currentAccountId)) throw new Error('A conta mudou.');
@@ -1203,6 +1221,7 @@ export const useWorkoutStore = create<WorkoutState>()(
           series.completedAt = series.completed ? series.completedAt ?? new Date().toISOString() : undefined;
         }
         const metrics = projectWorkoutProgress(exercises, habit.plannedTimeMinutes ?? template.estimatedDurationMinutes, draft.effortLevel ?? 3);
+        if (metrics.totalER <= 0) throw new Error('Nenhuma série realizada. O treino não foi registrado e não consumiu Prana.');
         const completedAt = new Date().toISOString();
         const registered = completeFitnessSession({ ...draft, exerciseResults: exercises, status: 'completed', completedAt,
           executionMode: 'CHECKIN', durationSource: 'DECLARED_PLANNED', durationSeconds: metrics.durationSeconds,
@@ -1357,12 +1376,19 @@ export const useWorkoutStore = create<WorkoutState>()(
         if (get().currentAccountId !== resolveAccountId(useAppStore.getState().currentAccountId)) throw new Error('A conta mudou. Reabra a sessão antes de concluir.');
         if (habitId && !useAppStore.getState().habits.some((habit) => habit.id === habitId && habit.sourceModule === 'modulo_treino' && habit.sourceRefId === session.templateId)) throw new Error('O ciclo não corresponde a esta sessão.');
         const completedAt = new Date().toISOString();
-        const rewardMetrics = buildNativeWorkoutRewardBlocks(session.exerciseResults, session.effortLevel ?? 1, WORKOUT_ER_BASE_VALUE);
+        const totalER = session.exerciseResults.reduce((sum, exercise) => sum + exercise.sets.reduce((volume, series) =>
+          volume + (series.completed && !series.skipped ? (series.measureMode === 'reps' ? series.reps ?? 0 : (series.durationSeconds ?? 0) / 2) * (series.loadFactor ?? 1) : 0), 0), 0);
+        if (totalER <= 0) {
+          get().discardNativeSession(session.id);
+          return undefined;
+        }
+        const activeDurationSeconds = session.exerciseResults.reduce((sum, exercise) => sum + exercise.sets.reduce((seconds, series) =>
+          seconds + (series.completed && !series.skipped ? (series.measureMode === 'reps' ? (series.reps ?? 0) * 4 : series.durationSeconds ?? 0) : 0), 0), 0);
         const finished: NativeWorkoutSession = {
           ...structuredClone(session), status: 'completed', completedAt,
           durationSeconds: sessionClockSeconds(session, Date.parse(completedAt)),
-          totalER: rewardMetrics.totalER, baseValue: rewardMetrics.baseValue,
-          activeDurationSeconds: rewardMetrics.activeDurationSeconds,
+          totalER: Number(totalER.toFixed(10)), baseValue: Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10)),
+          activeDurationSeconds,
         };
         // O Core confirma primeiro; falhas mantêm a sessão ativa para nova tentativa.
         const registered = completeFitnessSession(finished, habitId);

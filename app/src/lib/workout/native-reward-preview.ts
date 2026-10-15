@@ -1,17 +1,21 @@
-import { buildNativeWorkoutRewardBlocks, calculateNativeWorkoutReward } from '@/lib/core/native-workout-reward';
+import { projectNativeLeafReward } from '@/lib/core/native-action-completion';
 import type { WorkoutTemplate } from '@/types/workout';
 import { calculateEstimatedDuration } from './workout-duration';
 import { WORKOUT_ER_BASE_VALUE } from './workout-balance';
 
 export function projectTemplateReward(template: Pick<WorkoutTemplate, 'exercises' | 'estimatedDurationMinutes' | 'effortLevel' | 'durationEstimateMode'>) {
-  const metrics = buildNativeWorkoutRewardBlocks(template.exercises.map((exercise) => ({ sets: exercise.sets.map((series) => ({
-    ...series, completed: true, skipped: false, reps: series.targetReps, durationSeconds: series.targetDurationSeconds,
-  })) })), template.effortLevel ?? 1, WORKOUT_ER_BASE_VALUE);
-  const { totalER, baseValue, activeDurationSeconds } = metrics;
+  const totalER = template.exercises.reduce((total, exercise) => total + exercise.sets.reduce((sum, series) => {
+    const amount = series.measureMode === 'reps' ? series.targetReps ?? 0 : (series.targetDurationSeconds ?? 0) / 2;
+    return sum + amount * (series.loadFactor ?? 1);
+  }, 0), 0);
+  const baseValue = Number((totalER * WORKOUT_ER_BASE_VALUE).toFixed(10));
   const manual = template.durationEstimateMode === 'manual' || (template.durationEstimateMode == null && template.estimatedDurationMinutes > 0);
   const estimatedDurationMinutes = manual ? template.estimatedDurationMinutes : calculateEstimatedDuration(template.exercises);
   const effortLevel = template.effortLevel ?? 1;
-  const reward = calculateNativeWorkoutReward(metrics.blocks, activeDurationSeconds, effortLevel, true);
+  const reward = projectNativeLeafReward(baseValue, estimatedDurationMinutes * 60, effortLevel, true);
+  // Active duration remains an informational UI metric, never the scoring time.
+  const activeDurationSeconds = template.exercises.reduce((sum, exercise) => sum + exercise.sets.reduce((seconds, series) =>
+    seconds + (series.measureMode === 'reps' ? (series.targetReps ?? 0) * 4 : series.targetDurationSeconds ?? 0), 0), 0);
   return { totalER, baseValue, estimatedDurationMinutes, activeDurationSeconds, effortLevel,
     earthXp: reward.executedValue, presenceMultiplier: reward.presenceMultiplier, effortMultiplier: reward.effortMultiplier,
     timeMultiplier: reward.timeMultiplier, effortCap: reward.effortCap };
