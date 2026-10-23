@@ -1,6 +1,6 @@
 ## Ponto de retomada — R11 / revisão e repasse / 0.1.48 (23/10/2026)
 
-Pedido de Fábio: revisar erros, consolidar toda a repaginação para Astro Boy e Matheus e publicar no main indicado. **Matheus continua responsável pelo backend; Fábio continua UX/UI.** [Repasse completo I03/R01–R11](REPASSE-FRONTEND-PARA-BACKEND.md). Astro Boy sequencial; branch codex/fitness-ui-integration, base f07292f; main remoto conferido igual antes da publicação. Commit/push em preparação após validação, sem alegação antecipada de sucesso.
+Pedido de Fábio: revisar erros, consolidar toda a repaginação para Astro Boy e Matheus e publicar no main indicado. **Matheus continua responsável pelo backend; Fábio continua UX/UI.** [Repasse completo I03/R01–R11](REPASSE-FRONTEND-PARA-BACKEND.md). Astro Boy sequencial; branch codex/fitness-ui-integration, base f07292f; main remoto conferido igual antes da publicação. **Publicado em main:** commit `b8c51a286b311cbfcbe09d986c0236a28218f308`, push sem force e SHA remoto confirmado por `git ls-remote origin refs/heads/main` em 23/10/2026. Este encerramento documental segue em commit próprio.
 
 **Corrigido:** quatro avisos de hooks; atalhos de rituais no Santuário; proteção/encaminhamento de treinos e agregadores fora do timer simples; gráfico aleatório do Astrolábio substituído por registros reais; fixture/expectativa de teste Fitness alinhada à regra consolidada já restaurada por Matheus. Boas-vindas/CLI agora apresentam o novo repasse uma vez por revisão mesmo em perfis antigos.
 
@@ -8,7 +8,7 @@ Pedido de Fábio: revisar erros, consolidar toda a repaginação para Astro Boy 
 
 **Limites:** QA visual/fluxo real não executado pelo bloqueio salvo do navegador; testes não provam persistência remota nem ausência de qualquer bug. Avisos de chunks/Browserslist permanecem. Sem secrets, deploy, alterações de fórmulas/backend ou recálculo de histórico.
 
-**Próximo:** finalizar publicação Git autorizada e confirmar SHA; depois Fábio segue QA/acabamento de frontend pela fila. Matheus deve ler o repasse e conferir contratos de snapshots macro, reversão/idempotência e sincronização. Onboarding atualizado depende da IDE executar AGENTS/astro:status; não existe agente automático ao simplesmente abrir GitHub. Reservas de publicação permanecem até confirmação; revisão documental pelo coordenador, independente pendente. Histórico abaixo preservado.
+**Próximo:** Fábio segue QA/acabamento de frontend pela fila; publicação do código concluída. Matheus deve ler o repasse e conferir contratos de snapshots macro, reversão/idempotência e sincronização. Onboarding atualizado depende da IDE executar AGENTS/astro:status; não existe agente automático ao simplesmente abrir GitHub. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Histórico abaixo preservado.
 
 ## Ponto de retomada — R10 / Quests elementais / 0.1.47 (23/10/2026)
 

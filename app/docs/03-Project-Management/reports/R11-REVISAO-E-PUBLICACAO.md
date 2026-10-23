@@ -42,6 +42,8 @@ Evidências temporárias: `/tmp/r11-tests-final.log`, `/tmp/r11-lint-final.log`,
 
 ## Publicação e pendências
 
+**Publicação confirmada em 23/10/2026:** `b8c51a286b311cbfcbe09d986c0236a28218f308` enviado para `origin/main`; `git ls-remote origin refs/heads/main` retornou o mesmo SHA. Foram incluídos 133 arquivos revisados. Remoto ainda estava na base `f07292f` antes do push; atualização fast-forward, sem conflito. Esta confirmação documental segue em commit próprio.
+
 Push autorizado para main, sem force, reset, limpeza destrutiva, deploy ou migração. Manifestos/changelog sincronizados em 0.1.48. Perfil `.astro-boy`, ambientes, configurações globais, builds e credenciais não integram o lote. Ver confirmação do commit/publicação em [CONTINUIDADE](../../CONTINUIDADE.md).
 
 Pendências principais: QA visual/fluxo em conta isolada e 360/390/768/1440; performance real; acabamento das telas ainda parciais com Fábio. Matheus mantém backend e pode auditar snapshots/progresso macro, Undo/idempotência, isolamento/sincronização e divergências documentadas sem presumir autorização para novas regras. Repaginação geral não está declarada 100% concluída.
