@@ -1,10 +1,9 @@
+import { NavigationGroup, RouteShowcase } from '@/components/elemental/NavigationCards';
 /**
  * Mapa — index of every page with how it can be reached and a short live status.
  * Route: /mapa
  */
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { AppLayout } from '@/components/layout';
 import { GlassCard } from '@/components/ui/glass-card';
 import { useAppStore } from '@/stores/appStore';
@@ -36,7 +35,6 @@ const accessChips = (route: AppRoute): React.ReactNode[] => {
 };
 
 export const Mapa: React.FC = () => {
-  const navigate = useNavigate();
   const { getCompletedTasksToday, getCompletedHabitsToday, getStreak } = useAppStore();
   const { getPlannedWorkouts, getActiveSession, getWorkoutStats } = useWorkoutStore();
 
@@ -54,50 +52,26 @@ export const Mapa: React.FC = () => {
   const hiddenCount = APP_ROUTES.filter((route) => !route.sidebar && !route.mobile && !route.via).length;
 
   return (
-    <AppLayout>
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+    <AppLayout showAura={false}>
+      <header className="mb-6">
         <h2 className="font-mystic text-xl">Mapa de páginas</h2>
         <p className="text-sm text-white/50">
           {APP_ROUTES.length} páginas navegáveis · {INTERNAL_ROUTES.length} rotas internas
           {hiddenCount > 0 && ` · ${hiddenCount} sem acesso por menu`}
         </p>
-      </motion.div>
+      </header>
 
-      {GROUPS.map((group) => (
-        <section key={group} aria-label={group} className="mb-6">
-          <h3 className="font-mystic text-sm text-mystic-gold mb-2.5">{group}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {APP_ROUTES.filter((route) => route.group === group && (group !== 'Treino' || route.id === 'fitness')).map((route) => (
-              <button
-                key={route.id}
-                type="button"
-                onClick={() => navigate(route.path)}
-                className="text-left rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-mystic-cyan"
-              >
-                <GlassCard className="p-3.5 h-full hover:bg-white/5 transition-colors">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-full bg-mystic-arcane/15 border border-mystic-arcane/30 flex items-center justify-center shrink-0">
-                      <route.icon className="w-5 h-5 text-mystic-arcane" aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-white truncate">{route.label}</p>
-                      <p className="text-[11px] text-white/50">{route.description}</p>
-                      <p className="text-[10px] font-mono text-white/30 mt-0.5">{route.path}</p>
-                      {liveStatus[route.id] && (
-                        <p className="text-[11px] text-mystic-gold mt-1">{liveStatus[route.id]}</p>
-                      )}
-                      <div className="flex flex-wrap gap-1 mt-2">{accessChips(route)}</div>
-                    </div>
-                  </div>
-                </GlassCard>
-              </button>
-            ))}
-          </div>
-        </section>
-      ))}
+      <div className="elemental-atlas">
+        {GROUPS.map((group) => {
+          const routes = APP_ROUTES.filter((route) => route.group === group);
+          return <NavigationGroup key={group} group={group} count={routes.length} initiallyOpen={group === 'Núcleo'}>
+            <div className="elemental-route-grid">{routes.map((route) => <RouteShowcase key={route.id} route={route} status={liveStatus[route.id]}>{accessChips(route)}</RouteShowcase>)}</div>
+          </NavigationGroup>;
+        })}
+      </div>
 
-      <section aria-label="Rotas internas" className="mb-6">
-        <h3 className="font-mystic text-sm text-mystic-gold mb-2.5">Rotas internas</h3>
+      <details className="elemental-internal-routes">
+        <summary>Fluxos acessados dentro das páginas</summary>
         <GlassCard className="p-3.5">
           <ul className="space-y-2.5">
             {INTERNAL_ROUTES.map((route) => (
@@ -109,7 +83,7 @@ export const Mapa: React.FC = () => {
             ))}
           </ul>
         </GlassCard>
-      </section>
+      </details>
     </AppLayout>
   );
 };

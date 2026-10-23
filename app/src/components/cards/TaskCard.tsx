@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Play, Check, Clock, ChevronRight, MoreVertical } from 'lucide-react';
@@ -78,7 +79,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
         
-        <span className="text-lg opacity-60">{element.icon}</span>
+        <span className="text-lg opacity-60"><ElementIcon element={element.id} label={element.name} /></span>
       </motion.div>
     );
   }
@@ -130,7 +131,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         </div>
         
         <div className="flex items-center gap-1">
-          <span className="text-lg opacity-60">{element.icon}</span>
+          <span className="text-lg opacity-60"><ElementIcon element={element.id} label={element.name} /></span>
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

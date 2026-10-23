@@ -1,3 +1,4 @@
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -229,7 +230,7 @@ export const Dominios: React.FC = () => {
           animate={{ opacity: 1 }}
           className="glass-card p-8 text-center mt-4"
         >
-          <div className="text-4xl mb-3">🌿</div>
+          <div className="text-4xl mb-3"><ArcaneIcon name="terra" /></div>
           <h3 className="font-mystic text-lg mb-2">
             {listMode === 'active' ? 'Nenhuma área ativa' : 'Nenhuma área desativada'}
           </h3>
@@ -283,7 +284,7 @@ export const Dominios: React.FC = () => {
                 <SelectContent className="bg-mystic-purple border-white/10">
                   {(Object.keys(ELEMENTS) as ElementId[]).map((elementId) => (
                     <SelectItem key={elementId} value={elementId}>
-                      {ELEMENTS[elementId].icon} {ELEMENTS[elementId].name}
+                      <ElementIcon element={elementId} /> {ELEMENTS[elementId].name}
                     </SelectItem>
                   ))}
                 </SelectContent>

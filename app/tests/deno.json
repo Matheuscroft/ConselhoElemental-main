@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "@/": "../src/",
+    "date-fns": "npm:date-fns@4.1.0"
+  },
+  "unstable": [
+    "sloppy-imports"
+  ],
+  "nodeModulesDir": "manual"
+}

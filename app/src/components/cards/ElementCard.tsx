@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { ElementId } from '@/types';
@@ -43,8 +44,11 @@ export const ElementCard: React.FC<ElementCardProps> = ({
       whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
       className={`
-        relative overflow-hidden rounded-2xl cursor-pointer
+        relative overflow-hidden rounded-2xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold
         border border-white/10 transition-all duration-300
         ${sizeClasses[size]}
       `}
@@ -67,7 +71,7 @@ export const ElementCard: React.FC<ElementCardProps> = ({
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
-          <div className={iconSizes[size]}>{element.icon}</div>
+          <div className={iconSizes[size]}><ElementIcon element={element.id} /></div>
           <div className="text-right">
             <div className="text-mystic-gold font-bold text-lg">
               {score.toLocaleString()}

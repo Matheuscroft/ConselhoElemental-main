@@ -1,0 +1,15 @@
+.elemental-topbar { position: sticky; top: 0; z-index: 40; padding-top: env(safe-area-inset-top); background: #080b12f2; backdrop-filter: blur(12px); border-bottom: 1px solid rgb(var(--el-gold) / .16); }
+.elemental-topbar-inner { display: flex; align-items: center; gap: 18px; min-height: 76px; max-width: 1104px; margin: auto; padding: 12px 32px; }
+.elemental-topbar-brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; color: rgb(var(--el-text)); font: 400 11px/1.25 Cinzel, Georgia, serif; }
+.elemental-topbar-brand > svg { color: rgb(var(--el-gold)); }
+.elemental-topbar-brand strong { display: block; font-size: 16px; font-weight: 500; }
+.elemental-topbar-location { border-left: 1px solid rgb(var(--el-gold) / .2); padding-left: 18px; font-size: 13px; color: rgb(var(--el-muted)); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.elemental-topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.elemental-topbar button, .elemental-account-button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; color: rgb(var(--el-gold)); font-size: 13px; }
+.elemental-topbar-actions > button:first-child { padding-inline: 10px; }
+.elemental-account-button { border: 1px solid rgb(var(--el-gold) / .3); background: rgb(var(--el-gold) / .06); }
+.elemental-topbar :is(button,a):focus-visible, .elemental-account-button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+.elemental-topbar button:hover, .elemental-account-button:hover { background: rgb(var(--el-gold) / .12); }
+@media (min-width: 768px) { .elemental-topbar { margin-left: 18rem; } }
+@media (max-width: 640px) { .elemental-topbar-inner { min-height: 68px; padding: 10px 16px; gap: 8px; } .elemental-topbar-location { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); } .elemental-topbar-actions { gap: 6px; } .elemental-topbar-brand { gap: 7px; } }
+@media (max-width: 380px) { .elemental-topbar-actions > button:first-child > span { display: none; } }

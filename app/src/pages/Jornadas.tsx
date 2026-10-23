@@ -1,13 +1,15 @@
+import { Link } from 'react-router-dom';
+import { trailHref } from '@/components/quests/quest-path';
+import '@/components/quests/quests.css';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
   Map, 
-  Target, 
-  ChevronRight, 
   Trophy, 
   Calendar,
-  Clock,
   CheckCircle2,
   Circle,
   Flame,
@@ -117,7 +119,7 @@ export const Jornadas: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-mystic-gold/20 flex items-center justify-center mb-1">
-                <span className="text-xl">🌟</span>
+                <span className="text-xl"><ArcaneIcon name="jornada" /></span>
               </div>
               <p className="text-[10px] text-white/50">Início</p>
             </div>
@@ -149,7 +151,7 @@ export const Jornadas: React.FC = () => {
             
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-mystic-gold/20 flex items-center justify-center mb-1">
-                <span className="text-xl">🏆</span>
+                <span className="text-xl"><ArcaneIcon name="conquista" /></span>
               </div>
               <p className="text-[10px] text-white/50">Meta</p>
             </div>
@@ -228,7 +230,7 @@ export const Jornadas: React.FC = () => {
                     animate={{ scale: 1 }}
                     className="text-5xl mb-2"
                   >
-                    {ELEMENTS[selectedQuest.elementId].icon}
+                    <ElementIcon element={selectedQuest.elementId} />
                   </motion.div>
                   <DialogTitle className="font-mystic text-xl">
                     {selectedQuest.title}
@@ -238,6 +240,7 @@ export const Jornadas: React.FC = () => {
               
               <div className="space-y-4 p-4">
                 {/* Description */}
+                <Link className="quest-primary w-full mb-4" to={trailHref(`quest:${selectedQuest.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
                 {selectedQuest.description && (
                   <p className="text-sm text-white/70 text-center">
                     {selectedQuest.description}
@@ -391,116 +394,14 @@ interface QuestCardProps {
   onClick?: () => void;
 }
 
-const QuestCard: React.FC<QuestCardProps> = ({ quest, index, completed, onClick }) => {
-  const element = ELEMENTS[quest.elementId];
+const QuestCard: React.FC<QuestCardProps> = ({ quest, completed, onClick }) => {
   const area = quest.areaId ? getAreaById(quest.areaId) : null;
   const totalItems = quest.tasks.length + quest.habits.length;
-  const completedItems = quest.tasks.filter(t => t.isCompleted).length + 
-                         quest.habits.filter(h => h.isCompleted).length;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ scale: 1.01 }}
-      onClick={onClick}
-      className={`relative p-4 rounded-2xl border cursor-pointer transition-all ${
-        completed 
-          ? 'bg-mystic-gold/5 border-mystic-gold/20' 
-          : 'bg-white/5 border-white/10 hover:border-white/20'
-      }`}
-    >
-      {/* Path connector */}
-      {!completed && (
-        <div className="absolute -left-4 top-1/2 w-4 h-0.5 bg-gradient-to-r from-mystic-gold/50 to-transparent" />
-      )}
-      
-      <div className="flex items-start gap-3">
-        {/* Element icon */}
-        <div 
-          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: `${element.color}30` }}
-        >
-          <span className="text-2xl">{element.icon}</span>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Title and status */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h4 className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
-                {quest.title}
-              </h4>
-              {quest.description && (
-                <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{quest.description}</p>
-              )}
-            </div>
-            
-            {completed && (
-              <Trophy className="w-5 h-5 text-mystic-gold" />
-            )}
-          </div>
-
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            {area && (
-              <Badge 
-                variant="outline"
-                className="text-[10px]"
-                style={{ 
-                  backgroundColor: `${area.color}15`, 
-                  borderColor: `${area.color}40`,
-                  color: area.color 
-                }}
-              >
-                {area.name}
-              </Badge>
-            )}
-            
-            <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px]">
-              <Target className="w-3 h-3 mr-1" />
-              {completedItems}/{totalItems} itens
-            </Badge>
-            
-            {quest.dueDate && (
-              <Badge variant="outline" className="bg-white/5 text-[10px]">
-                <Clock className="w-3 h-3 mr-1" />
-                {new Date(quest.dueDate).toLocaleDateString('pt-BR')}
-              </Badge>
-            )}
-          </div>
-
-          {/* Progress */}
-          <div className="mt-3">
-            <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${quest.progress}%` }}
-                transition={{ duration: 0.5 }}
-                className="h-full rounded-full"
-                style={{ 
-                  background: `linear-gradient(90deg, ${element.color}, ${element.lightColor})` 
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Reward */}
-          {quest.reward && (
-            <div className="mt-2 flex items-center gap-1 text-xs text-mystic-gold">
-              <Gift className="w-3 h-3" />
-              {quest.reward}
-            </div>
-          )}
-        </div>
-
-        <ChevronRight className="w-5 h-5 text-white/30" />
-      </div>
-    </motion.div>
-  );
+  const completedItems = quest.tasks.filter(t => t.isCompleted).length + quest.habits.filter(h => h.isCompleted).length;
+  return <ShowcaseCard title={quest.title} description={quest.description} element={quest.elementId}
+    status={completed ? 'Jornada concluída' : 'Jornada em andamento'} progress={quest.progress}
+    chips={[...(area ? [area.name] : []), `${completedItems}/${totalItems} itens`, ...(quest.dueDate ? [new Date(quest.dueDate).toLocaleDateString('pt-BR')] : [])]}
+    reward={quest.reward} onOpen={onClick} />;
 };
 
 interface EmptyStateProps {
@@ -514,7 +415,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate }) => (
     animate={{ opacity: 1 }}
     className="glass-card p-8 text-center"
   >
-    <div className="text-4xl mb-3">{type === 'active' ? '🗺️' : '🏆'}</div>
+    <div className="text-4xl mb-3"><ArcaneIcon name={type === 'active' ? 'jornada' : 'conquista'} /></div>
     <h3 className="font-mystic text-lg mb-2">
       {type === 'active' ? 'Nenhuma jornada ativa' : 'Nenhuma jornada concluída'}
     </h3>

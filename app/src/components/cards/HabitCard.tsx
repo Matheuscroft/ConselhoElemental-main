@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Check, Flame, Calendar } from 'lucide-react';
@@ -96,7 +97,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
               +{habit.plannedPoints} pts
             </Badge>
             
-            <span className="text-lg opacity-60">{element.icon}</span>
+            <span className="text-lg opacity-60"><ElementIcon element={element.id} label={element.name} /></span>
           </div>
         </div>
       </div>

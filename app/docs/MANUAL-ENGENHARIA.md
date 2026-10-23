@@ -1,8 +1,49 @@
 # Manual de engenharia — Conselho Elemental
 
+## Revisão e repasse — 0.1.48
+
+O CLI usa briefingId e briefingAcknowledged para apresentar o repasse uma vez a perfis existentes. Não é daemon; a IDE executa o protocolo. Teste de onboarding usa diretórios temporários. SanctuaryRituals usa view=lista e o timer simples recusa treino/agregador. Astrolábio projeta pontos históricos disponíveis, sem classificação elemental inferida. Testes Fitness: `deno test --cached-only --config tests/deno.json tests/workout/`. [Repasse completo](REPASSE-FRONTEND-PARA-BACKEND.md) · [Evidências R11](03-Project-Management/reports/R11-REVISAO-E-PUBLICACAO.md).
+
+## Quests — 0.1.47
+
+Rituais alterna Quests/Lista via query. QuestHub compõe seleção, diálogos e timer; quest-path projeta tarefas atuais por ID e não persiste progresso. quest-commands delega criação aos métodos existentes e conclusão ao sanctuary-timer. Estados visuais reiniciam por conta; ações nativas/recorrentes mantêm seus módulos. ScrollToTop preserva somente seleções explícitas dentro de /rituais. Rodar os testes existentes e `tests/quests/*.test.mjs`; build via API Vite com envDir:false. QA de navegador ainda pendente. [Escopo, evidências e retomada R10](03-Project-Management/reports/R10-QUESTS-E-TRILHAS.md).
+
+## Grimório — 0.1.46
+
+Grimorio usa AppLayout com showAura=false e mantém getters/handlers existentes. ResourceMeter e ElementMasteryCard são apresentação. history.ts projeta registros persistidos sem estimar valores nem manter ledger; filtros usam dias locais, dados ausentes são explícitos. Estado visual reiniciado por conta; relógio de minuto apenas atualiza leitura. CSS e diálogos têm escopo próprio. Testes: `node --test tests/grimorio/*.test.mjs tests/cycles/*.test.mjs tests/elemental/*.test.mjs tests/temporal/*.test.mjs`. [Fontes, limites e QA R09](03-Project-Management/reports/R09-GRIMORIO.md).
+
+## Cabeçalhos e composição — 0.1.45
+
+ElementalTopBar é apresentação; TopBar mantém conta/serviços e abre AllRoutesSheet. CycleCreationForm recebe estado/callbacks, sem gravação própria. Seleção de data mantém o centro da janela; Hoje/seletor/setas controlam o reposicionamento. Santuário clássico agora é apenas redirect; página/palco/CSS exclusivos removidos. [Evidências R08](03-Project-Management/reports/R08-CABECALHOS-E-COMPOSICAO.md).
+
+## Ciclos — 0.1.44
+
+Visões Rotina/Sequências e filtros são estado de apresentação. ExpandedDayCard recebe data/seleção/contagens e callback existentes; só o cartão ativo mostra seus totais. Centralização rola apenas a faixa de dias, sem foco programático. ScoreHierarchyPanel aceita presentation="showcase" opt-in, sem cálculos novos. `cycle-discovery.ts` filtra a coleção pronta sem reordenar/gravar; regras e handlers continuam em Ciclos/stores existentes. Guardas de UI permitem reorganizar só na visão completa em Ordem. CSS escopado em ciclos.css e classe cycle-dialog nos portais. Testes: `node --test tests/cycles/*.test.mjs tests/elemental/*.test.mjs tests/temporal/*.test.mjs`; QA real requer liberação efetiva do navegador. [Escopo e evidências](03-Project-Management/reports/R07-CICLOS-REDESIGN.md).
+
+## Ícones e navegação — 0.1.43
+
+Use ArcaneIcon/ElementIcon/RouteIcon na apresentação; não substituir strings persistidas do catálogo. `label` somente quando a imagem carrega informação própria; mantenha rótulos textuais nos controles. NavigationGroup e RouteShowcase recebem destinos do APP_ROUTES existente. Não usar progressos inventados. Testes de apresentação resolvem imports locais, sem stores. [Escopo, preservação e evidências](03-Project-Management/reports/R06-ICONES-E-EXPLORACAO.md).
+
+## Operação temporal — 0.1.42 / 22/10/2026
+
+TemporalLayout mantém AppLayout/tick e reúne as seis abas. `useLiveDate` é apenas relógio de apresentação; não usar para pontuação. Lua carrega Three.js sob demanda e assets locais com créditos; `getMoonPhase` legado não foi substituído. Estações lê `getSeason`; não recalcular fronteiras como efeito de layout. Meses usam query `mes=YYYY-MM`. Testes: `node --test tests/elemental/*.test.mjs tests/temporal/*.test.mjs`; não substituem navegador/WebGL. [Implementação e próximos passos](03-Project-Management/reports/R05-TEMPORAL-LUA-ESTACOES.md).
+
+## Operação da home elemental — 0.1.41 / 22/10/2026
+
+Home canônica em `/santuario`, elementos em `/santuario/elementos/:elementId`. Prévia redireciona; home clássica permanece como alternativa. TopBar em modo accountOnly reutiliza conta; SanctuaryRituals delega operações existentes com proteção por conta/ritual/sessão. Não montar AppLayout junto com a casca elemental, que já mantém o tick existente. Pilares usa os getters reais e leva às páginas elementais. [Implementação, testes e QA pendente](03-Project-Management/reports/R03-SANTUARIO-HOME-PILARES.md). Este registro atualiza as pendências de promoção/início/conclusão mencionadas no histórico abaixo, sem declarar paridade visual validada.
+
+
 > Atualizado em 09/10/2026: o protótipo I03 do assistente está descrito em [ASSISTENTE-PROTOTIPO.md](ASSISTENTE-PROTOTIPO.md). Estado operacional e próximo passo permanecem em CONTINUIDADE.md.
 
 Atualizado em 09/10/2026 por inspeção estática do checkout de coordenação. Escopo: operar e evoluir o app existente com segurança. Este manual não certifica fluxos, implantação, sincronização remota ou cobertura de testes.
+
+## Tema e componentes compartilhados — 22/10/2026
+
+Tema em `src/styles/elemental-theme.css`, importado por main após os estilos existentes; aliases Tailwind usam variáveis RGB com suporte a opacidade. Preserve os aliases e migre telas gradualmente; não altere cores/IDs no catálogo de domínio apenas por design. ElementalTimer recebe tempo formatado/callbacks e não possui relógio próprio. AppLayout, FitnessPageShell e prévia mantêm o tick existente somente quando cada casca está montada; ao mudar composição, verificar ausência de dois intervalos simultâneos. Testes `node --test tests/elemental/*.test.mjs` são locais, sem execução de browser. [Decisões e limites R04](03-Project-Management/reports/R04-IDENTIDADE-CARTOES-CRONOMETRO.md). Estado vigente na continuidade; as seções datadas abaixo são histórico.
+
+## Prévia elemental — operação local, 21/10/2026
+
+Rotas protegidas `/previa-elemental` e `/previa-elemental/elementos/:elementId`; links antigos por query continuam compatíveis. Busca/filtro pertencem à URL, sem store adicional. Testes locais: `node --test tests/elemental/*.test.mjs`. São testes numéricos e de navegação em memória; não substituem execução do app. Build sem carregar `.env`: usar a API Vite com `envDir:false`, como registrado no [R03](03-Project-Management/reports/R03-NAVEGACAO-ELEMENTAL.md). Inspeção via browser depende de permissão efetiva; não contornar bloqueios salvos. Antes de substituir a home, integrar seu cronômetro e ações existentes, validar paridade e matriz responsiva. Estado atual fica na continuidade/fila.
 
 ## Fontes e ordem de consulta
 

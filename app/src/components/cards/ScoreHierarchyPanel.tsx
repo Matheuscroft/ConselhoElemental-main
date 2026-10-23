@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronRight, Sparkles } from 'lucide-react';
@@ -5,6 +6,7 @@ import type { Area, ElementId, Habit, Task } from '@/types';
 import { AREAS, ELEMENTS, calculateTaskScore } from '@/constants';
 
 interface ScoreHierarchyPanelProps {
+  presentation?: 'default' | 'showcase';
   tasks: Task[];
   habits: Habit[];
   customAreas?: Area[];
@@ -87,6 +89,7 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
   habits,
   customAreas = [],
   customSubareas = {},
+  presentation = 'default',
 }) => {
   const [selectedElement, setSelectedElement] = useState<ElementId | null>(null);
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
@@ -245,7 +248,7 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
   ].filter(Boolean).join(' > ');
 
   return (
-    <div className="mb-4 space-y-3">
+    <div className={`mb-4 space-y-3 ${presentation === 'showcase' ? 'score-elemental-showcase' : ''}`}>
       <div className="glass-card p-3">
         <div className="flex items-center justify-between mb-3">
           <p className="text-xs uppercase tracking-wider text-white/50">Pontuacao por elemento</p>
@@ -263,6 +266,8 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
             return (
               <button
                 key={item.elementId}
+                aria-pressed={isActive}
+                data-element={item.elementId}
                 onClick={() => handleSelectElement(item.elementId)}
                 className={`relative aspect-square rounded-xl border p-3 transition-colors ${
                   isActive
@@ -270,8 +275,9 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
                     : 'border-white/10 bg-white/5 hover:bg-white/10'
                 }`}
               >
+                {presentation === 'showcase' && <img className="score-element-art" src={`/sanctuary/elements/${item.elementId}-v1.webp`} alt="" loading="lazy" width={96} height={96} />}
                 <div className="flex h-full flex-col items-center justify-center text-center">
-                  <span className="text-sm">{element.icon} {element.name}</span>
+                  <span className="text-sm"><ElementIcon element={element.id} /> {element.name}</span>
                   <span className="mt-1 text-2xl font-semibold text-mystic-gold">{item.score}</span>
                 </div>
 
@@ -304,6 +310,7 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
               return (
                 <button
                   key={area.id}
+                  aria-pressed={isActive}
                   onClick={() => setSelectedAreaId((current) => (current === area.id ? null : area.id))}
                   className={`relative rounded-xl border p-2.5 transition-colors ${
                     isActive

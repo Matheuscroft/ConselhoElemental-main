@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { monthFromSearch, monthHref } from '@/components/temporal/celestial/month-navigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import {
@@ -22,8 +24,14 @@ const formatMonthLabel = (date: Date): string => {
   });
 };
 
-export const TemporalMonthPage: React.FC = () => {
-  const [anchorDate, setAnchorDate] = useState(new Date());
+export const TemporalMonthPage = () => {
+  const { search } = useLocation();
+  return <TemporalMonthContent key={search} search={search} />;
+};
+
+const TemporalMonthContent = ({ search }: { search: string }) => {
+  const navigate = useNavigate();
+  const [anchorDate] = useState(() => monthFromSearch(search, new Date()));
   const { weekStartsOn } = useWeekStartsOnPreference();
   const [selectedDayStamp, setSelectedDayStamp] = useState<number | null>(null);
 
@@ -59,7 +67,7 @@ export const TemporalMonthPage: React.FC = () => {
       if (current.score > best.score) return current;
       return best;
     }, null as (typeof interval.days)[number] | null);
-  }, [interval.days]);
+  }, [interval]);
 
   const selectedDayAggregate = useMemo(
     () => interval.days.find((day) => day.dayStamp === selectedDayStamp) ?? null,
@@ -84,7 +92,8 @@ export const TemporalMonthPage: React.FC = () => {
       <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-3">
         <button
           type="button"
-          onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+          aria-label="Mês anterior"
+          onClick={() => navigate(monthHref(new Date(anchorDate.getFullYear(), anchorDate.getMonth() - 1, 1)))}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -92,7 +101,8 @@ export const TemporalMonthPage: React.FC = () => {
         <p className="text-sm font-medium text-white capitalize">{formatMonthLabel(anchorDate)}</p>
         <button
           type="button"
-          onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+          aria-label="Próximo mês"
+          onClick={() => navigate(monthHref(new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 1)))}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronRight className="h-4 w-4" />

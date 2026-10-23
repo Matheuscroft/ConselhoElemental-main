@@ -1,3 +1,8 @@
+import { Link } from 'react-router-dom';
+import { trailHref } from '@/components/quests/quest-path';
+import '@/components/quests/quests.css';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -5,14 +10,12 @@ import {
   Building2, 
   CheckCircle2, 
   Layers, 
-  ChevronRight, 
   Calendar,
   Flame,
   Droplets,
   Mountain,
   Wind,
   Gift,
-  FolderOpen,
   Flag
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -184,7 +187,7 @@ export const GrandesObras: React.FC = () => {
                     animate={{ scale: 1 }}
                     className="text-5xl mb-2"
                   >
-                    {ELEMENTS[selectedProject.elementId].icon}
+                    <ElementIcon element={selectedProject.elementId} />
                   </motion.div>
                   <DialogTitle className="font-mystic text-xl">
                     {selectedProject.title}
@@ -194,6 +197,7 @@ export const GrandesObras: React.FC = () => {
               
               <div className="space-y-4 p-4">
                 {/* Description */}
+                <Link className="quest-primary w-full mb-4" to={trailHref(`project:${selectedProject.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
                 {selectedProject.description && (
                   <p className="text-sm text-white/70 text-center">
                     {selectedProject.description}
@@ -392,7 +396,7 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, completed, archived
         animate={{ opacity: 1 }}
         className="glass-card p-8 text-center"
       >
-        <div className="text-4xl mb-3">{archived ? '📦' : completed ? '✅' : '🏗️'}</div>
+        <div className="text-4xl mb-3"><ArcaneIcon name={archived ? 'arquivo' : completed ? 'conquista' : 'obra'} /></div>
         <h3 className="font-mystic text-lg mb-2">
           {archived ? 'Nenhuma obra arquivada' : completed ? 'Nenhuma obra concluída' : 'Nenhuma obra ativa'}
         </h3>
@@ -433,114 +437,11 @@ interface ProjectCardProps {
   onClick?: () => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, index, completed, archived, onClick }) => {
-  const element = ELEMENTS[project.elementId];
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived, onClick }) => {
   const area = project.areaId ? getAreaById(project.areaId) : null;
-  const totalItems = project.missions.length + project.quests.length + 
-                     project.tasks.length + project.habits.length;
-
-  return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ scale: 1.01 }}
-      onClick={onClick}
-      className={`relative p-4 rounded-2xl border cursor-pointer transition-all ${
-        completed 
-          ? 'bg-mystic-gold/5 border-mystic-gold/20' 
-          : archived
-            ? 'bg-white/5 border-white/5 opacity-60'
-            : 'bg-white/5 border-white/10 hover:border-white/20'
-      }`}
-    >
-      <div className="flex items-start gap-3">
-        {/* Element icon */}
-        <div 
-          className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-          style={{ backgroundColor: `${element.color}30` }}
-        >
-          <span className="text-2xl">{element.icon}</span>
-        </div>
-
-        <div className="flex-1 min-w-0">
-          {/* Title and status */}
-          <div className="flex items-start justify-between">
-            <div>
-              <h4 className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
-                {project.title}
-              </h4>
-              {project.description && (
-                <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{project.description}</p>
-              )}
-            </div>
-            
-            {completed && (
-              <CheckCircle2 className="w-5 h-5 text-mystic-gold" />
-            )}
-          </div>
-
-          {/* Badges */}
-          <div className="flex flex-wrap items-center gap-2 mt-2">
-            {area && (
-              <Badge 
-                variant="outline"
-                className="text-[10px]"
-                style={{ 
-                  backgroundColor: `${area.color}15`, 
-                  borderColor: `${area.color}40`,
-                  color: area.color 
-                }}
-              >
-                {area.name}
-              </Badge>
-            )}
-            
-            <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px]">
-              <FolderOpen className="w-3 h-3 mr-1" />
-              {totalItems} itens
-            </Badge>
-            
-            {project.missions.length > 0 && (
-              <Badge variant="outline" className="bg-white/5 text-[10px]">
-                <Flag className="w-3 h-3 mr-1" />
-                {project.missions.length} campanhas
-              </Badge>
-            )}
-          </div>
-
-          {/* Progress */}
-          <div className="mt-3">
-            <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-white/50">Progresso</span>
-              <span className="text-mystic-gold">{project.progress}%</span>
-            </div>
-            <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${project.progress}%` }}
-                transition={{ duration: 0.5 }}
-                className="h-full rounded-full"
-                style={{ 
-                  background: `linear-gradient(90deg, ${element.color}, ${element.lightColor})` 
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Reward */}
-          {project.reward && (
-            <div className="mt-2 flex items-center gap-1 text-xs text-mystic-gold">
-              <Gift className="w-3 h-3" />
-              {project.reward}
-            </div>
-          )}
-        </div>
-
-        <ChevronRight className="w-5 h-5 text-white/30" />
-      </div>
-    </motion.div>
-  );
+  const totalItems = project.missions.length + project.quests.length + project.tasks.length + project.habits.length;
+  return <ShowcaseCard title={project.title} description={project.description} element={project.elementId}
+    status={archived ? 'Obra arquivada' : completed ? 'Obra concluída' : 'Obra em andamento'} progress={project.progress}
+    chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} campanhas`] : [])]}
+    reward={project.reward} onOpen={onClick} />;
 };

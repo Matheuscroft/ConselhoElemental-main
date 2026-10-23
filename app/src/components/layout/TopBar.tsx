@@ -1,7 +1,8 @@
 import React from 'react';
-import { ChevronLeft, Bell, Sparkles } from 'lucide-react';
+import { ElementalTopBar, AccountSeal } from './ElementalTopBar';
+import { AllRoutesSheet } from './AllRoutesSheet';
+import './elemental-topbar.css';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useAppStore } from '@/stores/appStore';
 import { useAuthStore } from '@/stores/authStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
@@ -25,6 +26,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 interface TopBarProps {
+  accountOnly?: boolean;
   title?: string;
   showBackButton?: boolean;
   rightAction?: React.ReactNode;
@@ -32,12 +34,13 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({
   title,
+  accountOnly = false,
   showBackButton = false,
   rightAction,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, accounts, currentAccountId, createAccount, switchAccount } = useAppStore();
+  const { accounts, currentAccountId, createAccount, switchAccount } = useAppStore();
   const {
     user: authUser,
     session,
@@ -46,6 +49,7 @@ export const TopBar: React.FC<TopBarProps> = ({
     isMigratingLocalData,
   } = useAuthStore();
   const [isAccountModalOpen, setIsAccountModalOpen] = React.useState(false);
+  const [routesOpen, setRoutesOpen] = React.useState(false);
   const [newAccountName, setNewAccountName] = React.useState('');
   const [googleStatus, setGoogleStatus] = React.useState<
     'idle' | 'loading' | 'connected' | 'disconnected' | 'unavailable' | 'error'
@@ -75,6 +79,9 @@ export const TopBar: React.FC<TopBarProps> = ({
       '/grandes-obras': 'Grandes Obras',
       '/forja': 'Forja',
       '/astrolabio': 'Astrolábio',
+      '/lua': 'Lua',
+      '/estacoes': 'Estações',
+      '/cassino-arcano': 'Cassino Arcano',
       '/grimorio': 'Grimório',
       '/invocar': 'Invocar',
       '/dominios': 'Domínios',
@@ -188,60 +195,12 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <>
-      <motion.header
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="sticky top-0 z-50 bg-black/40 backdrop-blur-md border-b border-white/10 pt-[env(safe-area-inset-top)] md:ml-72"
-      >
-        <div className="flex items-center justify-between h-14 px-4 max-w-lg mx-auto md:max-w-none md:px-6">
-          <div className="flex items-center gap-3">
-            {showBackButton && (
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate(-1)}
-                className="p-2 rounded-full hover:bg-white/10 transition-colors"
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </motion.button>
-            )}
-
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-mystic-gold" />
-              <h1 className="font-mystic text-lg tracking-wide bg-gradient-to-r from-mystic-gold to-mystic-arcane bg-clip-text text-transparent">
-                {getPageTitle()}
-              </h1>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {rightAction || (
-              <>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="p-2 rounded-full hover:bg-white/10 transition-colors relative"
-                  aria-label="Notificações"
-                >
-                  <Bell className="w-5 h-5 text-white/70" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-mystic-gold rounded-full animate-pulse" />
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setIsAccountModalOpen(true)}
-                  className="p-2 rounded-full hover:bg-white/10 transition-colors"
-                  aria-label="Conta"
-                >
-                  <span className="text-xl">{user.avatar}</span>
-                </motion.button>
-              </>
-            )}
-          </div>
-        </div>
-
-      </motion.header>
+      {accountOnly ? <button type="button" className="elemental-account-button" onClick={() => setIsAccountModalOpen(true)} aria-label="Abrir conta" aria-haspopup="dialog" aria-expanded={isAccountModalOpen}><AccountSeal /></button> : <>
+        <ElementalTopBar title={getPageTitle()} onBack={showBackButton ? () => navigate(-1) : undefined} onExplore={() => setRoutesOpen(true)} exploreOpen={routesOpen}>
+          {rightAction || <button type="button" className="elemental-account-button" onClick={() => setIsAccountModalOpen(true)} aria-label="Abrir conta" aria-haspopup="dialog" aria-expanded={isAccountModalOpen}><AccountSeal /></button>}
+        </ElementalTopBar>
+        <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} />
+      </>}
 
       <Dialog open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen}>
         <DialogContent className="max-w-md border-white/20 bg-void/95 text-white backdrop-blur-xl">

@@ -1,3 +1,253 @@
+## Ponto de retomada — R11 / revisão e repasse / 0.1.48 (23/10/2026)
+
+Pedido de Fábio: revisar erros, consolidar toda a repaginação para Astro Boy e Matheus e publicar no main indicado. **Matheus continua responsável pelo backend; Fábio continua UX/UI.** [Repasse completo I03/R01–R11](REPASSE-FRONTEND-PARA-BACKEND.md). Astro Boy sequencial; branch codex/fitness-ui-integration, base f07292f; main remoto conferido igual antes da publicação. Commit/push em preparação após validação, sem alegação antecipada de sucesso.
+
+**Corrigido:** quatro avisos de hooks; atalhos de rituais no Santuário; proteção/encaminhamento de treinos e agregadores fora do timer simples; gráfico aleatório do Astrolábio substituído por registros reais; fixture/expectativa de teste Fitness alinhada à regra consolidada já restaurada por Matheus. Boas-vindas/CLI agora apresentam o novo repasse uma vez por revisão mesmo em perfis antigos.
+
+**Executado:** 92/92 testes Node, 10/10 Fitness Deno e 7/7 assistente Deno; TypeScript, lint global sem erros/avisos e build Vite envDir:false passaram. 64 arquivos protegidos idênticos e diff acumulado vazio em stores/lib/services/types/constants/Supabase. [Relatório R11](03-Project-Management/reports/R11-REVISAO-E-PUBLICACAO.md).
+
+**Limites:** QA visual/fluxo real não executado pelo bloqueio salvo do navegador; testes não provam persistência remota nem ausência de qualquer bug. Avisos de chunks/Browserslist permanecem. Sem secrets, deploy, alterações de fórmulas/backend ou recálculo de histórico.
+
+**Próximo:** finalizar publicação Git autorizada e confirmar SHA; depois Fábio segue QA/acabamento de frontend pela fila. Matheus deve ler o repasse e conferir contratos de snapshots macro, reversão/idempotência e sincronização. Onboarding atualizado depende da IDE executar AGENTS/astro:status; não existe agente automático ao simplesmente abrir GitHub. Reservas de publicação permanecem até confirmação; revisão documental pelo coordenador, independente pendente. Histórico abaixo preservado.
+
+## Ponto de retomada — R10 / Quests elementais / 0.1.47 (23/10/2026)
+
+Astro Boy executou sequencialmente na branch `codex/fitness-ui-integration`, base `f07292f`. **R10 implementado localmente, em revisão; QA visual e de fluxo no navegador pendente.** Referência Figma comunitária inventariada e fluxos selecionados inspecionados. Decisão explícita do usuário: próxima etapa sugerida, com acesso livre às demais.
+
+**Entregue:** Rituais com trilhas de quests e lista anterior acessível; compositor de Jornada/Grande Obra com etapas e capítulo inicial; seleção expansível, cronômetro existente, recibo do resultado registrado e acesso à próxima etapa. Santuário mostra próximas quests; detalhes de Jornadas/Grandes Obras abrem suas trilhas. Seleção na mesma trilha preserva rolagem. [Relatório R10, decisões e limites](03-Project-Management/reports/R10-QUESTS-E-TRILHAS.md).
+
+**Executado:** 87/87 testes Node (20 novos), TypeScript, lint delimitado sem erros/avisos e build Vite com envDir:false passaram. 64 arquivos protegidos intactos; 34 funções anteriores sem JSX preservadas por AST. Entre os 298 arquivos preexistentes capturados, só Rituais/Jornadas/GrandesObras/ElementalPreview/ScrollToTop mudaram. Versões 0.1.47 sincronizadas; testes são unidade/callbacks/SSR, sem persistência real via UI.
+
+**Limite:** bloqueio salvo de localhost continua como pendência, sem contorno; nenhuma validação visual nova foi alegada. Contagem da trilha lê tarefas atuais por ID e não altera porcentagem/conclusão/bônus macro. Cópias aninhadas e progressos antigos podem divergir; diagnóstico registrado, sem mudar domínio. Sem backend, fórmulas, secrets, deploy, commit ou push.
+
+**Próximo:** QA isolado em 360/390/768/1440: composição, Santuário→etapa, livre seleção, timer ocupado/pausado/reload/conclusão, retorno/foco, Undo, conta e destinos Fitness/Ciclos. Pendências de R09 e demais telas permanecem; não presumir aceite visual. Reservas encerradas. Custódia documental pelo coordenador; revisão independente pendente. Histórico preservado abaixo.
+
+## Ponto de retomada — Grimório / 0.1.46 (22/10/2026)
+
+Astro Boy executou sequencialmente na branch `codex/fitness-ui-integration`, base `f07292f`. Usuário pediu personagem coerente, status em vidro, evolução e histórico; duas capturas orientaram o redesign. **R09 implementado localmente, em revisão visual.**
+
+**Entregue:** ficha única com corpo elemental aprovado; HP/Stamina/Prana/XP translúcidos; título, nível, sequência e recorde; métricas compactas, edição de identidade preservada, Showcases expansíveis dos quatro elementos e radar opcional. Histórico pesquisável com filtros, deduplicação de fontes existentes e ausência de valores tratada explicitamente. [Relatório R09](03-Project-Management/reports/R09-GRIMORIO.md).
+
+**Executado:** 67/67 testes Node (18 novos), TypeScript, lint delimitado sem erros/avisos e build Vite com envDir:false passaram. 64 arquivos protegidos intactos; somente Grimorio mudou entre os arquivos de código preexistentes. Dois handlers e sete derivações anteriores idênticos por AST; HP idêntico ao AppLayout. Diff-check e versões 0.1.46 conferidos.
+
+**Limite:** nova tentativa no navegador interno recusada pela preferência salva de localhost, mesmo após autorização humana. Sem contorno. Capturas são da versão anterior; renderização, interação real, foco e persistência via UI não validados. Histórico não inventa eventos de jornadas/obras sem registros, e não é usado para recalcular totais. Divergências preexistentes de Prana e precisão do LevelingCalculator registradas no relatório, sem correção de domínio.
+
+**Próximo:** QA do Grimório em 360/390/768/1440, identidade, conta, recursos, expansão, filtros, paginação, Undo e virada do dia, com dados isolados após liberação efetiva. Pendências anteriores continuam na fila; não presumir aceite. Sem deploy, secrets, alteração de backend, cálculos ou dados de Matheus.
+
+Reservas encerradas; revisão documental pelo coordenador, independente pendente. Histórico abaixo preservado.
+
+## Ponto de retomada — cabeçalhos e composição / 0.1.45 (22/10/2026)
+
+Astro Boy executou sequencialmente na branch `codex/fitness-ui-integration`, base `f07292f`. Usuário autorizou aposentadoria da home clássica, refinamento da expansão de datas/formulários e cabeçalho comum; três capturas orientaram o lote.
+
+**Entregue:** link/página/palco/CSS exclusivos do Santuário clássico removidos; rota antiga redireciona para a home nova. TopBar com marca, Explorar funcional e selo de conta, sem sino fictício/emoji no cabeçalho; operações de conta intactas. Calendário seleciona sem reconstruir sua janela e revela nomes reais. Criação de ciclo/sequência usa composição controlada; mobile com painel inferior; edição/detalhes refinados. Criação de ciclo volta à Rotina sem filtros ativos. [Relatório R08](03-Project-Management/reports/R08-CABECALHOS-E-COMPOSICAO.md).
+
+**Executado:** 49/49 testes Node, TypeScript e build Vite com envDir:false passaram; diff-check limpo. Lint sem erros/dois avisos antigos de hooks. 64 arquivos de domínio intactos; 59 funções sem JSX de Ciclos idênticas, única exceção visual selectRelativeVisibleDay. Conta: diálogo byte a byte e operações preservados. Remoção somente de UI exclusiva sem consumidores; Fitness intacto.
+
+**Próximo:** QA real de cabeçalho/conta/Explorar e Ciclos em 360/390/768/1440, seleção de data, teclado/foco/painéis, criação/edição/recorrência/execução e sequências Fitness. Bloqueio de localhost registrado anteriormente permanece sem nova tentativa ou contorno. Capturas do usuário não validam a versão final. Não presumir aceite nem repetir autorização humana já dada.
+
+Versões 0.1.45 sincronizadas. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem secrets, backend, fórmulas, persistência, dependências, deploy, commit ou push. Histórico abaixo preservado.
+
+## Ponto de retomada — redesign de Ciclos / 0.1.44 (22/10/2026)
+
+Usuário priorizou Ciclos e enviou sete capturas mobile, pedindo calendário Expanded Cards e Showcase nas demais áreas. Astro Boy executou sequencialmente na branch `codex/fitness-ui-integration`, base `f07292f`, preservando alterações anteriores. Complemento na mesma versão 0.1.44.
+
+**Entregue:** calendário com nove cartões expansíveis, contexto do dia e centralização horizontal; seletor completo sempre acessível; setas descritas como janelas de sete dias. Rotina/Sequências separadas, busca/filtros e guardas de reorganização; sem controles redundantes em listas vazias. Showcase de sequência, estados vazios com ação direta e evolução compacta com assets elementais. Criação de sequência em diálogo; acabamento de cartões, edição, timer e execução. [Decisões e evidências R07](03-Project-Management/reports/R07-CICLOS-REDESIGN.md).
+
+**Preservação:** 64 arquivos protegidos idênticos; 60 funções sem JSX e 146 das 147 instruções não JSX originais de Ciclos preservadas. Única substituição nesse conjunto: efeito visual de rolagem das datas. Composição/conclusão/ordenação intactas. Sete funções e todo o bloco de estado/cálculos de ScoreHierarchyPanel intactos; apresentação Showcase opt-in somente em Ciclos. Fontes preexistentes editadas neste lote: Ciclos e apresentação de ScoreHierarchyPanel.
+
+**Executado:** 41/41 testes Node de unidade/SSR/numéricos; TypeScript; build Vite com envDir:false (9,89 s); diff-check. Lint zero erros/dois avisos anteriores de hooks, já reproduzidos na cópia inicial. Build mantém avisos de Browserslist/chunks. Sem backend, fórmulas, persistência, dados reais, dependência nova, secrets, deploy, commit ou push.
+
+**Limite e retomada:** capturas do usuário foram analisadas, mas não mostram este complemento final. Tentativa de acesso ao navegador interno recusada por preferência salva de 127.0.0.1:5173 mesmo após autorização humana; nenhum contorno nem segunda superfície. Próximo: QA real com dados isolados em 360/390/768/1440; expansão/rolagem de datas, virada de mês/ano, seletor, toque/teclado/foco, criação/edição/filtros, evolução, sequências, execução/pausa/reload/conclusão e Fitness. Não presumir aceite ou repetir autorização já dada.
+
+Reservas encerradas: Ciclos, apresentação opt-in de ScoreHierarchyPanel, componentes/CSS/testes cycles, manifests/changelog e documentação. Revisão documental pelo coordenador; independente pendente. Histórico abaixo preservado.
+
+## Ponto de retomada — ícones e exploração transversal / 0.1.43 (22/10/2026)
+
+Usuário aprovou visualmente a Lua e reforçou padrões Expanded/Showcase e substituição de emojis por iconografia elemental. Astro Boy executou sequencialmente na branch `codex/fitness-ui-integration`, base `f07292f`. Trabalho preexistente preservado; não houve nova inspeção visual da Lua pelo executor.
+
+**Entregue:** família de 20 ícones SVG, selos elementais nos componentes compartilhados e consumidores principais, navegação lateral/mobile/Explorar e estados vazios selecionados. Menu Explorar usa grupos expansíveis; Mapa combina grupos e Showcase com destinos reais, incluindo atalhos de treino antes ocultos. Rituais/cronômetro/Showcase recebem ícones; cartões de elemento/área ganham teclado; IDs de ExpandedElements são únicos e foco deixa de trocar seleção. [Escopo e matriz por tela](03-Project-Management/reports/R06-ICONES-E-EXPLORACAO.md).
+
+**Preservação:** 64 arquivos de domínio idênticos por SHA-256; 114 funções nomeadas sem JSX inalteradas. Catálogo de ícones em constants e registros persistidos permanecem intactos; migração é visual. Lua anterior não editada. Ainda restam emojis/contextos especializados de Fitness, calendário e Cassino; repaginação geral segue parcial.
+
+**Executado:** 32/32 testes Node. Lint delimitado: zero erros e dois avisos de Ciclos reproduzidos na cópia inicial. TypeScript e build Vite sem `.env` passaram; avisos de Browserslist/chunks permanecem. Versões e diff-check conferidos. Evidências no relatório R06. Testes são unidade/SSR/numéricos, não fluxo real.
+
+**Próximo:** QA renderizado de exploração/ícones e Temporal quando a ferramenta permitir; depois badges especializados/Fitness, calendário e conteúdo de Semana/Mês. Instruções oficiais de desbloqueio fornecidas: Configurações → Browser → Agent permissions → exceção de 127.0.0.1:5173. Sem nova tentativa ou contorno, alteração de configurações ou confirmação de liberação efetiva. Não repetir a autorização já dada.
+
+Reservas encerradas: apresentação elemental/cartões/layout, Mapa e ícones de páginas consumidoras, CSS, testes, manifests/changelog e documentação. Revisão documental pelo coordenador; independente pendente. Sem backend, fórmulas, dados, secrets, dependência nova, deploy, commit ou push. Histórico preservado abaixo.
+
+## Ponto de retomada — Temporal, Lua e Estações / 0.1.42 (22/10/2026)
+
+Usuário autorizou evolução contínua de UX/UI e reforçou Expanded Cards, Showcase e Lua realista ligada ao horário. Astro Boy executou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`, preservando trabalho anterior.
+
+**Entregue:** navegação temporal compartilhada; Lua em esfera Three.js com mapas NASA, iluminação por efemérides, atualização por minuto/retorno à aba, próximas fases e alternativa SVG; Estações com cartões expansíveis; Ano com métricas existentes e Showcase dos meses, abrindo o mês correto por URL. Hemisfério é vista de referência, não orientação exata do céu. [Escopo, fontes, decisões e limites](03-Project-Management/reports/R05-TEMPORAL-LUA-ESTACOES.md).
+
+**Preservação e divergência:** 63 arquivos protegidos idênticos por SHA-256; regras/handlers de Ano e seletores/métricas de Mês preservados. `getSeason` mantém datas aproximadas. `getMoonPhase` legado continua inalterado; somente a página Lua usa Astronomy Engine já instalada e pode diferir perto das transições. Sem efeitos sobre progressão ou persistência.
+
+**Executado:** TypeScript, 28/28 testes Node (nove novos), repetição dos nove em America/New_York e build Vite sem `.env` passaram. Lint delimitado: zero erros e dois avisos preexistentes, confirmados nas cópias iniciais. Build mantém avisos de Browserslist/chunks. Diff-check, versões, referências e paridade dos assets em public/dist conferidos. Não equivalem a teste visual ou fluxo real.
+
+**Próximo:** QA visual de Lua/Estações/Ano em 360/390/768/1440 quando a ferramenta permitir; conferir WebGL, orientação/fallback, cartões e navegação por mês. Depois, acabamento de Semana/Mês/Calendário e acessibilidade do editor anual. Bloqueio salvo do navegador segue registrado; sem nova tentativa/contorno, screenshots ou inspeção do app. Não declarar toda a repaginação concluída nem repetir perguntas já respondidas.
+
+Reservas encerradas: Lua/Estações, layout temporal/Ano/Mês (apresentação/navegação), novos componentes/CSS/assets/testes, manifests/changelog e documentação. Revisão documental pelo coordenador; independente pendente. Sem alteração de backend, fórmulas, dados, secrets, dependências, deploy, commit ou push. Histórico abaixo preservado.
+
+## Ponto de retomada — Santuário promovido / 0.1.41 (22/10/2026)
+
+**Pedido vigente:** usuário aprovou substituir a home antiga pela composição elemental e continuar o refinamento de Pilares. Astro Boy executou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; trabalho anterior preservado. A promoção local foi autorizada neste pedido; não pressupõe aprovação de mudanças de domínio nem QA renderizado.
+
+**Entregue:** `/santuario` usa a composição nova, sem faixa de prévia; links antigos redirecionam mantendo filtros. Home clássica disponível no rodapé. Conta reutiliza TopBar existente. Home integra início/abertura/pausa/retomada/conclusão de rituais com operações atuais e proteção contra sobrescrever sessão, troca de conta e repetição. Pilares passa a equilíbrio compacto + cartões expansíveis → páginas próprias, incluindo áreas personalizadas e contagens existentes. Cabeçalho e identidade mobile compactados. [Detalhes e mapa funcional](03-Project-Management/reports/R03-SANTUARIO-HOME-PILARES.md).
+
+**Executado:** TypeScript, lint delimitado sem avisos, 19/19 testes Node, build Vite com `envDir:false`; passaram. Build mantém avisos de Browserslist/chunks. Comparação SHA-256: 63 arquivos de domínio intactos; hooks/handlers e diálogo de conta intactos. Diff-check, versões e links conferidos. Estes resultados são estruturais/unitários/SSR, não certificam layout, backend remoto ou fluxo real.
+
+**Limite e retomada:** captura do usuário orientou a compactação. Sem novo acesso ou contorno ao bloqueio salvo do navegador local; sem screenshots, hitboxes, matriz 360/390/768/1440, cronômetro/troca de conta na UI ou performance. Próximo: QA visual/funcional da home e Pilares quando a ferramenta permitir; continuar acabamento por famílias R04–R08. Não repetir perguntas de identidade ou autorização já respondidas.
+
+Reservas encerradas: App, TopBar (apresentação), navegação/controles elementais, home TSX/CSS, Pilares TSX/CSS, testes, manifests/changelog, relatório/índice/manual/dossiê e registros. Revisão documental pelo coordenador; independente pendente. Nenhuma edição de backend, stores, fórmulas, dados ou secrets; sem deploy, commit ou push. Histórico abaixo preservado.
+
+## Ponto de retomada — identidade compartilhada / 0.1.40 (22/10/2026)
+
+**Diretriz vigente:** usuário aprovou a identidade R02 para todo o app, todas as abas e detalhes, e autorizou evolução contínua de UX/UI. Nenhuma autorização para mudar backend, lógica, cálculos ou dados de Matheus. Base `f07292f`, branch `codex/fitness-ui-integration`; trabalho I03/R01–R03 preservado. Astro Boy executou/revisou sequencialmente. Início deste lote em 21/10; fechamento em 22/10, America/Recife.
+
+**Entregue:** tema compartilhado conecta aliases mystic/Fitness à paleta aprovada; cronômetro visual reutilizável nos modais simples de Rituais/Ciclos; Expanded Cards em Pilares; Showcase em Jornadas/Grandes Obras; busca no painel Todas as páginas, acessível pelo botão Explorar da prévia. Prévia mantém `tickTimer` existente enquanto sua casca está montada. Home vigente e operações atuais preservadas. [Decisões UX, arquivos, alcance e retomada](03-Project-Management/reports/R04-IDENTIDADE-CARTOES-CRONOMETRO.md).
+
+**Evidência atual:** TypeScript passou; lint delimitado com 0 erros/2 avisos de Ciclos, confirmados também na cópia inicial. 12/12 testes Node passaram (navegação em memória, SSR/callbacks e materiais numéricos). Build Vite com `envDir:false` passou, com avisos existentes de Browserslist/chunks. SHA-256: 63 arquivos protegidos idênticos; AST: 57 handlers anteriores idênticos. Cinco pares opacos da paleta com contraste calculado acima de 4,5:1; não é auditoria renderizada. Versões 0.1.40, links novos, whitespace e diff-check conferidos no fechamento.
+
+**Limites:** nova tentativa local foi recusada por preferência salva do navegador apesar de autorização humana; sem contorno. Não executados testes no app, screenshots, hitboxes, matriz 360/390/768/1440, pausa/reload/conclusão real ou performance. Referências públicas Scrolltide foram observadas; não equivalem a QA do produto. Base comum não significa acabamento de cada tela concluído; gráficos/cores inline/componentes específicos ainda exigem revisão. Cronômetros Fitness e execução avançada de Ciclos preservados.
+
+**Próximo passo:** integrar início/retomada/conclusão da home nova sem sobrescrever sessão, e continuar acabamento por famílias R04–R08. Reutilizar operações, fontes de tempo e cálculos existentes; não criar outro motor. Verificar fluxo real e responsividade quando a ferramenta permitir localhost antes de promover `/santuario`. Não repetir perguntas sobre identidade visual ou autorização já respondidas. Consulta inicial: este registro → relatório R04 → fila → estado Git.
+
+Reservas encerradas: tema/Tailwind/main, componentes elementais e testes, prévia TSX/CSS, AllRoutesSheet, apresentação de Pilares/Rituais/Ciclos/Jornadas/GrandesObras, manifests/changelog e documentação. Revisão documental pelo coordenador, independente pendente. Sem secrets, dependência nova, deploy, migração, commit ou push. Histórico preservado abaixo.
+
+## Ponto de retomada — R03 parcial entregue (21/10/2026 / 0.1.39)
+
+**Pedido vigente:** repaginar todo o frontend por etapas; usuário aprovou a direção R02 e autorizou avançar, mantendo integralmente backend, lógica e cálculos de Matheus. R03 implementado na prévia; home vigente preservada. Checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; alterações I03/R01/R02 intactas. Astro Boy executou sequencialmente, sem troca automática de modelo.
+
+**Entregue:** páginas `/previa-elemental/elementos/{fogo,ar,agua,terra}`, compatibilidade com links antigos `?elemento=`, quatro acessos fixos além do anel, busca/filtro de áreas ativas na URL, navegação de retorno e atalhos aos módulos existentes. `ScrollToTop` preserva posição somente durante filtros da mesma página elemental. Nenhuma escrita de domínio adicionada. [Arquivos, evidências e mapa de integração R03](03-Project-Management/reports/R03-NAVEGACAO-ELEMENTAL.md).
+
+**Executado:** TypeScript, lint delimitado, 8/8 testes Node (cinco de navegação/filtros/scroll em memória e três numéricos R02), build Vite com `envDir:false`; passaram. Browserslist/chunks grandes continuam como avisos. SHA-256 confirmou 79 arquivos protegidos idênticos à linha de base, incluindo stores, serviços, funções/migrações locais e Fitness. Diff-check, versões e referências documentais conferidos no fechamento. Isso não certifica domínio remoto, layout ou fluxo completo.
+
+**Limite atual:** aceite da direção visual pelo usuário registrado; QA visual/interativo do executor continua pendente pela preferência salva de bloqueio do navegador local. Não houve nova tentativa nem contorno. R03 não encerra a repaginação nem promove a home.
+
+**Próximo passo:** integrar na composição as funções já existentes da home, especialmente o ciclo do cronômetro em AppLayout e início de ritual; conferir navegação global. Preservar operações/calculadores atuais, sem criar outro relógio. Depois, matriz visual/funcional 360/390/768/1440 quando houver liberação efetiva da ferramenta; somente então promover à home e seguir R04. Não repetir perguntas de direção visual ou autorização de localhost já respondidas.
+
+Reservas encerradas: prévia TSX/CSS, helper de navegação, ScrollToTop, App, teste, manifests/changelog, relatório R03, índice, manual/dossiê, fila e continuidade. Revisão documental pelo coordenador; independente pendente. Sem secrets, deploy, migração, commit ou push. Histórico abaixo preservado; retomada começa nesta entrada.
+
+## R02 — efeitos sem distorção implementados (21/10/2026 / 0.1.38)
+
+Usuário rejeitou o efeito de 0.1.37 como distorção e pediu qualidade/fluidez. Astro Boy executou e revisou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; alterações anteriores preservadas. Removidos feTurbulence/feDisplacementMap e deformações globais; assets WebP originais intactos.
+
+Renderizador local `src/components/elemental/material-effects.ts` acrescenta uma camada Canvas 2D transparente: reflexos curvos/gotas na água, plumas ascendentes/brasas no fogo, correntes coerentes no ar e fragmentos rígidos texturizados/sombreados na terra. Ciclos com entrada/saída suave, sem aleatoriedade por frame. Mesmo relógio e rAF para efeitos/órbita, DPR até 2, ResizeObserver com cleanup. Pausa, hover/foco da trajetória, visibilidade e movimento reduzido preservados. Sem alteração de dados, progressão, rotas, assets ou stores. [Detalhes e limites](03-Project-Management/reports/R02-ASSETS-ELEMENTAIS.md).
+
+Evidências executadas:
+
+- `npx tsc -b` e `npx eslint src/pages/ElementalPreview.tsx src/components/elemental/material-effects.ts`: passaram após alterações finais.
+- `node --test tests/elemental/material-effects.test.mjs`: 3/3. Testes numéricos com Canvas simulado, 481 instantes por material, coordenadas/radii/alpha válidos, estado de desenho balanceado, determinismo no mesmo instante, evolução temporal, limite DPR e fallback sem contexto. Não é teste de pixels, navegador, pause/resume da UI ou FPS.
+- Build Vite por API com `envDir:false`: passou; avisos existentes de Browserslist/chunks grandes.
+- `git diff --check`, whitespace/conflitos dos novos arquivos, três campos em 0.1.38 e ausência do filtro antigo na prévia: passaram.
+
+Navegador: usuário declarou remover permanentemente bloqueios e autorizou acesso total. Nova tentativa pela mesma ferramenta para `/previa-elemental` foi novamente recusada por preferência salva de localhost. Autorização registrada; liberação efetiva não confirmada. Nenhum contorno por porta/browser/CDP ou renderização indireta. Não executados: inspeção visual, filmagem, screenshots, hitboxes, responsividade, compatibilidade e desempenho. A naturalidade desta revisão não está validada; não promover à home por inferência. Próximo: resolver a preferência efetiva da ferramenta e observar os quatro materiais em 360/390/768/1440, incluindo controles e movimento reduzido.
+
+Reservas encerradas: prévia TSX/CSS, renderizador e testes, relatório R02, manifests/changelog, fila e continuidade. Revisão documental pelo coordenador; independente pendente. Sem secrets, deploy, migração, commit, push, serviço externo novo ou geração de vídeo. Catálogo de capacidades de vídeo apenas consultado, sem gasto/upload.
+
+## R02 — materiais animados implementados (21/10/2026 / 0.1.37)
+
+Usuário relatou apenas ar perceptivelmente animado e pediu fluidez/naturalidade em todos os elementos. Astro Boy, execução/revisão documental sequenciais no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; alterações anteriores preservadas. Auditoria focal confirmou terra sem animação própria e água/fogo limitados a transforms discretos; skill improve-animations usada como orientação de auditoria, com implementação explicitamente solicitada pelo usuário.
+
+Água/fogo passam a usar deformação procedural de textura por SVG (ruído contínuo e deslocamento), com atualização máxima de 30 Hz em duas superfícies pequenas. Água adiciona ondulações; fogo, brasas ascendentes. Rocha levita rigidamente, com fragmentos independentes; ar usa duas camadas em sentidos opostos. Assets existentes mantidos. Não é simulação física de fluidos. [Detalhes e referência técnica](03-Project-Management/reports/R02-ASSETS-ELEMENTAIS.md).
+
+Hover/foco congelam somente a trajetória para facilitar seleção; materiais seguem animados. Pausa explícita/posicionamento manual, preferência de movimento reduzido, aba oculta e saída da área visível suspendem os efeitos. Movimento reduzido remove também a deformação SVG. Nomes, alvos e destinos permanecem estáveis; heroes elementais continuam estáticos. Nenhum dado, regra, store, recurso remoto ou dependência alterado.
+
+Verificações executadas após a alteração final: `npx tsc -b`, `npx eslint src/pages/ElementalPreview.tsx`, build Vite por API com `envDir:false`, `git diff --check`, whitespace/conflitos dos novos arquivos e três campos de versão 0.1.37 — passaram. Build mantém avisos de Browserslist/chunks grandes. Documentação MDN de filtros SVG consultada. Inspeção estática do controle de pausa/cleanup realizada; não equivale a teste de execução.
+
+Não executados: visualização da página, avaliação de naturalidade, FPS, teste de filtros/pausa/links em navegador, screenshots ou hitboxes. Permanece o bloqueio salvo de localhost informado anteriormente; sem nova tentativa nem contorno. Próximo: após liberação efetiva, observar os quatro materiais por um ciclo completo em 360/390/768/1440, conferir pausa/retomada, hover/foco, movimento reduzido e desempenho, ajustando intensidade com base em evidência visual.
+
+Reservas encerradas: prévia TSX/CSS, relatório de assets, manifests/changelog, fila e continuidade. Revisão documental pelo coordenador, independente pendente. Sem secrets, deploy, migração, commit ou push.
+
+## R02 — assets elementais integrados (21/10/2026 / 0.1.36)
+
+Astro Boy executou e revisou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; alterações preexistentes preservadas. Usuário pediu água pulsante, terra sólida/realista, ar em esfera espiral inspirada no Rasengan e fogo em bola de chama viva. Quatro artes próprias geradas pela ferramenta integrada image_gen, inspecionadas visualmente como assets isolados, com alpha e dimensões 1254 × 1254.
+
+Arquivos em `public/sanctuary/elements/{agua,terra,ar,fogo}-v1.webp`; cópias finais sem perda via `cwebp -lossless -exact -m 6`. Total 6.631.038 bytes, ante 9.415.564 dos PNGs (~29,6% menor). Originais mantidos na saída da ferramenta; PNGs intermediários do projeto removidos. Ainda são masters grandes, sem benchmark mobile; derivativos menores permanecem uma otimização futura. [Prompts, arquivos e limites](03-Project-Management/reports/R02-ASSETS-ELEMENTAIS.md).
+
+Órbita usa os assets em lugar dos sigilos grandes: pulso de escala/rotação na água, espiral de ar em seis segundos, oscilação de forma/aura no fogo, rocha estável. São imagens estáticas animadas por CSS, sem simulação de fluidos/vídeo. Rótulos/alvos ficam fora das animações internas. Pausa, hover/foco, visibilidade e movimento reduzido suspendem os efeitos. Heroes elementais reutilizam as artes estáticas; sigilos pequenos e fallback de erro permanecem. Corpo, destinos, stores, medidas e regras preservados.
+
+Verificações executadas neste lote:
+
+- `npx tsc -b` e `npx eslint src/pages/ElementalPreview.tsx`: passaram.
+- Build Vite por API com `envDir:false`: passou; avisos anteriores de Browserslist/chunks grandes.
+- `sips` confirmou dimensões e alpha dos quatro PNGs e WebPs; codificação lossless concluiu nos quatro arquivos.
+- Conferência SHA-256 confirmou que os quatro assets do `public` estão idênticos no `dist`; nenhuma publicação realizada.
+- `git diff --check`, whitespace/conflitos nos novos arquivos e versões 0.1.36 nos três campos: passaram.
+
+Não executados: inspeção renderizada do app, testes de pausa/fallback/links/movimento reduzido, capturas, hitboxes ou responsividade. Bloqueio salvo de localhost persiste conforme registro anterior; sem nova tentativa nem contorno. Visual das artes aprovado pelo executor, não equivale a aprovação visual/interativa da página. Próximo: após liberação efetiva, conferir 360/390/768/1440, leitura dos assets pequenos, trajetória, oclusão, seleção, pausa e carregamento.
+
+Reservas encerradas: novos assets, prévia TSX/CSS, relatório R02, manifests/changelog e registros. Revisão documental pelo coordenador; independente pendente. Sem secrets, nova dependência, deploy, migração, commit ou push.
+
+## R02 — anel em profundidade implementado (21/10/2026 / 0.1.35)
+
+Usuário aprovou a direção e reforçou a referência Carousel Ring. Astro Boy executou e revisou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`; alterações anteriores preservadas. Prévia pública do Scrolltide aberta e inspecionada visualmente no navegador interno (anel inclinado e sobreposição); sem consulta a conteúdo pago. [Detalhes](03-Project-Management/reports/R02-PERSONAGEM-ELEMENTAL.md).
+
+Em `/previa-elemental`, quatro portais passam a uma órbita estreita/inclinada ao redor do corpo com escala, opacidade e ordem de camadas conforme profundidade. Corpo permanece na camada central; portais posteriores são ocultados pela silhueta. Foco eleva o alvo para leitura/seleção; setas giram 90 graus e pausam, inclusive com movimento reduzido. Pausa por mouse ocorre no portal, permitindo observar o movimento sobre o restante da cena. Navegação/dados/regra/persistência e asset anterior preservados. Sem nova geração de imagem ou dependência.
+
+Executados: `npx tsc -b`, `npx eslint src/pages/ElementalPreview.tsx`, build Vite por API com `envDir:false`, `git diff --check`, conferência de whitespace/conflitos dos novos arquivos e paridade das três versões em 0.1.35; passaram. Build mantém avisos de Browserslist/chunks grandes. Estes resultados não verificam renderização ou interação.
+
+A referência pública foi inspecionada; o produto local não: permanece bloqueio salvo de localhost já registrado, sem nova tentativa nem contorno. Não executados neste refinamento: screenshots do app, testes de toque/teclado, pausa/retomada, hitboxes ou responsividade. Próximo: após liberação efetiva, conferir 360/390/768/1440, oclusão frente/atrás, foco visível, setas, links, movimento reduzido e corpo inteiro. Direção aprovada pelo usuário; fidelidade visual/interativa ainda em revisão. A home vigente segue intacta.
+
+Reservas encerradas: prévia TSX/CSS, manifests/changelog, relatório R02, fila e continuidade. Revisão documental pelo coordenador, independente pendente. Sem secrets, deploy, migração, commit ou push.
+
+## R02 — corpo elemental e órbita implementados; revisão visual pendente (21/10/2026 / 0.1.34)
+
+Astro Boy, execução e revisão documental sequenciais no checkout principal, branch `codex/fitness-ui-integration`, base `f07292f`. Pedido do usuário: substituir o boneco pela referência corporal de Treinos → Corpo, adaptada à identidade elemental, com os quatro elementos orbitando. Aplicado na composição `/previa-elemental`; home vigente e tela de medidas Fitness preservadas. Alterações I03/R01/R02 preexistentes mantidas.
+
+Novo asset `public/sanctuary/elemental-body-v1.png`, derivado do manequim original pela ferramenta integrada image_gen, inspecionado visualmente como arte isolada. Órbita elíptica de 48 segundos, rótulos verticais, botão de pausa/retomada, suspensão por mouse/foco/toque, movimento reduzido, aba oculta e saída da área visível. A composição deixa de usar o Canvas 3D; stores, regras, medidas, inventário e destinos continuam existentes. Arte não representa equipamentos adquiridos. [Origem e prompt](03-Project-Management/reports/R02-PERSONAGEM-ELEMENTAL.md).
+
+Verificações realmente executadas neste refinamento:
+
+- `npx tsc -b`: passou.
+- `npx eslint src/pages/ElementalPreview.tsx src/App.tsx`: passou, sem saída de erros/avisos.
+- Build Vite por API com `envDir:false`: passou; avisos existentes de Browserslist desatualizado e chunks grandes. O bundle de AuraAvatar3D continua usado por outras telas; não há alegação de remoção global ou benchmark.
+- `sips -g pixelWidth -g pixelHeight -g hasAlpha`: 913 × 1723, alpha presente. Dimensões declaradas no componente correspondem ao asset.
+- `git diff --check`, conferência de whitespace/conflitos nos novos arquivos e paridade das três versões em 0.1.34: passaram.
+
+Não executados: inspeção da página, screenshots, hit tests, testes de navegação/pausa/foco/movimento reduzido ou regressão funcional nesta etapa. Permanece o bloqueio salvo de localhost informado anteriormente; nenhuma tentativa de contorná-lo. Compatibilidade estrutural pelo código/build não equivale a aceite visual.
+
+Reservas encerradas: prévia TSX/CSS, novo asset e relatório, manifests/lockfile/changelog, fila e continuidade. Revisão documental independente pendente. Próximo: remover o bloqueio salvo do navegador e inspecionar `/previa-elemental` em 360/390/768/1440, corpo inteiro, trajetória e quatro alvos, pausa/retomada/teclado/toque, links e retorno, antes de promover à home. Sem secrets, deploy, migração, commit ou push.
+
+## R02 — prévia implementada, validação visual pendente (21/10/2026 / 0.1.33)
+
+Continuação autorizada após escolha do usuário: personagem protagonista, elementos ao redor e página própria de cada elemento com retorno ao Santuário. Código em `src/pages/ElementalPreview.tsx` e `elemental-preview.css`; `src/App.tsx` adiciona rota protegida e lazy `/previa-elemental`. Query `elemento` seleciona as quatro páginas; valor desconhecido mostra orientação para escolher um portal. A home vigente permanece intacta.
+
+Composição: avatar 3D existente/Canvas único na prévia, progressão/recursos lidos dos getters existentes, símbolos elementais em órbita com giro por botão, seis espaços de equipamento numa ficha com descrição explícita de inventário indisponível. Áreas canônicas e personalizadas, estado ativa/disponível, busca sem diferenciação de acento, expansão por controle nativo, acesso a Exercício Físico/Treinos e demais Domínios. Links para funcionalidades atuais. Nenhuma operação de escrita nos stores adicionada; nenhum cálculo de pontuação substituído. Tokens locais, foco visível, movimento reduzido CSS e layouts responsivos implementados, ainda sem validação renderizada.
+
+Evidências executadas: `npx tsc -b` passou; `npx eslint src/pages/ElementalPreview.tsx src/App.tsx` passou sem diagnósticos; build Vite via API com `envDir:false` passou após alterações finais (sem carregar .env), com avisos de Browserslist e chunks grandes. `git diff --check` passou; script Python confirmou três versões 0.1.33 e ausência de espaços finais/marcadores de conflito nos arquivos novos. Revisão estática React aplicada. Nenhum teste funcional/browser, captura, hit-test, contraste instrumental ou benchmark executado no R02.
+
+Navegador: tentativa inicial de abrir localhost recusada. Usuário autorizou explicitamente no chat; repetição foi negada por preferência salva de bloqueio do endereço. Não contornar. Próximo: usuário remover essa preferência e avisar; então abrir `/previa-elemental`, validar 360/390/768/1440, quatro seleções e giro, ficha/fechar/foco, busca/vazio, destinos de áreas, reload/back, movimento reduzido e preservação dos dados. Só após evidência visual e opinião do usuário avançar a R03/substituição da home. A autorização no chat já existe, não perguntar novamente por mera confirmação; falta liberação efetiva na ferramenta.
+
+Versão 0.1.33 sincronizada nos manifests/changelog vigente. Reservas encerradas; implementação em revisão, aceite visual pendente. Alterações anteriores I03/R01 preservadas. Sem secrets, deploy, migração, commit, push ou modificação de configurações globais. Revisão documental por Astro Boy; independente pendente.
+
+## R01 — diagnóstico entregue; composição visual a decidir (21/10/2026)
+
+Pedido vigente: análise geral prioritariamente frontend, referências Scrolltide/X/openGym e arquitetura em partes, com diálogo antes de definir cada aplicação visual. Decisões recebidas: personagem, evolução e equipamentos protagonistas, quatro elementos ao redor; em 21/10/2026 o usuário confirmou página própria do elemento, com botão para voltar ao Santuário. Base local confirmada `f07292f`, branch `codex/fitness-ui-integration`, versão 0.1.32; alterações I03 preservadas. Entrega em [REPAGINACAO-ELEMENTAL-2026-10.md](03-Project-Management/reports/REPAGINACAO-ELEMENTAL-2026-10.md), vinculada no índice. Fila R01 e propostas R02–R08 registradas, sem segunda fila. Reservas documentais encerradas.
+
+Principais achados: linguagens visuais gerais/Fitness/personagem divergentes; seleção elemental sem teclado e sem preservar elemento no destino; metadados de navegação inconsistentes; equipamentos ainda visuais; histórico do Astrolábio parcialmente aleatório. Movimento tem suporte reduzido parcial e proteções 3D existentes a preservar. Cassino tem recompensa direta e gasto em estado de sessão: questão de domínio registrada, não corrigida neste lote.
+
+Inspeção estática e observação no navegador de Santuário/Pilares/Treinos; previews públicos Carousel Ring/Expanded Cards/Showcase Card; posts X lidos no navegador (vídeo do segundo não abriu); artigo Master.dev; README/manifesto/NOTICE e home do demo openGym. Sem sessão completa no demo e sem teste funcional do app nesta análise. Auditoria de movimento somente leitura por `/root/auditoria_movimento`, retomada após interrupção por limite de uso; consolidada pelo coordenador. Sem nova execução de build/lint/Deno/matriz responsiva/medição de performance. Revisão documental sequencial por Astro Boy; independente pendente. Nenhuma edição de produto, secrets, deploy, migração, commit ou push; sem bump por documentação isolada.
+
+Verificação documental: `git diff --check` passou; script Python conferiu links do relatório/índice/continuidade, formatação do relatório e paridade de versões 0.1.32. Não é validação funcional. Wizard: saída completa recuperada do arquivo temporário; serve a procedimentos manuais de infraestrutura, não design. Nenhum script de credencial criado. Próximo: preparar R02 com composição do Santuário e página própria de elemento para avaliação. A escolha de navegação já foi respondida; não perguntar novamente. Preservar I03 e regras restauradas por Matheus. Não retomar pelo histórico F57 como se sua fórmula por blocos fosse vigente.
+
+## I03 — retomada concluída em 20/10/2026 / 0.1.32
+
+Astro Boy executou e revisou sequencialmente no checkout principal, branch `codex/fitness-ui-integration`. Preferência do usuário: Astra Médio; nenhuma troca automática de modelo. Pull autorizado `git pull --ff-only origin main` integrou `fe1a8fe → f07292f` sem conflitos, partindo de árvore limpa. Matheus encerrou a restauração da recompensa consolidada e o tratamento de sessões vazias Fitness; código e decisões recebidos preservados. Não houve nova mudança de domínio.
+
+I03 já existia e estava aceito com mocks em 09/10. A retomada confirmou consentimento explícito, corpo somente message/consent, JWT da sessão, validação Auth no gateway, proposta editável e gravação pelo `addDraft` existente. Lacuna estática corrigida: resumo final de DRAFT não mostrava o conteúdo a confirmar; agora exibe nome/descrição revisados e informa que nada foi salvo. Nenhuma store, regra, schema, função remota ou configuração Auth alterada.
+
+Evidências desta execução:
+
+- `deno test supabase/functions/assistant-suggest/index_test.ts`: 7/7, dependências simuladas, sem permissões de rede/secrets.
+- `node tests/assistant/i03-browser.mjs`: passou, Auth/provedor simulados somente no módulo Invocar, app/store reais, perfil temporário e rede externa bloqueada. Consentimento, payload mínimo/JWT de fixture, sugestão/etapa de revisão sem gravação, edição, confirmação/addDraft/reload, falhas 401/429/503/502/resposta incompleta/sessão ausente e fallback manual. Snapshots de user/tasks/habits/projects/quests/executionLogs preservados. Zero page errors. Sem overflow do resumo em 360/390/768px; captura 390 inspecionada visualmente. Artefatos: `/var/folders/t5/3qr37hs14vv_6k_7yd4_92kr0000gn/T/conselho-i03-PlxdcC`. Tentativas iniciais corrigiram seletores da automação (cartão, resumo e botão homônimo da sidebar); não eram falhas adicionais do produto.
+- TypeScript `npx tsc -b` e build Vite por API com `envDir:false` aprovados; arquivos .env não carregados. Build avisa Browserslist/chunks grandes. Lint: 0 erros / 4 avisos em Ciclos/Temporal. `git diff --check` e paridade das três versões passaram.
+- Skill Supabase e documentação oficial Auth/changelog consultadas. Aviso TLS/CBC publicado em 12/10 trata clientes antigos; não requer modificação deste handler local. Sem teste de compatibilidade TLS remota.
+
+Reservas de Invocar, teste, manifests/changelog, guia, fila e continuidade encerradas. Versão 0.1.32 sincronizada nos três campos dos manifests e changelog vigente. Revisão documental pelo coordenador; revisão independente pendente. Sem secrets lidos/criados, deploy, migração, commit ou push. Aceite: protótipo local no escopo I03. Chamada real/Auth remoto/quotas continuam não verificados; I04 exige escopo próprio. Fitness recebido teve checagem estática/build/lint, não um novo teste funcional completo. Próximo: revisão do usuário da confirmação; manter ativação remota fora deste lote.
+
 ## F59 — concluído: navegação e recuperação integrada Fitness / 0.1.31
 
 13/10/2026. Astro Boy executou sequencialmente no checkout principal `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app`, branch codex/fitness-ui-integration; Astra Alto informado pelo usuário. Alterações preexistentes preservadas. Skills frontend-design, webapp-testing, React best practices e auto-versionamento aplicadas. Revisão documental pelo coordenador, independente pendente. Sem commit, push, deploy ou migração remota.

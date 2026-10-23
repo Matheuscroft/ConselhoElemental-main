@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,7 +24,11 @@ test('Perfil explícito, apresentação única, troca de colaborador e validaç�
     assert.match(greeting, /F59/);
     assert.match(greeting, /reversão\/idempotência/);
     assert.match(greeting, /GPS\/mapa/);
+    assert.match(greeting, /Repaginação R01–R11/);
+    assert.match(greeting, /REPASSE-FRONTEND-PARA-BACKEND/);
+    assert.match(greeting, /Matheus responde pelo backend/);
     assert.equal(run('ack').status, 0);
+    assert.equal(state().updateBriefingRequired, false);
     const timestamp = state().profile.introducedAt;
     assert.equal(state().onboardingRequired, false);
     run('setup', '--name', 'Matheus', '--role', 'backend');
@@ -36,5 +40,28 @@ test('Perfil explícito, apresentação única, troca de colaborador e validaç�
     assert.equal(run('setup', '--name', 'Pessoa\ncomando', '--role', 'backend').status, 1);
     assert.equal(state().profile.name, 'Fábio');
     assert.equal(run('unknown').status, 1);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+
+test('Perfil antigo recebe o novo repasse uma vez, preservando nome, papel e data original', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'astro-boy-upgrade-'));
+  const run = (...args) => spawnSync(process.execPath, [script, ...args], {
+    env: { ...process.env, ASTRO_BOY_STATE_DIR: directory }, encoding: 'utf8',
+  });
+  const state = () => JSON.parse(run('status', '--json').stdout);
+  const introducedAt = '2026-10-14T12:00:00.000Z';
+  try {
+    writeFileSync(resolve(directory, 'profile.json'), JSON.stringify({ schema: 1, name: 'Matheus', role: 'backend', introducedAt }));
+    assert.equal(state().onboardingRequired, true);
+    assert.equal(state().updateBriefingRequired, true);
+    assert.match(run('welcome').stdout, /Santuário novo/);
+    assert.equal(run('ack').status, 0);
+    assert.equal(state().onboardingRequired, false);
+    assert.equal(state().profile.introducedAt, introducedAt);
+    assert.equal(state().profile.name, 'Matheus');
+    assert.equal(state().profile.role, 'backend');
+    assert.equal(run('setup', '--name', 'Matheus', '--role', 'backend').status, 0);
+    assert.equal(state().onboardingRequired, false);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

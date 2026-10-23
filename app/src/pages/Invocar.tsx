@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -367,7 +368,7 @@ export const Invocar: React.FC = () => {
                             : 'border-white/10 bg-white/5 hover:bg-white/10'
                         }`}
                       >
-                        <div className="text-2xl mb-1">{ELEMENTS[id].icon}</div>
+                        <div className="text-2xl mb-1"><ElementIcon element={id} /></div>
                         <div className="text-[10px]">{ELEMENTS[id].name}</div>
                       </button>
                     ))}
@@ -529,11 +530,26 @@ export const Invocar: React.FC = () => {
                 <span className="text-white/50">Tipo:</span>{' '}
                 {entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Grande Obra' : 'Rascunho'}
               </div>
+              {entityType === 'DRAFT' && (
+                <>
+                  <div className="text-sm break-words">
+                    <span className="text-white/50">Nome:</span>{' '}
+                    {title.trim()}
+                  </div>
+                  <div className="text-sm whitespace-pre-wrap break-words">
+                    <span className="text-white/50">Descrição:</span>{' '}
+                    {description.trim() || 'Sem descrição.'}
+                  </div>
+                  <p className="text-sm text-white/70">
+                    Nada foi salvo. Confirme em Invocar para salvar este rascunho ou volte para editar.
+                  </p>
+                </>
+              )}
               {entityType !== 'DRAFT' && (
                 <>
                   <div className="text-sm">
                     <span className="text-white/50">Elemento:</span>{' '}
-                    {ELEMENTS[selectedElement].icon} {ELEMENTS[selectedElement].name}
+                    <ElementIcon element={selectedElement} /> {ELEMENTS[selectedElement].name}
                   </div>
                   <div className="text-sm">
                     <span className="text-white/50">Pontos:</span>{' '}

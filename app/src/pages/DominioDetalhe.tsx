@@ -1,3 +1,4 @@
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -154,7 +155,7 @@ export const DominioDetalhe: React.FC = () => {
           <div>
             <h2 className="font-mystic text-xl">{area.name}</h2>
             <p className="text-sm text-white/50">
-              {element.icon} {element.name} • {subareas.length} subareas
+              <ElementIcon element={element.id} /> {element.name} • {subareas.length} subareas
             </p>
           </div>
         </div>
@@ -221,7 +222,7 @@ export const DominioDetalhe: React.FC = () => {
 
         {visibleSubareas.length === 0 ? (
           <div className="glass-card p-8 text-center">
-            <div className="text-4xl mb-3">🧩</div>
+            <div className="text-4xl mb-3"><ArcaneIcon name="dominios" /></div>
             <h4 className="font-mystic text-base mb-2">
               {listMode === 'active' ? 'Nenhuma subarea ativa' : 'Nenhuma subarea desativada'}
             </h4>

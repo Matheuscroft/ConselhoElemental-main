@@ -4,7 +4,7 @@ Data: 09/10/2026. Checkout principal. Protótipo local; não implantado nem vali
 
 ## Uso e contrato
 
-Em Invocar, escolher Rascunho → Continuar. A seção Ajuda para escrever recebe até 2.000 caracteres e exige consentimento para enviar somente esse texto à Cloudflare. A resposta preenche Nome/Descrição, que continuam editáveis. Continuar apenas apresenta o resumo; o botão Invocar chama o `addDraft(title, notes)` existente. A função não executa ferramentas de escrita, não lê o perfil e não altera pontuação, áreas, esforço ou histórico.
+Em Invocar, escolher Rascunho → Continuar. A seção Ajuda para escrever recebe até 2.000 caracteres e exige consentimento para enviar somente esse texto à Cloudflare. A resposta preenche Nome/Descrição, que continuam editáveis. Continuar apenas apresenta o resumo com título e descrição revisados; o botão Invocar chama o `addDraft(title, notes)` existente. A função não executa ferramentas de escrita, não lê o perfil e não altera pontuação, áreas, esforço ou histórico.
 
 Sem Supabase Auth habilitado, a sugestão fica indisponível e o formulário manual permanece utilizável. Sessão ausente/anônima, quota, provedor indisponível ou resposta inválida não gravam dados nem apagam os campos. Texto e consentimento ficam apenas no estado da tela; prompts não são persistidos pelo protótipo.
 
@@ -47,3 +47,11 @@ git diff --check
 Testes Deno usam dependências simuladas, sem rede ou segredos; validam limites, auth/consentimento, schema fechado, erros de provedor e throttle. O navegador usa app/store reais com módulos Auth/provedor interceptados em perfil temporário; isso não é uma chamada live ponta a ponta. Evidências temporárias em `/tmp/conselho-i03-20261009/`; o encerramento do lote na fila consolida o resultado.
 
 Fontes oficiais consultadas em 09/10: [Supabase auth](https://supabase.com/docs/guides/functions/auth), [Cloudflare endpoint compatível](https://developers.cloudflare.com/workers-ai/configuration/open-ai-compatibility/), [modelo e parâmetros](https://developers.cloudflare.com/workers-ai/models/qwen3.8-27b/). O changelog Supabase foi conferido; sem breaking change relevante encontrada para este handler.
+
+## Retomada local — 20/10/2026, versão 0.1.32
+
+Pull da main integrado até f07292f. O fluxo I03 existente foi preservado; o resumo final agora mostra o conteúdo a confirmar. Regressão versionada: `node tests/assistant/i03-browser.mjs`. Usa Vite com `envDir:false`, perfil temporário, bloqueio de rede externa, Auth/provedor simulados somente em Invocar e store real; não valida Supabase remoto. Testa consentimento, payload mínimo/JWT de fixture, ausência de gravação antes da confirmação, edição/reload, erros e fallback manual. Resultado atual: passou, zero page errors, resumo sem overflow360/390/768; captura390 inspecionada. Deno7/7 passou.
+
+Build sem ler `.env`: `npx tsc -b`, seguido de `node --input-type=module -e 'import { build } from "vite"; await build({envDir:false});'`. Ambos passaram; lint0erros/4avisos preexistentes. Teste de navegador mantém os artefatos temporários e informa a pasta no resultado. Evidências detalhadas na continuidade. Sem alteração de secrets/deploy/Auth real; ativação continua pendente de outro lote.
+
+Referências conferidas nesta retomada: [Auth das Edge Functions](https://supabase.com/docs/guides/functions/auth), [changelog](https://supabase.com/changelog.md) e [aviso TLS/CBC](https://supabase.com/changelog/cbc-tls-ciphers-deprecated). O aviso trata configurações TLS de clientes antigos; compatibilidade remota não foi testada.

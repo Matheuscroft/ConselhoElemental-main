@@ -1,5 +1,11 @@
 # Entrada de Matheus e Fábio
 
+## Atualização prioritária — repaginação 0.1.48
+
+Antes de usar o resumo histórico de Fitness abaixo, leia [REPASSE-FRONTEND-PARA-BACKEND.md](REPASSE-FRONTEND-PARA-BACKEND.md) e o ponto atual em [CONTINUIDADE.md](CONTINUIDADE.md). O repasse consolida I03/R01–R11: identidade elemental, Santuário/órbita, navegação, Pilares, Ciclos, Temporal/Lua/Estações, Grimório e quests. **Matheus segue no backend; Fábio segue em UX/UI.** Pendências visuais não foram transferidas ao backend.
+
+O status local agora marca `updateBriefingRequired` e `onboardingRequired` quando um perfil já apresentado ainda não recebeu este repasse. Após explicar mudanças, verificações e limites, `astro:ack` marca esta revisão como vista, sem apagar nome/papel/data original. Não é notificação automática ao abrir o GitHub: exige que a IDE execute as instruções do projeto. Para reapresentar: `npm run astro:welcome`.
+
 ## Apresentação no primeiro comando
 
 A IDE que lê `AGENTS.md` consulta `node app/scripts/astro-boy.mjs status --json`, na raiz, e segue esta apresentação antes de atender ao primeiro pedido. Na primeira sessão do Matheus, configure o perfil explícito com `npm run astro:setup --prefix app -- --name Matheus --role backend`; isso imprime a saudação e o roteiro. `onboardingRequired` controla a apresentação; `profile` contém nome e papel explicitamente escolhidos. Nunca identificar por IP. Após a apresentação, `npm run astro:ack --prefix app` registra a confirmação local; `npm run astro:welcome --prefix app` permite rever o roteiro. Isso depende de a IDE carregar as regras e permitir comandos; não é hook universal nem agente continuamente ativo.
@@ -23,7 +29,7 @@ Apresente versão/branch atuais, mostre `/treinos` e `/treinos/painel` no servid
 
 Papéis podem ser executados sequencialmente. Se o executor oferecer subagentes e houver autorização, delegar escopo/arquivos/aceite delimitados e respeitar capacidade da sessão. Não criar chats adicionais para acompanhamento.
 
-## O que foi feito desde o pull de Matheus
+## Histórico anterior — Fitness até F59
 
 O pull trouxe a base nativa de treino, catálogos e execução que agora foi integrada. No trabalho de Fábio até F59 (versão 0.1.31):
 
@@ -38,7 +44,7 @@ Limites: GPS/mapa, sensores e dados automáticos de saúde, widgets personalizad
 
 A continuidade e o código prevalecem sobre esta síntese. Não declarar integração integral, medição clínica/muscular exata ou histórico remoto verificado.
 
-## Primeiro lote sugerido para Matheus
+## Primeiro lote sugerido para Matheus — histórico F59
 
 O próximo passo já previsto é backend/documentação: leia `CONTINUIDADE.md` (F59), `docs/README.md`, a base canônica e `docs/FILA-ENTREGAS.md`; então retome o teste reproduzível de reversão/idempotência proposto para o core. Primeiro registre esperado × implementado e limites de evidência, sem mudar regra, dado ou migração por inferência. A revisão de Fábio com dados reais segue em paralelo como etapa de aceite visual/funcional. Fonte portável dos contratos: `docs/00-Overview`, `01-Domain-Core`, `02-Platform-Architecture` e `04-ADRs`. A pasta absoluta de Fábio é origem documental; não requisito no seu computador.
 

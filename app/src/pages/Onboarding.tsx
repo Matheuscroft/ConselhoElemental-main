@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { ELEMENTS, getAreasByElement } from '@/constants';
@@ -76,7 +77,7 @@ const Onboarding = () => {
                     style={{ backgroundColor: `${element.color}14` }}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{element.icon}</span>
+                      <span className="text-2xl"><ElementIcon element={element.id} /></span>
                       <div>
                         <p className="font-semibold">{element.name}</p>
                         <p className="text-sm text-white/65">{element.description}</p>
@@ -113,7 +114,7 @@ const Onboarding = () => {
                 return (
                   <div key={element.id}>
                     <p className="font-semibold mb-2" style={{ color: element.color }}>
-                      {element.icon} {element.name}
+                      <ElementIcon element={element.id} /> {element.name}
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {areas.map((area) => {

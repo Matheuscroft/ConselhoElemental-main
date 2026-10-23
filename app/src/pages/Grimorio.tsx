@@ -1,33 +1,44 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Edit2, Trophy, Flame, Target, TrendingUp, Calendar, Award } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Edit2, Heart, Zap, Sparkles, ChevronDown, X, Check } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { ResourceMeter } from '@/components/grimorio/ResourceMeter';
+import { ElementMasteryCard } from '@/components/grimorio/ElementMasteryCard';
+import { GrimoireHistory } from '@/components/grimorio/GrimoireHistory';
+import { buildGrimoireHistory } from '@/components/grimorio/history';
 import { useAppStore } from '@/stores/appStore';
-import { ELEMENTS, AVATARS, type ElementId } from '@/constants';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Radar,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  ResponsiveContainer,
-} from 'recharts';
+import { useWorkoutStore } from '@/stores/workoutStore';
+import { ELEMENTS, AVATARS } from '@/constants';
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
+import './grimorio.css';
 
-export const Grimorio: React.FC = () => {
-  const { user, updateUser, getElementScores, getLevelProgress, tasks, habits } = useAppStore();
+const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+
+export function Grimorio() {
+  const accountId = useAppStore(state => state.currentAccountId);
+  return <GrimorioContent key={accountId ?? 'local'} />;
+}
+
+function GrimorioContent() {
+  const { user, updateUser, getElementScores, getLevelProgress, getMasteryProgress, getCompletedHabitsToday, getStreak, tasks, habits, actions, executionLogs } = useAppStore();
+  const { getResourceSnapshot } = useWorkoutStore();
   const [editName, setEditName] = useState(false);
   const [newName, setNewName] = useState(user.name);
   const [showAvatarDialog, setShowAvatarDialog] = useState(false);
+  const [portraitFailed, setPortraitFailed] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const nameTrigger = useRef<HTMLButtonElement>(null);
+  const avatarTrigger = useRef<HTMLButtonElement>(null);
+
+  // Refresh date-sensitive readouts only. Gameplay clocks and resource rules stay in their stores.
+  useEffect(() => {
+    const refresh = () => { if (!document.hidden) setNow(new Date()); };
+    const interval = window.setInterval(refresh, 60_000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { window.clearInterval(interval); document.removeEventListener('visibilitychange', refresh); };
+  }, []);
 
   const elementScores = getElementScores();
   const levelProgress = getLevelProgress();
@@ -36,13 +47,19 @@ export const Grimorio: React.FC = () => {
   const totalTasks = tasks.length;
   const activeHabits = habits.length;
   const totalHabitCompletions = habits.reduce((acc, h) => acc + h.completions.length, 0);
-
-  // Prepare radar chart data
+  const mastery = getMasteryProgress();
+  const resourceSnapshot = getResourceSnapshot();
+  const habitsToday = getCompletedHabitsToday();
+  const streak = getStreak();
+  const hp = Math.min(100, 70 + (habitsToday * 5) + (streak > 0 ? 10 : 0));
+  const joinedAt = new Date(user.joinedAt);
+  const history = useMemo(() => buildGrimoireHistory({ actions, tasks, habits, logs: executionLogs }), [actions, tasks, habits, executionLogs]);
   const radarData = elementScores.map(score => ({
     element: ELEMENTS[score.elementId].name,
     score: score.score,
     fullMark: Math.max(...elementScores.map(s => s.score), 100),
   }));
+  const hasScores = radarData.some(d => d.score > 0);
 
   const handleNameSave = () => {
     if (newName.trim()) {
@@ -56,249 +73,65 @@ export const Grimorio: React.FC = () => {
     setShowAvatarDialog(false);
   };
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
+  return <AppLayout showAura={false}>
+    <div className="grimoire-workspace">
+      <header className="grimoire-page-heading"><div><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></div><ArcaneIcon name="grimorio" size={32} /></header>
+      <nav className="grimoire-index" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a></nav>
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  return (
-    <AppLayout>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-6"
-      >
-        {/* Profile Header */}
-        <motion.div variants={itemVariants} className="text-center">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            onClick={() => setShowAvatarDialog(true)}
-            className="relative inline-block cursor-pointer"
-          >
-            <div className="text-7xl mb-2">{user.avatar}</div>
-            <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-mystic-arcane 
-                          flex items-center justify-center">
-              <Edit2 className="w-4 h-4" />
-            </div>
-          </motion.div>
-          
-          {editName ? (
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <Input
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                className="w-48 bg-white/5 border-white/10 text-center"
-                autoFocus
-              />
-              <Button size="sm" onClick={handleNameSave}>✓</Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2 mt-2">
-              <h2 className="font-mystic text-2xl">{user.name}</h2>
-              <button 
-                onClick={() => setEditName(true)}
-                className="text-white/40 hover:text-white"
-              >
-                <Edit2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-          
-          <div className="flex items-center justify-center gap-2 mt-1">
-            <Badge variant="outline" className="bg-mystic-gold/10 text-mystic-gold border-mystic-gold/30">
-              <Trophy className="w-3 h-3 mr-1" />
-              Nível {levelProgress.level}
-            </Badge>
-            <Badge variant="outline" className="bg-white/5">
-              <Flame className="w-3 h-3 mr-1 text-orange-400" />
-              Streak {user.streak}
-            </Badge>
-          </div>
-        </motion.div>
-
-        {/* XP Progress */}
-        <motion.div variants={itemVariants} className="glass-card p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-white/60">Experiência</span>
-            <span className="text-sm text-mystic-gold">
-              {levelXp} / {levelProgress.xpToNextLevel} XP
-            </span>
-          </div>
-          <Progress 
-            value={levelProgress.progressFraction * 100}
-            className="h-2 bg-white/10"
-          />
-          <p className="text-xs text-white/40 mt-2 text-center">
-            Faltam {levelProgress.xpToNextLevel - levelXp} XP para o nível {levelProgress.level + 1}
-          </p>
-        </motion.div>
-
-        {/* Stats Grid */}
-        <motion.div variants={itemVariants}>
-          <h3 className="font-mystic text-lg mb-3">Estatísticas</h3>
-          <div className="grid grid-cols-2 gap-3">
-            <StatCard
-              icon={<Target className="w-5 h-5" />}
-              label="Rituais"
-              value={`${completedTasks}/${totalTasks}`}
-              sublabel="concluídos"
-            />
-            <StatCard
-              icon={<TrendingUp className="w-5 h-5" />}
-              label="Ciclos"
-              value={activeHabits.toString()}
-              sublabel="ativos"
-            />
-            <StatCard
-              icon={<Award className="w-5 h-5" />}
-              label="Total"
-              value={user.totalScore.toLocaleString()}
-              sublabel="pontos"
-            />
-            <StatCard
-              icon={<Calendar className="w-5 h-5" />}
-              label="Completou"
-              value={totalHabitCompletions.toString()}
-              sublabel="hábitos"
-            />
-          </div>
-        </motion.div>
-
-        {/* Element Radar */}
-        {radarData.some(d => d.score > 0) && (
-          <motion.div variants={itemVariants}>
-            <h3 className="font-mystic text-lg mb-3">Equilíbrio Elemental</h3>
-            <div className="glass-card p-4">
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadarChart data={radarData}>
-                    <PolarGrid stroke="rgba(255,255,255,0.1)" />
-                    <PolarAngleAxis 
-                      dataKey="element" 
-                      tick={{ fill: 'rgba(255,255,255,0.6)', fontSize: 12 }}
-                    />
-                    <PolarRadiusAxis 
-                      angle={90} 
-                      domain={[0, 'auto']}
-                      tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 10 }}
-                    />
-                    <Radar
-                      name="Pontuação"
-                      dataKey="score"
-                      stroke="#9D4EDD"
-                      fill="#9D4EDD"
-                      fillOpacity={0.3}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Element Scores */}
-        <motion.div variants={itemVariants}>
-          <h3 className="font-mystic text-lg mb-3">Pontuação por Elemento</h3>
-          <div className="space-y-2">
-            {elementScores.map((score) => (
-              <ElementScoreRow key={score.elementId} score={score} />
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Join Date */}
-        <motion.div variants={itemVariants} className="text-center">
-          <p className="text-xs text-white/30">
-            Membro desde {new Date(user.joinedAt).toLocaleDateString('pt-BR')}
-          </p>
-        </motion.div>
-      </motion.div>
-
-      {/* Avatar Selection Dialog */}
-      <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-mystic text-center">
-              Escolha seu Avatar
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-4 gap-3 p-4">
-            {AVATARS.map((avatar) => (
-              <motion.button
-                key={avatar}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleAvatarSelect(avatar)}
-                className={`text-3xl p-2 rounded-xl transition-all ${
-                  user.avatar === avatar
-                    ? 'bg-mystic-gold/20 border border-mystic-gold'
-                    : 'hover:bg-white/10'
-                }`}
-              >
-                {avatar}
-              </motion.button>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </AppLayout>
-  );
-};
-
-interface StatCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sublabel: string;
-}
-
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, sublabel }) => (
-  <div className="glass-card p-4 text-center">
-    <div className="flex items-center justify-center gap-2 text-white/60 mb-2">
-      {icon}
-      <span className="text-sm">{label}</span>
-    </div>
-    <div className="text-2xl font-bold text-mystic-gold">{value}</div>
-    <div className="text-xs text-white/40">{sublabel}</div>
-  </div>
-);
-
-interface ElementScoreRowProps {
-  score: { elementId: ElementId; score: number; percentage: number };
-}
-
-const ElementScoreRow: React.FC<ElementScoreRowProps> = ({ score }) => {
-  const element = ELEMENTS[score.elementId];
-  
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-      <div className="text-2xl">{element.icon}</div>
-      <div className="flex-1">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm">{element.name}</span>
-          <span className="text-sm font-bold" style={{ color: element.color }}>
-            {score.score}
-          </span>
+      <section id="grimoire-character" className="grimoire-sheet" aria-labelledby="grimoire-character-name">
+        <div className="grimoire-portrait" aria-hidden="true">
+          <div className="grimoire-portrait-ring" />
+          {portraitFailed ? <ArcaneIcon name="santuario" size={120} /> : <img src="/sanctuary/elemental-body-v1.png" alt="" width={913} height={1723} onError={() => setPortraitFailed(true)} />}
+          <div className="grimoire-portrait-seal"><ArcaneIcon name="santuario" size={22} /></div>
         </div>
-        <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${score.percentage}%` }}
-            transition={{ duration: 0.5 }}
-            className="h-full rounded-full"
-            style={{ backgroundColor: element.color }}
-          />
+        <div className="grimoire-identity">
+          <p className="grimoire-rank"><ArcaneIcon name="conquista" size={18} />{levelProgress.title} · Nível {levelProgress.level}</p>
+          <h2 id="grimoire-character-name">{user.name}</h2>
+          <div className="grimoire-profile-actions"><button ref={nameTrigger} type="button" onClick={() => { setNewName(user.name); setEditName(true); }}><Edit2 size={15} aria-hidden="true" />Editar nome</button><button ref={avatarTrigger} type="button" onClick={() => setShowAvatarDialog(true)}><ArcaneIcon name="santuario" size={16} />Ícone do perfil</button></div>
+          <div className="grimoire-streak"><span><ArcaneIcon name="fogo" size={17} />{user.streak} {user.streak === 1 ? 'dia seguido' : 'dias seguidos'}</span><span>Recorde: {user.longestStreak} {user.longestStreak === 1 ? 'dia' : 'dias'}</span></div>
         </div>
-      </div>
+        <div className="grimoire-resources">
+          <div className="grimoire-resource-grid">
+            <ResourceMeter label="Vitalidade · HP" value={hp} maximum={100} color="246 148 167" icon={<Heart size={18} aria-hidden="true" />} />
+            <ResourceMeter label="Stamina" value={resourceSnapshot.currentStamina} maximum={100} color="231 196 119" icon={<Zap size={18} aria-hidden="true" />} />
+            <ResourceMeter label="Prana" value={resourceSnapshot.currentPrana} maximum={100} color="125 207 229" icon={<Sparkles size={18} aria-hidden="true" />} />
+          </div>
+          <ResourceMeter label="Experiência" value={levelXp} maximum={levelProgress.xpToNextLevel} color="215 184 109" icon={<ArcaneIcon name="conquista" size={18} />} note={`Faltam ${format(levelProgress.xpToNextLevel - levelXp)} XP para o nível ${levelProgress.level + 1}`} />
+          <div className="grimoire-resource-footnote"><span>{format(levelProgress.xpTotal)} XP acumulados</span><span>Recursos do jogo</span></div>
+        </div>
+        <footer className="grimoire-sheet-footer"><span>{Number.isFinite(joinedAt.getTime()) ? `Jornada iniciada em ${joinedAt.toLocaleDateString('pt-BR')}` : 'Sua jornada elemental'}</span><Link to="/santuario">Ir ao Santuário<ArcaneIcon name="santuario" size={17} /></Link></footer>
+      </section>
+
+      <section className="grimoire-overview" aria-labelledby="grimoire-overview-title">
+        <h2 id="grimoire-overview-title" className="sr-only">Sua atividade em números</h2>
+        <Link to="/rituais"><ArcaneIcon name="ritual" size={22} /><span><strong>{completedTasks}<small> / {totalTasks}</small></strong><span>Rituais concluídos</span></span></Link>
+        <Link to="/ciclos"><ArcaneIcon name="ciclo" size={22} /><span><strong>{activeHabits}</strong><span>Ciclos cadastrados</span></span></Link>
+        <div><ArcaneIcon name="conquista" size={22} /><span><strong>{format(user.totalScore)}</strong><span>Pontos totais</span></span></div>
+        <a href="#grimoire-history"><ArcaneIcon name="calendario" size={22} /><span><strong>{format(totalHabitCompletions)}</strong><span>Conclusões de ciclos</span></span></a>
+      </section>
+
+      <section id="grimoire-elements" className="grimoire-elements" aria-labelledby="grimoire-elements-title">
+        <div className="grimoire-section-heading"><div><h2 id="grimoire-elements-title">Maestria elemental</h2><p>Abra um elemento para acompanhar sua evolução.</p></div><ArcaneIcon name="dominios" size={26} /></div>
+        <div className="grimoire-elements-grid">{elementScores.map(score => <ElementMasteryCard key={score.elementId} element={ELEMENTS[score.elementId]} mastery={mastery[score.elementId]} score={score} hasScores={hasScores} />)}</div>
+        {hasScores && <details className="grimoire-balance"><summary><span>Ver equilíbrio dos elementos</span><ChevronDown size={18} aria-hidden="true" /></summary><div role="img" aria-label={`Pontuação por elemento: ${elementScores.map(score => `${ELEMENTS[score.elementId].name}, ${format(score.score)} pontos`).join('; ')}`}><ResponsiveContainer width="100%" height={250}><RadarChart data={radarData}><PolarGrid stroke="rgba(215,184,109,0.2)" /><PolarAngleAxis dataKey="element" tick={{ fill: '#b5bdcc', fontSize: 12 }} /><PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={{ fill: '#b5bdcc', fontSize: 10 }} /><Radar name="Pontuação" dataKey="score" stroke="#d7b86d" fill="#d7b86d" fillOpacity={0.18} isAnimationActive={false} /></RadarChart></ResponsiveContainer></div></details>}
+      </section>
+
+      <GrimoireHistory entries={history} now={now} />
     </div>
-  );
-};
+
+    <Dialog open={editName} onOpenChange={setEditName}>
+      <DialogContent className="grimoire-dialog" showCloseButton={false} aria-labelledby="grimoire-name-title" aria-describedby="grimoire-name-description" onCloseAutoFocus={event => { event.preventDefault(); nameTrigger.current?.focus(); }}>
+        <DialogHeader><DialogTitle id="grimoire-name-title">Nome do personagem</DialogTitle><DialogDescription id="grimoire-name-description">Como você quer aparecer em sua jornada?</DialogDescription></DialogHeader>
+        <DialogClose className="grimoire-dialog-close" aria-label="Fechar edição de nome"><X size={20} /></DialogClose>
+        <form onSubmit={event => { event.preventDefault(); handleNameSave(); }}><label htmlFor="grimoire-name-input">Seu nome</label><input id="grimoire-name-input" value={newName} onChange={event => setNewName(event.target.value)} autoComplete="nickname" autoFocus required /><div className="grimoire-dialog-actions"><button type="button" onClick={() => setEditName(false)}>Cancelar</button><button type="submit" disabled={!newName.trim()}>Salvar nome</button></div></form>
+      </DialogContent>
+    </Dialog>
+    <Dialog open={showAvatarDialog} onOpenChange={setShowAvatarDialog}>
+      <DialogContent className="grimoire-dialog" showCloseButton={false} aria-labelledby="grimoire-avatar-title" aria-describedby="grimoire-avatar-description" onCloseAutoFocus={event => { event.preventDefault(); avatarTrigger.current?.focus(); }}>
+        <DialogHeader><DialogTitle id="grimoire-avatar-title">Ícone do perfil</DialogTitle><DialogDescription id="grimoire-avatar-description">Seu ícone atual: <span aria-label="Ícone atual">{user.avatar}</span>. Escolha para salvar.</DialogDescription></DialogHeader>
+        <DialogClose className="grimoire-dialog-close" aria-label="Fechar seleção de ícone"><X size={20} /></DialogClose>
+        <div className="grimoire-avatar-grid">{AVATARS.map((avatar, index) => <button type="button" key={avatar} onClick={() => handleAvatarSelect(avatar)} aria-pressed={user.avatar === avatar} aria-label={`Selecionar ícone ${index + 1}: ${avatar}`}><span aria-hidden="true">{avatar}</span>{user.avatar === avatar && <Check size={14} aria-hidden="true" />}</button>)}</div>
+      </DialogContent>
+    </Dialog>
+  </AppLayout>;
+}

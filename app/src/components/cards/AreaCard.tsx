@@ -1,3 +1,4 @@
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { motion } from 'framer-motion';
 import type { Area } from '@/types';
@@ -36,7 +37,7 @@ export const AreaCard: React.FC<AreaCardProps> = ({
           className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
           style={{ backgroundColor: `${area.color}20` }}
         >
-          {element.icon}
+          <ElementIcon element={element.id} />
         </div>
         
         <div className="flex-1 min-w-0">
@@ -57,7 +58,10 @@ export const AreaCard: React.FC<AreaCardProps> = ({
       whileHover={{ scale: 1.01, y: -2 }}
       whileTap={{ scale: 0.99 }}
       onClick={onClick}
-      className="relative p-4 rounded-2xl overflow-hidden cursor-pointer
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
+      className="relative p-4 rounded-2xl overflow-hidden cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold
                  border border-white/10 hover:border-white/20 transition-all"
       style={{
         background: `linear-gradient(135deg, ${area.color}10 0%, rgba(26, 16, 37, 0.9) 100%)`,
@@ -78,7 +82,7 @@ export const AreaCard: React.FC<AreaCardProps> = ({
               className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
               style={{ backgroundColor: `${area.color}30` }}
             >
-              {element.icon}
+              <ElementIcon element={element.id} />
             </div>
             
             <div>

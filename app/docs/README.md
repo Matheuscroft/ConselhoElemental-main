@@ -1,5 +1,7 @@
 # Arquitetura — Conselho Elemental
 
+**Chegando após o pull da repaginação?** Leia o [repasse para Matheus e Astro Boy](REPASSE-FRONTEND-PARA-BACKEND.md): mudanças I03/R01–R11, responsabilidades, contratos preservados e próximos lotes de Fábio.
+
 A documentação de arquitetura é dividida por domínio. Comece por [00-Overview/README.md](./00-Overview/README.md).
 
 ## Estrutura
@@ -59,7 +61,26 @@ A fonte canônica principal permanece `/Users/fabioandre/Developer/docs-conselho
 - [Auditorias Core, Astrolábio e assistente](AUDITORIA-CONTRATOS-CORE.md): evidências estáticas e limitações.
 - [Decisão inicial de provedor de IA](DECISAO-PROVEDOR-IA.md): comparação oficial e limites para piloto.
 - [Protótipo do assistente](ASSISTENTE-PROTOTIPO.md): escopo, consentimento, segurança e validação delimitada do I03.
+- [Repaginação elemental — R01](03-Project-Management/reports/REPAGINACAO-ELEMENTAL-2026-10.md): diagnóstico frontend, personagem protagonista, referências, proposta por telas e critérios dos próximos lotes. Proposta visual em discussão; não atesta implementação.
 
 ## Colaboração e publicação
 
 [Entrada de Matheus e Fábio](ASTRO-BOY-BOAS-VINDAS.md), [auditoria das pastas/publicação](AUDITORIA-PUBLICACAO.md). Os capítulos de arquitetura acima são a cópia portável dos contratos para este repositório. Caminhos absolutos em relatórios anteriores preservam a origem das evidências; não são requisito para clonar e usar.
+
+- [Santuário como home e Pilares — 0.1.41](03-Project-Management/reports/R03-SANTUARIO-HOME-PILARES.md): promoção autorizada, compatibilidade de links, cronômetro/conta e limites de validação.
+- [Navegação elemental — R03](03-Project-Management/reports/R03-NAVEGACAO-ELEMENTAL.md): histórico das rotas da prévia, filtros e preservação do backend; promoção posterior em 0.1.41.
+
+- [Identidade, cartões e cronômetro — R04](03-Project-Management/reports/R04-IDENTIDADE-CARTOES-CRONOMETRO.md): padrão aprovado para todas as telas, aplicação das referências, alcance atual, testes e limites.
+
+- [Temporal, Lua e Estações — R05 / 0.1.42](03-Project-Management/reports/R05-TEMPORAL-LUA-ESTACOES.md): Lua 3D por horário, Expanded/Showcase, navegação por mês, preservação e QA pendente.
+
+- [Ícones e exploração transversal — R06 / 0.1.43](03-Project-Management/reports/R06-ICONES-E-EXPLORACAO.md): iconografia, menu expansível, Showcase no Mapa e continuidade por área.
+
+- [Cabeçalhos e composição — R08 / 0.1.45](03-Project-Management/reports/R08-CABECALHOS-E-COMPOSICAO.md): home definitiva, calendário, formulários, preservação e limites.
+- [Redesign de Ciclos — R07 / 0.1.44](03-Project-Management/reports/R07-CICLOS-REDESIGN.md): calendário Expanded, Showcase, filtros, diálogos, preservação e QA pendente.
+
+- [Grimório — R09 / 0.1.46](03-Project-Management/reports/R09-GRIMORIO.md): ficha elemental, recursos em vidro, maestria, histórico e limites de validação.
+
+## Quests e trilhas elementais — R10
+
+[Relatório 0.1.47](03-Project-Management/reports/R10-QUESTS-E-TRILHAS.md): adaptação do kit Figma, Rituais/Jornadas/Grandes Obras, próximas quests no Santuário, integração preservada e QA pendente.

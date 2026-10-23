@@ -1,4 +1,3 @@
-export { Santuario } from './Santuario';
 export { Onboarding } from './Onboarding';
 export { Auth } from './Auth.tsx';
 export { Rituais } from './Rituais';

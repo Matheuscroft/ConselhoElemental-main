@@ -1,12 +1,14 @@
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { QuestHub } from '@/components/quests/QuestHub';
 import { 
   Plus, 
   Search, 
   Filter,
   Play, 
-  Pause, 
   Check,
   Clock,
   ChevronDown,
@@ -60,6 +62,9 @@ import type { Task, TaskItem, ElementId, Area } from '@/types';
 
 export const Rituais: React.FC = () => {
   const navigate = useNavigate();
+  const [questParams, setQuestParams] = useSearchParams();
+  const showQuestList = questParams.get('view') === 'lista';
+  const questAccountId = useAppStore(state => state.currentAccountId);
   const { 
     tasks, 
     habits,
@@ -549,6 +554,18 @@ export const Rituais: React.FC = () => {
 
   return (
     <AppLayout>
+      <nav className="quest-view-switch" aria-label="Visualização dos rituais">
+        <Link to="/rituais" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} />Quests</Link>
+        <Link to="/rituais?view=lista" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} />Lista de rituais</Link>
+      </nav>
+      {!showQuestList && <QuestHub key={questAccountId} onManageTask={id => {
+        const task = tasks.find(item => item.id === id);
+        setQuestParams({ view: 'lista' });
+        setSearchQuery(task?.title ?? '');
+        setFilterElement(null);
+        setActiveTab(task?.isCompleted ? 'completed' : 'pending');
+      }} />}
+      {showQuestList && <>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
@@ -600,7 +617,7 @@ export const Rituais: React.FC = () => {
                 key={element.id} 
                 onClick={() => setFilterElement(element.id)}
               >
-                <span className="mr-2">{element.icon}</span>
+                <span className="mr-2"><ElementIcon element={element.id} /></span>
                 {element.name}
               </DropdownMenuItem>
             ))}
@@ -622,7 +639,7 @@ export const Rituais: React.FC = () => {
               className="cursor-pointer bg-white/5"
               onClick={() => setFilterElement(null)}
             >
-              {ELEMENTS[filterElement].icon} {ELEMENTS[filterElement].name} ✕
+              <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} ✕
             </Badge>
           </motion.div>
         )}
@@ -730,10 +747,11 @@ export const Rituais: React.FC = () => {
           </AnimatePresence>
         </TabsContent>
       </Tabs>
+      </>}
 
       {/* Timer Modal */}
       <Dialog open={showTimer} onOpenChange={setShowTimer}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
+        <DialogContent className="elemental-timer-dialog max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-mystic text-center text-xl">
               Ritual em Andamento
@@ -743,55 +761,16 @@ export const Rituais: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          {activeTaskData && (
-            <div className="text-center py-6">
-              <div className="text-5xl mb-4">{ELEMENTS[activeTaskData.elementId].icon}</div>
-              <h3 className="font-mystic text-lg mb-1">{activeTaskData.title}</h3>
-              <p className="text-sm text-white/50 mb-2">
-                Meta: {formatDuration(activeTaskData.plannedTimeMinutes || 30)}
-              </p>
-              <Badge variant="outline" className="bg-white/5 mb-6">
-                Esforço: {EFFORT_LABELS[activeTaskData.effortLevel || 2].label}
-              </Badge>
-              
-              {/* Timer Display */}
-              <div className="text-6xl font-mono font-bold text-mystic-gold mb-6">
-                {formatTime(timer.elapsedSeconds)}
-              </div>
-              
-              {/* Controls */}
-              <div className="flex justify-center gap-4">
-                {timer.isRunning ? (
-                  <Button
-                    onClick={() => useAppStore.getState().pauseTimer()}
-                    variant="outline"
-                    className="w-16 h-16 rounded-full border-white/20"
-                  >
-                    <Pause className="w-6 h-6" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => useAppStore.getState().resumeTimer()}
-                    variant="outline"
-                    className="w-16 h-16 rounded-full border-mystic-gold/50 bg-mystic-gold/10"
-                  >
-                    <Play className="w-6 h-6" />
-                  </Button>
-                )}
-                
-                <Button
-                  onClick={handleStopAndComplete}
-                  className="w-16 h-16 rounded-full bg-mystic-gold text-black hover:bg-mystic-gold/90"
-                >
-                  <Check className="w-6 h-6" />
-                </Button>
-              </div>
-              
-              <p className="text-xs text-white/40 mt-4">
-                Toque em ✓ para completar
-              </p>
-            </div>
-          )}
+          {activeTaskData && <ElementalTimer
+              title={activeTaskData.title}
+              element={activeTaskData.elementId}
+              time={formatTime(timer.elapsedSeconds)}
+              running={timer.isRunning}
+              plannedLabel={formatDuration(activeTaskData.plannedTimeMinutes || 30)}
+              effortLabel={EFFORT_LABELS[activeTaskData.effortLevel || 2].label}
+              onToggle={() => timer.isRunning ? useAppStore.getState().pauseTimer() : useAppStore.getState().resumeTimer()}
+              onComplete={handleStopAndComplete}
+            />}
         </DialogContent>
       </Dialog>
 
@@ -806,7 +785,7 @@ export const Rituais: React.FC = () => {
           >
             <div className="bg-gradient-to-r from-mystic-gold to-orange-400 text-black rounded-2xl p-4 
                           shadow-lg shadow-mystic-gold/30 text-center">
-              <p className="font-mystic text-lg">✨ Ritual Completado! ✨</p>
+              <p className="font-mystic text-lg"><ArcaneIcon name="conquista" /> Ritual completado!</p>
               <p className="text-sm font-medium">+{earnedPoints} pontos ganhos</p>
             </div>
           </motion.div>
@@ -1162,7 +1141,7 @@ export const Rituais: React.FC = () => {
               />
               {isAggregatorLocked && (
                 <p className="text-xs text-yellow-400/70 mt-1">
-                  ⚠️ Este item é agregador (tem filhos). Pontuação vem dos subitens.
+                  <ArcaneIcon name="alerta" /> Este item é agregador (tem filhos). Pontuação vem dos subitens.
                 </p>
               )}
             </div>
@@ -1791,7 +1770,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   }}
                   title={element.name}
                 >
-                  {element.icon}
+                  <ElementIcon element={element.id} />
                 </span>
 
                 <button
@@ -2018,7 +1997,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate }) => (
     animate={{ opacity: 1 }}
     className="glass-card p-8 text-center"
   >
-    <div className="text-4xl mb-3">{type === 'pending' ? '📜' : '✨'}</div>
+    <div className="text-4xl mb-3"><ArcaneIcon name={type === 'pending' ? 'ritual' : 'conquista'} /></div>
     <h3 className="font-mystic text-lg mb-2">
       {type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
     </h3>

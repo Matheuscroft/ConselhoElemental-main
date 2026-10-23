@@ -3,7 +3,7 @@ import { ActiveFitnessSession } from '@/pages/fitness/ActiveFitnessSession';
 import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
 import { ActiveWorkout } from '@/pages/fitness/ActiveWorkout';
 import { WorkoutSummary } from '@/pages/fitness/WorkoutSummary';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from '@/components/ui/sonner';
@@ -12,7 +12,6 @@ import { useAppStore } from '@/stores/appStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { Onboarding } from '@/pages/Onboarding';
 import {
-  Santuario,
   Auth,
   Rituais,
   Invocar,
@@ -38,6 +37,8 @@ import {
 } from '@/pages';
 import './App.css';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
+
+const ElementalPreview = lazy(() => import('@/pages/ElementalPreview'));
 
 function ProtectedRoute() {
   const location = useLocation();
@@ -127,7 +128,11 @@ function App() {
           {/* Main Routes */}
           <Route element={<ProtectedRoute />}>
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/santuario" element={<Santuario />} />
+            <Route path="/santuario/classico" element={<Navigate to="/santuario" replace />} />
+            <Route path="/santuario" element={<Suspense fallback={<p className="p-8 text-white">Preparando Santuário…</p>}><ElementalPreview /></Suspense>} />
+            <Route path="/santuario/elementos/:elementId" element={<Suspense fallback={<p className="p-8 text-white">Preparando elemento…</p>}><ElementalPreview /></Suspense>} />
+            <Route path="/previa-elemental" element={<Suspense fallback={<p className="p-8 text-white">Preparando Santuário…</p>}><ElementalPreview /></Suspense>} />
+            <Route path="/previa-elemental/elementos/:elementId" element={<Suspense fallback={<p className="p-8 text-white">Preparando Santuário…</p>}><ElementalPreview /></Suspense>} />
             <Route path="/rituais" element={<Rituais />} />
             <Route path="/ciclos" element={<Ciclos />} />
             <Route path="/jornadas" element={<Jornadas />} />

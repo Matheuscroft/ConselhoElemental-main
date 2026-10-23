@@ -1,4 +1,8 @@
-import React, { useState } from 'react';
+import { buildGrimoireHistory } from '@/components/grimorio/history';
+import { recordedHistorySeries } from '@/components/grimorio/recorded-history-series';
+import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, TrendingUp, BarChart3, Activity } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -21,35 +25,15 @@ import {
 } from 'recharts';
 
 export const Astrolabio: React.FC = () => {
-  const { getElementScores, tasks, habits, user } = useAppStore();
+  const { getElementScores, tasks, habits, actions, executionLogs, user } = useAppStore();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
 
   const elementScores = getElementScores();
 
-  // Generate mock historical data
-  const generateHistoryData = () => {
-    const days = timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365;
-    const data = [];
-    
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      
-      data.push({
-        date: date.toLocaleDateString('pt-BR', { 
-          day: days > 30 ? undefined : '2-digit',
-          month: 'short' 
-        }),
-        terra: Math.floor(Math.random() * 50) + 10,
-        fogo: Math.floor(Math.random() * 50) + 10,
-        agua: Math.floor(Math.random() * 50) + 10,
-        ar: Math.floor(Math.random() * 50) + 10,
-      });
-    }
-    return data;
-  };
-
-  const historyData = generateHistoryData();
+  const { now } = useLiveDate();
+  const entries = useMemo(() => buildGrimoireHistory({ actions, tasks, habits, logs: executionLogs }), [actions, tasks, habits, executionLogs]);
+  const series = useMemo(() => recordedHistorySeries(entries, timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365, now), [entries, timeRange, now]);
+  const historyData = series.days;
 
   // Pie chart data
   const pieData = elementScores.map(score => ({
@@ -91,7 +75,7 @@ export const Astrolabio: React.FC = () => {
       >
         {/* Header */}
         <motion.div variants={itemVariants} className="text-center">
-          <div className="text-4xl mb-2">🔮</div>
+          <div className="text-4xl mb-2"><ArcaneIcon name="estacoes" /></div>
           <h2 className="font-mystic text-xl mb-1">Astrolábio</h2>
           <p className="text-sm text-white/50">
             Análise do seu equilíbrio elemental
@@ -100,18 +84,20 @@ export const Astrolabio: React.FC = () => {
 
         {/* Time Range Selector */}
         <motion.div variants={itemVariants}>
-          <div className="flex justify-center gap-2">
+          <p className="text-center text-sm text-white/60 mb-2">Período do gráfico de evolução</p>
+          <div className="flex justify-center gap-2" role="group" aria-label="Período da evolução">
             {(['week', 'month', 'year'] as const).map((range) => (
               <button
                 key={range}
+                aria-pressed={timeRange === range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                className={`min-h-11 px-4 py-2 rounded-lg text-sm transition-all ${
                   timeRange === range
                     ? 'bg-mystic-arcane text-white'
                     : 'bg-white/5 text-white/60 hover:bg-white/10'
                 }`}
               >
-                {range === 'week' ? 'Semana' : range === 'month' ? 'Mês' : 'Ano'}
+                {range === 'week' ? '7 dias' : range === 'month' ? '30 dias' : '365 dias'}
               </button>
             ))}
           </div>
@@ -165,8 +151,8 @@ export const Astrolabio: React.FC = () => {
             {/* Evolution Chart */}
             <TabsContent value="evolution" className="mt-4">
               <div className="glass-card p-4">
-                <h3 className="font-mystic text-sm mb-4">Evolução por Elemento</h3>
-                <div className="h-64">
+                <h3 className="font-mystic text-sm mb-4">Pontuação registrada por dia</h3>
+                {series.recordedCount > 0 ? <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={historyData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
@@ -186,24 +172,12 @@ export const Astrolabio: React.FC = () => {
                           borderRadius: '8px'
                         }}
                       />
-                      <Line type="monotone" dataKey="terra" stroke={ELEMENTS.terra.color} strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="fogo" stroke={ELEMENTS.fogo.color} strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="agua" stroke={ELEMENTS.agua.color} strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="ar" stroke={ELEMENTS.ar.color} strokeWidth={2} dot={false} />
+                      <Line type="linear" name="Pontos registrados" dataKey="points" stroke="#d6b96d" strokeWidth={2} dot={false} isAnimationActive={false} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="flex justify-center gap-4 mt-4">
-                  {Object.values(ELEMENTS).map((element) => (
-                    <div key={element.id} className="flex items-center gap-1">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: element.color }}
-                      />
-                      <span className="text-xs text-white/60">{element.name}</span>
-                    </div>
-                  ))}
-                </div>
+                : <p className="py-12 text-center text-white/60">Ainda não há pontuações com data registrada neste período.</p>}
+                <p className="text-sm text-white/60 mt-4">{series.recordedCount} registros com data e pontuação disponíveis. A distribuição elemental abaixo mostra os totais atuais; não reconstrói a distribuição histórica.</p>
               </div>
             </TabsContent>
 
@@ -335,7 +309,7 @@ const ElementDetailCard: React.FC<ElementDetailCardProps> = ({ score }) => {
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="text-2xl">{element.icon}</div>
+          <div className="text-2xl"><ElementIcon element={element.id} /></div>
           <div>
             <h4 className="font-medium">{element.name}</h4>
             <p className="text-xs text-white/50">{element.domain}</p>

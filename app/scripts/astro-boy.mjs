@@ -7,6 +7,8 @@ const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = resolve(app, '..');
 const stateDir = process.env.ASTRO_BOY_STATE_DIR || resolve(app, '.astro-boy');
 const stateFile = resolve(stateDir, 'profile.json');
+const briefingId = 'repaginacao-elemental-r11-2026-10-23';
+const handoffDocument = 'app/docs/REPASSE-FRONTEND-PARA-BACKEND.md';
 const roles = ['frontend', 'backend', 'documentacao', 'fullstack'];
 const args = process.argv.slice(2);
 const command = args.shift() || 'status';
@@ -36,7 +38,9 @@ const status = () => {
     coordinator: 'Astro Boy', project: 'Domínio do Mago',
     version: JSON.parse(readFileSync(resolve(app, 'package.json'), 'utf8')).version,
     profile, suggestedGitAuthor: git('config', 'user.name'),
-    onboardingRequired: !profile?.introducedAt,
+    onboardingRequired: !profile?.introducedAt || profile?.briefingAcknowledged !== briefingId,
+    updateBriefingRequired: profile?.briefingAcknowledged !== briefingId,
+    briefingId, handoffDocument,
     branch: git('branch', '--show-current'), commit: git('rev-parse', '--short', 'HEAD'),
     workingTree: git('status', '--short'),
     continuity: 'app/docs/CONTINUIDADE.md', queue: 'app/docs/FILA-ENTREGAS.md',
@@ -49,10 +53,15 @@ const welcome = () => {
   console.log(`Versão ${current.version} | ${current.branch || 'sem branch'} | revisão ${current.commit || 'não disponível'}.`);
   console.log('Posso planejar etapas, implementar frontend/backend, revisar contratos, testar, versionar e manter a documentação, conforme as ferramentas desta IDE.');
   console.log('Equipe: Astro Boy coordena; Interface cuida da UX; Backend/Regras cuida de contratos e integrações; Validação verifica evidências; Versionamento/Documentação mantém versões e continuidade. Papéis executados em série ou delegados quando autorizado.');
-  console.log('Desde o pull e a retomada de Fábio: unificamos Treinos, Terra e aliases numa experiência Fitness; criação livre de exercícios e mídia, prévia e execução com pausa, notas e distância; recompensa de sessão consolidada ER×0.10 restaurada por Matheus, sem recalcular histórico; resumo com avaliação e detalhes; Histórico, Saúde, Semana, Corpo e Evolução ligados aos registros existentes. O Astro Boy também recebeu continuidade, fila e onboarding portáveis.');
+  console.log('Base Fitness anterior (F59): unificamos Treinos, Terra e aliases numa experiência Fitness; criação livre de exercícios e mídia, prévia e execução com pausa, notas e distância; recompensa de sessão consolidada ER×0.10 restaurada por Matheus, sem recalcular histórico; resumo com avaliação e detalhes; Histórico, Saúde, Semana, Corpo e Evolução ligados aos registros existentes. O Astro Boy também recebeu continuidade, fila e onboarding portáveis.');
   console.log('Limites conhecidos: GPS/mapa, sensores, calorias, sono/água automáticos, widgets configuráveis e sincronização remota não foram implementados neste lote. Mídia remota e execução legada completa ainda precisam de validação. Não há agentes continuamente ativos: a coordenação depende desta IDE, das instruções e das ferramentas disponíveis.');
-  console.log(`Próximo passo: ${current.profile?.role === 'backend' || current.profile?.role === 'documentacao' ? 'revisar a continuidade F59, a base canônica e a fila; retomar a trilha backend/documentação pelo teste reproduzível de reversão/idempotência já proposto, registrando divergências antes de qualquer mudança de regra.' : 'revisar o Fitness com os dados reais de Fábio e escolher o próximo lote da fila sem alterar fontes de dados.'}`);
-  console.log('Preview local: na raiz do repositório, entre em app, rode npm ci e npm run dev; abra a URL exibida pelo Vite e confira /treinos e /treinos/painel.');
+  console.log('Repaginação R01–R11: identidade elemental compartilhada; Santuário novo com corpo e quatro elementos animados em órbita; páginas de elementos e Pilares; navegação/cabeçalhos, ícones, cartões Showcase e expansões; Ciclos com calendário e composição; cronômetro elemental; Lua 3D e Temporal; Grimório com recursos/histórico; quests em Rituais ligadas a Jornadas/Grandes Obras e próximas etapas no Santuário.');
+  console.log('I03 permanece limitado a consentimento, texto mínimo/JWT, sugestão editável e confirmação pelo addDraft existente; sem ativação remota ou novos secrets.');
+  console.log('Papéis: Fábio segue no frontend/UX e nas pendências visuais; Matheus responde pelo backend, contratos, auth, persistência e sincronização. Stores e fórmulas de Matheus foram preservados.');
+  console.log('Atenção: etapas de quests leem tarefas atuais por ID, mas não reescrevem progresso/bônus macro; equipamentos são visuais. QA visual/fluxo de navegador e integração remota continuam pendentes. Consulte o relatório para testes realmente executados.');
+  console.log(`Repasse completo: ${handoffDocument}. Leia também CONTINUIDADE.md e FILA-ENTREGAS.md antes de editar.`);
+  console.log(`Próximo passo: ${current.profile?.role === 'backend' || current.profile?.role === 'documentacao' ? 'ler o repasse, conferir contratos e divergências de snapshots/progresso macro, reversão/idempotência e isolamento/sincronização; não reintroduzir recompensa por blocos nem alterar fórmula sob escopo visual.' : 'retomar QA de Santuário, Ciclos, Grimório e quests em 360/390/768/1440; continuar as telas restantes e refinamentos de UX pela fila, preservando backend e dados.'}`);
+  console.log('Preview local: na raiz do repositório, entre em app, rode npm ci e npm run dev; abra a URL exibida pelo Vite e confira /santuario, /rituais, /ciclos, /grimorio e /lua; o Fitness permanece em /treinos.');
   console.log('Guia: app/docs/ASTRO-BOY-BOAS-VINDAS.md. Consulte continuidade para o estado vigente; esta saída não executa testes nem inicia agentes.');
 };
 
@@ -70,7 +79,7 @@ try {
   } else if (command === 'ack') {
     const profile = readProfile();
     if (!profile) throw new Error('Configure o perfil com setup antes de confirmar a apresentação.');
-    save({ ...profile, introducedAt: profile.introducedAt || new Date().toISOString() });
+    save({ ...profile, introducedAt: profile.introducedAt || new Date().toISOString(), briefingAcknowledged: briefingId });
     console.log('Apresentação registrada nesta máquina.');
   } else if (command === 'welcome') welcome();
   else if (command === 'status') {

@@ -1,6 +1,7 @@
+import { ArcaneIcon, RouteIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Sparkles, LogOut, Heart, Zap } from 'lucide-react';
+import { LogOut, Heart, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/stores/appStore';
 import { useAuthStore } from '@/stores/authStore';
@@ -32,7 +33,7 @@ export const Sidebar: React.FC = () => {
         {/* Identidade */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-mystic-arcane to-mystic-purple border border-mystic-arcane/50 flex items-center justify-center shadow-glow-arcane shrink-0">
-            <Sparkles className="w-6 h-6 text-white animate-pulse" />
+            <ArcaneIcon name="santuario" size={28} className="text-mystic-gold" />
           </div>
           <div>
             <h1 className="text-sm font-mystic font-bold text-glow-arcane uppercase tracking-wide">Domínio do Mago</h1>
@@ -81,7 +82,7 @@ export const Sidebar: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <item.icon className={`w-5 h-5 ${isActive ? 'text-mystic-cyan' : 'text-white/40'}`} />
+                  <RouteIcon routeId={item.id} size={22} className={isActive ? 'text-mystic-gold' : 'text-white/60'} />
                   <span>{item.label}</span>
                 </div>
               </button>
@@ -101,7 +102,7 @@ export const Sidebar: React.FC = () => {
             <p className="text-[9px] text-white/40 uppercase mt-0.5">Ciclos</p>
           </div>
           <div className="p-2 rounded-xl bg-white/5 border border-mystic-gold/20 shadow-[0_0_10px_rgba(255,215,0,0.1)]">
-            <p className="text-xs font-mono font-bold text-mystic-gold">{streak}🔥</p>
+            <p className="text-xs font-mono font-bold text-mystic-gold">{streak} <ArcaneIcon name="fogo" /></p>
             <p className="text-[9px] text-mystic-gold/60 uppercase mt-0.5">Streak</p>
           </div>
         </div>

@@ -1,38 +1,24 @@
-import React, { useState } from 'react';
-import { AppLayout } from '@/components/layout';
-import { getSeason, getHemisphereFromLatitude } from '@/constants';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { getSeason } from '@/constants';
+import { TemporalLayout } from '@/pages/temporal/TemporalLayout';
+import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
+import { useHemisphereView } from '@/components/temporal/celestial/useHemisphereView';
+import { seasonCycle } from '@/components/temporal/celestial/season-presentation';
+import { SeasonExplorer } from '@/components/temporal/celestial/SeasonExplorer';
 
-export const Estacoes: React.FC = () => {
-  const [selectedDate] = useState(new Date());
-  const [userLatitude] = useState<number | null>(() => {
-    const cachedLatitude = localStorage.getItem('ce:user-latitude');
-    if (cachedLatitude) {
-      const parsed = Number(cachedLatitude);
-      if (!Number.isNaN(parsed)) {
-        return parsed;
-      }
-    }
-    return null;
-  });
-
-  const season = getSeason(selectedDate, { latitude: userLatitude });
-  const hemisphere = getHemisphereFromLatitude(userLatitude);
-
-  return (
-    <AppLayout>
-      <div className="space-y-4">
-        <h2 className="font-mystic text-xl">Estacao</h2>
-        <p className="text-sm text-white/70">Estacao calculada automaticamente por hemisferio.</p>
-
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-          <p className="text-sm text-white/60">Estacao atual</p>
-          <p className="text-lg">{season.icon} {season.name}</p>
-          <p className="text-xs text-white/50 mt-2">Hemisferio: {hemisphere === 'south' ? 'Sul' : 'Norte'}</p>
-          {userLatitude != null && (
-            <p className="text-xs text-white/45 mt-1">Latitude detectada: {userLatitude.toFixed(4)}</p>
-          )}
-        </div>
-      </div>
-    </AppLayout>
-  );
+export const Estacoes = () => {
+  const { now } = useLiveDate();
+  const [hemisphere, setHemisphere] = useHemisphereView();
+  const seasons = useMemo(() => seasonCycle(now, (date) => getSeason(date, { hemisphere })), [now, hemisphere]);
+  const current = seasons[0];
+  const next = seasons[1];
+  return <TemporalLayout title="Estações" subtitle="Quatro capítulos para observar a passagem do tempo e olhar para sua jornada." className="temporal-seasons">
+    <section className="season-current" aria-labelledby="season-current-title"><div><p className="temporal-eyebrow">Estação atual · hemisfério {hemisphere === 'south' ? 'Sul' : 'Norte'}</p><h3 id="season-current-title">{current?.name ?? getSeason(now, { hemisphere }).name}</h3><p>{next ? `A próxima mudança é para ${next.name.toLocaleLowerCase('pt-BR')}, em ${next.start.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })}.` : 'Acompanhe os capítulos do ano.'}</p></div><label className="temporal-select">Explorar hemisfério<select value={hemisphere} onChange={(event) => setHemisphere(event.target.value === 'north' ? 'north' : 'south')}><option value="south">Hemisfério Sul</option><option value="north">Hemisfério Norte</option></select></label></section>
+    <p className="temporal-note">Datas do calendário aproximado já usado no app. As estações são opostas entre os hemisférios; o clima local pode seguir outros ritmos.</p>
+    <section className="temporal-section" aria-labelledby="season-explore-title"><div className="temporal-section-heading"><h3 id="season-explore-title">Explore este ciclo</h3><span>Selecione uma estação para revelar seu capítulo</span></div><SeasonExplorer key={`${hemisphere}-${current?.start.toISOString()}`} seasons={seasons} /></section>
+    <Link className="temporal-journey-link" to="/temporal/ano"><span><strong>Veja sua jornada ao longo do ano</strong><small>Meses, atividades e datas que você quer lembrar.</small></span><ArrowRight size={20} /></Link>
+    <details className="temporal-source"><summary>Como esta página funciona</summary><p>O hemisfério inicial usa a latitude já salva no app; sem ela, o padrão é Sul. A seleção acima muda apenas esta visualização. Os textos são convites à reflexão e não alteram pontuação, hábitos ou recursos.</p></details>
+  </TemporalLayout>;
 };
