@@ -1,8 +1,8 @@
 # Entrada de Matheus e Fábio
 
-## Atualização prioritária — repaginação 0.1.48
+## Atualização prioritária — repaginação 0.1.54
 
-Antes de usar o resumo histórico de Fitness abaixo, leia [REPASSE-FRONTEND-PARA-BACKEND.md](REPASSE-FRONTEND-PARA-BACKEND.md) e o ponto atual em [CONTINUIDADE.md](CONTINUIDADE.md). O repasse consolida I03/R01–R11: identidade elemental, Santuário/órbita, navegação, Pilares, Ciclos, Temporal/Lua/Estações, Grimório e quests. **Matheus segue no backend; Fábio segue em UX/UI.** Pendências visuais não foram transferidas ao backend.
+Antes de usar o resumo histórico de Fitness abaixo, leia [REPASSE-FRONTEND-PARA-BACKEND.md](REPASSE-FRONTEND-PARA-BACKEND.md) e o ponto atual em [CONTINUIDADE.md](CONTINUIDADE.md). O repasse consolida I03/R01–R14: identidade elemental, Santuário/órbita, navegação, Pilares, Ciclos, Temporal/Lua/Estações, Grimório, trilhas/runas, catálogos, taxonomia e Rituais Showcase. Fragmentos/streak novos continuam pendentes de contrato. **Matheus segue no backend; Fábio segue em UX/UI.** Pendências visuais não foram transferidas ao backend.
 
 O status local agora marca `updateBriefingRequired` e `onboardingRequired` quando um perfil já apresentado ainda não recebeu este repasse. Após explicar mudanças, verificações e limites, `astro:ack` marca esta revisão como vista, sem apagar nome/papel/data original. Não é notificação automática ao abrir o GitHub: exige que a IDE execute as instruções do projeto. Para reapresentar: `npm run astro:welcome`.
 

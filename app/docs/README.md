@@ -1,6 +1,8 @@
+> Estado atual: [R12/R13 — frontend implementado e contratos pendentes](plans/README.md). Trilhas, runas, catálogos e Rituais Showcase implementados; fragmentos/streak novos não implementados. [Revisão/publicação R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md).
+
 # Arquitetura — Conselho Elemental
 
-**Chegando após o pull da repaginação?** Leia o [repasse para Matheus e Astro Boy](REPASSE-FRONTEND-PARA-BACKEND.md): mudanças I03/R01–R11, responsabilidades, contratos preservados e próximos lotes de Fábio.
+**Chegando após o pull da repaginação?** Leia o [repasse para Matheus e Astro Boy](REPASSE-FRONTEND-PARA-BACKEND.md): mudanças I03/R01–R14, responsabilidades, contratos preservados e próximos lotes de Fábio.
 
 A documentação de arquitetura é dividida por domínio. Comece por [00-Overview/README.md](./00-Overview/README.md).
 

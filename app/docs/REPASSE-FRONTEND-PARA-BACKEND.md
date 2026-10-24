@@ -1,6 +1,14 @@
 # Repasse para Matheus e Astro Boy — repaginação elemental
 
-**Atualização: 23/10/2026 · versão 0.1.48 · lotes I03/R01–R11.** Este documento resume o trabalho desta conversa e permite retomar sem o histórico do chat. Estado operacional e publicação: [CONTINUIDADE](CONTINUIDADE.md). Fila única: [FILA-ENTREGAS](FILA-ENTREGAS.md). Não substitui contratos do domínio nem atesta revisão visual integral.
+**Atualização: 23/10/2026 · versão 0.1.54 · lotes I03/R01–R14.** Resumo consolidado para retomar após o pull, sem depender do chat. [Estado e publicação](CONTINUIDADE.md) · [fila única](FILA-ENTREGAS.md) · [verificações desta publicação](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md).
+
+## O que mudou desde o último push
+
+Matheus, o trabalho desde 0.1.48 ficou concentrado no frontend de gamificação. A trilha passou a usar nós elementais em relevo, seleção livre, runas próprias e retorno de conclusão com os valores já registrados. Jornadas e Grandes Obras ganharam criação contextual e acesso direto à trilha. Rituais ganhou capas Showcase, detalhes expansíveis e ações de execução separadas.
+
+Sua orientação foi aplicada: **Rituais = tarefas; Ciclos = hábitos recorrentes; Jornadas = quests intermediárias; Grandes Obras = projetos maiores.** `/rituais` abre a lista de tarefas; `/rituais?view=trilhas` abre o mapa. Links antigos com `trilha` e `etapa` permanecem válidos. Não apagamos datas nem migramos registros.
+
+As referências Figma e vídeos orientaram apresentação e movimento. **Fragmentos e uma nova mecânica de streak ainda não foram implementados.** Fábio confirmou 1 fragmento por conclusão válida, separado de XP/Prana; elegibilidade, elemento em atividades multiárea, dia/fuso, concessão/Undo e persistência continuam para definição conjunta antes de backend. [Plano de contratos](plans/R12-GAMIFICACAO-VIDEOS.md).
 
 **Matheus conduz o backend:** contratos, APIs, autenticação, persistência, sincronização, isolamento e documentação técnica. **Fábio continua conduzindo frontend, UX/UI, referências e aceite visual. Astro Boy coordena ambos.** A publicação da repaginação não transfere o frontend pendente ao Matheus nem autoriza mudar suas fórmulas.
 
@@ -59,6 +67,12 @@ As aprovações e elogios visuais de Fábio orientaram os lotes. Não equivalem 
 | R09 · 0.1.46 | Grimório com ficha única, corpo elemental, HP/Stamina/Prana/XP em vidro, nível/título/consistência, edição de identidade, maestria em showcases e radar opcional. Histórico pesquisável por tipo/período, com deduplicação e valores registrados. | Não inventa eventos, pontuação, inventário ou dados de saúde. Divergências preexistentes de Prana/precisão registradas para revisão própria. |
 | R10 · 0.1.47 | Quests em Rituais, lista anterior acessível, compositor de Jornada/Grande Obra e primeiro capítulo, nós selecionáveis, timer/recibo/próxima etapa; adicionar etapas; próximas quests no Santuário e links em Jornadas/Obras. | Projeção por IDs atuais; não grava porcentagem macro nem concede bônus macro. Hábitos e treinos seguem seus fluxos próprios. |
 | R11 · 0.1.48 | Revisão integrada: quatro avisos de hooks corrigidos sem mudar seus corpos de cálculo; destinos dos atalhos de rituais corrigidos; timer simples impede treinos/agregadores; Astrolábio deixa de gerar dados aleatórios; teste de Fitness atualizado para regra consolidada vigente; repasse versionado e boas-vindas atualizadas uma vez. | Estado das verificações e limitações em [relatório R11](03-Project-Management/reports/R11-REVISAO-E-PUBLICACAO.md). Não se promete ausência de qualquer bug. |
+| R12-A · 0.1.49 | Piloto do percurso sinuoso, nós elementais, painel contextual e estados acessíveis. Extração Figma JSON/CSS preservada como referência documental. | Sem bloqueio sequencial; seleção livre. QA visual pendente. |
+| R12-B · 0.1.50 | Runas SVG próprias, gestos de seleção, progresso, selo de conclusão e métricas reais em sequência. | Animação não concede recompensa nem cria inventário. |
+| R12-C · 0.1.51 | Catálogos de Jornadas/Grandes Obras, compositor contextual, acesso direto às trilhas, diálogos e controles refinados. | Capítulos/edição avançada ainda parciais; criação rápida anterior preservada. |
+| R12 · 0.1.52 | Taxonomia alinhada ao retorno de Matheus; tarefas como entrada de Rituais; guia entre áreas; evolução recolhível. | Dados, datas, recorrência e fórmulas preservados. |
+| R13 · 0.1.53 | Capas Showcase na lista, orb elemental, descrição completa, execução sempre visível, busca/filtros/estado vazio e evolução compacta após tarefas. | QA de navegador e interação real pendentes. |
+| R14 · 0.1.54 | Revisão integrada, compositor reiniciado ao trocar conta, repasse consolidado, índices corrigidos e novo aviso de atualização do Astro Boy após o pull. | Ver resultados atuais no relatório R14; push não equivale a deploy. |
 
 O histórico detalhado está no [changelog](03-Project-Management/fitness/CHANGELOG.md), [manual](MANUAL-ENGENHARIA.md), [dossiê](DOSSIE-TECNICO.md) e relatórios R02–R10 vinculados pelo [índice](README.md). Não usar um relatório antigo como evidência atual.
 
@@ -86,12 +100,15 @@ Pontos concretos para diagnóstico de backend, sem correção automática:
 6. **I03:** sugestão não cria registros até confirmação. Ativação, secrets, custo/quota, auditoria remota, voz e ferramentas adicionais não foram autorizados como parte desta publicação.
 7. **Grimório/Astrolábio:** histórico é projeção de registros existentes, não um ledger paralelo. Astrolábio não infere a divisão elemental histórica a partir da classificação atual; mostra pontos registrados por dia e mantém distribuição atual separada.
 
+8. **Fragmentos/constância:** quantidade inicial aprovada, demais contratos pendentes conforme plano R12; sem saldo paralelo ou migração implícita.
+
 ## O que ainda será conduzido por Fábio
 
 Próximos lotes propostos, sujeitos à fila e ao aceite dele:
 
 - QA visual e funcional de Santuário, navegação, elementos/Pilares, Ciclos, Lua/Estações/Temporal, Grimório e quests em **360/390/768/1440 px**: foco, teclado, toque, formulários, textos longos, movimento reduzido, rolagem e barra inferior.
 - Testes reais com dados isolados: criação, edição, recarga, pausa/retomada, conclusão/Undo, troca de conta, sequências e entradas Fitness. Os testes Node/SSR não substituem esses fluxos.
+- Refinar capítulos/detalhes das Jornadas e Grandes Obras; validar as novas capas de Rituais e trilhas com dados isolados.
 - Completar identidade/UX das áreas ainda parciais: Domínios/detalhes, Forja/Invocar, Astrolábio, Cassino, onboarding/auth, listas/editores antigos, demais vistas Temporal e contextos especializados Fitness. Algumas já receberam tema/ícones, sem reformulação integral.
 - Refinar performance, carregamento inicial e movimentos em dispositivos; build ainda alerta chunks grandes e base Browserslist antiga. Não houve benchmark de FPS/Core Web Vitals.
 - Avaliar as melhorias de treino inspiradas no openGym mantendo biblioteca, sessões, histórico e adapters existentes.
@@ -101,6 +118,6 @@ Essas pendências **não são tarefas atribuídas automaticamente a Matheus**. E
 
 ## Evidência e limites de entrega
 
-Ver comandos e resultados atuais no [R11](03-Project-Management/reports/R11-REVISAO-E-PUBLICACAO.md). O bloqueio salvo de acesso do agente ao localhost impediu QA renderizado recente; não foi contornado nem confundido com erro do produto. Capturas e aprovações do usuário não são execução de testes pelo agente.
+Ver comandos e resultados atuais no [R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md). R11 é evidência histórica da publicação anterior. O bloqueio salvo de acesso do agente ao localhost impediu QA renderizado recente; não foi contornado nem confundido com erro do produto. Capturas e aprovações do usuário não são execução de testes pelo agente.
 
 Publicação solicitada: GitHub `Matheuscroft/ConselhoElemental-main`, branch `main`, sem force-push. Push não significa deploy ou validação de produção. O SHA confirmado e a situação final ficam em CONTINUIDADE e na resposta de publicação; em caso de conflito remoto, integrar preservando o trabalho novo antes de repetir o push.

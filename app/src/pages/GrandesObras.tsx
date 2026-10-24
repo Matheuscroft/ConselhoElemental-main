@@ -1,20 +1,18 @@
-import { Link } from 'react-router-dom';
+import { QuestComposer } from '@/components/quests/QuestComposer';
+import { QuestRune } from '@/components/quests/QuestRune';
+import { Link, useNavigate } from 'react-router-dom';
 import { trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
-import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { 
   Plus, 
   Building2, 
   CheckCircle2, 
   Layers, 
   Calendar,
-  Flame,
-  Droplets,
-  Mountain,
-  Wind,
   Gift,
   Flag
 } from 'lucide-react';
@@ -30,11 +28,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import type { Project, ElementId } from '@/types';
 
 export const GrandesObras: React.FC = () => {
-  const { projects, addProject, addMissionToProject } = useAppStore();
+  const { currentAccountId, projects, addProject, addMissionToProject } = useAppStore();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('active');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -47,15 +47,7 @@ export const GrandesObras: React.FC = () => {
   const completedProjects = projects.filter(p => p.status === 'completed');
   const archivedProjects = projects.filter(p => p.status === 'archived');
 
-  // Get element icon
-  const getElementIcon = (elementId: ElementId) => {
-    switch (elementId) {
-      case 'terra': return <Mountain className="w-5 h-5" />;
-      case 'fogo': return <Flame className="w-5 h-5" />;
-      case 'agua': return <Droplets className="w-5 h-5" />;
-      case 'ar': return <Wind className="w-5 h-5" />;
-    }
-  };
+  const getElementIcon = (elementId: ElementId) => <QuestRune element={elementId} size={24} />;
 
   // Open project detail
   const openProjectDetail = (project: Project) => {
@@ -95,28 +87,17 @@ export const GrandesObras: React.FC = () => {
 
   return (
     <AppLayout>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="font-mystic text-xl">Grandes Obras</h2>
-          <p className="text-sm text-white/50">
-            {activeProjects.length} ativas • {completedProjects.length} concluídas
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowCreateProject(true)}
-          className="bg-mystic-arcane hover:bg-mystic-arcane/80"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Nova
-        </Button>
-      </div>
+      <MotionConfig reducedMotion="user"><div className="quest-catalog">
+      <header className="quest-catalog-heading">
+        <div><h1>Grandes Obras</h1><p>Projetos maiores, organizados em fases, jornadas e ações.</p><span>{activeProjects.length} ativas · {completedProjects.length} concluídas</span></div>
+        <div className="quest-catalog-actions"><QuestComposer key={currentAccountId ?? 'local'} initialKind="project" triggerLabel="Nova Grande Obra" onCreated={key => navigate(trailHref(key))} /><button type="button" className="quest-text-button" onClick={() => setShowCreateProject(true)}>Criar só com nome</button></div>
+      </header>
 
       {/* Stats Overview */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="grid grid-cols-3 gap-3 mb-6"
+        className="quest-catalog-summary grid grid-cols-3 gap-3 mb-6"
       >
         <div className="glass-card p-3 text-center">
           <div className="text-2xl font-bold text-mystic-gold">{projects.length}</div>
@@ -136,7 +117,7 @@ export const GrandesObras: React.FC = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="grid w-full grid-cols-3 bg-white/5">
+        <TabsList className="quest-catalog-tabs grid w-full grid-cols-3">
           <TabsTrigger value="active" className="data-[state=active]:bg-mystic-arcane">
             <Building2 className="w-4 h-4 mr-1" />
             Ativas
@@ -177,21 +158,16 @@ export const GrandesObras: React.FC = () => {
 
       {/* Project Detail Modal */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="quest-dialog quest-catalog-detail" aria-labelledby="project-detail-title" aria-describedby="project-detail-description">
           {selectedProject && (
             <>
               <DialogHeader>
                 <div className="text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="text-5xl mb-2"
-                  >
-                    <ElementIcon element={selectedProject.elementId} />
-                  </motion.div>
-                  <DialogTitle className="font-mystic text-xl">
+                  <div className="quest-catalog-rune"><QuestRune element={selectedProject.elementId} size={64} /></div>
+                  <DialogTitle id="project-detail-title" className="font-mystic text-xl">
                     {selectedProject.title}
                   </DialogTitle>
+                  <DialogDescription id="project-detail-description">Consulte a composição e abra a trilha para continuar.</DialogDescription>
                 </div>
               </DialogHeader>
               
@@ -259,7 +235,7 @@ export const GrandesObras: React.FC = () => {
                     <Button 
                       size="sm" 
                       variant="ghost" 
-                      className="h-6 text-[10px]"
+                      className="quest-secondary"
                       onClick={() => setShowAddMission(true)}
                     >
                       <Plus className="w-3 h-3 mr-1" />
@@ -273,6 +249,7 @@ export const GrandesObras: React.FC = () => {
                         type="text"
                         value={newMissionTitle}
                         onChange={(e) => setNewMissionTitle(e.target.value)}
+                        aria-label="Nome da campanha"
                         placeholder="Nome da campanha..."
                         className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
                         autoFocus
@@ -281,7 +258,7 @@ export const GrandesObras: React.FC = () => {
                           if (e.key === 'Escape') setShowAddMission(false);
                         }}
                       />
-                      <Button size="sm" className="h-8" onClick={handleAddMission}>
+                      <Button size="sm" className="quest-primary" aria-label="Adicionar campanha" onClick={handleAddMission}>
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
@@ -342,15 +319,17 @@ export const GrandesObras: React.FC = () => {
 
       {/* Create Project Dialog */}
       <Dialog open={showCreateProject} onOpenChange={setShowCreateProject}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
+        <DialogContent className="quest-dialog quest-quick-create" aria-labelledby="project-quick-title" aria-describedby="project-quick-description">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-center">Nova Grande Obra</DialogTitle>
+            <DialogTitle id="project-quick-title" className="font-mystic">Nova Grande Obra</DialogTitle>
+            <DialogDescription id="project-quick-description">Comece pelo nome. Você pode organizar as etapas depois.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-4">
             <input
               type="text"
               value={newProjectTitle}
               onChange={(e) => setNewProjectTitle(e.target.value)}
+              aria-label="Nome da Grande Obra"
               placeholder="Nome da Grande Obra..."
               className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-mystic-arcane"
               autoFocus
@@ -377,6 +356,7 @@ export const GrandesObras: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div></MotionConfig>
     </AppLayout>
   );
 };
@@ -440,8 +420,8 @@ interface ProjectCardProps {
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived, onClick }) => {
   const area = project.areaId ? getAreaById(project.areaId) : null;
   const totalItems = project.missions.length + project.quests.length + project.tasks.length + project.habits.length;
-  return <ShowcaseCard title={project.title} description={project.description} element={project.elementId}
+  return <article className="quest-catalog-card"><ShowcaseCard title={project.title} description={project.description} element={project.elementId}
     status={archived ? 'Obra arquivada' : completed ? 'Obra concluída' : 'Obra em andamento'} progress={project.progress}
     chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} campanhas`] : [])]}
-    reward={project.reward} onOpen={onClick} />;
+    reward={project.reward} onOpen={onClick} /><Link className="quest-catalog-open" to={trailHref(`project:${project.id}`)} aria-label={`Abrir trilha de ${project.title}`}><ArcaneIcon name="jornada" size={20} />{archived || completed ? 'Consultar trilha' : 'Abrir trilha'}<span aria-hidden="true">→</span></Link></article>;
 };

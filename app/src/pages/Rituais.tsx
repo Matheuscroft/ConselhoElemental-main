@@ -1,7 +1,11 @@
+import { RitualShowcase } from '@/components/rituals/RitualShowcase';
+import '@/components/rituals/rituals.css';
+import { ritualView } from '@/components/quests/quest-navigation';
+import { ActivityGuide } from '@/components/quests/ActivityGuide';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { QuestHub } from '@/components/quests/QuestHub';
 import { 
@@ -63,7 +67,7 @@ import type { Task, TaskItem, ElementId, Area } from '@/types';
 export const Rituais: React.FC = () => {
   const navigate = useNavigate();
   const [questParams, setQuestParams] = useSearchParams();
-  const showQuestList = questParams.get('view') === 'lista';
+  const showQuestList = ritualView(questParams) === 'lista';
   const questAccountId = useAppStore(state => state.currentAccountId);
   const { 
     tasks, 
@@ -554,9 +558,11 @@ export const Rituais: React.FC = () => {
 
   return (
     <AppLayout>
+      <MotionConfig reducedMotion="user">
+      <div className="ritual-page">
       <nav className="quest-view-switch" aria-label="Visualização dos rituais">
-        <Link to="/rituais" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} />Quests</Link>
-        <Link to="/rituais?view=lista" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} />Lista de rituais</Link>
+        <Link to="/rituais" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} />Rituais</Link>
+        <Link to="/rituais?view=trilhas" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} />Trilhas</Link>
       </nav>
       {!showQuestList && <QuestHub key={questAccountId} onManageTask={id => {
         const task = tasks.find(item => item.id === id);
@@ -567,9 +573,10 @@ export const Rituais: React.FC = () => {
       }} />}
       {showQuestList && <>
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="ritual-list-heading">
         <div>
-          <h2 className="font-mystic text-xl">Rituais</h2>
+          <h1>Rituais</h1>
+          <p>Suas tarefas pontuais, para realizar no seu ritmo.</p>
           <p className="text-sm text-white/50">
             {pendingCount} pendentes • {completedCount} concluídos
           </p>
@@ -579,22 +586,19 @@ export const Rituais: React.FC = () => {
           className="bg-mystic-arcane hover:bg-mystic-arcane/80"
         >
           <Plus className="w-4 h-4 mr-1" />
-          Novo
+          Novo ritual
         </Button>
       </div>
 
-      <ScoreHierarchyPanel
-        tasks={tasks}
-        habits={habits}
-        customAreas={customAreas}
-        customSubareas={customSubareas}
-      />
+      <ActivityGuide />
+
 
       {/* Search and Filter */}
-      <div className="flex gap-2 mb-4">
+      <div className="ritual-search flex gap-2 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
           <Input
+            aria-label="Buscar ritual"
             placeholder="Buscar ritual..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -604,7 +608,7 @@ export const Rituais: React.FC = () => {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="border-white/20">
+            <Button variant="outline" size="icon" className="border-white/20" aria-label="Filtrar rituais por elemento">
               <Filter className="w-4 h-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -634,19 +638,15 @@ export const Rituais: React.FC = () => {
             exit={{ opacity: 0, y: -10 }}
             className="mb-4"
           >
-            <Badge 
-              variant="outline" 
-              className="cursor-pointer bg-white/5"
-              onClick={() => setFilterElement(null)}
-            >
-              <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} ✕
-            </Badge>
+            <button type="button" className="ritual-filter-chip" onClick={() => setFilterElement(null)} aria-label={`Remover filtro de ${ELEMENTS[filterElement].name}`}>
+              <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} <X size={16} aria-hidden="true" />
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="ritual-tabs mb-4">
         <TabsList className="grid w-full grid-cols-2 bg-white/5">
           <TabsTrigger value="pending" className="data-[state=active]:bg-mystic-arcane">
             <ListTodo className="w-4 h-4 mr-1" />
@@ -721,7 +721,7 @@ export const Rituais: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState type="pending" onCreate={() => navigate('/invocar')} />
+              <EmptyState type="pending" filtered={!!searchQuery || !!filterElement} onClear={() => { setSearchQuery(''); setFilterElement(null); }} onCreate={() => setShowQuickCreate(true)} />
             )}
           </AnimatePresence>
         </TabsContent>
@@ -742,11 +742,20 @@ export const Rituais: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState type="completed" />
+              <EmptyState type="completed" filtered={!!searchQuery || !!filterElement} onClear={() => { setSearchQuery(''); setFilterElement(null); }} />
             )}
           </AnimatePresence>
         </TabsContent>
       </Tabs>
+      <details className="ritual-evolution"><summary><ArcaneIcon name="conquista" size={20} />Sua evolução elemental</summary>
+      <ScoreHierarchyPanel
+        presentation="showcase"
+        tasks={tasks}
+        habits={habits}
+        customAreas={customAreas}
+        customSubareas={customSubareas}
+      />
+      </details>
       </>}
 
       {/* Timer Modal */}
@@ -794,20 +803,21 @@ export const Rituais: React.FC = () => {
 
       {/* Quick Create Modal */}
       <Dialog open={showQuickCreate} onOpenChange={setShowQuickCreate}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
+        <DialogContent className="quest-dialog quest-quick-create" aria-labelledby="ritual-create-title" aria-describedby="ritual-create-description">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-xl">
+            <DialogTitle id="ritual-create-title" className="font-mystic text-xl">
               Novo Ritual
             </DialogTitle>
-            <DialogDescription className="text-white/50">
-              Crie um novo ritual rapidamente
+            <DialogDescription id="ritual-create-description">
+              Uma tarefa pontual para realizar. Para criar um hábito que se repete, use Ciclos.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div>
-              <label className="text-sm text-white/70 mb-2 block">Nome do Ritual</label>
+              <label htmlFor="ritual-create-name" className="text-sm text-white/70 mb-2 block">Nome do Ritual</label>
               <Input
+                id="ritual-create-name"
                 placeholder="Digite o nome..."
                 value={quickCreateName}
                 onChange={(e) => setQuickCreateName(e.target.value)}
@@ -842,7 +852,7 @@ export const Rituais: React.FC = () => {
 
       {/* Edit Modal */}
       <Dialog open={showQuickEdit} onOpenChange={setShowQuickEdit}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-md">
+        <DialogContent className="quest-dialog ritual-edit-dialog">
           <DialogHeader>
             <DialogTitle className="font-mystic text-xl">
               {editingItemId ? 'Editar Subitem' : 'Editar Ritual'}
@@ -1229,6 +1239,8 @@ export const Rituais: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
+      </MotionConfig>
     </AppLayout>
   );
 };
@@ -1488,6 +1500,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 {!item.isCompleted ? (
                   <button
                     onClick={() => onCompleteItem?.(item.id)}
+                    aria-label={`Concluir ${item.title}`}
                     className="w-5 h-5 rounded border flex items-center justify-center border-white/30 hover:border-white/50"
                   >
                     <Check className="w-3 h-3" />
@@ -1555,6 +1568,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 {hasChildren && (
                   <button
                     onClick={() => onToggleItemExpand?.(item.id)}
+                    aria-expanded={isExpanded}
+                    aria-label={`Subitens de ${item.title}`}
                     className="text-white/40 hover:text-white/70"
                   >
                     {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -1624,6 +1639,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     value={newItemValue}
                     onChange={(e) => setNewItemValue?.(Number(e.target.value))}
                     placeholder="Pts"
+                    aria-label="Valor do item em pontos"
                     className="w-14 h-8 text-sm bg-white/5 border-white/10"
                   />
                   <Input
@@ -1632,6 +1648,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     value={newItemMinutes}
                     onChange={(e) => setNewItemMinutes?.(e.target.value)}
                     placeholder="Min"
+                    aria-label="Duração prevista em minutos"
                     className="w-14 h-8 text-sm bg-white/5 border-white/10"
                   />
                   <button
@@ -1641,7 +1658,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   >
                     <X className="w-4 h-4" />
                   </button>
-                  <Button size="sm" className="h-8 px-2" onClick={() => onSubmitItem?.(item.id)}>
+                  <Button size="sm" className="h-8 px-2" aria-label="Adicionar subitem" onClick={() => onSubmitItem?.(item.id)}>
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -1663,6 +1680,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 value={newItemTitle}
                 onChange={(e) => setNewItemTitle?.(e.target.value)}
                 placeholder="Novo item..."
+                    aria-label="Nome do item"
                 className="flex-1 min-w-0 h-8 text-sm bg-white/5 border-white/10"
                 autoFocus
                 onKeyDown={(e) => {
@@ -1676,6 +1694,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 value={newItemValue}
                 onChange={(e) => setNewItemValue?.(Number(e.target.value))}
                 placeholder="Pts"
+                    aria-label="Valor do item em pontos"
                 className="w-14 h-8 text-sm bg-white/5 border-white/10"
               />
               <Input
@@ -1684,6 +1703,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 value={newItemMinutes}
                 onChange={(e) => setNewItemMinutes?.(e.target.value)}
                 placeholder="Min"
+                    aria-label="Duração prevista em minutos"
                 className="w-14 h-8 text-sm bg-white/5 border-white/10"
               />
               <button
@@ -1693,7 +1713,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               >
                 <X className="w-4 h-4" />
               </button>
-              <Button size="sm" className="h-8 px-2" onClick={() => onSubmitItem?.(null)}>
+              <Button size="sm" className="h-8 px-2" aria-label="Adicionar item" onClick={() => onSubmitItem?.(null)}>
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -1720,70 +1740,65 @@ const TaskCard: React.FC<TaskCardProps> = ({
         onDrop?.();
       }}
       onDragEnd={onDragEnd}
-      className={`relative p-4 rounded-2xl border transition-all ${
-        completed 
-          ? 'bg-mystic-gold/5 border-mystic-gold/20' 
-          : 'bg-white/5 border-white/10 hover:border-white/20'
-      } ${isDragOver ? 'border-mystic-gold/60 bg-mystic-gold/10' : ''}`}
+      className={`ritual-showcase-shell ${isDragOver ? 'is-drag-over' : ''}`}
     >
-      <div className="flex items-start gap-3">
+      <RitualShowcase
+        title={task.title}
+        description={task.description}
+        element={element.id}
+        completed={completed}
+        status={completed ? 'Concluído' : task.isInProgress ? 'Em andamento' : 'Pendente'}
+        summary={totalItems > 0 ? `${completedItems} de ${totalItems} itens concluídos` : areaDisplayName}
+        actions={<>
+            {!completed && onStart && (
+              <Button
+                size="sm"
+                onClick={onStart}
+                className="h-7 px-2 text-xs bg-mystic-arcane hover:bg-mystic-arcane/80 shrink-0"
+              >
+                <Play className="w-3 h-3 mr-1" />
+                Iniciar
+              </Button>
+            )}
         {/* Completion button */}
         {!completed && onComplete && (
           <button
             onClick={onComplete}
+            aria-label={`Concluir ${task.title}`}
             className="w-8 h-8 rounded-lg bg-white/10 hover:bg-mystic-gold/20 
                       flex items-center justify-center flex-shrink-0 transition-colors"
           >
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4" /> Concluir
           </button>
         )}
         {completed && (
           <button
             onClick={onUncomplete}
+            aria-label={`Desfazer conclusão de ${task.title}`}
             className="w-8 h-8 rounded-lg bg-mystic-gold/20 hover:bg-mystic-gold/30 
                       flex items-center justify-center flex-shrink-0 transition-colors"
             title="Desmarcar"
           >
-            <X className="w-4 h-4 text-mystic-gold" />
+            <X className="w-4 h-4 text-mystic-gold" /> Desfazer conclusão
           </button>
         )}
 
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
-                {task.title}
-              </p>
-              {task.description && (
-                <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{task.description}</p>
-              )}
-            </div>
-            
+        </>}
+      >
+        <div className="ritual-detail-toolbar">
             {!completed && (
               <div className="flex items-center gap-1">
-                <span
-                  className="w-7 h-7 rounded-full border flex items-center justify-center text-base leading-none"
-                  style={{
-                    backgroundColor: `${element.color}1f`,
-                    borderColor: `${element.color}66`,
-                  }}
-                  title={element.name}
-                >
-                  <ElementIcon element={element.id} />
-                </span>
-
                 <button
                   onClick={() => onStartAddItem?.(null)}
                   className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70"
                   title="Adicionar item"
                 >
-                  <PlusCircle className="w-4 h-4" />
+                  <PlusCircle className="w-4 h-4" /> Adicionar item
                 </button>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="p-1 rounded-lg hover:bg-white/10">
+                    <button className="p-1 rounded-lg hover:bg-white/10" aria-label={`Opções de ${task.title}`}>
                       <MoreVertical className="w-4 h-4 text-white/40" />
                     </button>
                   </DropdownMenuTrigger>
@@ -1818,8 +1833,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                 </DropdownMenu>
               </div>
             )}
-          </div>
-
+        </div>
           {/* Badges + Start */}
           <div className="mt-2 flex items-start justify-between gap-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -1896,16 +1910,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               )}
             </div>
 
-            {!completed && onStart && (
-              <Button
-                size="sm"
-                onClick={onStart}
-                className="h-7 px-2 text-xs bg-mystic-arcane hover:bg-mystic-arcane/80 shrink-0"
-              >
-                <Play className="w-3 h-3 mr-1" />
-                Iniciar
-              </Button>
-            )}
+
           </div>
 
           {totalItems === 0 && (
@@ -1916,6 +1921,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     value={newItemTitle}
                     onChange={(e) => setNewItemTitle?.(e.target.value)}
                     placeholder="Novo item..."
+                    aria-label="Nome do item"
                     className="flex-1 h-8 text-sm bg-white/5 border-white/10"
                     autoFocus
                     onKeyDown={(e) => {
@@ -1929,6 +1935,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     value={newItemValue}
                     onChange={(e) => setNewItemValue?.(Number(e.target.value))}
                     placeholder="Pts"
+                    aria-label="Valor do item em pontos"
                     className="w-20 h-8 text-sm bg-white/5 border-white/10"
                   />
                   <Input
@@ -1937,9 +1944,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
                     value={newItemMinutes}
                     onChange={(e) => setNewItemMinutes?.(e.target.value)}
                     placeholder="Min"
+                    aria-label="Duração prevista em minutos"
                     className="w-20 h-8 text-sm bg-white/5 border-white/10"
                   />
-                  <Button size="sm" className="h-8 px-2" onClick={() => onSubmitItem?.(null)}>
+                  <Button size="sm" className="h-8 px-2" aria-label="Adicionar item" onClick={() => onSubmitItem?.(null)}>
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -1952,6 +1960,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <div className="mt-2 flex items-center gap-2">
               <button
                 onClick={onToggleExpand}
+                aria-expanded={!!task.isExpanded}
                 className="flex items-center gap-1 text-xs text-white/50 hover:text-white/70"
               >
                 {task.isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
@@ -1980,18 +1989,19 @@ const TaskCard: React.FC<TaskCardProps> = ({
             )}
           </AnimatePresence>
 
-        </div>
-      </div>
+      </RitualShowcase>
     </motion.div>
   );
 };
 
 interface EmptyStateProps {
   type: 'pending' | 'completed';
+  filtered?: boolean;
+  onClear?: () => void;
   onCreate?: () => void;
 }
 
-const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate }) => (
+const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate, filtered, onClear }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -1999,17 +2009,18 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate }) => (
   >
     <div className="text-4xl mb-3"><ArcaneIcon name={type === 'pending' ? 'ritual' : 'conquista'} /></div>
     <h3 className="font-mystic text-lg mb-2">
-      {type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
+      {filtered ? 'Nenhum ritual encontrado' : type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
     </h3>
     <p className="text-white/50 text-sm mb-4">
-      {type === 'pending' 
-        ? 'Que tal invocar um novo ritual?' 
+      {filtered ? 'Tente outro nome ou remova o filtro de elemento.' : type === 'pending'
+        ? 'Adicione uma tarefa para dar o próximo passo.'
         : 'Complete seus rituais para vê-los aqui.'}
     </p>
-    {type === 'pending' && onCreate && (
+    {filtered && <Button variant="outline" onClick={onClear}>Limpar busca e filtros</Button>}
+    {!filtered && type === 'pending' && onCreate && (
       <Button onClick={onCreate}>
         <Plus className="w-4 h-4 mr-2" />
-        Invocar Ritual
+        Novo ritual
       </Button>
     )}
   </motion.div>

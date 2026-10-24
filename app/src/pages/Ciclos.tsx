@@ -1619,7 +1619,7 @@ export const Ciclos: React.FC = () => {
       <MotionConfig reducedMotion="user">
       <div className="cycles-workspace">
       <header className="cycles-header">
-        <div className="cycles-heading"><span className="cycles-emblem"><ArcaneIcon name="ciclo" size={30} /></span><div><h2>Ciclos</h2><p>Construa sua rotina, um passo de cada vez.</p><small>{habits.length} ciclos cadastrados</small></div></div>
+        <div className="cycles-heading"><span className="cycles-emblem"><ArcaneIcon name="ciclo" size={30} /></span><div><h2>Ciclos</h2><p>Hábitos que aparecem nos dias da sua recorrência.</p><small>{habits.length} ciclos cadastrados</small></div></div>
         <Button ref={newCycleTriggerRef} onClick={() => setShowQuickCreateCycle(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Novo ciclo</Button>
       </header>
       {/* Day Card */}

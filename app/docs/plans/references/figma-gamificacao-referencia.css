@@ -1,0 +1,44 @@
+/* Reference-only color extraction from inspected Figma nodes. Not loaded by the app. */
+:root {
+  --ref-color-purple-base: #ce82ff;
+  --ref-color-grey-white: #ffffff;
+  --ref-color-purple-ice: #dbc3eb;
+  --ref-color-blue-base: #1cb0f6;
+  --ref-color-grey-6: #e5e5e5;
+  --ref-color-red-base: #ff4b4b;
+  --ref-text-primary: #4b4b4b;
+  --ref-color-orange-base: #ff9600;
+  --ref-color-gold-base: #ffc800;
+  --ref-text-streak-count: #ff9600;
+  --ref-color-blue-ice: #ddf4ff;
+  --ref-text-gem-count: #1cb0f6;
+  --ref-color-red-light: #ffb2b2;
+  --ref-text-life-count: #ff4b4b;
+  --ref-color-purple-ice-text: #edd1ff;
+  --ref-color-purple-medium: #a568cc;
+  --ref-color-yellow-dark: #e6a000;
+  --ref-color-yellow-light: #ffe700;
+  --ref-color-gold-dark: #aa572a;
+  --ref-color-purple-light: #daa0ff;
+  --ref-color-purple-dark-shine: #b786d6;
+  --ref-color-grey-4: #b7b7b7;
+  --ref-color-grey-3: #afafaf;
+  --ref-color-grey-5: #d9d9d9;
+  --ref-color-gold-medium: #cd7900;
+  --ref-color-blue-light: #63c9f9;
+  --ref-color-gold-light: #fbe56d;
+  --ref-color-blue-medium: #1899d6;
+  --ref-color-yellow-base: #ffd900;
+  --ref-color-yellow-medium: #f7c100;
+  --ref-color-green-base: #58cc02;
+  --ref-color-green-ice: #ecffde;
+  --ref-color-green-medium: #58a700;
+  --ref-color-green-dark: #478700;
+  --ref-color-bronze-base: #e5ae7c;
+  --ref-color-gold-extra-dark: #90461f;
+  --ref-color-bronze-medium: #c07f41;
+  --ref-color-silver-base: #c2d1dd;
+  --ref-color-silver-medium: #92a8ba;
+  --ref-text-tertiary: #afafaf;
+  --ref-color-grey-2: #777777;
+}

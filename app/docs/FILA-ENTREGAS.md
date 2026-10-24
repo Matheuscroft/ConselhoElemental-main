@@ -1,3 +1,81 @@
+## R14 — revisão concluída, publicação autorizada (23/10/2026)
+
+**0.1.54**, base `987e09e`, branch `codex/fitness-ui-integration`. R12/R13 revisados; [repasse consolidado I03/R01–R14](REPASSE-FRONTEND-PARA-BACKEND.md) e [verificações R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md). Matheus mantém backend; Fábio frontend.
+
+**Correções:** documentos de topo/boas-vindas atualizados; novo briefing após pull mesmo em perfis antigos; compositor reinicia ao trocar conta. Domínio, cálculos, dados e dependências preservados.
+
+**Executado:** 102 testes Node, 10 Fitness Deno e 7 assistente Deno passaram; TypeScript/lint/build passaram. Primeira chamada Deno corrigida para usar `tests/deno.json`. QA visual pendente; avisos de chunks/Browserslist permanecem. Sem teste remoto/deploy/secrets. Push ainda aguardando conclusão operacional; será registrado após confirmação. Reservas mantidas até fechamento Git.
+
+**Próximo:** Fábio revisa UX/capas/trilhas/mobile e continua capítulos/detalhes/áreas restantes. Matheus confere contratos macro/Undo/sync e participa da definição de fragmentos/streak; nenhuma carteira implementada. Revisão documental pelo coordenador, independente pendente.
+
+## R13 — Rituais Showcase implementado, QA visual pendente (23/10/2026)
+
+Versão **0.1.53 local**, branch `codex/fitness-ui-integration`, HEAD `987e09e`. [Referência, entrega e verificações](plans/R13-RITUAIS-SHOWCASE.md).
+
+**Entregue:** lista de Rituais com capas elementais expansíveis e ações de execução separadas/visíveis; detalhes completos, controles maiores, campos rotulados, filtros e estados vazios refinados. Evolução compacta com arte realista após a lista. Taxonomia de Matheus e mapa de trilhas preservados.
+
+**Executado:** 56/56 testes Node, TypeScript, lint sem avisos, build `envDir:false` (14,45 s), SSR dos quatro elementos. 13 handlers e três auxiliares de cálculo idênticos por AST. Apenas uma fonte preexistente alterada neste lote; duas novas de apresentação. Domínio/backend/painel de cálculos intactos. Avisos de chunks/Browserslist permanecem.
+
+**Limite:** nova tentativa de navegador interno recusada pela preferência salva de localhost; sem contorno e sem QA visual/interações. **Próximo:** revisar capas/itens/edição/timer/conclusão/filtros/evolução em mobile/teclado/zoom e depois capítulos/detalhes de Jornadas/Grandes Obras. Contratos R12-D/E continuam pendentes. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem secrets, deploy, migração, commit ou push.
+
+## R12 — taxonomia alinhada com Matheus (23/10/2026)
+
+Versão **0.1.52 local**, branch `codex/fitness-ui-integration`, HEAD `987e09e`. [Decisão, implementação e evidências](plans/R12-TAXONOMIA-MATHEUS.md).
+
+**Entregue:** Rituais abre tarefas por padrão; trilhas ficam explícitas e links anteriores continuam válidos. Guia distingue tarefas/Rituais, hábitos/Ciclos, quests/Jornadas e projetos/Grandes Obras. Criação de conquista nos catálogos; textos/atalhos e criação rápida de Ritual alinhados à identidade atual. Datas, dados, regras e handlers preservados.
+
+**Executado:** 56/56 testes Node, TypeScript, lint sem avisos e build `envDir:false` (9,10 s); 13 handlers de Rituais idênticos por AST; diff de domínio/backend/comandos/projeção vazio. Avisos de chunks/Browserslist permanecem. QA renderizado pendente, sem nova tentativa ou contorno ao bloqueio salvo.
+
+**Próximo:** QA de tarefas/criação/guia/atalhos/catálogos em mobile/teclado/zoom; capítulos/detalhes avançados depois. Streak/fragmentos continuam dependentes dos contratos R12-D/E. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem secrets, deploy, migração, commit ou push. Histórico abaixo preservado.
+
+## R12-C — catálogos/composição implementados, em revisão visual (23/10/2026)
+
+Versão **0.1.51 local**, branch `codex/fitness-ui-integration`, HEAD `987e09e`. Continuação autorizada por Fábio; [entrega e pendências](plans/R12-C-CATALOGOS.md).
+
+**Entregue:** acesso direto à trilha nos cartões; compositor completo nos catálogos com tipo inicial Jornada/Grande Obra e navegação para a trilha criada; criação rápida preservada; cabeçalhos/diálogos/runas/rótulos/alvos de toque refinados; ações finais do compositor aderentes na rolagem. Campanhas existentes preservadas; navegação avançada por capítulo ainda não implementada.
+
+**Executado:** 54/54 testes Node, TypeScript, lint sem avisos, build `envDir:false` (7,83 s). Cinco handlers idênticos por AST, apenas quatro fontes preexistentes de apresentação alteradas nesta rodada. Domínio/backend/comandos/projeção sem diff. Avisos de chunks/Browserslist permanecem; QA renderizado pendente, sem nova tentativa/contorno ao bloqueio salvo.
+
+**Próximo:** QA de catálogos→criação→trilha, detalhes/campanhas, mobile/zoom/teclado e rodapé aderente; capítulos/edição avançada depois. R12-D/E dependem de contratos antes de streak/fragmentos. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Alterações anteriores preservadas; sem secrets, commit/push, deploy ou migração.
+
+## R12-B — movimento/ícones implementados, em revisão visual (23/10/2026)
+
+Versão **0.1.50 local**, branch `codex/fitness-ui-integration`, HEAD `987e09e`. Pedido atual: continuar animações do vídeo, ícones e leve redesign. [Entrega, mapa da referência e pendências](plans/R12-B-MOVIMENTO.md).
+
+**Entregue:** runas próprias nas quests/compositor; gestos finitos por elemento; toque sobre base fixa; painel com origem no nó; progresso por transform; selo arcano/check e métricas reais em sequência na conclusão. Fluxos de seleção, criação, timer, conclusão e foco preservados. Streak/fragmentos/coleção do vídeo permanecem pendentes de R12-D/E; sem recompensas inventadas.
+
+**Executado:** 54/54 testes Node, TypeScript, lint sem avisos, build `envDir:false` (17,94 s). Cinco handlers idênticos por AST; somente quatro fontes preexistentes de apresentação alteradas nesta rodada. Diff de domínio/backend/comandos/projeção vazio. Avisos de chunks/Browserslist permanecem. QA renderizado ainda pendente; sem nova tentativa ou contorno ao bloqueio salvo do navegador. Não declarar fluidez medida.
+
+**Próximo:** QA visual/funcional, depois R12-C em Jornadas/Grandes Obras/compositor. Decisões de recompensa com Fábio/Matheus antes de integração R12-D/E. Alterações preexistentes preservadas; reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem secrets, deploy, migração, commit ou push.
+
+## R12-A — piloto implementado / em revisão visual (23/10/2026)
+
+Fábio confirmou iniciar o piloto. Base `987e09e`, branch `codex/fitness-ui-integration`, versão **0.1.49 local**. Astro Boy executou sequencialmente: percurso sinuoso centralizado, nós elementais em relevo, seleção com detalhe estável, estados e IDs acessíveis. [Entrega e evidências](plans/R12-A-PILOTO.md). JSON/CSS extraídos preservados em `docs/plans/references/`; não carregados pelo app.
+
+**Executado:** 49/49 testes Node de quests/elemental, TypeScript, lint sem avisos e build Vite `envDir:false` (23,80 s). Sem QA visual: tentativa atual de acessar a aba local recusada por preferência salva; sem contorno. Avisos de chunks grandes/Browserslist permanecem. Diff-check, links, versões e preservação de domínio conferidos. Não confundir testes SSR com fluidez ou interação real.
+
+**Preservado:** QuestHub/QuestComposer, comandos, fontes de dados, regras, contratos e backend. Piloto aparece no mapa em Rituais acessível por uma Jornada; o catálogo Jornadas e compositor aguardam R12-C. Fragmentos/streak aguardam R12-D/E. Alterações documentais anteriores preservadas.
+
+**Próximo:** QA renderizado em 360/390/768/1440, zoom/teclado/movimento reduzido; depois painel/recibo R12-B e integração R12-C. Reservas encerradas. Revisão documental pelo coordenador; independente pendente. Sem secrets, commit/push, deploy ou migração. Histórico abaixo preservado.
+
+## R12 — revisão de prontidão (23/10/2026)
+
+Pedido vigente: revisar pendências e preparar o início; **não implementar nesta rodada**. Astro Boy executou sequencialmente a revisão; reservas de `docs/plans/`, `docs/CONTINUIDADE.md` e `docs/FILA-ENTREGAS.md` encerradas após o fechamento documental. Base local `987e09e`, branch `codex/fitness-ui-integration`; alterações documentais anteriores preservadas.
+
+Piloto visual R12-A delimitado; recompensas persistidas dependem de R12-D. Ver [prontidão, prioridades e critérios de início](plans/R12-PRONTIDAO.md). Estado da implementação: não iniciada; nenhuma alteração de versão, código ou domínio autorizada por este diagnóstico.
+
+## Ponto de retomada — R12 / preparação por vídeos (23/10/2026)
+
+**Somente análise e planos; implementação não iniciada.** Base `987e09e`, versão 0.1.48 mantida. Fábio solicitou aplicar UI/UX/movimento de duas gravações, constância e fragmentos por elemento na próxima rodada. [Plano completo e contratos propostos](plans/R12-GAMIFICACAO-VIDEOS.md) · [Movimento](plans/001-MOVIMENTO-QUESTS.md) · [Ordem de execução](plans/README.md).
+
+**Executado:** metadados dos vídeos (105,117 s e 31,102 s; 1290×2796), oito folhas de contato e inspeção de trechos; leitura de código, contratos e estado Git. Não houve reprodução audiovisual integral. Segundo vídeo HDR; miniaturas não foram usadas para extrair paleta. Fontes pessoais e quadros não foram adicionados ao repositório.
+
+**Preparado:** mapa por capítulos, seleção contextual, resultado registrado, revelação/coleta de fragmento, selo de constância e retorno à trilha. Reutilizar componentes R10. Sequência global já existe; usa updatedAt em tarefas e exige conclusão hoje para não zerar, divergências a revisar antes de mudar regra. Fragmentos econômicos não encontrados; partículas visuais não são carteira.
+
+**Decisão confirmada por Fábio em 23/10/2026:** 1 fragmento por conclusão válida, do elemento da atividade, em saldo separado sem alterar XP/Prana. Não usar fórmula proporcional aos pontos. **Ainda abertos:** regra de dia/fuso/constância, elegibilidade, resolução multiárea/conflitos, Undo/reconclusão e persistência. A preferência pela área primária segue proposta de resolução, não foi confirmada separadamente. Matheus mantém backend; implementação permanece para a próxima rodada.
+
+**Próximo:** R12-A, piloto visual de Jornada/estados e painel; avançar UI independente enquanto se define R12-D (contrato de recompensas com Matheus). QA renderizado continua pendente; sem nova tentativa de localhost, sem testes de produto/build/lint nesta rodada, sem secrets, deploy, commit ou push. Código/dados/manifests não alterados. Documentação preparada pelo coordenador, revisão independente pendente; reserva documental encerrada. Histórico preservado abaixo.
+
 ## Ponto de retomada — R11 / revisão e repasse / 0.1.48 (23/10/2026)
 
 Pedido de Fábio: revisar erros, consolidar toda a repaginação para Astro Boy e Matheus e publicar no main indicado. **Matheus continua responsável pelo backend; Fábio continua UX/UI.** [Repasse completo I03/R01–R11](REPASSE-FRONTEND-PARA-BACKEND.md). Astro Boy sequencial; branch codex/fitness-ui-integration, base f07292f; main remoto conferido igual antes da publicação. **Publicado em main:** commit `b8c51a286b311cbfcbe09d986c0236a28218f308`, push sem force e SHA remoto confirmado por `git ls-remote origin refs/heads/main` em 23/10/2026. Este encerramento documental segue em commit próprio.

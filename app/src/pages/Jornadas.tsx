@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { QuestComposer } from '@/components/quests/QuestComposer';
+import { QuestRune } from '@/components/quests/QuestRune';
+import { Link, useNavigate } from 'react-router-dom';
 import { trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
-import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { 
   Plus, 
   Map, 
@@ -12,11 +14,6 @@ import {
   Calendar,
   CheckCircle2,
   Circle,
-  Flame,
-  Droplets,
-  Mountain,
-  Wind,
-  Route,
   Gift
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -31,11 +28,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import type { Quest, ElementId } from '@/types';
 
 export const Jornadas: React.FC = () => {
-  const { quests, addQuest } = useAppStore();
+  const { currentAccountId, quests, addQuest } = useAppStore();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('active');
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
   const [showDetail, setShowDetail] = useState(false);
@@ -47,15 +46,7 @@ export const Jornadas: React.FC = () => {
 
   const filteredQuests = activeTab === 'active' ? activeQuests : completedQuests;
 
-  // Get element icon
-  const getElementIcon = (elementId: ElementId) => {
-    switch (elementId) {
-      case 'terra': return <Mountain className="w-5 h-5" />;
-      case 'fogo': return <Flame className="w-5 h-5" />;
-      case 'agua': return <Droplets className="w-5 h-5" />;
-      case 'ar': return <Wind className="w-5 h-5" />;
-    }
-  };
+  const getElementIcon = (elementId: ElementId) => <QuestRune element={elementId} size={24} />;
 
   // Open quest detail
   const openQuestDetail = (quest: Quest) => {
@@ -75,99 +66,17 @@ export const Jornadas: React.FC = () => {
 
   return (
     <AppLayout>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="font-mystic text-xl">Jornadas</h2>
-          <p className="text-sm text-white/50">
-            {activeQuests.length} ativas • {completedQuests.length} concluídas
-          </p>
-        </div>
-        <Button 
-          onClick={() => setShowCreateQuest(true)}
-          className="bg-mystic-arcane hover:bg-mystic-arcane/80"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Nova
-        </Button>
-      </div>
+      <MotionConfig reducedMotion="user"><div className="quest-catalog">
+      <header className="quest-catalog-heading">
+        <div><h1>Jornadas</h1><p>Quests são conquistas intermediárias, organizadas em rituais.</p><span>{activeQuests.length} ativas · {completedQuests.length} concluídas</span></div>
+        <div className="quest-catalog-actions"><QuestComposer key={currentAccountId ?? 'local'} initialKind="quest" triggerLabel="Nova Jornada" onCreated={key => navigate(trailHref(key))} /><button type="button" className="quest-text-button" onClick={() => setShowCreateQuest(true)}>Criar só com nome</button></div>
+      </header>
 
-      {/* Map Visualization */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-mystic-purple/60 to-void/90 
-                  border border-white/10 p-5 mb-6"
-      >
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5"/>
-            </pattern>
-            <rect width="100" height="100" fill="url(#grid)" />
-          </svg>
-        </div>
-        
-        {/* Map route visualization */}
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-4">
-            <Route className="w-5 h-5 text-mystic-gold" />
-            <h3 className="font-mystic text-sm text-mystic-gold">Mapa de Jornadas</h3>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-mystic-gold/20 flex items-center justify-center mb-1">
-                <span className="text-xl"><ArcaneIcon name="jornada" /></span>
-              </div>
-              <p className="text-[10px] text-white/50">Início</p>
-            </div>
-            
-            {/* Path */}
-            <div className="flex-1 mx-4 relative">
-              <div className="h-1 bg-white/10 rounded-full">
-                <div 
-                  className="h-full bg-gradient-to-r from-mystic-gold via-mystic-arcane to-mystic-gold rounded-full"
-                  style={{ width: `${quests.length > 0 ? (completedQuests.length / quests.length) * 100 : 0}%` }}
-                />
-              </div>
-              
-              {/* Waypoints */}
-              <div className="flex justify-between mt-2">
-                {quests.slice(0, 5).map((quest, i) => (
-                  <motion.div
-                    key={quest.id}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className={`w-3 h-3 rounded-full ${
-                      quest.isCompleted ? 'bg-mystic-gold' : 'bg-white/30'
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-mystic-gold/20 flex items-center justify-center mb-1">
-                <span className="text-xl"><ArcaneIcon name="conquista" /></span>
-              </div>
-              <p className="text-[10px] text-white/50">Meta</p>
-            </div>
-          </div>
-          
-          <div className="mt-4 text-center">
-            <p className="text-sm text-white/60">
-              {completedQuests.length} de {quests.length} jornadas completadas
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      <div className="quest-catalog-guide"><ArcaneIcon name="jornada" size={30} /><div><strong>Escolha a conquista que quer continuar</strong><p>Abra a trilha para escolher um ritual. Expanda o cartão para consultar detalhes e recompensas.</p><span>{completedQuests.length} de {quests.length} jornadas completadas</span></div></div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="grid w-full grid-cols-2 bg-white/5">
+        <TabsList className="quest-catalog-tabs grid w-full grid-cols-2">
           <TabsTrigger value="active" className="data-[state=active]:bg-mystic-arcane">
             <Map className="w-4 h-4 mr-1" />
             Ativas ({activeQuests.length})
@@ -220,21 +129,16 @@ export const Jornadas: React.FC = () => {
 
       {/* Quest Detail Modal */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="quest-dialog quest-catalog-detail" aria-labelledby="quest-detail-title" aria-describedby="quest-detail-description">
           {selectedQuest && (
             <>
               <DialogHeader>
                 <div className="text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="text-5xl mb-2"
-                  >
-                    <ElementIcon element={selectedQuest.elementId} />
-                  </motion.div>
-                  <DialogTitle className="font-mystic text-xl">
+                  <div className="quest-catalog-rune"><QuestRune element={selectedQuest.elementId} size={64} /></div>
+                  <DialogTitle id="quest-detail-title" className="font-mystic text-xl">
                     {selectedQuest.title}
                   </DialogTitle>
+                  <DialogDescription id="quest-detail-description">Consulte a composição e abra a trilha para continuar.</DialogDescription>
                 </div>
               </DialogHeader>
               
@@ -348,15 +252,17 @@ export const Jornadas: React.FC = () => {
 
       {/* Create Quest Dialog */}
       <Dialog open={showCreateQuest} onOpenChange={setShowCreateQuest}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
+        <DialogContent className="quest-dialog quest-quick-create" aria-labelledby="quest-quick-title" aria-describedby="quest-quick-description">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-center">Nova Jornada</DialogTitle>
+            <DialogTitle id="quest-quick-title" className="font-mystic">Nova Jornada</DialogTitle>
+            <DialogDescription id="quest-quick-description">Comece pelo nome. Você pode organizar as etapas depois.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 p-4">
             <input
               type="text"
               value={newQuestTitle}
               onChange={(e) => setNewQuestTitle(e.target.value)}
+              aria-label="Nome da Jornada"
               placeholder="Nome da Jornada..."
               className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-mystic-arcane"
               autoFocus
@@ -383,6 +289,7 @@ export const Jornadas: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+      </div></MotionConfig>
     </AppLayout>
   );
 };
@@ -398,10 +305,10 @@ const QuestCard: React.FC<QuestCardProps> = ({ quest, completed, onClick }) => {
   const area = quest.areaId ? getAreaById(quest.areaId) : null;
   const totalItems = quest.tasks.length + quest.habits.length;
   const completedItems = quest.tasks.filter(t => t.isCompleted).length + quest.habits.filter(h => h.isCompleted).length;
-  return <ShowcaseCard title={quest.title} description={quest.description} element={quest.elementId}
+  return <article className="quest-catalog-card"><ShowcaseCard title={quest.title} description={quest.description} element={quest.elementId}
     status={completed ? 'Jornada concluída' : 'Jornada em andamento'} progress={quest.progress}
     chips={[...(area ? [area.name] : []), `${completedItems}/${totalItems} itens`, ...(quest.dueDate ? [new Date(quest.dueDate).toLocaleDateString('pt-BR')] : [])]}
-    reward={quest.reward} onOpen={onClick} />;
+    reward={quest.reward} onOpen={onClick} /><Link className="quest-catalog-open" to={trailHref(`quest:${quest.id}`)} aria-label={`Abrir trilha de ${quest.title}`}><ArcaneIcon name="jornada" size={20} />{completed ? 'Consultar trilha' : 'Abrir trilha'}<span aria-hidden="true">→</span></Link></article>;
 };
 
 interface EmptyStateProps {
@@ -427,7 +334,7 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate }) => (
     {type === 'active' && onCreate && (
       <Button onClick={onCreate}>
         <Plus className="w-4 h-4 mr-2" />
-        Nova Jornada
+        Criar só com nome
       </Button>
     )}
   </motion.div>

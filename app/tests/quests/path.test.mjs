@@ -74,7 +74,7 @@ test('all nodes are freely selectable, including later steps; current and expans
   assert.deepEqual(selections, ['task:a', 'task:b', 'task:c']);
   const html = renderToStaticMarkup(tree);
   assert.equal((html.match(/<button/g) ?? []).length, 3); assert.doesNotMatch(html, /disabled/);
-  assert.match(html, /aria-current="step"/); assert.match(html, /aria-expanded="true" aria-controls="quest-detail-1"/);
+  assert.match(html, /aria-current="step"/); assert.match(html, /aria-expanded="true" aria-controls="quest-detail-quest%3Aq-1"/);
 });
 
 test('trail rendering escapes user content and does not invent rewards or locked steps', () => {
@@ -94,4 +94,42 @@ test('only explicit same-page quest selection preserves scroll; external entry a
   const { preserveQuestStepScroll } = loadComponent('src/components/quests/quest-navigation.ts');
   assert.equal(preserveQuestStepScroll('/rituais', '/rituais', { questStepSelection: true }), true);
   for (const args of [[undefined, '/rituais', { questStepSelection: true }], ['/santuario', '/rituais', { questStepSelection: true }], ['/rituais', '/rituais', null], ['/rituais', '/rituais', { questStepSelection: false }], ['/ciclos', '/ciclos', { questStepSelection: true }]]) assert.equal(preserveQuestStepScroll(...args), false);
+});
+
+
+test('different trails keep disclosure IDs distinct and tied to their controls', () => {
+  const data = source({ tasks: [task('a')], quests: [quest('one', { tasks: [task('a')] }), quest('two', { tasks: [task('a')] })] });
+  const html = buildQuestTrails(data).map(trail => renderToStaticMarkup(React.createElement(QuestTrailMap, { trail, selectedKey: 'task:a', onSelect() {}, detail: () => 'Detalhes' }))).join('');
+  const controls = [...html.matchAll(/aria-controls="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(controls).size, 2);
+  for (const id of controls) assert.ok(html.includes(`id="${id}"`));
+});
+
+test('deleted completed snapshots are presented as unavailable, without a completion treatment', () => {
+  const [trail] = buildQuestTrails(source({ quests: [quest('q', { tasks: [task('removed', { isCompleted: true })] })] }));
+  const html = renderToStaticMarkup(React.createElement(QuestTrailMap, { trail, onSelect() {}, detail: () => 'Revisar composição' }));
+  assert.match(html, /data-complete="false"/);
+  assert.match(html, /data-available="false"/);
+  assert.match(html, /Indisponível/);
+  assert.doesNotMatch(html, /aria-current="step"|disabled/);
+});
+
+test('long trails retain every complete title and freely selectable action', () => {
+  const tasks = Array.from({ length: 100 }, (_, i) => task(String(i), { title: `Etapa ${i} com título completo para leitura e navegação` }));
+  const [trail] = buildQuestTrails(source({ tasks, quests: [quest('q', { tasks })] }));
+  const html = renderToStaticMarkup(React.createElement(QuestTrailMap, { trail, selectedKey: 'task:99', onSelect() {}, detail: () => 'Selecionada' }));
+  assert.equal((html.match(/<button/g) ?? []).length, 100);
+  assert.equal((html.match(/aria-expanded="true"/g) ?? []).length, 1);
+  for (const task of tasks) assert.ok(html.includes(task.title));
+  assert.match(html, /aria-controls="quest-detail-quest%3Aq-99"/);
+});
+
+test('Rituais opens tasks by default, with explicit trail and legacy links preserved', () => {
+  const { ritualView } = loadComponent('src/components/quests/quest-navigation.ts');
+  for (const query of ['', 'view=lista', 'view=unknown', 'etapa=task%3Aone', 'trilha=']) assert.equal(ritualView(new URLSearchParams(query)), 'lista');
+  for (const query of ['view=trilhas', 'trilha=quest%3Aone', 'trilha=project%3Atwo&etapa=task%3Aone']) assert.equal(ritualView(new URLSearchParams(query)), 'trilhas');
+  const explicitList = new URLSearchParams('view=lista&trilha=project%3Atwo&etapa=task%3Aone');
+  const before = explicitList.toString();
+  assert.equal(ritualView(explicitList), 'lista');
+  assert.equal(explicitList.toString(), before, 'View selection must not erase a saved deep link');
 });

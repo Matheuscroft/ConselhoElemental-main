@@ -1,3 +1,42 @@
+## 0.1.54 — revisão integrada e repasse R14, 23/10/2026
+
+- Compositor de Jornadas/Grandes Obras reinicia ao trocar conta; comandos de domínio preservados.
+- Repasse I03/R01–R14 consolidado, índices/boas-vindas corrigidos e novo briefing do Astro Boy para perfis que já leram R11.
+- 102 testes Node, 10 Fitness Deno, 7 assistente Deno, TypeScript, lint e build passaram. QA visual/remoto pendente; publicação registrada na continuidade.
+
+## 0.1.53 — capas Showcase na lista de Rituais, 23/10/2026
+
+- Capas elementais com detalhes expansíveis, execução sempre acessível e ferramentas existentes preservadas.
+- Busca/filtros/estados vazios e campos de itens refinados; evolução compacta após a lista e contêiner de edição atualizado.
+- 56 testes Node, TypeScript, lint, build e checagem SSR passaram. 16 handlers/auxiliares preservados por AST. QA renderizado pendente por recusa de acesso do navegador; backend/dados/cálculos intactos.
+
+## 0.1.52 — distinção de atividades e entrada de Rituais, 23/10/2026
+
+- Rituais abre tarefas; trilhas mantêm acesso explícito e links anteriores. Guia diferencia tarefas, hábitos, quests e projetos conforme orientação de Matheus.
+- Textos, atalhos do Santuário e compositor alinhados; diálogo de criação rápida modernizado com rótulo acessível.
+- 56 testes Node, TypeScript, lint e build passaram. 13 handlers de Rituais preservados por AST; domínio/backend intactos. QA visual pendente.
+
+## 0.1.51 — catálogos de quests e composição contextual, 23/10/2026
+
+- Jornadas/Grandes Obras com acesso direto à trilha nos cartões, cabeçalhos e diálogos na identidade elemental.
+- Compositor completo disponível nos catálogos com tipo inicial contextual e abertura da trilha criada; criação rápida preservada.
+- Campos/rótulos/alvos de toque refinados; ações do compositor aderentes durante rolagem e preferência de movimento reduzido nos catálogos.
+- 54 testes Node, TypeScript, lint e build passaram. Cinco handlers anteriores preservados por AST; domínio/backend intactos. QA de navegador pendente.
+
+## 0.1.50 — runas e celebração de quests, 23/10/2026
+
+- Runas elementais próprias na trilha, cabeçalho e compositor, com gestos finitos de seleção e pressão sobre base fixa.
+- Progresso animado por transform; conclusão confirmada com medalhão/check e entrada sequencial de métricas reais. Reduced motion respeitado.
+- 54 testes Node, TypeScript, lint e build passaram; cinco handlers preservados por comparação AST. Sem alterações de domínio.
+- QA visual pendente. Fragmentos, evolução de streak e coleção ainda dependem de contrato; nenhum saldo simulado.
+
+## 0.1.49 — piloto de trilha elemental, 23/10/2026
+
+- Percurso sinuoso centralizado, nós elementais em relevo, títulos completos e painel de seleção com largura estável; seleção livre preservada.
+- Estados de referência removida e IDs de painéis entre trilhas refinados; movimento reduzido respeitado.
+- Referências JSON/CSS do Figma preservadas em documentação; nenhum asset remoto ou saldo de recompensa importado.
+- 49 testes Node, TypeScript, lint e build passaram; QA renderizado pendente por recusa de acesso do navegador. Core, QuestHub/QuestComposer, comandos, dados e backend intactos.
+
 ## 0.1.48 — revisão integrada e repasse, 23/10/2026
 
 - Corrigidos quatro avisos de hooks e destinos dos atalhos de rituais; timer simples encaminha treinos/agregadores ao fluxo adequado.

@@ -25,6 +25,8 @@ test('Perfil explícito, apresentação única, troca de colaborador e validaç�
     assert.match(greeting, /reversão\/idempotência/);
     assert.match(greeting, /GPS\/mapa/);
     assert.match(greeting, /Repaginação R01–R11/);
+    assert.match(greeting, /Atualização R12–R14/);
+    assert.match(greeting, /Fragmentos e nova regra de streak ainda não foram implementados/);
     assert.match(greeting, /REPASSE-FRONTEND-PARA-BACKEND/);
     assert.match(greeting, /Matheus responde pelo backend/);
     assert.equal(run('ack').status, 0);
@@ -52,7 +54,7 @@ test('Perfil antigo recebe o novo repasse uma vez, preservando nome, papel e dat
   const state = () => JSON.parse(run('status', '--json').stdout);
   const introducedAt = '2026-10-14T12:00:00.000Z';
   try {
-    writeFileSync(resolve(directory, 'profile.json'), JSON.stringify({ schema: 1, name: 'Matheus', role: 'backend', introducedAt }));
+    writeFileSync(resolve(directory, 'profile.json'), JSON.stringify({ schema: 1, name: 'Matheus', role: 'backend', introducedAt, briefingAcknowledged: 'repaginacao-elemental-r11-2026-10-23' }));
     assert.equal(state().onboardingRequired, true);
     assert.equal(state().updateBriefingRequired, true);
     assert.match(run('welcome').stdout, /Santuário novo/);
