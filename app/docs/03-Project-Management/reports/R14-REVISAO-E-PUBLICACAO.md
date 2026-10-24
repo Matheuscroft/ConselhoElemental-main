@@ -28,7 +28,7 @@ Fábio pediu revisar, corrigir erros, organizar documentação e publicar em `Ma
 | Build Vite com `envDir:false` | Passou em 8,87 s na execução final; não leu arquivos .env |
 | Diff acumulado de stores/lib/types/services/constants/Supabase e quest-commands/quest-path | Vazio contra base 987e09e |
 | Lockfile | Apenas versão raiz alterada; nenhuma atualização de dependências |
-| Git | Fetch inicial confirmou HEAD e origin/main iguais; push sem force previsto após revisão final |
+| Git | Fetch confirmou base alinhada; push sem force executado e SHA remoto confirmado |
 
 A primeira chamada Deno sem `tests/deno.json` executou quatro testes e parou por alias `@/` não resolvido. Corrigido o comando de execução, sem alterar código/testes de domínio. Os quatro testes do calculador histórico não significam ativação dele no fluxo consolidado.
 
@@ -36,7 +36,7 @@ Logs locais temporários: `/tmp/r14-node-tests.log`, `/tmp/r14-workout-tests-con
 
 ## Publicação e limites
 
-Publicação autorizada, destino main; resultado e SHA serão registrados após confirmação remota. Não há deploy neste escopo. Não publicar .env, perfil local, credenciais, sessões, vídeos/capturas pessoais, node_modules ou dist. Alterações anteriores preservadas; staging explícito do lote.
+Publicado em main: `4d73183f58e7e66279b87f0921fbac013a6d444d`; push sem force concluído e `git ls-remote origin refs/heads/main` confirmou o mesmo SHA em 23/10/2026. Working tree estava limpo após o commit de código. Este registro de confirmação segue em commit documental próprio. Não há deploy neste escopo. Não publicar .env, perfil local, credenciais, sessões, vídeos/capturas pessoais, node_modules ou dist. Alterações anteriores preservadas; staging explícito do lote.
 
 QA visual e fluxos reais continuam pendentes: acesso ao localhost recusado na rodada anterior, sem contorno. Nesta revisão não houve tentativa de navegador. Testes unitários/SSR/build não comprovam sincronização remota, fidelidade visual ou fluidez em dispositivos. Sem consulta a Supabase remoto/secrets, migração, mudança de XP/Prana ou regras de recorrência.
 

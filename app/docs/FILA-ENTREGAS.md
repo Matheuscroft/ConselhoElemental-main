@@ -1,10 +1,10 @@
-## R14 — revisão concluída, publicação autorizada (23/10/2026)
+## R14 — revisão e publicação concluídas (23/10/2026)
 
 **0.1.54**, base `987e09e`, branch `codex/fitness-ui-integration`. R12/R13 revisados; [repasse consolidado I03/R01–R14](REPASSE-FRONTEND-PARA-BACKEND.md) e [verificações R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md). Matheus mantém backend; Fábio frontend.
 
 **Correções:** documentos de topo/boas-vindas atualizados; novo briefing após pull mesmo em perfis antigos; compositor reinicia ao trocar conta. Domínio, cálculos, dados e dependências preservados.
 
-**Executado:** 102 testes Node, 10 Fitness Deno e 7 assistente Deno passaram; TypeScript/lint/build passaram. Primeira chamada Deno corrigida para usar `tests/deno.json`. QA visual pendente; avisos de chunks/Browserslist permanecem. Sem teste remoto/deploy/secrets. Push ainda aguardando conclusão operacional; será registrado após confirmação. Reservas mantidas até fechamento Git.
+**Executado:** 102 testes Node, 10 Fitness Deno e 7 assistente Deno passaram; TypeScript/lint/build passaram. Primeira chamada Deno corrigida para usar `tests/deno.json`. QA visual pendente; avisos de chunks/Browserslist permanecem. Sem teste remoto/deploy/secrets. Código publicado no main: `4d73183f58e7e66279b87f0921fbac013a6d444d`. Push sem force e SHA remoto confirmados por `git ls-remote origin refs/heads/main`. Este fechamento documental segue em commit próprio. Reservas encerradas.
 
 **Próximo:** Fábio revisa UX/capas/trilhas/mobile e continua capítulos/detalhes/áreas restantes. Matheus confere contratos macro/Undo/sync e participa da definição de fragmentos/streak; nenhuma carteira implementada. Revisão documental pelo coordenador, independente pendente.
 
