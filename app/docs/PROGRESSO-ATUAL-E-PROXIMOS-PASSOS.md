@@ -1,8 +1,14 @@
 # Progresso salvo e próxima fase: uso diário no celular
 
-24/10/2026 · versão 0.1.64 · Astro Boy · Fábio frontend/UX, Matheus backend.
+Atualizado em 25/10/2026 · versão 0.1.68 · Astro Boy · Fábio frontend/UX, Matheus backend.
 
 Este é o resumo de retomada solicitado por Fábio. A fila operacional continua em [FILA-ENTREGAS](FILA-ENTREGAS.md); este documento detalha prioridades e critérios, sem criar uma segunda fila.
+
+Em 25/10, Fábio priorizou [R26-A — rotina de Ciclos](plans/R26-A-CICLOS-ROTINA.md): apresentação implementada, QA mobile pendente. O checkpoint Git anterior é `88c9021`; as alterações 0.1.65–0.1.68 estão consolidadas para publicação autorizada; situação remota no [relatório](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). Backup/conta permanece pendente.
+
+R26-B adicionou [comandos explícitos de execução e controles recolhíveis](plans/R26-B-CICLOS-EXECUCAO.md); 141 testes passaram. Prévia local iniciada; renderização e toque ainda não verificados.
+
+R26-C acrescentou [subitens com papéis claros e constância contextual](plans/R26-C-SUBITENS-CONSTANCIA.md). R26-D implementou a escolha posterior de Fábio: descanso não quebra constância em ciclos diários/semanais/mensais; rotações/anual continuam limitados, conforme [contrato](plans/R26-D-CONSTANCIA-PROGRAMADA.md).
 
 ## O que está construído
 
@@ -13,7 +19,7 @@ Este é o resumo de retomada solicitado por Fábio. A fila operacional continua 
 | Atividades | Rituais/tarefas, Ciclos/hábitos, calendário e sequências refinados; trilhas de Jornadas com próxima etapa sugerida e acesso livre. Grandes Obras com capítulos. |
 | Criação e descoberta | Invocar, Forja, Domínios/detalhe/formulários atualizados; catálogo de áreas compacto em grupos; Pilares e Mapa com descoberta e navegação. |
 | Roda do Destino | R24: escolha gratuita entre atividades reais, filtros, resultado e link de execução. Sem stamina ou XP automático, conforme aprovação explícita. |
-| Progresso futuro | Fragmentos e nova mecânica de streak NÃO implementados. Regra inicial de um fragmento por conclusão aprovada, contratos restantes pendentes em R12-D/E. Inventário funcional novo também não implementado. |
+| Progresso futuro | Fragmentos NÃO implementados. Constância por agenda parcialmente implementada em R26-D. Regra inicial de um fragmento por conclusão aprovada, contratos restantes pendentes em R12-D/E. Inventário funcional novo também não implementado. |
 
 Histórico I03/R01–R14: [repasse anterior](REPASSE-FRONTEND-PARA-BACKEND.md). Mudanças R15–R24: [índice de entregas](plans/README.md). Não confundir presença no código com validação visual de todas as telas.
 
@@ -64,6 +70,6 @@ Em todas: textos longos, teclado virtual, alvos de toque, rolagem, barra inferio
 
 ## O que foi validado agora e o que falta
 
-134 testes Node, TypeScript, lint e build aprovados no fechamento R24; nenhum diff em stores/services/types/Supabase. Isso valida integração estrutural e casos cobertos, não o backup real, migração cloud ou usabilidade renderizada. Conferência visual e interação mobile continuam pendentes. A revisão independente também não foi executada.
+Revisão R26: 159 testes Node, TypeScript, lint e build aprovados. Alteração delimitada do streak em appStore, autorizada explicitamente; sem diff em services/types/Supabase. Isso valida integração estrutural e casos cobertos, não o backup real, migração cloud ou usabilidade renderizada. Conferência visual e interação mobile continuam pendentes. A revisão independente também não foi executada.
 
-Ponto de retomada: **R25-A — preparar exportação/restauração verificável; depois R25-B conta pessoal e R26 usabilidade mobile.** Não habilitar a migração atual para o usuário sob promessa de preservação ainda não demonstrada. Questões anteriores de vínculos R19 e contratos R12-D/E continuam registradas na fila.
+Ponto de retomada: **conferir R26-A/B/C/D no celular; retomar R25-A — exportação/restauração verificável; depois R25-B conta pessoal e restante do QA R26.** Não habilitar a migração atual para o usuário sob promessa de preservação ainda não demonstrada. Questões anteriores de vínculos R19 e contratos R12-D/E continuam registradas na fila.

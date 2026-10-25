@@ -1,3 +1,5 @@
+import { habitMatchesDate } from '@/lib/temporal/habit-schedule';
+import { calculateHabitStreak, findHabitScheduleRoot } from '@/lib/temporal/habit-streak';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
 // ============================================
 // CONSELHO ELEMENTAL - STORE ZUSTAND
@@ -307,26 +309,14 @@ const calculateUserProgressFromState = (state: Pick<AppState, 'tasks' | 'habits'
   return { totalScore: taskScore + totalHabitScore + projectScore + questScore, streak, longestStreak };
 };
 
-const habitMatchesDate = (habit: Habit, date: Date | string | number): boolean => {
-  const targetDate = toValidDate(date);
-  if (!targetDate) return false;
-
-  const dayOfWeek = targetDate.getDay();
-  const dayOfMonth = targetDate.getDate();
-  const targetDay = toDayStamp(targetDate);
-  const startDay = toDayStamp(habit.startDate ?? habit.createdAt);
-
-  if (targetDay == null || startDay == null) return false;
-
-  if (targetDay < startDay) return false;
-
-  if (habit.recurrenceType === 'DAILY' || habit.recurrenceType === 'WEEKLY') {
-    return habit.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-  }
-  if (habit.recurrenceType === 'MONTHLY') {
-    return habit.recurrenceConfig.daysOfMonth?.includes(dayOfMonth) ?? true;
-  }
-  return true;
+const getScheduledStreak = (
+  state: { habits: Habit[]; sequenceMemberships: SequenceMembership[] },
+  habit: Habit,
+  completions: HabitCompletion[],
+) => {
+  const root = findHabitScheduleRoot(state.habits, habit.id) ?? habit;
+  const rotates = state.sequenceMemberships.some((member) => member.habitId === root.id);
+  return calculateHabitStreak(completions, root, rotates);
 };
 
 const habitHasStartedByDate = (habit: Habit, date: Date | string | number): boolean => {
@@ -795,11 +785,11 @@ export const useAppStore = create<AppState>()(
           const completion: HabitCompletion = { id: log.id, habitId: habit.id, completionDate: timestamp,
             timeSpentMinutes: input.durationSeconds / 60, scoreEarned: log.executedValue, executedScore: log.executedValue,
             actualEffortLevel: input.effortLevel ?? 1, formulaVersion: log.ruleVersion };
-          const last = habit.lastCompletedAt ? new Date(habit.lastCompletedAt) : null;
-          const yesterday = new Date(timestamp); yesterday.setDate(yesterday.getDate() - 1);
-          const streak = last?.toDateString() === yesterday.toDateString() ? habit.streak + 1 : 1;
-          const updated = { ...habit, completions: [...habit.completions, completion], lastCompletedAt: timestamp,
-            streak, longestStreak: Math.max(habit.longestStreak, streak), updatedAt: timestamp, isInProgress: false, elapsedSeconds: 0 };
+          const completions = [...habit.completions, completion];
+          const streakData = getScheduledStreak(state, habit, completions);
+          const { streak } = streakData;
+          const updated = { ...habit, completions, lastCompletedAt: streakData.lastCompletedAt,
+            streak, longestStreak: Math.max(habit.longestStreak, streakData.longestStreak), updatedAt: timestamp, isInProgress: false, elapsedSeconds: 0 };
           const membership = state.sequenceMemberships.find((item) => item.habitId === habit.id);
           const sequence = membership ? state.cycleSequences.find((item) => item.id === membership.sequenceId && item.isActive) : undefined;
           const members = sequence ? state.sequenceMemberships.filter((item) => item.sequenceId === sequence.id).sort((a, b) => a.position - b.position) : [];
@@ -807,7 +797,7 @@ export const useAppStore = create<AppState>()(
           if (sequence) log.rotationBefore = { id: sequence.id, currentPosition: sequence.currentPosition, lastCompletedDate: sequence.lastCompletedDate, cursorDate: sequence.cursorDate };
           // Um único ledger e uma única recompensa; nenhuma Action avulsa ou subtarefa extra.
           set((current) => ({ habits: current.habits.map((item) => item.id === habit.id ? updated : item),
-            actions: current.actions.map((item) => item.id === habit.id ? { ...item, completions: updated.completions, lastCompletedAt: timestamp, streak, longestStreak: updated.longestStreak, updatedAt: timestamp } : item),
+            actions: current.actions.map((item) => item.id === habit.id ? { ...item, completions: updated.completions, lastCompletedAt: updated.lastCompletedAt, streak, longestStreak: updated.longestStreak, updatedAt: timestamp } : item),
             executionLogs: [...current.executionLogs, log],
             cycleSequences: current.cycleSequences.map((item) => sequence && item.id === sequence.id && membership?.position === position && (!item.lastCompletedDate || !isSameDay(item.lastCompletedDate, timestamp)) ? { ...item, currentPosition: position, lastCompletedDate: timestamp, updatedAt: timestamp } : item),
             user: { ...current.user, totalScore: current.user.totalScore + log.executedValue,
@@ -834,16 +824,8 @@ export const useAppStore = create<AppState>()(
         const habit = state.habits.find((item) => item.id === habitId && item.sourceModule === 'modulo_treino');
         if (!log || !habit || !habit.completions.some((item) => item.id === log.id)) throw new Error('O registro de pontuação não está disponível para desfazer com segurança.');
         const completions = habit.completions.filter((item) => item.id !== log.id);
-        const dates = [...new Set(completions.map((item) => new Date(item.completionDate).toDateString()))].map((date) => new Date(date)).sort((a,b) => b.getTime()-a.getTime());
-        let streak = dates.length ? 1 : 0; let longestStreak = streak; let run = streak;
-        let currentRun = true;
-        for (let index = 1; index < dates.length; index++) {
-          const previousDay = new Date(dates[index-1]); previousDay.setDate(previousDay.getDate()-1);
-          if (previousDay.toDateString() === dates[index].toDateString()) { run++; if (currentRun) streak++; }
-          else { currentRun = false; run = 1; }
-          longestStreak = Math.max(longestStreak, run);
-        }
-        const updated = { ...habit, completions, streak, longestStreak, lastCompletedAt: dates[0] ?? null, updatedAt: new Date() };
+        const { streak, longestStreak, lastCompletedAt } = getScheduledStreak(state, habit, completions);
+        const updated = { ...habit, completions, streak, longestStreak, lastCompletedAt, updatedAt: new Date() };
         const membership = state.sequenceMemberships.find((item) => item.habitId === habitId);
         set((current) => ({
           habits: current.habits.map((item) => item.id === habitId ? updated : item),
@@ -2911,46 +2893,6 @@ export const useAppStore = create<AppState>()(
           return null;
         };
 
-        const computeStreakData = (completions: HabitCompletion[]) => {
-          if (completions.length === 0) {
-            return { streak: 0, longestStreak: 0, lastCompletedAt: null as Date | null };
-          }
-
-          const uniqueDates = Array.from(
-            new Set(completions.map((c) => new Date(c.completionDate).toDateString()))
-          )
-            .map((d) => new Date(d))
-            .sort((a, b) => b.getTime() - a.getTime());
-
-          const lastCompletedAt = uniqueDates[0];
-
-          let streak = 1;
-          for (let i = 1; i < uniqueDates.length; i += 1) {
-            const prev = new Date(uniqueDates[i - 1]);
-            prev.setDate(prev.getDate() - 1);
-            if (uniqueDates[i].toDateString() === prev.toDateString()) {
-              streak += 1;
-            } else {
-              break;
-            }
-          }
-
-          let longestStreak = 1;
-          let currentRun = 1;
-          for (let i = 1; i < uniqueDates.length; i += 1) {
-            const prev = new Date(uniqueDates[i - 1]);
-            prev.setDate(prev.getDate() - 1);
-            if (uniqueDates[i].toDateString() === prev.toDateString()) {
-              currentRun += 1;
-            } else {
-              currentRun = 1;
-            }
-            longestStreak = Math.max(longestStreak, currentRun);
-          }
-
-          return { streak, longestStreak, lastCompletedAt };
-        };
-
         const findParentId = (habits: Habit[], targetId: string): string | null => {
           for (const habit of habits) {
             if (habit.childHabits.some((child) => child.id === targetId)) {
@@ -3067,7 +3009,7 @@ export const useAppStore = create<AppState>()(
                     scoreEarned: 0,
                   };
               const updatedCompletions = [...baseHabit.completions, completionToApply];
-              const streakData = computeStreakData(updatedCompletions);
+              const streakData = getScheduledStreak(state, baseHabit, updatedCompletions);
               return {
                 ...baseHabit,
                 completions: updatedCompletions,
@@ -3146,46 +3088,6 @@ export const useAppStore = create<AppState>()(
           return habit.childHabits.every((child) => areAllDescendantsCompletedOnTargetDate(child));
         };
 
-        const computeStreakData = (completions: HabitCompletion[]) => {
-          if (completions.length === 0) {
-            return { streak: 0, longestStreak: 0, lastCompletedAt: null as Date | null };
-          }
-
-          const uniqueDates = Array.from(
-            new Set(completions.map((c) => new Date(c.completionDate).toDateString()))
-          )
-            .map((d) => new Date(d))
-            .sort((a, b) => b.getTime() - a.getTime());
-
-          const lastCompletedAt = uniqueDates[0];
-
-          let streak = 1;
-          for (let i = 1; i < uniqueDates.length; i += 1) {
-            const prev = new Date(uniqueDates[i - 1]);
-            prev.setDate(prev.getDate() - 1);
-            if (uniqueDates[i].toDateString() === prev.toDateString()) {
-              streak += 1;
-            } else {
-              break;
-            }
-          }
-
-          let longestStreak = 1;
-          let current = 1;
-          for (let i = 1; i < uniqueDates.length; i += 1) {
-            const prev = new Date(uniqueDates[i - 1]);
-            prev.setDate(prev.getDate() - 1);
-            if (uniqueDates[i].toDateString() === prev.toDateString()) {
-              current += 1;
-            } else {
-              current = 1;
-            }
-            longestStreak = Math.max(longestStreak, current);
-          }
-
-          return { streak, longestStreak, lastCompletedAt };
-        };
-
         const uncompleteHabitAndDescendants = (habit: Habit): { habit: Habit; removedScore: number } => {
           const removedCompletions = habit.completions.filter(
             (c) => new Date(c.completionDate).toDateString() === targetDate
@@ -3198,7 +3100,7 @@ export const useAppStore = create<AppState>()(
             0
           );
 
-          const streakData = computeStreakData(remainingCompletions);
+          const streakData = getScheduledStreak(get(), habit, remainingCompletions);
 
           const shouldUncompleteDescendants =
             habit.childHabits.length > 0 && areAllDescendantsCompletedOnTargetDate(habit);
@@ -3251,7 +3153,7 @@ export const useAppStore = create<AppState>()(
                   (sum, c) => sum + (c.scoreEarned ?? habit.plannedPoints),
                   0
                 );
-                const parentStreakData = computeStreakData(parentRemainingCompletions);
+                const parentStreakData = getScheduledStreak(get(), habit, parentRemainingCompletions);
 
                 removedScore += result.removedScore + parentRemovedScore;
                 found = true;

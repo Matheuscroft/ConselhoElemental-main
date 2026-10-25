@@ -1,3 +1,32 @@
+## 0.1.68 — 25/10/2026 · constância programada e repasse R15–R26
+
+- Aprovação explícita de Fábio: descanso não quebra constância; ciclos diários/semanais/mensais contam uma conclusão por data elegível na agenda atual.
+- Cálculo compartilhado entre conclusão/Undo, subitens (agenda da raiz), treino vinculado e leitura de Ciclos. Sem reescrever recibos nem fórmulas de XP/Prana. Rotações e anual mantêm fallback anterior, explicitado na UI.
+- Selo celebra somente aumento acompanhado por nova conclusão na mesma conta/ciclo. Leituras não migram armazenamento.
+- Testes integrados com store real e armazenamento em memória; repasse consolidado e briefing Astro Boy atualizados. Evidências finais em `docs/03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md`.
+
+## 0.1.67 — subitens e constância contextual, 25/10/2026
+
+- Tipos canônicos e legados reconhecidos pela execução da UI; notas separadas das ações na contagem visual.
+- Hierarquia numerada, identificação de ação/checklist/nota/etapa e botão Executar etapas.
+- Selo de constância próprio, recorde/última conclusão/registros semanais e animação condicionada ao aumento do mesmo contador.
+- Cálculo persistido de streak inalterado; escolha entre dias corridos e agenda pendente. Dados/recompensas/backend preservados.
+- 148 testes Node passaram; QA renderizado e animação no aparelho pendentes. Evidências completas em R26-C.
+
+## 0.1.66 — execução clara em Ciclos, 25/10/2026
+
+- Iniciar, Concluir e Desfazer explícitos, títulos com mais espaço e acentos elementais nos cartões.
+- Expansão de subitens com linha inteira de toque; elemento/ordenação reunidos em painel recolhível.
+- 141 testes, TypeScript, lint e build passaram; QA visual/toque pendente. Servidor local iniciado e abertura no Codex encaminhada.
+- Comandos, dados e backend preservados; sem backup pessoal, migração ou publicação.
+
+## 0.1.65 — rotina diária de Ciclos, 25/10/2026
+
+- Filtros rápidos por estado, contagens do dia, busca e ordenação compactas.
+- Cartões e árvore de subitens com largura útil, etiquetas legíveis e ações agrupadas; criação de subitem com rótulos e cancelamento explícito.
+- 138 testes Node, TypeScript, lint e build passaram. QA renderizado/mobile pendente por bloqueio do navegador.
+- Regras, comandos e persistência preservados; backup/conta pessoal R25-A/B permanece pendente.
+
 ## 0.1.64 — Roda do Destino e checkpoint de progresso, 24/10/2026
 
 - Roda elemental com escolha gratuita de tarefas, ciclos elegíveis e jornadas; filtros, lista e resultado com navegação contextual.

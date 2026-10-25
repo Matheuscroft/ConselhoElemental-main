@@ -1,3 +1,45 @@
+## R26-D e publicação R15–R26 — preparação validada (25/10/2026)
+
+**0.1.68**, branch codex/fitness-ui-integration; base 88c9021 e alterações R26-A/B/C preservadas. [Revisão e situação de publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md), [repasse para Matheus](REPASSE-FRONTEND-PARA-BACKEND.md), [constância R26-D](plans/R26-D-CONSTANCIA-PROGRAMADA.md). Fábio autorizou push para main.
+
+Fábio aprovou **“Contar execuções programadas: dias de descanso não quebram a sequência.”** Regra integrada em ciclos diários/semanais/mensais, subitens pela agenda da raiz e treinos vinculados; leitura sem migração. Rotações e YEARLY mantêm fallback explícito. Streak geral, XP/Prana e recibos preservados. Notas históricas de cálculo pendente abaixo foram superadas apenas nesse recorte.
+
+**Executado nesta revisão:** 159 testes, TypeScript, lint, build envDir:false (11,13s), paridade do store anterior nos cenários de prêmio/Undo/recibos. Avisos de bundle/Browserslist permanecem. QA visual/toque 360/390/768px continua pendente, sem contornar bloqueio anterior; revisão independente não executada.
+
+Reservas de código encerradas; Astro Boy mantém reserva documental/manifests/scripts de briefing até confirmar publicação. Responsabilidades: Fábio frontend/mobile, Matheus backend, Astro Boy coordena sequencialmente. Próximo: QA R26 e R25-A/B (backup/conta), sem prometer proteção de dados ainda não validada; R19, NOTE, progresso macro e fragmentos permanecem na fila. Sem deploy, migração, dados reais ou credenciais.
+
+## R26-C — subitens e constância contextual implementados (25/10/2026)
+
+**0.1.67 local**, base 88c9021 e R26-A/B preservados. [Entrega, diagnóstico e pendências](plans/R26-C-SUBITENS-CONSTANCIA.md). Astro Boy sequencial.
+
+UI identifica ações/checklists/notas/etapas e caminho hierárquico. Tipos canônicos/legados normalizados na leitura; notas separadas da contagem visual de ações. Executar etapas usa o fluxo existente. Constância ganha runa própria, recorde/última conclusão/registros recentes e animação breve apenas no aumento do mesmo contador/conta.
+
+**Executado:** 148 testes, TypeScript, lint e build envDir:false (9,57s final) passaram. AST confirmou mudanças delimitadas à leitura de tipo e contagens de subitens; comandos preservados, diff de stores/services/types/Supabase vazio, versões sincronizadas e diff-check limpo. Avisos de chunks/Browserslist continuam.
+
+**Pendente explícito:** regra persistida do streak não mudou. Pergunta dias corridos versus agenda ainda sem resposta; capítulo canônico diverge do store. Também registrar com Matheus propagação de conclusão do pai incluindo folhas NOTE, identificada por leitura. Não fingir que a contagem visual resolve esse contrato.
+
+QA visual/toque/fluidez e teste integrado de execução continuam pendentes; bloqueio anterior não contornado. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push/deploy, alteração de dados reais ou backup pessoal. R25-A/B, R19 e R12-D/E mantidos.
+
+## R26-B — Ciclos de hoje refinado; prévia iniciada (25/10/2026)
+
+**0.1.66 local**, branch codex/fitness-ui-integration, commit base 88c9021; R26-A preexistente preservado. [Entrega e evidências](plans/R26-B-CICLOS-EXECUCAO.md).
+
+Ações nomeadas Iniciar/Concluir/Desfazer, títulos com mais largura, acentos elementais, expansão de subitens em linha inteira e ordenação/elementos recolhíveis. Mesmos comandos, regras e stores. Widgets fitness e calendário preservados.
+
+**Executado:** 141 testes, TypeScript, lint e build Vite envDir:false (12,23s) passaram; 367 inicializadores preservados por AST, diff de domínio vazio e diff-check limpo. Avisos de chunks/Browserslist permanecem. Um erro TypeScript introduzido no rótulo do menu da sequência foi corrigido antes da validação final.
+
+Servidor local iniciado na porta 5173; pedido para abrir /ciclos no painel direito retornou queued. Não equivale a página renderizada verificada. Bloqueio anterior de inspeção não contornado; QA de toque/visual em 360/390/768px pendente. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push/deploy. Próximo: aceite da rotina e R25-A/B (backup/conta), ainda pendentes; R19/R12-D/E preservados.
+
+## R26-A — Ciclos de hoje implementado; QA mobile pendente (25/10/2026)
+
+**0.1.65 local**, base `88c9021`, branch `codex/fitness-ui-integration`. Fábio priorizou a rotina diária; Astro Boy executou sequencialmente. [Entrega e evidências](plans/R26-A-CICLOS-ROTINA.md).
+
+Filtros diretos Todos/Pendentes/Feitos, progresso por cartões do dia, busca/ordenação compactas, cartões com subitens em largura útil e formulário rotulado reutilizado. Comandos, recorrência, pontuação, stores e dados preservados.
+
+**Executado:** 138 testes Node, TypeScript, lint e build Vite `envDir:false` (14,38s) passaram. 367 inicializadores anteriores preservados por AST; diff de domínio/backend vazio e diff-check limpo. Avisos de chunks/Browserslist permanecem.
+
+**Pendente:** QA renderizado/toque em 360/390/768px; navegador recusou localhost por permissão salva, sem contorno. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push/deploy. Próximo: validar a rotina e retomar R25-A/B (backup/conta), ainda não implementados. Salvar código não equivale a backup pessoal; R19 e R12-D/E continuam na fila.
+
 ## Checkpoint de progresso e próxima fase — 24/10/2026
 
 **0.1.64 local**, branch `codex/fitness-ui-integration`, base publicada `91fa5a5`. Fábio solicitou salvar o progresso e priorizar uso prático no celular, preservando atividades/conquistas na futura conta pessoal. [Resumo consolidado e plano](PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md). Checkpoint Git local desta entrega reúne R15–R24 e este plano; consulte o commit de mensagem `feat(ui): checkpoint elemental mobile R15-R24 and continuity`. Nenhum novo push/deploy.

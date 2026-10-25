@@ -1,3 +1,9 @@
+import { calculateHabitStreak, habitStreakRule } from '@/lib/temporal/habit-streak';
+import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-semantics';
+import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
+import { CycleStreakBadge } from '@/components/cycles/CycleStreakBadge';
+import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
+import { CycleSubitemsToggle } from '@/components/cycles/CycleSubitemsToggle';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
 import { ExpandedDayCard } from '@/components/cycles/ExpandedDayCard';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
@@ -9,13 +15,13 @@ import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { parseDestinyDate } from '@/components/destiny/destiny-options';
 import { CycleSequenceShowcase } from '@/components/cycles/CycleSequenceShowcase';
-import { CycleFilters } from '@/components/cycles/CycleFilters';
+import { CycleRoutineToolbar } from '@/components/cycles/CycleRoutineToolbar';
+import { CycleSubitemComposer } from '@/components/cycles/CycleSubitemComposer';
 import { hasCycleFilters, matchesCycleFilters, normalizeCycleSearch, type CycleFilters as CycleFilterState } from '@/components/cycles/cycle-discovery';
 import './ciclos.css';
 import '@/components/elemental/element-discovery.css';
 import { 
   Plus, SkipForward, Search,
-  Flame, 
   Calendar,
   ChevronLeft, 
   ChevronRight, 
@@ -929,12 +935,7 @@ export const Ciclos: React.FC = () => {
 
 
   const getChildExecutionType = (child: Habit): ChildExecutionType => {
-    const metadata = child as HabitSemanticMetadata;
-    const explicitType = metadata.semanticType ?? metadata.executionType;
-    if (explicitType) return explicitType;
-
-    // Compatibilidade: itens legados sem tipo explícito continuam como valuable.
-    return 'valuable';
+    return subitemKind(child as HabitSemanticMetadata);
   };
 
   const handleConvertChildType = (childId: string, targetType: ChildExecutionType) => {
@@ -1306,15 +1307,21 @@ export const Ciclos: React.FC = () => {
   const totalToday = habitsForDate.length;
   const progressToday = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
+  // Same read-only calculation as the badges, including existing records before their next write.
+  const displayedStreak = (habit: Habit) => {
+    const rotates = sequenceMemberships.some(member => member.habitId === habit.id);
+    return habitStreakRule(habit, rotates) === 'scheduled'
+      ? calculateHabitStreak(habit.completions, habit).streak : habit.streak;
+  };
   // Top streaks
   const topStreaks = [...habits]
-    .sort((a, b) => b.streak - a.streak)
+    .sort((a, b) => displayedStreak(b) - displayedStreak(a))
     .slice(0, 3)
-    .filter((h) => h.streak > 0);
+    .filter((h) => displayedStreak(h) > 0);
 
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 
-  const renderChildHabits = (childHabits: Habit[], depth = 0, parentHabitId?: string) => {
+  const renderChildHabits = (childHabits: Habit[], depth = 0, parentHabitId?: string, parentPath = '') => {
     const sortedHabits = [...childHabits].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
     // Helper para renderizar badges de área/subárea de um child
@@ -1410,7 +1417,7 @@ export const Ciclos: React.FC = () => {
     };
 
     return (
-      <div className={depth > 0 ? 'ml-4 border-l border-white/10 pl-3' : ''}>
+      <div className="cycle-child-tree" data-nested={depth > 0} data-deep={depth > 1}>
         {parentHabitId && draggedChildHabit?.parentId === parentHabitId && (
           <div
             onDragOver={(event) => {
@@ -1430,8 +1437,9 @@ export const Ciclos: React.FC = () => {
             Solte aqui para mover para o mesmo nivel do pai
           </div>
         )}
-        {sortedHabits.map((child) => {
-          const childType = getChildExecutionType(child);
+        {sortedHabits.map((child, index) => {
+          const childType = subitemKind(child as HabitSemanticMetadata);
+          const childPath = parentPath ? `${parentPath}.${index + 1}` : `${index + 1}`;
           const childIsCheckable = childType === 'valuable' || childType === 'structural';
           const childCompleted = isHabitCompleted(child);
           const childCompletion = getCompletionForDate(child);
@@ -1439,7 +1447,7 @@ export const Ciclos: React.FC = () => {
           const childExpanded = child.isExpanded ?? false;
 
           return (
-            <div key={child.id} className="space-y-2">
+            <div key={child.id} className="cycle-subitem-node space-y-2" data-kind={childType} data-completed={childType !== 'text' && childCompleted}>
               <div
                 draggable
                 onDragStart={() => {
@@ -1460,7 +1468,7 @@ export const Ciclos: React.FC = () => {
                   }
                 }}
                 onDragEnd={handleChildHabitDragEnd}
-                className={`flex items-center gap-2 p-2 rounded-lg bg-black/20 cursor-grab active:cursor-grabbing ${
+                className={`cycle-child-row ${
                   dragOverChildHabitId === child.id ? 'border border-mystic-gold/60 bg-mystic-gold/10' : ''
                 }`}
               >
@@ -1471,7 +1479,7 @@ export const Ciclos: React.FC = () => {
                         event.stopPropagation();
                         handleQuickCompleteChildHabit(child);
                       }}
-                      className="w-5 h-5 rounded border flex items-center justify-center border-white/30 hover:border-white/50"
+                      aria-pressed={false} aria-label={`Concluir ${child.name}`} className="cycle-child-check rounded border border-white/30 hover:border-white/50"
                     >
                       <Check className="w-3 h-3" />
                     </button>
@@ -1481,22 +1489,20 @@ export const Ciclos: React.FC = () => {
                         event.stopPropagation();
                         handleQuickUncompleteChildHabit(child);
                       }}
-                      className="w-5 h-5 rounded border flex items-center justify-center bg-mystic-gold border-mystic-gold hover:bg-mystic-gold/80"
-                      aria-label="Desmarcar conclusão" title="Desmarcar"
+                      className="cycle-child-check rounded border bg-mystic-gold border-mystic-gold hover:bg-mystic-gold/80"
+                      aria-pressed={true} aria-label={`Desfazer conclusão de ${child.name}`} title="Desfazer conclusão"
                     >
-                      <X className="w-3 h-3 text-black" />
+                      <Check className="w-3 h-3 text-black" />
                     </button>
                   )
                 ) : (
                   <span className="w-5 h-5" aria-hidden="true" />
                 )}
 
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${childCompleted ? 'line-through text-white/50' : 'text-white'}`}>
-                    {child.name}
-                  </p>
+                <div className="cycle-main-content flex-1 min-w-0">
+                  <CycleSubitemIdentity name={child.name} kind={childType} childCount={child.childHabits.length} path={childPath} completed={childCompleted} />
                   <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px]">
-                    {renderChildAreaBadges(child)}
+                    {childType !== 'text' && renderChildAreaBadges(child)}
 
                     {childType === 'valuable' && child.plannedTimeMinutes > 0 && (
                       <Badge variant="outline" className="bg-white/5 text-white/60 text-[9px]">
@@ -1514,31 +1520,23 @@ export const Ciclos: React.FC = () => {
 
                 {hasChildren && (
                   <button
+                    aria-expanded={!!child.isExpanded} aria-label={`${child.isExpanded ? 'Recolher' : 'Mostrar'} subitens de ${child.name}`}
                     onClick={() => toggleHabitChildExpansion(child.id)}
                     className="text-white/40 hover:text-white/70"
                   >
-                    {childExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    {childExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}<span>{child.childHabits.length} subitens</span>
                   </button>
                 )}
 
-                <div className="flex items-center gap-1">
-                  {childType !== 'text' && (
-                    <button
-                      onClick={() => setActiveAddHabitTarget(child.id)}
-                      className="text-white/40 hover:text-white/70"
-                      title="Adicionar subitem"
-                    >
-                      <PlusCircle className="w-3 h-3" />
-                    </button>
-                  )}
-
+                <div className="cycle-child-actions">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="p-1 rounded hover:bg-white/10" title="Mais opções">
+                      <button className="p-1 rounded hover:bg-white/10" aria-label={`Ações de ${child.name}`} title="Mais opções">
                         <MoreVertical className="w-3 h-3 text-white/40" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10">
+                      {childType !== 'text' && <DropdownMenuItem onClick={() => setActiveAddHabitTarget(child.id)}><PlusCircle className="w-4 h-4 mr-2" />Adicionar subitem</DropdownMenuItem>}
                       <DropdownMenuItem onClick={() => handleOpenEditHabit(child.id, true)}>
                         <Edit2 className="w-3 h-3 mr-2" />
                         Editar
@@ -1572,43 +1570,14 @@ export const Ciclos: React.FC = () => {
               </div>
 
               {childType !== 'text' && isAddTargetForHabit(child.id) && (
-                <div className="flex flex-wrap items-center gap-2 pl-7">
-                  <Input
-                    aria-label="Nome do subitem" value={newChildHabitName}
-                    onChange={(e) => setNewChildHabitName(e.target.value)}
-                    placeholder="Novo subciclo..."
-                    className="flex-1 h-8 text-sm bg-white/5 border-white/10"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleAddChildHabit(child.id);
-                      if (e.key === 'Escape') setActiveAddHabitTarget(null);
-                    }}
-                  />
-                  <Input
-                    type="number"
-                    min={1}
-                    aria-label="Pontos planejados do subitem" value={newChildHabitPoints}
-                    onChange={(e) => setNewChildHabitPoints(Number(e.target.value))}
-                    placeholder="Pts"
-                    className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    aria-label="Minutos planejados do subitem" value={newChildHabitMinutes}
-                    onChange={(e) => setNewChildHabitMinutes(e.target.value)}
-                    placeholder="Min"
-                    className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <Button size="sm" className="h-8 px-2" onClick={() => handleAddChildHabit(child.id)}>
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
+                <CycleSubitemComposer name={newChildHabitName} points={newChildHabitPoints} minutes={newChildHabitMinutes}
+                  onName={setNewChildHabitName} onPoints={setNewChildHabitPoints} onMinutes={setNewChildHabitMinutes}
+                  onAdd={() => handleAddChildHabit(child.id)} onCancel={() => setActiveAddHabitTarget(null)} />
               )}
 
               {hasChildren && childExpanded && (
                 <div className="mt-2">
-                  {renderChildHabits(child.childHabits, depth + 1, child.id)}
+                  {renderChildHabits(child.childHabits, depth + 1, child.id, childPath)}
                 </div>
               )}
             </div>
@@ -1824,47 +1793,12 @@ export const Ciclos: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        {displayedMixedCards.length > 0 && <div className="cycle-list-heading">
-          <h3 className="font-mystic text-lg">
-            {selectedDate.toDateString() === new Date().toDateString() 
-              ? 'Ciclos de Hoje' 
-              : `Ciclos de ${selectedDate.toLocaleDateString('pt-BR')}`}
-          </h3>
-          <div className="flex items-center gap-2">
-            <div className="rounded-lg border border-white/15 bg-white/5 p-0.5 flex items-center gap-0.5">
-              <button
-                type="button"
-                aria-pressed={cyclesViewMode === 'ordered'} onClick={() => setCyclesViewMode('ordered')}
-                className={`px-2 py-1 text-[11px] rounded-md transition-colors ${
-                  cyclesViewMode === 'ordered'
-                    ? 'bg-mystic-gold/20 text-mystic-gold border border-mystic-gold/30'
-                    : 'text-white/65 hover:bg-white/10'
-                }`}
-              >
-                Ordem
-              </button>
-              <button
-                type="button"
-                aria-pressed={cyclesViewMode === 'pending-first'} onClick={() => setCyclesViewMode('pending-first')}
-                className={`px-2 py-1 text-[11px] rounded-md transition-colors ${
-                  cyclesViewMode === 'pending-first'
-                    ? 'bg-mystic-gold/20 text-mystic-gold border border-mystic-gold/30'
-                    : 'text-white/65 hover:bg-white/10'
-                }`}
-              >
-                Pendentes primeiro
-              </button>
-            </div>
-
-            <Badge variant="outline" className="bg-white/5">
-              {displayedMixedCards.length} {displayedMixedCards.length === 1 ? 'item' : 'itens'}
-            </Badge>
-          </div>
-        </div>
-
-        }
-        {displayedMixedCards.length > 0 && <CycleFilters filters={cycleFilters} onChange={setCycleFilters} shown={visibleCycleCards.length} total={displayedMixedCards.length} />}
-        {displayedMixedCards.length > 0 && !canReorderVisibleCards && <p className="cycle-reorder-hint">Para reorganizar, limpe os filtros e selecione Ordem.</p>}
+        {displayedMixedCards.length > 0 && <CycleRoutineToolbar
+          title={selectedDate.toDateString() === new Date().toDateString() ? 'Ciclos de hoje' : `Ciclos de ${selectedDate.toLocaleDateString('pt-BR')}`}
+          filters={cycleFilters} onChange={setCycleFilters}
+          total={displayedMixedCards.length} completed={displayedMixedCards.filter(isMixedCardCompleted).length}
+          shown={visibleCycleCards.length} order={cyclesViewMode} onOrder={setCyclesViewMode}
+        />}
         <AnimatePresence mode="popLayout">
           {visibleCycleCards.length > 0 ? (
             <div className="space-y-3">
@@ -1907,7 +1841,7 @@ export const Ciclos: React.FC = () => {
                   const completed = isHabitCompleted(sequenceHabit);
                   const completion = getCompletionForDate(sequenceHabit);
                   const childHabits = sequenceHabit.childHabits || [];
-                  const completedChildHabits = childHabits.filter(isHabitCompleted).length;
+                  const subitemSummary = summarizeSubitems(childHabits, isHabitCompleted);
                   const seqArea = allAreasForEdit.find((entry) => entry.id === sequenceHabit.areaId) || getAreaById(sequenceHabit.areaId);
                   const seqAreaDisplayName = seqArea?.name || 'Sem Categoria';
                   const seqSubarea = sequenceHabit.subareaId ? getAreaById(sequenceHabit.subareaId) : undefined;
@@ -1917,6 +1851,7 @@ export const Ciclos: React.FC = () => {
                   return (
                     <motion.div
                       key={`sequence-${item.sequence.id}`}
+                    data-completed={completed} style={{ "--cycle-accent": seqElement.color } as React.CSSProperties}
                       layout
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -1938,45 +1873,17 @@ export const Ciclos: React.FC = () => {
                           : ''
                       }`}
                     >
-                      {sequenceHabit.streak > 0 && (
-                        <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-xs font-bold z-10">
-                          <Flame className="w-3 h-3" />
-                          {sequenceHabit.streak}
-                        </div>
-                      )}
+                      <CycleStreakBadge schedule={sequenceHabit} rotates habitId={`${destinyAccountId}:${sequenceHabit.id}`} name={sequenceHabit.name}
+                      value={sequenceHabit.streak} record={sequenceHabit.longestStreak} lastCompletedAt={sequenceHabit.lastCompletedAt} referenceDate={selectedDate} completions={sequenceHabit.completions} />
 
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0"><p className="break-words font-medium">{item.sequence.name}</p><p className="mt-1 text-xs text-white/50">Passo {item.currentPositionLabel}</p></div>
                         <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 text-violet-300 hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>{isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
                       </div>
                       {isFitnessSequence ? <FitnessHabitWidget habit={sequenceHabit} date={selectedDate} embedded showAdministrativeActions={false} /> : (
-                      <div className="flex items-start gap-3">
-                        {!completed ? (
-                          <button
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleQuickCompleteHabit(sequenceHabit);
-                            }}
-                            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-mystic-gold/20 flex items-center justify-center flex-shrink-0 transition-colors"
-                            aria-label="Marcar ciclo como completo" title="Marcar como completo"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleQuickUncompleteHabit(sequenceHabit);
-                            }}
-                            className="w-8 h-8 rounded-lg bg-mystic-gold/20 hover:bg-mystic-gold/30 flex items-center justify-center flex-shrink-0"
-                            aria-label="Desmarcar conclusão" title="Desmarcar"
-                          >
-                            <X className="w-4 h-4 text-mystic-gold" />
-                          </button>
-                        )}
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
+                      <div className="cycle-main-row">
+                        <div className="cycle-main-content flex-1 min-w-0">
+                          <div className="cycle-card-heading flex items-start justify-between gap-2">
                             <div>
                               <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
                                 {sequenceHabit.name}
@@ -1999,24 +1906,16 @@ export const Ciclos: React.FC = () => {
                                   <ElementIcon element={seqElement.id} />
                                 </span>
                               )}
-                              {!completed && (
-                                <button
-                                  onClick={() => setActiveAddHabitTarget(sequenceHabit.id)}
-                                  className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70"
-                                  title="Adicionar subitem"
-                                >
-                                  <PlusCircle className="w-4 h-4" />
-                                </button>
-                              )}
 
                               {!completed && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
-                                    <button aria-label="Mais ações do ciclo" className="p-1 rounded-lg hover:bg-white/10">
+                                    <button aria-label={`Ações de ${sequenceHabit.name}`} className="p-1 rounded-lg hover:bg-white/10">
                                       <MoreVertical className="w-4 h-4 text-white/40" />
                                     </button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10">
+                                  {!completed && <DropdownMenuItem onClick={() => setActiveAddHabitTarget(sequenceHabit.id)}><PlusCircle className="w-4 h-4 mr-2" />Adicionar subitem</DropdownMenuItem>}
                                     <DropdownMenuItem
                                       disabled={!canReorderVisibleCards} onClick={() => handleMoveMixedCard('sequence', item.sequence.id, 'up')}
                                     >
@@ -2083,82 +1982,27 @@ export const Ciclos: React.FC = () => {
                             )}
                           </div>
 
-                          {!completed && (
-                            <div className="mt-2">
-                              <Button
-                                size="sm"
-                                onClick={() => handleStartHabit(sequenceHabit.id)}
-                                className="h-7 px-2 text-xs bg-mystic-arcane hover:bg-mystic-arcane/80"
-                              >
-                                <Play className="w-3 h-3 mr-1" />
-                                Iniciar
-                              </Button>
-                            </div>
-                          )}
+                          <CycleExecutionActions name={sequenceHabit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
+                            onStart={() => handleStartHabit(sequenceHabit.id)}
+                            onComplete={() => handleQuickCompleteHabit(sequenceHabit)}
+                            onUndo={() => handleQuickUncompleteHabit(sequenceHabit)} />
 
                           {childHabits.length > 0 && (
-                            <div className="mt-2 flex items-center gap-2">
-                              <button
-                                onClick={() => toggleHabitChildExpansion(sequenceHabit.id)}
-                                className="flex items-center gap-1 text-xs text-white/50 hover:text-white/70"
-                              >
-                                {sequenceHabit.isExpanded ? (
-                                  <ChevronUp className="w-3 h-3" />
-                                ) : (
-                                  <ChevronDown className="w-3 h-3" />
-                                )}
-                                {completedChildHabits}/{childHabits.length} subitens
-                              </button>
-                              <div className="flex-1 h-1 bg-black/30 rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-mystic-arcane rounded-full"
-                                  style={{
-                                    width: `${childHabits.length > 0 ? (completedChildHabits / childHabits.length) * 100 : 0}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
+                            <CycleSubitemsToggle name={sequenceHabit.name} expanded={!!sequenceHabit.isExpanded}
+                              completed={subitemSummary.completedCount} total={subitemSummary.actionableCount} notes={subitemSummary.noteCount}
+                              onToggle={() => toggleHabitChildExpansion(sequenceHabit.id)} />
                           )}
 
                           <div className="mt-2">
                             {isAddTargetForHabit(sequenceHabit.id) && (
-                              <div className="flex flex-wrap items-center gap-2">
-                                <Input
-                                  aria-label="Nome do subitem" value={newChildHabitName}
-                                  onChange={(e) => setNewChildHabitName(e.target.value)}
-                                  placeholder="Novo subciclo..."
-                                  className="flex-1 h-8 text-sm bg-white/5 border-white/10"
-                                  autoFocus
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleAddChildHabit(sequenceHabit.id);
-                                    if (e.key === 'Escape') setActiveAddHabitTarget(null);
-                                  }}
-                                />
-                                <Input
-                                  type="number"
-                                  min={1}
-                                  aria-label="Pontos planejados do subitem" value={newChildHabitPoints}
-                                  onChange={(e) => setNewChildHabitPoints(Number(e.target.value))}
-                                  placeholder="Pts"
-                                  className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                                />
-                                <Input
-                                  type="number"
-                                  min={0}
-                                  aria-label="Minutos planejados do subitem" value={newChildHabitMinutes}
-                                  onChange={(e) => setNewChildHabitMinutes(e.target.value)}
-                                  placeholder="Min"
-                                  className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                                />
-                                <Button size="sm" className="h-8 px-2" onClick={() => handleAddChildHabit(sequenceHabit.id)}>
-                                  <Plus className="w-4 h-4" />
-                                </Button>
-                              </div>
+                              <CycleSubitemComposer name={newChildHabitName} points={newChildHabitPoints} minutes={newChildHabitMinutes}
+                                onName={setNewChildHabitName} onPoints={setNewChildHabitPoints} onMinutes={setNewChildHabitMinutes}
+                                onAdd={() => handleAddChildHabit(sequenceHabit.id)} onCancel={() => setActiveAddHabitTarget(null)} />
                             )}
                           </div>
 
                           {childHabits.length > 0 && sequenceHabit.isExpanded && (
-                            <div className="mt-3 space-y-2">
+                            <div className="cycle-card-children mt-3 space-y-2">
                               {renderChildHabits(childHabits, 0, sequenceHabit.id)}
                             </div>
                           )}
@@ -2180,7 +2024,7 @@ export const Ciclos: React.FC = () => {
                 if (!habit) return null;
                 const completed = isHabitCompleted(habit);
                 const childHabits = habit.childHabits || [];
-                const completedChildHabits = childHabits.filter(isHabitCompleted).length;
+                const subitemSummary = summarizeSubitems(childHabits, isHabitCompleted);
                 const area = allAreasForEdit.find((item) => item.id === habit.areaId) || getAreaById(habit.areaId);
                 const areaDisplayName = area?.name || 'Sem Categoria';
                 const subarea = habit.subareaId ? getAreaById(habit.subareaId) : undefined;
@@ -2234,6 +2078,7 @@ export const Ciclos: React.FC = () => {
                 return (
                   <motion.div
                     key={habit.id}
+                    data-completed={completed} style={{ "--cycle-accent": element.color } as React.CSSProperties}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -2254,42 +2099,12 @@ export const Ciclos: React.FC = () => {
                     }`}
                   >
                     {/* Streak badge */}
-                    {habit.streak > 0 && (
-                      <div className="absolute -top-2 -right-2 flex items-center gap-1 px-2 py-0.5 
-                                    bg-gradient-to-r from-orange-500 to-red-500 rounded-full text-xs font-bold z-10">
-                        <Flame className="w-3 h-3" />
-                        {habit.streak}
-                      </div>
-                    )}
+                    <CycleStreakBadge schedule={habit} rotates={sequenceMemberships.some(member => member.habitId === habit.id)} habitId={`${destinyAccountId}:${habit.id}`} name={habit.name}
+                      value={habit.streak} record={habit.longestStreak} lastCompletedAt={habit.lastCompletedAt} referenceDate={selectedDate} completions={habit.completions} />
 
-                    <div className="flex items-start gap-3">
-                      {!completed && (
-                        <button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleQuickCompleteHabit(habit);
-                          }}
-                          className="w-8 h-8 rounded-lg bg-white/10 hover:bg-mystic-gold/20 flex items-center justify-center flex-shrink-0 transition-colors"
-                          aria-label="Marcar ciclo como completo" title="Marcar como completo"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                      )}
-                      {completed && (
-                        <button
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleQuickUncompleteHabit(habit);
-                          }}
-                          className="w-8 h-8 rounded-lg bg-mystic-gold/20 hover:bg-mystic-gold/30 flex items-center justify-center flex-shrink-0"
-                          aria-label="Desmarcar conclusão" title="Desmarcar"
-                        >
-                          <X className="w-4 h-4 text-mystic-gold" />
-                        </button>
-                      )}
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
+                    <div className="cycle-main-row">
+                      <div className="cycle-main-content flex-1 min-w-0">
+                        <div className="cycle-card-heading flex items-start justify-between">
                           <div>
                             <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
                               {habit.name}
@@ -2314,21 +2129,15 @@ export const Ciclos: React.FC = () => {
                                 </span>
                               )}
 
-                              <button
-                                onClick={() => setActiveAddHabitTarget(habit.id)}
-                                className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70"
-                                title="Adicionar subitem"
-                              >
-                                <PlusCircle className="w-4 h-4" />
-                              </button>
 
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <button aria-label="Mais ações do ciclo" className="p-1 rounded-lg hover:bg-white/10">
+                                  <button aria-label={`Ações de ${habit.name}`} className="p-1 rounded-lg hover:bg-white/10">
                                     <MoreVertical className="w-4 h-4 text-white/40" />
                                   </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10">
+                                  {!completed && <DropdownMenuItem onClick={() => setActiveAddHabitTarget(habit.id)}><PlusCircle className="w-4 h-4 mr-2" />Adicionar subitem</DropdownMenuItem>}
                                   {!habit.controlledBySequenceId && (
                                     <>
                                       <DropdownMenuItem disabled={!canReorderVisibleCards} onClick={() => moveHabitUp(habit.id)}>
@@ -2390,7 +2199,7 @@ export const Ciclos: React.FC = () => {
                           )}
                         </div>
 
-                        <div className="mt-2 flex items-start justify-between gap-2 min-w-0">
+                        <div className="cycle-card-metadata mt-2 flex items-start justify-between gap-2 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
                             {habit.controlledBySequenceId && (
                               <Badge variant="outline" className="bg-mystic-gold/10 border-mystic-gold/40 text-mystic-gold text-[10px] truncate max-w-full sm:max-w-xs">
@@ -2448,81 +2257,28 @@ export const Ciclos: React.FC = () => {
                             )}
                           </div>
 
-                          {!completed && (
-                            <Button
-                              size="sm"
-                              onClick={() => handleStartHabit(habit.id)}
-                              className="h-7 px-2 text-xs bg-mystic-arcane hover:bg-mystic-arcane/80 shrink-0"
-                            >
-                              <Play className="w-3 h-3 mr-1" />
-                              Iniciar
-                            </Button>
-                          )}
+                          <CycleExecutionActions name={habit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
+                            onStart={() => handleStartHabit(habit.id)}
+                            onComplete={() => handleQuickCompleteHabit(habit)}
+                            onUndo={() => handleQuickUncompleteHabit(habit)} />
                         </div>
 
                       {childHabits.length > 0 && (
-                        <div className="mt-2 flex items-center gap-2">
-                          <button
-                            onClick={() => toggleHabitChildExpansion(habit.id)}
-                            className="flex items-center gap-1 text-xs text-white/50 hover:text-white/70"
-                          >
-                            {habit.isExpanded ? (
-                              <ChevronUp className="w-3 h-3" />
-                            ) : (
-                              <ChevronDown className="w-3 h-3" />
-                            )}
-                            {completedChildHabits}/{childHabits.length} subitens
-                          </button>
-                          <div className="flex-1 h-1 bg-black/30 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-mystic-arcane rounded-full"
-                              style={{
-                                width: `${childHabits.length > 0 ? (completedChildHabits / childHabits.length) * 100 : 0}%`,
-                              }}
-                            />
-                          </div>
-                        </div>
+                        <CycleSubitemsToggle name={habit.name} expanded={!!habit.isExpanded}
+                          completed={subitemSummary.completedCount} total={subitemSummary.actionableCount} notes={subitemSummary.noteCount}
+                          onToggle={() => toggleHabitChildExpansion(habit.id)} />
                       )}
 
                       <div className="mt-2">
                         {isAddTargetForHabit(habit.id) && (
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Input
-                              aria-label="Nome do subitem" value={newChildHabitName}
-                              onChange={(e) => setNewChildHabitName(e.target.value)}
-                              placeholder="Novo subciclo..."
-                              className="flex-1 h-8 text-sm bg-white/5 border-white/10"
-                              autoFocus
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') handleAddChildHabit(habit.id);
-                                if (e.key === 'Escape') setActiveAddHabitTarget(null);
-                              }}
-                            />
-                            <Input
-                              type="number"
-                              min={1}
-                              aria-label="Pontos planejados do subitem" value={newChildHabitPoints}
-                              onChange={(e) => setNewChildHabitPoints(Number(e.target.value))}
-                              placeholder="Pts"
-                              className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                            />
-                            <Input
-                              type="number"
-                              min={0}
-                              aria-label="Minutos planejados do subitem" value={newChildHabitMinutes}
-                              onChange={(e) => setNewChildHabitMinutes(e.target.value)}
-                              placeholder="Min"
-                              className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                            />
-                            <Button size="sm" className="h-8 px-2" onClick={() => handleAddChildHabit(habit.id)}>
-                              <Plus className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <CycleSubitemComposer name={newChildHabitName} points={newChildHabitPoints} minutes={newChildHabitMinutes}
+                            onName={setNewChildHabitName} onPoints={setNewChildHabitPoints} onMinutes={setNewChildHabitMinutes}
+                            onAdd={() => handleAddChildHabit(habit.id)} onCancel={() => setActiveAddHabitTarget(null)} />
                         )}
                       </div>
 
                       {childHabits.length > 0 && habit.isExpanded && (
-                        <div className="mt-3 space-y-2">
+                        <div className="cycle-card-children mt-3 space-y-2">
                           {renderChildHabits(childHabits, 0, habit.id)}
                         </div>
                       )}
@@ -2609,24 +2365,16 @@ export const Ciclos: React.FC = () => {
           className="mb-6"
         >
           <div className="flex items-center gap-2 mb-3">
-            <Flame className="w-4 h-4 text-orange-500" />
+            <ArcaneIcon name="conquista" size={20} />
             <h3 className="font-mystic text-sm">Sequências de constância</h3>
           </div>
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {topStreaks.map((habit) => (
-              <motion.div
-                key={habit.id}
-                whileHover={{ scale: 1.05 }}
-                className="flex-shrink-0 px-3 py-2 rounded-xl bg-gradient-to-r from-orange-500/20 to-red-500/20
-                          border border-orange-500/30"
-              >
-                <div className="flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-orange-400" />
-                  <span className="font-bold text-orange-400">{habit.streak}</span>
-                  <span className="text-xs text-white/60 truncate max-w-[100px]">{habit.name}</span>
-                </div>
-              </motion.div>
-            ))}
+          <div className="cycle-constancy-list">
+            {topStreaks.map(habit => <div key={habit.id}>
+              <p>{habit.name}</p>
+              <CycleStreakBadge schedule={habit} rotates={sequenceMemberships.some(member => member.habitId === habit.id)} habitId={`${destinyAccountId}:${habit.id}`} name={habit.name}
+                value={habit.streak} record={habit.longestStreak} lastCompletedAt={habit.lastCompletedAt}
+                referenceDate={selectedDate} completions={habit.completions} />
+            </div>)}
           </div>
         </motion.div>
       )}

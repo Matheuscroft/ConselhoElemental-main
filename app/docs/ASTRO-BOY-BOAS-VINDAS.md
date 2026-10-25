@@ -1,3 +1,7 @@
+## Atualização prioritária — 0.1.68 · R15–R26 (25/10/2026)
+
+Leia primeiro [repasse atual](REPASSE-FRONTEND-PARA-BACKEND.md), [revisão desta publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md) e [continuidade](CONTINUIDADE.md). O briefing `repaginacao-elemental-r26-2026-10-25` substitui o R14; o CLI informa atualização pendente para perfis que só reconheceram entregas antigas. Matheus conduz backend, Fábio frontend/mobile e Astro Boy coordena. Constância por agenda foi autorizada e implementada no recorte R26-D; fragmentos, histórico de turnos, backup e associação segura à conta continuam pendentes. Os capítulos abaixo são históricos.
+
 # Entrada de Matheus e Fábio
 
 ## Atualização prioritária — repaginação 0.1.54

@@ -1,3 +1,51 @@
+# Repasse atual — R15–R26 · 0.1.68 · 25/10/2026
+
+Matheus, Astro Boy consolidou as mudanças de Fábio desde a versão publicada 0.1.54. **Você continua responsável pelo backend; Fábio continua no frontend, UX/UI e aceite mobile.** O histórico anterior I03/R01–R14 permanece abaixo para não perder o contexto.
+
+## O que chega neste push
+
+| Área | O que foi implementado |
+| --- | --- |
+| Grandes Obras | Navegação por capítulos e acesso às etapas na trilha existente, preservando IDs e comandos. |
+| Invocar | Escolhas com ícones temáticos, explicação dos tipos, hierarquia visual e base compartilhada de design, mantendo o fluxo de criação. |
+| Forja | Captura com notas expansíveis, busca, cartões com detalhes, edição ligada a `updateDraft` e confirmações nos comandos existentes. |
+| Astrolábio | Leituras reorganizadas, contexto temporal e visual elemental consistente. |
+| Domínios | Expanded Cards por elemento, Showcase no detalhe, criação refinada, filtros/retorno na URL, grupos recolhíveis e modo explícito de gerenciar vínculos. |
+| Pilares / Mapa / navegação | Descoberta por elementos, busca/categorias, pontuação em níveis e símbolos próprios para 26 destinos. |
+| Roda do Destino | Escolha gratuita entre atividades reais, filtros e acesso à execução. Fábio autorizou remover custo de stamina e XP automático do sorteio; conclusão normal mantém recompensas. |
+| Ciclos de hoje | Barra compacta com Todos/Pendentes/Feitos, progresso, busca/filtros/ordem; Iniciar/Concluir/Desfazer nomeados; expansão em linha inteira; formulário compartilhado de subitem. |
+| Subitens | Papéis ação/checklist/nota/etapa, caminho hierárquico e compatibilidade de tipos legados/canônicos; notas ficam fora da contagem visual de ações. |
+| Constância | Runa e detalhes de histórico, recorde e última conclusão; breve animação somente com nova conclusão que aumenta o contador. Cálculo diário/semanal/mensal por datas programadas, com descanso preservado, aprovado explicitamente por Fábio. |
+
+## Atenção ao contrato de backend
+
+Aprovação de Fábio: **“Contar execuções programadas: dias de descanso não quebram a sequência.”** Foi aplicada em `appStore`, conclusão/Undo de ciclo e treino vinculado; subitens herdam agenda da raiz. Um helper compartilhado serve comandos e apresentação. Predicado de agenda apenas extraído do store; nenhuma nova recorrência ou fórmula de recompensa.
+
+O cálculo é uma sequência registrada até a última execução, baseada na agenda atual. Não existe histórico versionado de mudanças da agenda. Conclusões fora da agenda não somam ocorrências, mas seus recibos/pontos não são apagados. UI projeta a regra sem migração em massa; conclusão/Undo atualiza o contador persistido. Streak geral do personagem permanece inalterado.
+
+**Rotações e YEARLY ainda usam regra anterior**: faltam histórico completo de turnos e configuração anual. Não confundimos os dias de outros membros com faltas do usuário. A UI informa o limite. [Contrato, código e casos R26-D](plans/R26-D-CONSTANCIA-PROGRAMADA.md).
+
+Foram preservados recibos, dados pessoais, contratos de autenticação/sync e fórmulas de XP/Prana. Teste comparativo confirmou paridade de recompensa/recibos nos cenários executados; não é uma garantia não testada de todo o backend. Sem schema novo, secrets, deploy ou migração cloud.
+
+## Como retomar
+
+Após atualizar seu checkout com segurança, entre em `app`, execute `npm ci`, `npm run astro:status -- --json` e `npm run astro:welcome`. Perfil que já reconheceu R14 recebe o briefing R26 como pendente; `npm run astro:ack` marca leitura somente nessa máquina. O CLI não inicia agentes automaticamente nem envia mensagens fora do projeto.
+
+Leia [continuidade](CONTINUIDADE.md), [fila](FILA-ENTREGAS.md) e [revisão/publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). Validação final: **159 testes Node, TypeScript, lint e build passaram**. O relatório diferencia teste integrado com armazenamento em memória, SSR e QA de navegador. Não houve validação visual completa em celular nesta rodada.
+
+## Próximos passos por responsabilidade
+
+- **Fábio / Astro Boy frontend:** validar jornadas reais em 360/390px, depois tablet 768px; teclado, toque, rolagem, barra inferior, filtros, criar/executar/Undo e retorno contextual. Medir bundle/fluidez antes de novos efeitos.
+- **Matheus / backend:** priorizar R25-A/B com Fábio — backup exportável/restauração e associação explícita à conta sem perda ou duplicação. O usuário pediu preservar atividades/conquistas, mas a garantia ainda não está implementada/testada.
+- **Contratos a revisar juntos:** histórico de agenda/turnos para constância completa; propagação do pai incluindo NOTE; snapshots/progresso macro das quests; primeiro desvínculo R19 e diferenças documentadas da Forja.
+- **Gamificação futura:** 1 fragmento por conclusão válida foi escolhido; distribuição por elemento, idempotência/Undo, persistência e demais contratos continuam pendentes. Fragmentos não foram adicionados neste push.
+
+Este push salva **código e documentação**, não o armazenamento pessoal do navegador. Nenhum login/logout/cadastro/importação foi realizado nesta revisão.
+
+---
+
+## Histórico do repasse R14
+
 > Atualização 24/10/2026: [checkpoint 0.1.64, mudanças R15–R24 e proteção dos dados](PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md). Conteúdo abaixo registra o repasse histórico R14. A próxima integração de conta precisa tratar reset local, cobertura de core/treinos e backup verificável; nenhum contrato de backend foi alterado.
 
 # Repasse para Matheus e Astro Boy — repaginação elemental
