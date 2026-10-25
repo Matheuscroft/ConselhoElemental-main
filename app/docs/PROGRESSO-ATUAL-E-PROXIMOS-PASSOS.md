@@ -4,7 +4,7 @@ Atualizado em 25/10/2026 · versão 0.1.68 · Astro Boy · Fábio frontend/UX, M
 
 Este é o resumo de retomada solicitado por Fábio. A fila operacional continua em [FILA-ENTREGAS](FILA-ENTREGAS.md); este documento detalha prioridades e critérios, sem criar uma segunda fila.
 
-Em 25/10, Fábio priorizou [R26-A — rotina de Ciclos](plans/R26-A-CICLOS-ROTINA.md): apresentação implementada, QA mobile pendente. O checkpoint Git anterior é `88c9021`; as alterações 0.1.65–0.1.68 estão consolidadas para publicação autorizada; situação remota no [relatório](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). Backup/conta permanece pendente.
+Em 25/10, Fábio priorizou [R26-A — rotina de Ciclos](plans/R26-A-CICLOS-ROTINA.md): apresentação implementada, QA mobile pendente. O checkpoint Git anterior é `88c9021`; as alterações 0.1.65–0.1.68 foram publicadas em main no commit `0a1db75`, confirmado no remoto; evidência no [relatório](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). Backup/conta permanece pendente.
 
 R26-B adicionou [comandos explícitos de execução e controles recolhíveis](plans/R26-B-CICLOS-EXECUCAO.md); 141 testes passaram. Prévia local iniciada; renderização e toque ainda não verificados.
 

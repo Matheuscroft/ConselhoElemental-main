@@ -1,5 +1,7 @@
 # Repasse atual — R15–R26 · 0.1.68 · 25/10/2026
 
+**Publicado em main:** commit de código `0a1db75`, confirmado por `ls-remote`. [Evidências e fechamento](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md).
+
 Matheus, Astro Boy consolidou as mudanças de Fábio desde a versão publicada 0.1.54. **Você continua responsável pelo backend; Fábio continua no frontend, UX/UI e aceite mobile.** O histórico anterior I03/R01–R14 permanece abaixo para não perder o contexto.
 
 ## O que chega neste push

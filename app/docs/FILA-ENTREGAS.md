@@ -1,12 +1,12 @@
-## R26-D e publicação R15–R26 — preparação validada (25/10/2026)
+## R26-D e publicação R15–R26 — main confirmado (25/10/2026)
 
-**0.1.68**, branch codex/fitness-ui-integration; base 88c9021 e alterações R26-A/B/C preservadas. [Revisão e situação de publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md), [repasse para Matheus](REPASSE-FRONTEND-PARA-BACKEND.md), [constância R26-D](plans/R26-D-CONSTANCIA-PROGRAMADA.md). Fábio autorizou push para main.
+**0.1.68**, branch codex/fitness-ui-integration; base 88c9021 e alterações R26-A/B/C preservadas. [Revisão e situação de publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md), [repasse para Matheus](REPASSE-FRONTEND-PARA-BACKEND.md), [constância R26-D](plans/R26-D-CONSTANCIA-PROGRAMADA.md). Push autorizado concluído: `91fa5a5 → 0a1db75`; `ls-remote` confirmou o SHA completo no relatório. Inclui checkpoint 88c9021 e versão 0.1.68. Registro documental de fechamento vem em seguida, sem mudança de código.
 
 Fábio aprovou **“Contar execuções programadas: dias de descanso não quebram a sequência.”** Regra integrada em ciclos diários/semanais/mensais, subitens pela agenda da raiz e treinos vinculados; leitura sem migração. Rotações e YEARLY mantêm fallback explícito. Streak geral, XP/Prana e recibos preservados. Notas históricas de cálculo pendente abaixo foram superadas apenas nesse recorte.
 
 **Executado nesta revisão:** 159 testes, TypeScript, lint, build envDir:false (11,13s), paridade do store anterior nos cenários de prêmio/Undo/recibos. Avisos de bundle/Browserslist permanecem. QA visual/toque 360/390/768px continua pendente, sem contornar bloqueio anterior; revisão independente não executada.
 
-Reservas de código encerradas; Astro Boy mantém reserva documental/manifests/scripts de briefing até confirmar publicação. Responsabilidades: Fábio frontend/mobile, Matheus backend, Astro Boy coordena sequencialmente. Próximo: QA R26 e R25-A/B (backup/conta), sem prometer proteção de dados ainda não validada; R19, NOTE, progresso macro e fragmentos permanecem na fila. Sem deploy, migração, dados reais ou credenciais.
+Reservas de código e documentação encerradas após publicação; revisão documental pelo coordenador. Responsabilidades: Fábio frontend/mobile, Matheus backend, Astro Boy coordena sequencialmente. Próximo: QA R26 e R25-A/B (backup/conta), sem prometer proteção de dados ainda não validada; R19, NOTE, progresso macro e fragmentos permanecem na fila. Sem deploy, migração, dados reais ou credenciais.
 
 ## R26-C — subitens e constância contextual implementados (25/10/2026)
 

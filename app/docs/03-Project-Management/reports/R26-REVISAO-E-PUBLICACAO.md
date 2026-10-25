@@ -42,4 +42,6 @@ Falhas intermediárias corrigidas: fixtures inicialmente não passavam `startDat
 
 ## Publicação
 
-Preparação concluída. Commit, push e confirmação do SHA remoto serão registrados abaixo somente após execução bem-sucedida. O histórico desta seção prevalece sobre notas antigas de “local” dos lotes individuais.
+**Publicação confirmada em 25/10/2026.** `git push origin HEAD:main` atualizou main de `91fa5a5` para **`0a1db754b3642d32cf47347e593ca2a022c4b5ce`**. `git ls-remote origin refs/heads/main` retornou exatamente esse SHA. O push incluiu o checkpoint `88c9021` (R15–R24) e o commit `0a1db75` (R26 e repasse). Checkout estava limpo após a publicação.
+
+Este registro integra um commit documental de fechamento, sem mudança de código nem necessidade de repetir o build. Reservas encerradas. Sem force push, merge destrutivo ou deploy. A confirmação prevalece sobre notas históricas de “local” dos relatórios individuais. Próximo trabalho: QA mobile e R25-A/B, com Matheus responsável pelo backend e Fábio pelo frontend.

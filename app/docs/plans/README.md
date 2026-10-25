@@ -2,7 +2,7 @@
 
 23/10/2026. Base anterior: `987e09e`, versão 0.1.48. Planejamento seguido de implementação R12-A/B/C, taxonomia e R13 até 0.1.53; revisão e repasse em 0.1.54. Estado final da publicação na continuidade. Esta pasta detalha a entrada R12 da [fila operacional](../FILA-ENTREGAS.md), não cria uma segunda fila.
 
-Publicação R15–R26 preparada em 0.1.68; [evidência e situação remota](../03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). A coluna de estado dos lotes anteriores registra o fechamento de cada rodada.
+Publicação R15–R26 confirmada em main (`0a1db75`, 0.1.68); [evidência e situação remota](../03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md). A coluna de estado dos lotes anteriores registra o fechamento de cada rodada.
 
 | Plano | Estado | Dependência |
 | --- | --- | --- |
