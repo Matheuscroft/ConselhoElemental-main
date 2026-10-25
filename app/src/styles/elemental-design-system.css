@@ -1,0 +1,23 @@
+/* Opt-in recipes. The existing elemental palette remains the single color source. */
+.elemental-system {
+  --ds-radius-control: 12px;
+  --ds-radius-panel: 24px;
+  --ds-space-unit: 4px;
+  --ds-duration-feedback: 160ms;
+  --ds-duration-reveal: 240ms;
+  --ds-ease: cubic-bezier(.2,.7,.2,1);
+  --ds-font-heading: Cinzel, Georgia, serif;
+  --ds-font-body: Inter, system-ui, sans-serif;
+  color: rgb(var(--el-text));
+  font-family: var(--ds-font-body);
+}
+.elemental-system :is(button,input,textarea,[role="combobox"]):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
+.elemental-system .elemental-action { min-height: 48px; white-space: normal; height: auto; padding: 12px 20px; border-radius: var(--ds-radius-control); font-weight: 600; background: rgb(var(--el-gold)); color: rgb(var(--el-canvas)); }
+.elemental-system .elemental-action:hover { background: rgb(var(--el-gold) / .9); }
+.elemental-system .elemental-action-secondary { background: rgb(var(--el-surface)); color: rgb(var(--el-text)); border: 1px solid rgb(var(--el-muted) / .3); }
+.elemental-system .elemental-action-secondary:hover { background: rgb(var(--el-raised)); }
+.elemental-system :is(input:not([type="radio"]):not([type="checkbox"]),textarea,[role="combobox"]) { border-radius: var(--ds-radius-control); min-height: 48px; background: rgb(var(--el-canvas) / .75); border-color: rgb(var(--el-muted) / .3); color: rgb(var(--el-text)); font-size: 1rem; }
+.elemental-system :is(input,textarea)::placeholder { color: rgb(var(--el-muted) / .85); }
+@media (prefers-reduced-motion: reduce) {
+  .elemental-system { --ds-duration-feedback: 0ms; --ds-duration-reveal: 0ms; }
+}

@@ -1,3 +1,5 @@
+> Retomada em 24/10/2026: [progresso até 0.1.64 e próximos passos](PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md). R15–R24 locais; prioridade em backup/conta e usabilidade mobile. Estado operacional em [CONTINUIDADE](CONTINUIDADE.md).
+
 > Estado atual: [R12/R13 — frontend implementado e contratos pendentes](plans/README.md). Trilhas, runas, catálogos e Rituais Showcase implementados; fragmentos/streak novos não implementados. [Revisão/publicação R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md).
 
 # Arquitetura — Conselho Elemental

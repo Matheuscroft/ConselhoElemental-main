@@ -1,3 +1,4 @@
+import { ElementScoreExplorer } from '@/components/elemental/ElementScoreExplorer';
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -6,7 +7,7 @@ import type { Area, ElementId, Habit, Task } from '@/types';
 import { AREAS, ELEMENTS, calculateTaskScore } from '@/constants';
 
 interface ScoreHierarchyPanelProps {
-  presentation?: 'default' | 'showcase';
+  presentation?: 'default' | 'showcase' | 'explorer';
   tasks: Task[];
   habits: Habit[];
   customAreas?: Area[];
@@ -246,6 +247,10 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
     selectedElement ? ELEMENTS[selectedElement].name : null,
     selectedArea?.name || null,
   ].filter(Boolean).join(' > ');
+
+  if (presentation === 'explorer') {
+    return <ElementScoreExplorer scores={elementScores} areas={mergedAreas} areaScores={areaScoresById} subareaScores={subareaScoresById} selectedElement={selectedElement} selectedAreaId={selectedAreaId} onSelectElement={handleSelectElement} onSelectArea={id => setSelectedAreaId(current => current === id ? null : id)} />;
+  }
 
   return (
     <div className={`mb-4 space-y-3 ${presentation === 'showcase' ? 'score-elemental-showcase' : ''}`}>

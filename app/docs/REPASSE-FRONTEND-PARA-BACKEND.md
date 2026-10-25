@@ -1,3 +1,5 @@
+> Atualização 24/10/2026: [checkpoint 0.1.64, mudanças R15–R24 e proteção dos dados](PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md). Conteúdo abaixo registra o repasse histórico R14. A próxima integração de conta precisa tratar reset local, cobertura de core/treinos e backup verificável; nenhum contrato de backend foi alterado.
+
 # Repasse para Matheus e Astro Boy — repaginação elemental
 
 **Atualização: 23/10/2026 · versão 0.1.54 · lotes I03/R01–R14.** Resumo consolidado para retomar após o pull, sem depender do chat. [Estado e publicação](CONTINUIDADE.md) · [fila única](FILA-ENTREGAS.md) · [verificações desta publicação](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md).

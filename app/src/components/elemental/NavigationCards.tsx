@@ -12,11 +12,11 @@ const GROUP_STYLE: Record<RouteGroup, { icon: ArcaneIconName; element: string; d
 };
 
 /** Native disclosure: search can reveal all results without changing destinations. */
-export function NavigationGroup({ group, count, initiallyOpen, reveal = false, children }: { group: RouteGroup; count: number; initiallyOpen?: boolean; reveal?: boolean; children: ReactNode }) {
+export function NavigationGroup({ group, count, initiallyOpen, reveal = false, illustrated = false, children }: { group: RouteGroup; count: number; initiallyOpen?: boolean; reveal?: boolean; illustrated?: boolean; children: ReactNode }) {
   const [open, setOpen] = useState(!!initiallyOpen);
   const visual = GROUP_STYLE[group];
   return <details className="elemental-nav-group" open={reveal || open} style={{ '--group-accent': `var(--element-${visual.element})` } as CSSProperties} onToggle={(event) => { if (!reveal) setOpen(event.currentTarget.open); }}>
-    <summary><span className="elemental-nav-seal"><ArcaneIcon name={visual.icon} size={28} /></span><span className="elemental-nav-group-title"><strong>{group}</strong><small>{visual.description}</small></span><span className="elemental-nav-count">{count}<span className="sr-only"> páginas</span></span><ChevronDown size={18} aria-hidden="true" /></summary>
+    <summary>{illustrated && <img className="elemental-nav-illustration" src={`/sanctuary/elements/${visual.element}-v1.webp`} alt="" width={140} height={140} loading="lazy" />}<span className="elemental-nav-seal"><ArcaneIcon name={visual.icon} size={28} /></span><span className="elemental-nav-group-title"><strong>{group}</strong><small>{visual.description}</small></span><span className="elemental-nav-count">{count}<span className="sr-only"> páginas</span></span><ChevronDown size={18} aria-hidden="true" /></summary>
     <div className="elemental-nav-group-content">{children}</div>
   </details>;
 }

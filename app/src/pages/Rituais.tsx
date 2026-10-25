@@ -132,6 +132,22 @@ export const Rituais: React.FC = () => {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverTaskId, setDragOverTaskId] = useState<string | null>(null);
 
+  const destinyTaskId = questParams.get('atividade');
+  const [appliedDestinyIntent, setAppliedDestinyIntent] = useState<string | null>(null);
+  const destinyIntent = destinyTaskId ? `${questAccountId}:${destinyTaskId}` : null;
+  // Adjust view state once per incoming identity, including late store hydration.
+  if (destinyIntent !== appliedDestinyIntent) {
+    const task = tasks.find(item => item.id === destinyTaskId);
+    if (!destinyIntent || task) {
+      setAppliedDestinyIntent(destinyIntent);
+      if (task) {
+        setSearchQuery(task.title);
+        setFilterElement(null);
+        setActiveTab(task.isCompleted ? 'completed' : 'pending');
+      }
+    }
+  }
+
 
 
   // Filter tasks

@@ -1,336 +1,95 @@
+import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { buildGrimoireHistory } from '@/components/grimorio/history';
 import { recordedHistorySeries } from '@/components/grimorio/recorded-history-series';
 import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
-import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, TrendingUp, BarChart3, Activity } from 'lucide-react';
+import { ElementReading, RecordedDaysTable } from '@/components/astrolabio/AstrolabioReadings';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
 import { ELEMENTS, type ElementId } from '@/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-  PieChart,
-  Pie,
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
+import '@/styles/elemental-design-system.css';
+import '@/components/astrolabio/astrolabio.css';
 
-export const Astrolabio: React.FC = () => {
+const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
+const tooltipStyle = { backgroundColor: 'rgb(var(--el-surface))', border: '1px solid rgb(var(--el-gold) / .3)', borderRadius: '12px', color: 'rgb(var(--el-text))' };
+
+export function Astrolabio() {
+  const accountId = useAppStore(state => state.currentAccountId);
+  return <AppLayout><AstrolabioWorkspace key={accountId ?? 'local'} /></AppLayout>;
+}
+
+function AstrolabioWorkspace() {
   const { getElementScores, tasks, habits, actions, executionLogs, user } = useAppStore();
   const [timeRange, setTimeRange] = useState<'week' | 'month' | 'year'>('week');
-
   const elementScores = getElementScores();
-
   const { now } = useLiveDate();
   const entries = useMemo(() => buildGrimoireHistory({ actions, tasks, habits, logs: executionLogs }), [actions, tasks, habits, executionLogs]);
   const series = useMemo(() => recordedHistorySeries(entries, timeRange === 'week' ? 7 : timeRange === 'month' ? 30 : 365, now), [entries, timeRange, now]);
   const historyData = series.days;
-
-  // Pie chart data
-  const pieData = elementScores.map(score => ({
-    name: ELEMENTS[score.elementId].name,
-    value: score.score,
-    color: ELEMENTS[score.elementId].color,
-  }));
-
-  // Task completion by element
-  const taskByElement = (Object.keys(ELEMENTS) as ElementId[]).map((elementId) => {
+  const pieData = elementScores.map(score => ({ name: ELEMENTS[score.elementId].name, value: score.score, color: ELEMENTS[score.elementId].color }));
+  const taskByElement = (Object.keys(ELEMENTS) as ElementId[]).map(elementId => {
     const elementTasks = tasks.filter(t => t.elementId === elementId && t.isCompleted);
-    return {
-      element: ELEMENTS[elementId].name,
-      count: elementTasks.length,
-      color: ELEMENTS[elementId].color,
-    };
+    return { elementId, element: ELEMENTS[elementId].name, count: elementTasks.length, color: ELEMENTS[elementId].color };
   });
+  const hasScores = pieData.some(entry => entry.value > 0);
+  const maxTasks = Math.max(1, ...taskByElement.map(entry => entry.count));
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 },
-    },
-  };
+  return <div className="elemental-system astrolabe-workspace">
+    <header className="astrolabe-heading"><span className="astrolabe-seal" aria-hidden="true"><ArcaneIcon name="astrolabio" size={38} /></span>
+      <div><h1>Astrolábio</h1><p>Observe sua constância e o equilíbrio dos elementos.</p></div>
+      <Link to="/grimorio#grimoire-history">Abrir histórico<ArcaneIcon name="arquivo" size={18} /></Link>
+    </header>
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
+    <section className="astrolabe-overview" aria-labelledby="astrolabe-overview-title">
+      <h2 id="astrolabe-overview-title">Seu panorama atual</h2><p>Totais atuais da sua jornada, sem filtro de período.</p>
+      <dl>
+        <div><dt><ArcaneIcon name="ritual" size={21} />Rituais</dt><dd>{tasks.length}<small>{tasks.filter(t => t.isCompleted).length} concluídos</small></dd></div>
+        <div><dt><ArcaneIcon name="conquista" size={21} />Pontuação</dt><dd>{format(user.totalScore)}<small>pontos totais</small></dd></div>
+        <div><dt><ArcaneIcon name="ciclo" size={21} />Ciclos</dt><dd>{habits.length}<small>hábitos cadastrados</small></dd></div>
+        <div><dt><ElementIcon element="fogo" size={21} />Constância</dt><dd>{user.streak}<small>{user.streak === 1 ? 'dia de streak registrado' : 'dias de streak registrados'}</small></dd></div>
+      </dl>
+    </section>
 
-  return (
-    <AppLayout>
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="space-y-6"
-      >
-        {/* Header */}
-        <motion.div variants={itemVariants} className="text-center">
-          <div className="text-4xl mb-2"><ArcaneIcon name="estacoes" /></div>
-          <h2 className="font-mystic text-xl mb-1">Astrolábio</h2>
-          <p className="text-sm text-white/50">
-            Análise do seu equilíbrio elemental
-          </p>
-        </motion.div>
-
-        {/* Time Range Selector */}
-        <motion.div variants={itemVariants}>
-          <p className="text-center text-sm text-white/60 mb-2">Período do gráfico de evolução</p>
-          <div className="flex justify-center gap-2" role="group" aria-label="Período da evolução">
-            {(['week', 'month', 'year'] as const).map((range) => (
-              <button
-                key={range}
-                aria-pressed={timeRange === range}
-                onClick={() => setTimeRange(range)}
-                className={`min-h-11 px-4 py-2 rounded-lg text-sm transition-all ${
-                  timeRange === range
-                    ? 'bg-mystic-arcane text-white'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10'
-                }`}
-              >
-                {range === 'week' ? '7 dias' : range === 'month' ? '30 dias' : '365 dias'}
-              </button>
-            ))}
+    <Tabs defaultValue="evolution" className="astrolabe-tabs">
+      <TabsList aria-label="Leituras do Astrolábio"><TabsTrigger value="evolution">Evolução</TabsTrigger><TabsTrigger value="distribution">Equilíbrio</TabsTrigger><TabsTrigger value="elements">Elementos</TabsTrigger></TabsList>
+      <TabsContent value="evolution">
+        <section className="astrolabe-panel" aria-labelledby="astrolabe-evolution-title">
+          <div className="astrolabe-panel-heading"><div><h2 id="astrolabe-evolution-title">Seu ritmo ao longo dos dias</h2><p>Pontuação registrada por dia</p></div>
+            <div className="astrolabe-period" role="group" aria-label="Período da evolução">{(['week', 'month', 'year'] as const).map(range => <button key={range} type="button" aria-pressed={timeRange === range} onClick={() => setTimeRange(range)}>{range === 'week' ? '7 dias' : range === 'month' ? '30 dias' : '365 dias'}</button>)}</div>
           </div>
-        </motion.div>
-
-        {/* Overview Cards */}
-        <motion.div variants={itemVariants}>
-          <div className="grid grid-cols-2 gap-3">
-            <OverviewCard
-              icon={<Activity className="w-5 h-5" />}
-              label="Total de Rituais"
-              value={tasks.length.toString()}
-              sublabel={`${tasks.filter(t => t.isCompleted).length} concluídos`}
-            />
-            <OverviewCard
-              icon={<TrendingUp className="w-5 h-5" />}
-              label="Pontuação"
-              value={user.totalScore.toLocaleString()}
-              sublabel="pontos totais"
-            />
-            <OverviewCard
-              icon={<Calendar className="w-5 h-5" />}
-              label="Ciclos Ativos"
-              value={habits.length.toString()}
-              sublabel="hábitos"
-            />
-            <OverviewCard
-              icon={<BarChart3 className="w-5 h-5" />}
-              label="Streak"
-              value={user.streak.toString()}
-              sublabel="dias"
-            />
+          <p className="astrolabe-period-caption" aria-live="polite">{new Date(historyData[0].stamp).toLocaleDateString('pt-BR')} a {new Date(historyData[historyData.length - 1].stamp).toLocaleDateString('pt-BR')} · {series.recordedCount} registros com pontuação</p>
+          {series.recordedCount > 0 ? <>
+            <div className="astrolabe-chart" role="img" aria-label="Gráfico de pontuação diária. Valores completos na tabela a seguir.">
+              <ResponsiveContainer width="100%" height="100%"><LineChart data={historyData} margin={{ left: -20, right: 16, top: 16, bottom: 8 }}>
+                <CartesianGrid strokeDasharray="3 6" stroke="rgb(var(--el-muted) / .12)" vertical={false} />
+                <XAxis dataKey="date" tick={{ fill: 'rgb(var(--el-muted))', fontSize: 11 }} stroke="rgb(var(--el-muted) / .3)" minTickGap={28} />
+                <YAxis tick={{ fill: 'rgb(var(--el-muted))', fontSize: 11 }} stroke="rgb(var(--el-muted) / .3)" />
+                <Tooltip contentStyle={tooltipStyle} />
+                <Line type="linear" name="Pontos registrados" dataKey="points" stroke="rgb(var(--el-gold))" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} isAnimationActive={false} />
+              </LineChart></ResponsiveContainer>
+            </div><RecordedDaysTable days={historyData} />
+          </> : <div className="astrolabe-empty"><ArcaneIcon name="calendario" size={38} /><h3>Seu ritmo ainda vai aparecer aqui</h3><p>Não há pontuações com data registrada neste período. Consulte outro intervalo ou acompanhe suas atividades.</p><Link to="/rituais" className="elemental-action elemental-action-secondary">Ver meus Rituais</Link></div>}
+          <p className="astrolabe-note">O período filtra apenas esta evolução. O gráfico usa os registros disponíveis; não reconstrói pontuações antigas ausentes.</p>
+        </section>
+      </TabsContent>
+      <TabsContent value="distribution">
+        <section className="astrolabe-panel" aria-labelledby="astrolabe-distribution-title"><h2 id="astrolabe-distribution-title">Seu equilíbrio elemental</h2><p className="astrolabe-note">Distribuição atual dos pontos. Não é uma meta nem uma distribuição histórica por período.</p>
+          <div className="astrolabe-balance">
+            {hasScores ? <div className="astrolabe-donut" aria-hidden="true"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={68} outerRadius={90} paddingAngle={3} dataKey="value" isAnimationActive={false}>{pieData.map(entry => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart></ResponsiveContainer></div>
+              : <div className="astrolabe-balance-empty"><ArcaneIcon name="dominios" size={52} /><p>A distribuição aparece quando houver pontuação elemental.</p></div>}
+            <dl className="astrolabe-legend">{elementScores.map(score => <div key={score.elementId}><dt><ElementIcon element={score.elementId} size={22} />{ELEMENTS[score.elementId].name}</dt><dd>{format(score.score)} pts <small>{score.percentage}%</small></dd></div>)}</dl>
           </div>
-        </motion.div>
+        </section>
+      </TabsContent>
+      <TabsContent value="elements"><section aria-labelledby="astrolabe-elements-title"><h2 id="astrolabe-elements-title">Conheça cada elemento</h2><p className="astrolabe-note">Abra um elemento para explorar o que ele representa e acessar suas áreas.</p><div className="astrolabe-elements">{elementScores.map(score => <ElementReading key={score.elementId} {...score} />)}</div></section></TabsContent>
+    </Tabs>
 
-        {/* Tabs */}
-        <motion.div variants={itemVariants}>
-          <Tabs defaultValue="evolution" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-white/5">
-              <TabsTrigger value="evolution" className="data-[state=active]:bg-mystic-arcane">
-                Evolução
-              </TabsTrigger>
-              <TabsTrigger value="distribution" className="data-[state=active]:bg-mystic-arcane">
-                Distribuição
-              </TabsTrigger>
-              <TabsTrigger value="elements" className="data-[state=active]:bg-mystic-arcane">
-                Elementos
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Evolution Chart */}
-            <TabsContent value="evolution" className="mt-4">
-              <div className="glass-card p-4">
-                <h3 className="font-mystic text-sm mb-4">Pontuação registrada por dia</h3>
-                {series.recordedCount > 0 ? <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={historyData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="rgba(255,255,255,0.3)"
-                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
-                      />
-                      <YAxis 
-                        stroke="rgba(255,255,255,0.3)"
-                        tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
-                      />
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1A1025', 
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Line type="linear" name="Pontos registrados" dataKey="points" stroke="#d6b96d" strokeWidth={2} dot={false} isAnimationActive={false} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                : <p className="py-12 text-center text-white/60">Ainda não há pontuações com data registrada neste período.</p>}
-                <p className="text-sm text-white/60 mt-4">{series.recordedCount} registros com data e pontuação disponíveis. A distribuição elemental abaixo mostra os totais atuais; não reconstrói a distribuição histórica.</p>
-              </div>
-            </TabsContent>
-
-            {/* Distribution Chart */}
-            <TabsContent value="distribution" className="mt-4">
-              <div className="glass-card p-4">
-                <h3 className="font-mystic text-sm mb-4">Distribuição de Pontos</h3>
-                <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        contentStyle={{ 
-                          backgroundColor: '#1A1025', 
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          borderRadius: '8px'
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="grid grid-cols-2 gap-2 mt-4">
-                  {pieData.map((entry) => (
-                    <div key={entry.name} className="flex items-center gap-2">
-                      <div 
-                        className="w-3 h-3 rounded-full" 
-                        style={{ backgroundColor: entry.color }}
-                      />
-                      <span className="text-xs text-white/60">{entry.name}</span>
-                      <span className="text-xs text-mystic-gold ml-auto">{entry.value}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            {/* Elements Detail */}
-            <TabsContent value="elements" className="mt-4">
-              <div className="space-y-3">
-                {elementScores.map((score) => (
-                  <ElementDetailCard key={score.elementId} score={score} />
-                ))}
-              </div>
-            </TabsContent>
-          </Tabs>
-        </motion.div>
-
-        {/* Tasks by Element */}
-        <motion.div variants={itemVariants}>
-          <h3 className="font-mystic text-lg mb-3">Rituais por Elemento</h3>
-          <div className="glass-card p-4">
-            <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={taskByElement}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis 
-                    dataKey="element" 
-                    stroke="rgba(255,255,255,0.3)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
-                  />
-                  <YAxis 
-                    stroke="rgba(255,255,255,0.3)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10 }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1A1025', 
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                    {taskByElement.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </motion.div>
-
-      </motion.div>
-    </AppLayout>
-  );
-};
-
-interface OverviewCardProps {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  sublabel: string;
+    <section className="astrolabe-completions" aria-labelledby="astrolabe-completions-title"><div><h2 id="astrolabe-completions-title">Rituais concluídos por elemento</h2><p>Contagem dos Rituais atualmente marcados como concluídos, sem filtro de período.</p></div>
+      <ul>{taskByElement.map(entry => <li key={entry.elementId}><ElementIcon element={entry.elementId} size={22} /><span>{entry.element}</span><strong>{entry.count}</strong><span className="astrolabe-task-meter" aria-hidden="true"><span style={{ width: `${entry.count / maxTasks * 100}%`, backgroundColor: entry.color }} /></span></li>)}</ul>
+      <Link to="/rituais">Consultar Rituais<ArcaneIcon name="ritual" size={18} /></Link>
+    </section>
+  </div>;
 }
-
-const OverviewCard: React.FC<OverviewCardProps> = ({ icon, label, value, sublabel }) => (
-  <div className="glass-card p-3">
-    <div className="flex items-center gap-2 text-white/60 mb-1">
-      {icon}
-      <span className="text-xs">{label}</span>
-    </div>
-    <div className="text-xl font-bold text-mystic-gold">{value}</div>
-    <div className="text-[10px] text-white/40">{sublabel}</div>
-  </div>
-);
-
-interface ElementDetailCardProps {
-  score: { elementId: ElementId; score: number; percentage: number };
-}
-
-const ElementDetailCard: React.FC<ElementDetailCardProps> = ({ score }) => {
-  const element = ELEMENTS[score.elementId];
-  
-  return (
-    <div 
-      className="p-4 rounded-xl border border-white/10"
-      style={{ background: `linear-gradient(135deg, ${element.color}10 0%, rgba(26, 16, 37, 0.9) 100%)` }}
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl"><ElementIcon element={element.id} /></div>
-          <div>
-            <h4 className="font-medium">{element.name}</h4>
-            <p className="text-xs text-white/50">{element.domain}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <div className="text-xl font-bold" style={{ color: element.color }}>
-            {score.score}
-          </div>
-          <div className="text-xs text-white/40">{score.percentage}%</div>
-        </div>
-      </div>
-      <div className="mt-3 h-1.5 bg-black/30 rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${score.percentage}%` }}
-          transition={{ duration: 0.5 }}
-          className="h-full rounded-full"
-          style={{ backgroundColor: element.color }}
-        />
-      </div>
-    </div>
-  );
-};

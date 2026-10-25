@@ -1,31 +1,27 @@
-import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Mountain, Flame, Droplets, Wind } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Plus, Search, X } from 'lucide-react';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import { DomainCatalogue } from '@/components/domains/DomainCatalogue';
+import { DomainSectionJump } from '@/components/domains/DomainNavigation';
+import { readDomainFilters, domainFilterSearch, type DomainFilters } from '@/components/domains/navigation';
+import { focusDomainSection } from '@/components/domains/navigation';
 import { AppLayout } from '@/components/layout';
-import { AreaCard } from '@/components/cards';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { DomainElementRail, DomainElementPicker, DomainEmpty } from '@/components/domains/DomainPresentation';
 import { useAppStore } from '@/stores/appStore';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import '@/styles/elemental-design-system.css';
+import '@/components/domains/domains.css';
 
-export const Dominios: React.FC = () => {
-  const navigate = useNavigate();
+export function Dominios() {
+  const accountId = useAppStore(state => state.currentAccountId);
+  return <AppLayout><DomainsWorkspace key={accountId ?? 'local'} /></AppLayout>;
+}
+
+function DomainsWorkspace() {
   const {
     getAreaScores,
     customAreas,
@@ -34,26 +30,30 @@ export const Dominios: React.FC = () => {
     selectArea,
     deselectArea,
   } = useAppStore();
-  const [selectedElement, setSelectedElement] = useState<ElementId | null>(null);
-  const [listMode, setListMode] = useState<'active' | 'inactive'>('active');
+  const createButtonRef = useRef<HTMLButtonElement>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const filters = readDomainFilters(searchParams.toString());
+  const { element: selectedElement, mode: listMode, query: search } = filters;
+  const updateFilters = (patch: Partial<DomainFilters>) => setSearchParams(domainFilterSearch({ ...filters, ...patch }), { replace: true });
+  const setSelectedElement = (element: ElementId | null) => updateFilters({ element });
+  const setListMode = (mode: 'active' | 'inactive') => updateFilters({ mode });
+  const setSearch = (query: string) => updateFilters({ query });
+  useEffect(() => {
+    if (location.hash !== '#domains-areas-heading') return;
+    const frame = requestAnimationFrame(() => focusDomainSection('domains-areas-heading'));
+    return () => cancelAnimationFrame(frame);
+  }, [location.hash]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newAreaName, setNewAreaName] = useState('');
   const [newAreaElement, setNewAreaElement] = useState<ElementId>('terra');
   const [formError, setFormError] = useState('');
 
+
   const areaScores = getAreaScores();
   const allAreas = [...AREAS, ...customAreas];
   const activeAreaSet = new Set(onboarding.selectedAreas);
   const elementOrder: ElementId[] = ['terra', 'fogo', 'agua', 'ar'];
-
-  const getElementIcon = (id: ElementId) => {
-    switch (id) {
-      case 'terra': return <Mountain className="w-4 h-4" />;
-      case 'fogo': return <Flame className="w-4 h-4" />;
-      case 'agua': return <Droplets className="w-4 h-4" />;
-      case 'ar': return <Wind className="w-4 h-4" />;
-    }
-  };
 
   const getOrderedAreasForElement = (elementId: ElementId) => {
     const builtInAreas = AREAS.filter((area) => area.elementId === elementId);
@@ -74,7 +74,7 @@ export const Dominios: React.FC = () => {
   const handleCreateArea = () => {
     const trimmedName = newAreaName.trim();
     if (!trimmedName) {
-      setFormError('Informe o nome da area.');
+      setFormError('Informe o nome da área.');
       return;
     }
 
@@ -83,7 +83,7 @@ export const Dominios: React.FC = () => {
     );
 
     if (alreadyExists) {
-      setFormError('Ja existe uma area com esse nome.');
+      setFormError('Já existe uma área com esse nome.');
       return;
     }
 
@@ -91,8 +91,7 @@ export const Dominios: React.FC = () => {
     selectArea(createdArea.id);
     resetCreateForm();
     setShowCreateModal(false);
-    setSelectedElement(newAreaElement);
-    setListMode('active');
+    updateFilters({ element: newAreaElement, mode: 'active', query: '' });
   };
 
   const toggleAreaLink = (areaId: string) => {
@@ -108,209 +107,37 @@ export const Dominios: React.FC = () => {
     listMode === 'active' ? activeAreaSet.has(area.id) : !activeAreaSet.has(area.id)
   );
 
-  return (
-    <AppLayout>
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-4"
-      >
-        <div>
-          <h2 className="font-mystic text-xl">Domínios</h2>
-          <p className="text-sm text-white/50">
-            {allAreas.length} areas de vida organizadas
-          </p>
-        </div>
-        <Button 
-          onClick={() => {
-            resetCreateForm();
-            setShowCreateModal(true);
-          }}
-          className="bg-mystic-arcane hover:bg-mystic-arcane/80"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Nova
-        </Button>
-      </motion.div>
 
-      {/* Element Filter */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="mb-4"
-      >
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          <button
-            onClick={() => setSelectedElement(null)}
-            className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all ${
-              selectedElement === null
-                ? 'bg-mystic-arcane text-white'
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            Todos
-          </button>
-          {(Object.keys(ELEMENTS) as ElementId[]).map((id) => (
-            <button
-              key={id}
-              onClick={() => setSelectedElement(id)}
-              className={`px-4 py-2 rounded-xl text-sm whitespace-nowrap transition-all flex items-center gap-2 ${
-                selectedElement === id
-                  ? 'bg-mystic-arcane text-white'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10'
-              }`}
-            >
-              {getElementIcon(id)}
-              {ELEMENTS[id].name}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Areas List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <div className="mb-3 flex gap-2">
-          <button
-            onClick={() => setListMode('active')}
-            className={`px-4 py-2 rounded-xl text-sm transition-all ${
-              listMode === 'active'
-                ? 'bg-mystic-gold text-black'
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            Ativas ({filteredAreas.filter((area) => activeAreaSet.has(area.id)).length})
-          </button>
-          <button
-            onClick={() => setListMode('inactive')}
-            className={`px-4 py-2 rounded-xl text-sm transition-all ${
-              listMode === 'inactive'
-                ? 'bg-mystic-gold text-black'
-                : 'bg-white/5 text-white/60 hover:bg-white/10'
-            }`}
-          >
-            Desativadas ({filteredAreas.filter((area) => !activeAreaSet.has(area.id)).length})
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3">
-          {visibleAreas.map((area) => {
-            const score = areaScores.find(s => s.areaId === area.id);
-            return (
-              <div key={area.id} className="space-y-2">
-                <AreaCard
-                  area={area}
-                  score={score?.score || 0}
-                  taskCount={score?.taskCount || 0}
-                  onClick={() => navigate(`/dominios/${area.id}`)}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-white/20"
-                  onClick={() => toggleAreaLink(area.id)}
-                >
-                  {activeAreaSet.has(area.id) ? 'Desvincular área' : 'Vincular área'}
-                </Button>
-              </div>
-            );
-          })}
-        </div>
-      </motion.div>
-
-      {/* Empty State */}
-      {visibleAreas.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="glass-card p-8 text-center mt-4"
-        >
-          <div className="text-4xl mb-3"><ArcaneIcon name="terra" /></div>
-          <h3 className="font-mystic text-lg mb-2">
-            {listMode === 'active' ? 'Nenhuma área ativa' : 'Nenhuma área desativada'}
-          </h3>
-          <p className="text-white/50 text-sm">
-            {listMode === 'active'
-              ? 'Vincule áreas para que apareçam aqui.'
-              : 'Todas as áreas deste filtro já estão ativas.'}
-          </p>
-        </motion.div>
-      )}
-
-      <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}>
-        <DialogContent className="bg-mystic-purple border-white/20 max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-mystic text-xl">Nova area</DialogTitle>
-            <DialogDescription className="text-white/50">
-              Escolha o nome e o elemento para criar uma area personalizada.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div>
-              <label className="text-sm text-white/70 mb-2 block">Nome da area</label>
-              <Input
-                placeholder="Ex: Estudo profundo"
-                value={newAreaName}
-                onChange={(e) => {
-                  setNewAreaName(e.target.value);
-                  if (formError) setFormError('');
-                }}
-                className="bg-white/5 border-white/10"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleCreateArea();
-                }}
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-white/70 mb-2 block">Elemento</label>
-              <Select
-                value={newAreaElement}
-                onValueChange={(value) => {
-                  setNewAreaElement(value as ElementId);
-                  if (formError) setFormError('');
-                }}
-              >
-                <SelectTrigger className="w-full bg-white/5 border-white/10">
-                  <SelectValue placeholder="Selecione o elemento" />
-                </SelectTrigger>
-                <SelectContent className="bg-mystic-purple border-white/10">
-                  {(Object.keys(ELEMENTS) as ElementId[]).map((elementId) => (
-                    <SelectItem key={elementId} value={elementId}>
-                      <ElementIcon element={elementId} /> {ELEMENTS[elementId].name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formError && <p className="text-sm text-red-300">{formError}</p>}
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => setShowCreateModal(false)}
-                className="flex-1 border-white/20"
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleCreateArea}
-                className="flex-1 bg-mystic-arcane hover:bg-mystic-arcane/80"
-              >
-                Criar area
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </AppLayout>
-  );
-};
+  const searchedAreas = visibleAreas.filter(area => `${area.name} ${area.description}`.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR')));
+  const counts = Object.fromEntries(elementOrder.map(id => [id, getOrderedAreasForElement(id).length])) as Record<ElementId, number>;
+  return <div className="elemental-system domains-workspace">
+    <header className="domains-heading"><span className="domains-heading-rune"><ArcaneIcon name="dominios" size={36} /></span><div><h1>Domínios</h1><p>Organize as áreas que fazem parte da sua vida.</p></div>
+      <Button ref={createButtonRef} className="elemental-action" onClick={() => { resetCreateForm(); setShowCreateModal(true); }}><Plus size={19} />Nova área</Button>
+    </header>
+    <nav className="domain-section-nav" aria-label="Atalhos de Domínios"><DomainSectionJump target="domains-areas-heading">Ir às áreas</DomainSectionJump><button type="button" onClick={() => { focusDomainSection('domains-areas-heading'); document.getElementById('domains-area-search')?.focus({ preventScroll: true }); }}><Search size={16} aria-hidden="true" />Buscar uma área</button></nav>
+    <section aria-labelledby="domains-elements-heading"><div className="domains-section-heading"><h2 id="domains-elements-heading" tabIndex={-1}>Quatro elementos, seus caminhos</h2><button type="button" aria-pressed={selectedElement === null} onClick={() => setSelectedElement(null)}>Todos os elementos</button></div>
+      <DomainElementRail selected={selectedElement} counts={counts} onSelect={setSelectedElement} />
+<div className="domain-rail-footer"><p className="domains-help">Escolha um elemento para expandir e filtrar suas áreas. Toque novamente para ver todas.</p><DomainSectionJump target="domains-areas-heading">Ver {searchedAreas.length} áreas</DomainSectionJump></div>
+    </section>
+    <section className="domains-library" aria-labelledby="domains-areas-heading">
+      <div className="domains-section-heading"><h2 id="domains-areas-heading" tabIndex={-1}>{selectedElement ? `Áreas de ${ELEMENTS[selectedElement].name}` : 'Todas as áreas'}</h2><DomainSectionJump target="domains-elements-heading">Trocar elemento</DomainSectionJump></div>
+      <div className="domains-toolbar"><div className="domains-mode" role="group" aria-label="Vínculo das áreas">
+        <button type="button" aria-pressed={listMode === 'active'} onClick={() => setListMode('active')}>Vinculadas ({filteredAreas.filter(area => activeAreaSet.has(area.id)).length})</button>
+        <button type="button" aria-pressed={listMode === 'inactive'} onClick={() => setListMode('inactive')}>Desvinculadas ({filteredAreas.filter(area => !activeAreaSet.has(area.id)).length})</button>
+      </div><div className="domains-search"><Search size={18} aria-hidden="true" /><Input id="domains-area-search" type="search" aria-label="Buscar área por nome ou descrição" placeholder="Buscar área…" value={search} onChange={event => setSearch(event.target.value)} /></div></div>
+      {(selectedElement || search || listMode === 'inactive') && <div className="domain-filter-summary" aria-label="Filtros aplicados">{selectedElement && <button type="button" onClick={() => setSelectedElement(null)} aria-label={`Remover filtro ${ELEMENTS[selectedElement].name}`}>{ELEMENTS[selectedElement].name}<X size={14} aria-hidden="true" /></button>}{search && <button type="button" onClick={() => setSearch('')} aria-label="Limpar busca">Busca: {search}<X size={14} aria-hidden="true" /></button>}<button type="button" onClick={() => updateFilters({ element: null, mode: 'active', query: '', expanded: null })}>Limpar filtros</button></div>}
+      <p className="domains-result" role="status">{searchedAreas.length} {searchedAreas.length === 1 ? 'área encontrada' : 'áreas encontradas'}</p>
+      <DomainCatalogue areas={searchedAreas} scores={areaScores} activeAreas={activeAreaSet} selectedElement={selectedElement} expanded={filters.expanded} searching={!!search.trim()} returnSearch={domainFilterSearch(filters)} onExpand={expanded => updateFilters({ expanded })} onToggle={toggleAreaLink} />
+      {searchedAreas.length === 0 && <DomainEmpty title={search ? 'Nenhuma área encontrada' : listMode === 'active' ? 'Nenhuma área vinculada neste elemento' : 'Todas as áreas deste elemento estão vinculadas'}><p>{search ? 'Tente outra palavra ou limpe a busca.' : 'Alterne o vínculo ou explore outro elemento.'}</p><button type="button" className="elemental-action elemental-action-secondary" onClick={() => { if (search) setSearch(''); else setListMode(listMode === 'active' ? 'inactive' : 'active'); }}>{search ? 'Limpar busca' : listMode === 'active' ? 'Ver desvinculadas' : 'Ver vinculadas'}</button></DomainEmpty>}
+    </section>
+    <Dialog open={showCreateModal} onOpenChange={setShowCreateModal}><DialogContent onCloseAutoFocus={event => { event.preventDefault(); createButtonRef.current?.focus(); }} className="elemental-system domain-dialog" aria-labelledby="domain-create-title" aria-describedby="domain-create-description"><DialogHeader><DialogTitle id="domain-create-title">Uma nova área para sua vida</DialogTitle><DialogDescription id="domain-create-description">Dê um nome e escolha o elemento. Sua nova área será vinculada automaticamente.</DialogDescription></DialogHeader>
+      <form className="domain-form" onSubmit={event => { event.preventDefault(); handleCreateArea(); }}>
+        <label htmlFor="domain-name">Nome da área</label><Input id="domain-name" placeholder="Ex.: Estudo profundo" value={newAreaName} onChange={event => { setNewAreaName(event.target.value); if (formError) setFormError(''); }} autoFocus aria-invalid={!!formError} aria-describedby={formError ? 'domain-form-error' : undefined} />
+        <DomainElementPicker value={newAreaElement} onChange={value => { setNewAreaElement(value); if (formError) setFormError(''); }} />
+        <div className="domain-form-preview"><ArcaneIcon name={newAreaElement} size={28} /><div><small>Prévia da área</small><strong>{newAreaName.trim() || 'Nome da sua área'}</strong><span>{ELEMENTS[newAreaElement].name}</span></div></div>
+        {formError && <p id="domain-form-error" role="alert" className="domain-error">{formError}</p>}
+        <div className="domain-form-actions"><Button type="button" className="elemental-action elemental-action-secondary" onClick={() => setShowCreateModal(false)}>Cancelar</Button><Button type="submit" className="elemental-action">Criar área</Button></div>
+      </form>
+    </DialogContent></Dialog>
+  </div>;
+}

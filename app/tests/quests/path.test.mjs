@@ -10,6 +10,21 @@ const quest = (id, extra = {}) => ({ id, title: `Jornada ${id}`, elementId: 'ter
 const project = (id, extra = {}) => ({ ...quest(id), status: 'active', missions: [], quests: [], ...extra });
 const source = (extra = {}) => ({ tasks: [], habits: [], quests: [], projects: [], ...extra });
 
+test('chapters with equal titles keep stable membership and current activity state without rewriting progress', () => {
+  const first = task('first', { parentId: 'm1', isCompleted: true });
+  const second = task('second', { parentId: 'm2' });
+  const p = project('p', { progress: 7, missions: [
+    { id: 'm1', title: 'Mesmo nome', progress: 13, tasks: [task('first')], habits: [] },
+    { id: 'm2', title: 'Mesmo nome', progress: 0, tasks: [], habits: [] },
+  ] });
+  const input = source({ tasks: [first, second], projects: [p] });
+  const before = JSON.stringify(input);
+  const [trail] = buildQuestTrails(input);
+  assert.deepEqual(trail.steps.map(s => [s.id, s.chapterId, s.completed]), [['first', 'm1', true], ['second', 'm2', false]]);
+  assert.equal(trail.chapters[0].progress, 13);
+  assert.equal(JSON.stringify(input), before);
+});
+
 test('live IDs override stale aggregator snapshots without changing macro progress', () => {
   const data = source({ tasks: [task('a', { isCompleted: true, title: 'Título atual' })], quests: [quest('q', { tasks: [task('a')], progress: 0 })] });
   const before = JSON.stringify(data);

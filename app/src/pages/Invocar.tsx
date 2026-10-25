@@ -1,8 +1,11 @@
-import { ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { InvocationChoices, InvocationProgress, InvocationStepTitle, INVOCATION_TYPES } from '@/components/invocation/InvocationChoices';
+import '@/styles/elemental-design-system.css';
+import '@/components/invocation/invocation.css';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Check, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
 import { AREAS, ELEMENTS, EFFORT_LABELS } from '@/constants';
@@ -11,7 +14,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
 import {
   Select,
   SelectContent,
@@ -30,6 +32,7 @@ import { isSupabaseAuthEnabled, supabase } from '@/lib/supabase';
 
 export const Invocar: React.FC = () => {
   const navigate = useNavigate();
+  const reduceMotion = useReducedMotion();
   const { addTask, addHabit, addQuest, addProject, addDraft } = useAppStore();
   
   const [step, setStep] = useState(1);
@@ -112,6 +115,8 @@ export const Invocar: React.FC = () => {
       }
     }
   };
+
+  const selectedType = INVOCATION_TYPES.find(type => type.id === entityType)!;
 
   const filteredAreas = AREAS.filter(area => area.elementId === selectedElement);
 
@@ -202,90 +207,26 @@ export const Invocar: React.FC = () => {
 
   return (
     <AppLayout showBackButton title="Invocar">
-      {/* Progress Steps */}
-      <div className="flex items-center justify-center gap-2 mb-6">
-        {[1, 2, 3].map((s) => (
-          <div
-            key={s}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
-                       transition-colors ${
-              s === step 
-                ? 'bg-mystic-arcane text-white' 
-                : s < step 
-                  ? 'bg-mystic-gold text-black' 
-                  : 'bg-white/10 text-white/40'
-            }`}
-          >
-            {s < step ? '✓' : s}
-          </div>
-        ))}
-      </div>
+      <div className="elemental-system invocation">
+      <header className="invocation-heading"><ArcaneIcon name="invocar" size={48} /><div><h1>Invocar</h1><p>Dê forma ao seu próximo passo.</p></div></header>
+      <InvocationProgress step={step} />
 
       {/* Step 1: Type Selection */}
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.div
             key="step1"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
+            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+            className="invocation-step"
           >
-            <h3 className="font-mystic text-lg text-center mb-4">
-              O que deseja invocar?
-            </h3>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <TypeCard
-                icon="📜"
-                title="Ritual"
-                description="Tarefa única"
-                points="+1.2 pts"
-                selected={entityType === 'ACTION'}
-                onClick={() => setEntityType('ACTION')}
-              />
-              <TypeCard
-                icon="🔄"
-                title="Ciclo"
-                description="Hábito recorrente"
-                points="+5 pts/dia"
-                selected={entityType === 'HABIT'}
-                onClick={() => setEntityType('HABIT')}
-              />
-              <TypeCard
-                icon="🗺️"
-                title="Jornada"
-                description="Quest com etapas"
-                points="Agrega + bônus"
-                selected={entityType === 'QUEST'}
-                onClick={() => setEntityType('QUEST')}
-              />
-              <TypeCard
-                icon="🏗️"
-                title="Grande Obra"
-                description="Projeto grande"
-                points="Agrega tudo + XP"
-                selected={entityType === 'PROJECT'}
-                onClick={() => setEntityType('PROJECT')}
-              />
-              <TypeCard
-                icon="📝"
-                title="Rascunho"
-                description="Salvar para depois"
-                points="Sem pontuação"
-                selected={entityType === 'DRAFT'}
-                onClick={() => setEntityType('DRAFT')}
-                className="col-span-2"
-              />
-            </div>
-            
-            <Button 
-              onClick={() => setStep(2)} 
-              className="w-full mt-6 bg-mystic-arcane"
-            >
-              Continuar
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            <InvocationStepTitle description="Escolha o formato que combina com sua intenção.">O que deseja invocar?</InvocationStepTitle>
+            <InvocationChoices value={entityType} onChange={setEntityType} />
+            <div className="invocation-actions"><Button onClick={() => setStep(2)} className="elemental-action">
+              Continuar com {selectedType.name}<ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
+            </Button></div>
           </motion.div>
         )}
 
@@ -293,14 +234,13 @@ export const Invocar: React.FC = () => {
         {step === 2 && (
           <motion.div
             key="step2"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
+            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+            className="invocation-step"
           >
-            <h3 className="font-mystic text-lg text-center mb-4">
-              Defina o {entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Projeto' : 'Rascunho'}
-            </h3>
+            <InvocationStepTitle focus={false} description={`${selectedType.name}: comece pelo nome e acrescente o que fizer sentido.`}>Dê forma à sua intenção</InvocationStepTitle>
 
             {entityType === 'DRAFT' && (
               <section aria-labelledby="draft-ai-heading" className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
@@ -353,11 +293,14 @@ export const Invocar: React.FC = () => {
             {entityType !== 'DRAFT' && (
               <>
                 <div className="space-y-2">
-                  <Label>Elemento</Label>
-                  <div className="grid grid-cols-4 gap-2">
+                  <Label id="invocar-element-label">Elemento</Label>
+                  <div className="invocation-elements grid grid-cols-4 gap-2" role="group" aria-labelledby="invocar-element-label">
                     {(Object.keys(ELEMENTS) as ElementId[]).map((id) => (
                       <button
                         key={id}
+                        type="button"
+                        aria-pressed={selectedElement === id}
+                        style={{ '--invocation-element': `var(--element-${id})` } as React.CSSProperties}
                         onClick={() => {
                           setSelectedElement(id);
                           setSelectedArea('none');
@@ -368,21 +311,21 @@ export const Invocar: React.FC = () => {
                             : 'border-white/10 bg-white/5 hover:bg-white/10'
                         }`}
                       >
-                        <div className="text-2xl mb-1"><ElementIcon element={id} /></div>
-                        <div className="text-[10px]">{ELEMENTS[id].name}</div>
+                        <ElementIcon element={id} size={28} />
+                        <span>{ELEMENTS[id].name}</span>
                       </button>
                     ))}
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label>Área (opcional)</Label>
+                  <Label htmlFor="invocar-area">Área (opcional)</Label>
                   <Select value={selectedArea} onValueChange={setSelectedArea}>
-                    <SelectTrigger className="bg-white/5 border-white/10">
+                    <SelectTrigger id="invocar-area" className="bg-white/5 border-white/10">
                       <SelectValue placeholder="Selecione uma área" />
                     </SelectTrigger>
                     <SelectContent className="bg-mystic-purple border-white/10">
-                      <SelectItem value="none">Sem categoria (+1 pt)</SelectItem>
+                      <SelectItem value="none">Sem categoria</SelectItem>
                       {filteredAreas.map((area) => (
                         <SelectItem key={area.id} value={area.id}>
                           {area.name}
@@ -394,19 +337,19 @@ export const Invocar: React.FC = () => {
               </>
             )}
             
-            <div className="flex gap-3">
+            <div className="invocation-actions">
               <Button 
                 variant="outline" 
                 onClick={() => setStep(1)}
                 disabled={aiBusy}
-                className="flex-1 border-white/20"
+                className="elemental-action elemental-action-secondary"
               >
                 Voltar
               </Button>
               <Button 
                 onClick={() => setStep(3)}
                 disabled={aiBusy || !canProceed()}
-                className="flex-1 bg-mystic-arcane"
+                className="elemental-action"
               >
                 Continuar
               </Button>
@@ -418,23 +361,25 @@ export const Invocar: React.FC = () => {
         {step === 3 && (
           <motion.div
             key="step3"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="space-y-4"
+            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+            className="invocation-step"
           >
-            <h3 className="font-mystic text-lg text-center mb-4">
-              Detalhes Finais
-            </h3>
+            <InvocationStepTitle description="Ajuste os detalhes. O item será salvo ao confirmar.">Revise sua invocação</InvocationStepTitle>
             
             {/* Effort Level (for tasks and habits) */}
             {(entityType === 'ACTION' || entityType === 'HABIT') && (
               <div className="space-y-2">
-                <Label>Nível de Esforço</Label>
-                <div className="flex gap-2">
+                <Label id="invocar-effort-label">Nível de esforço</Label>
+                <div className="flex gap-2" role="group" aria-labelledby="invocar-effort-label">
                   {[1, 2, 3, 4, 5].map((level) => (
                     <button
                       key={level}
+                      type="button"
+                      aria-pressed={effortLevel === level}
+                      aria-label={`Esforço ${level}: ${EFFORT_LABELS[level].label}`}
                       onClick={() => setEffortLevel(level)}
                       className={`flex-1 p-2 rounded-lg border transition-all ${
                         effortLevel === level
@@ -458,15 +403,18 @@ export const Invocar: React.FC = () => {
             {/* Time */}
             {(entityType === 'ACTION' || entityType === 'HABIT') && (
               <div className="space-y-2">
-                <Label>Tempo Estimado</Label>
+                <Label htmlFor="invocar-time">Tempo estimado</Label>
                 <div className="flex items-center gap-4">
-                  <Slider
-                    value={[plannedTime]}
-                    onValueChange={([v]) => setPlannedTime(v)}
+                  <input
+                    id="invocar-time"
+                    type="range"
+                    aria-valuetext={`${plannedTime} minutos`}
+                    value={plannedTime}
+                    onChange={event => setPlannedTime(Number(event.target.value))}
                     min={5}
                     max={120}
                     step={5}
-                    className="flex-1"
+                    className="invocation-time-range flex-1"
                   />
                   <Badge variant="outline" className="min-w-[70px] text-center">
                     {plannedTime}min
@@ -478,11 +426,13 @@ export const Invocar: React.FC = () => {
             {/* Recurrence for Habits */}
             {entityType === 'HABIT' && (
               <div className="space-y-2">
-                <Label>Recorrência</Label>
-                <div className="flex gap-2">
+                <Label id="invocar-recurrence-label">Recorrência</Label>
+                <div className="flex gap-2" role="group" aria-labelledby="invocar-recurrence-label">
                   {(['DAILY', 'WEEKLY', 'MONTHLY'] as const).map((rec) => (
                     <button
                       key={rec}
+                      type="button"
+                      aria-pressed={recurrence === rec}
                       onClick={() => setRecurrence(rec)}
                       className={`flex-1 p-2 rounded-lg border transition-all ${
                         recurrence === rec
@@ -500,8 +450,9 @@ export const Invocar: React.FC = () => {
             {/* Due date for Quests and Projects */}
             {(entityType === 'QUEST' || entityType === 'PROJECT') && (
               <div className="space-y-2">
-                <Label>Data Limite (opcional)</Label>
+                <Label htmlFor="invocar-due">Data limite (opcional)</Label>
                 <Input
+                  id="invocar-due"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
@@ -513,8 +464,9 @@ export const Invocar: React.FC = () => {
             {/* Reward for Quests and Projects */}
             {(entityType === 'QUEST' || entityType === 'PROJECT') && (
               <div className="space-y-2">
-                <Label>Recompensa (opcional)</Label>
+                <Label htmlFor="invocar-reward">Recompensa (opcional)</Label>
                 <Input
+                  id="invocar-reward"
                   placeholder="Ex: Um dia de descanso..."
                   value={reward}
                   onChange={(e) => setReward(e.target.value)}
@@ -524,8 +476,9 @@ export const Invocar: React.FC = () => {
             )}
             
             {/* Summary */}
-            <div className="glass-card p-4 space-y-2">
-              <h4 className="font-mystic text-sm text-mystic-gold">Resumo</h4>
+            <section className="invocation-review space-y-2" aria-labelledby="invocation-review-heading">
+              <h3 id="invocation-review-heading">Sua invocação</h3>
+              {entityType !== 'DRAFT' && <><p className="invocation-review-name">{title.trim()}</p>{description.trim() && <p className="text-sm whitespace-pre-wrap">{description.trim()}</p>}</>}
               <div className="text-sm">
                 <span className="text-white/50">Tipo:</span>{' '}
                 {entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Grande Obra' : 'Rascunho'}
@@ -563,19 +516,20 @@ export const Invocar: React.FC = () => {
                   </div>
                 </>
               )}
-            </div>
+            </section>
             
-            <div className="flex gap-3">
+            <div className="invocation-actions">
               <Button 
                 variant="outline" 
                 onClick={() => setStep(2)}
-                className="flex-1 border-white/20"
+                className="elemental-action elemental-action-secondary"
               >
                 Voltar
               </Button>
               <Button 
                 onClick={handleSubmit}
-                className="flex-1 bg-gradient-to-r from-mystic-gold to-orange-500 text-black font-bold"
+                disabled={!title.trim()}
+                className="elemental-action"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Invocar
@@ -584,26 +538,25 @@ export const Invocar: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       {/* Success Dialog */}
       <Dialog open={showSuccess}>
-        <DialogContent className="bg-mystic-purple border-white/20 text-center">
+        <DialogContent className="invocation-success" aria-describedby="invocation-success-description">
           <DialogHeader>
             <DialogTitle className="font-mystic text-xl">
-              ✨ Invocação Completa! ✨
+              Invocação criada
             </DialogTitle>
           </DialogHeader>
           <motion.div
-            initial={{ scale: 0 }}
+            initial={{ scale: reduceMotion ? 1 : .95 }}
             animate={{ scale: 1 }}
-            transition={{ type: 'spring', stiffness: 300 }}
+            transition={{ duration: reduceMotion ? 0 : .24 }}
             className="py-4"
           >
-            <div className="text-5xl mb-4">
-              {entityType === 'ACTION' ? '📜' : entityType === 'HABIT' ? '🔄' : entityType === 'QUEST' ? '🗺️' : entityType === 'PROJECT' ? '🏗️' : '📝'}
-            </div>
+            <div className="invocation-success-icon"><ArcaneIcon name={selectedType.icon} size={40} /></div>
             <p className="text-lg font-medium">{createdEntity?.title}</p>
-            <p className="text-white/70">
+            <p id="invocation-success-description" className="text-white/70">
               {createdEntity?.type} invocado com sucesso!
             </p>
           </motion.div>
@@ -612,34 +565,3 @@ export const Invocar: React.FC = () => {
     </AppLayout>
   );
 };
-
-interface TypeCardProps {
-  icon: string;
-  title: string;
-  description: string;
-  points: string;
-  selected: boolean;
-  onClick: () => void;
-  className?: string;
-}
-
-const TypeCard: React.FC<TypeCardProps> = ({ icon, title, description, points, selected, onClick, className }) => (
-  <motion.button
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    onClick={onClick}
-    className={`p-4 rounded-xl border transition-all text-left ${
-      selected
-        ? 'border-mystic-gold bg-mystic-gold/10'
-        : 'border-white/10 bg-white/5 hover:bg-white/10'
-    } ${className}`}
-  >
-    <div className="flex items-start justify-between">
-      <div className="text-3xl">{icon}</div>
-      {selected && <Check className="w-5 h-5 text-mystic-gold" />}
-    </div>
-    <div className="font-medium mt-2">{title}</div>
-    <div className="text-xs text-white/50">{description}</div>
-    <div className="text-xs text-mystic-gold mt-1">{points}</div>
-  </motion.button>
-);

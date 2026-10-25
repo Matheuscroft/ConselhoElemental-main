@@ -31,7 +31,7 @@ export const MobileBottomNav: React.FC = () => {
           })}
           <button type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-current={moreActive ? 'page' : undefined}
             className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${moreActive ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
-            <ArcaneIcon name="grimorio" size={22} />
+            <ArcaneIcon name="explorar" size={22} />
             <span>Mais</span>
           </button>
         </div>

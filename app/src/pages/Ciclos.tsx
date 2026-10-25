@@ -6,11 +6,13 @@ import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
 import { toast } from 'sonner';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { parseDestinyDate } from '@/components/destiny/destiny-options';
 import { CycleSequenceShowcase } from '@/components/cycles/CycleSequenceShowcase';
 import { CycleFilters } from '@/components/cycles/CycleFilters';
 import { hasCycleFilters, matchesCycleFilters, normalizeCycleSearch, type CycleFilters as CycleFilterState } from '@/components/cycles/cycle-discovery';
 import './ciclos.css';
+import '@/components/elemental/element-discovery.css';
 import { 
   Plus, SkipForward, Search,
   Flame, 
@@ -112,6 +114,10 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 
 export const Ciclos: React.FC = () => {
   const navigate = useNavigate();
+  const [destinyParams] = useSearchParams();
+  const destinyAccountId = useAppStore(state => state.currentAccountId);
+  const [appliedDestinyIntent, setAppliedDestinyIntent] = useState<string | null>(null);
+  const insightsRef = useRef<HTMLDetailsElement>(null);
   const { 
     tasks,
     habits, 
@@ -217,6 +223,23 @@ export const Ciclos: React.FC = () => {
   const [executionTimings, setExecutionTimings] = useState<Record<string, ExecutionTiming>>({});
   const executionEarnedPointsRef = useRef(0);
   const completionActionLockRef = useRef<Record<string, number>>({});
+
+  const destinyHabitId = destinyParams.get('atividade');
+  const destinyDate = destinyParams.get('data');
+  const destinyIntent = destinyHabitId ? `${destinyAccountId}:${destinyHabitId}:${destinyDate}` : null;
+  if (destinyIntent !== appliedDestinyIntent) {
+    const habit = destinyHabitId ? findHabitById(habits, destinyHabitId) : null;
+    const date = parseDestinyDate(destinyDate);
+    if (!destinyIntent || (habit && date)) {
+      setAppliedDestinyIntent(destinyIntent);
+      if (habit && date) {
+        setSelectedDate(date);
+        setVisibleDaysCenterDate(date);
+        setWorkspaceView('routine');
+        setCycleFilters({ query: habit.name || habit.title, element: 'all', status: 'all' });
+      }
+    }
+  }
 
   const dayShortcuts = [-4, -3, -2, -1, 0, 1, 2, 3, 4];
   const dayWindowShift = 7;
@@ -1622,6 +1645,13 @@ export const Ciclos: React.FC = () => {
         <div className="cycles-heading"><span className="cycles-emblem"><ArcaneIcon name="ciclo" size={30} /></span><div><h2>Ciclos</h2><p>Hábitos que aparecem nos dias da sua recorrência.</p><small>{habits.length} ciclos cadastrados</small></div></div>
         <Button ref={newCycleTriggerRef} onClick={() => setShowQuickCreateCycle(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Novo ciclo</Button>
       </header>
+      <button type="button" className="cycle-insights-shortcut" onClick={() => {
+        const section = insightsRef.current;
+        if (!section) return;
+        section.open = true;
+        section.querySelector('summary')?.focus({ preventScroll: true });
+        section.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+      }}><ArcaneIcon name="conquista" size={19} />Ver pontuação elemental<ChevronDown size={18} aria-hidden="true" /></button>
       {/* Day Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -2568,8 +2598,8 @@ export const Ciclos: React.FC = () => {
       </motion.div>
 
       </section>
-      <details className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e constância</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
-        <div className="cycle-score-showcase"><p className="cycle-score-guidance">Toque em um elemento para explorar seus pontos por área.</p><ScoreHierarchyPanel presentation="showcase" tasks={tasks} habits={habits} customAreas={customAreas} customSubareas={customSubareas} /></div>
+      <details ref={insightsRef} className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e constância</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
+        <div className="cycle-score-showcase"><ScoreHierarchyPanel presentation="explorer" tasks={tasks} habits={habits} customAreas={customAreas} customSubareas={customSubareas} /></div>
       {/* Top Streaks */}
       {topStreaks.length > 0 && (
         <motion.div

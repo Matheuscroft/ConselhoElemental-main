@@ -63,3 +63,24 @@ test('activity guide keeps task, habit, quest and project concepts linked to the
   assert.match(html, /sem repetição automática/);
   assert.match(html, /dias ou datas da sua recorrência/);
 });
+
+test('chapter details link exact steps, distinguish unavailable references and preserve registered progress', async () => {
+  const { MemoryRouter } = await import('react-router-dom');
+  const { ProjectChapters } = loadComponent('src/components/quests/ProjectChapters.tsx');
+  const { trailHref } = loadComponent('src/components/quests/quest-path.ts');
+  const trail = { key: 'project:p', element: 'terra', completed: false, archived: false,
+    chapters: [{ id: 'a', title: 'Estudar', progress: 12 }, { id: 'b', title: 'Estudar', progress: 0 }],
+    steps: [{ key: 'task:one', title: 'Ler', chapterId: 'a', kind: 'task', available: true, completed: false, element: 'ar' },
+      { key: 'task:lost', title: 'Removido', chapterId: 'a', kind: 'task', available: false, completed: false, element: 'terra' },
+      { key: 'task:done', title: 'Revisar', chapterId: 'b', kind: 'task', available: true, completed: true, element: 'agua' }] };
+  const markup = t => renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(ProjectChapters, { trail: t })));
+  const html = markup(trail);
+  assert.ok(html.includes(trailHref(trail.key, 'task:one').replaceAll('&', '&amp;')));
+  assert.match(html, /0 de 2 rituais concluídos/);
+  assert.match(html, /1 de 1 rituais concluídos/);
+  assert.match(html, /Progresso registrado do capítulo: 12%/);
+  assert.match(html, /Referência indisponível/);
+  assert.doesNotMatch(html, /href="[^"]*task%3Alost/);
+  assert.doesNotMatch(markup({ ...trail, archived: true }), /Continuar capítulo/);
+  assert.match(markup({ ...trail, chapters: [] }), /Organize esta obra em capítulos/);
+});

@@ -281,3 +281,32 @@
 .ritual-evolution { border-block: 1px solid rgb(var(--el-muted) / .16); margin: 0 0 22px; }
 .ritual-evolution>summary { padding-inline: 0; }
 @media(max-width:600px) { .activity-guide nav { grid-template-columns: 1fr; } .ritual-list-heading { flex-direction: column; gap: 14px; } }
+
+/* R15: chapter navigation reuses the elemental disclosure language. */
+.quest-chapters { display: grid; gap: 12px; }
+.quest-chapter-help,.quest-chapter-empty small { color: var(--quest-muted); font-size: .85rem; line-height: 1.65; }
+.quest-chapter-empty { padding: 20px; border: 1px dashed rgb(var(--el-gold) / .3); border-radius: 16px; }
+.quest-chapter-empty p { margin-bottom: 8px; }
+.quest-chapter { border: 1px solid rgb(var(--el-muted) / .2); border-radius: 18px; background: rgb(var(--el-canvas) / .65); overflow: clip; }
+.quest-chapter>summary { display: grid; grid-template-columns: 42px minmax(0,1fr) 20px; align-items: center; gap: 12px; padding: 20px 16px; min-height: 110px; list-style: none; cursor: pointer; }
+.quest-chapter summary::-webkit-details-marker { display: none; }
+.quest-chapter summary>span:nth-child(2),.quest-chapter li a>span:nth-child(2),.quest-chapter-unavailable>span { display: grid; gap: 7px; min-width: 0; }
+.quest-chapter summary small { color: var(--quest-gold); font-size: .75rem; }
+.quest-chapter summary strong { font: 500 1rem/1.5 Cinzel,Georgia,serif; overflow-wrap: anywhere; }
+.quest-chapter summary>span>span { color: var(--quest-muted); font-size: .78rem; line-height: 1.5; }
+.quest-chapter summary>svg { color: var(--quest-gold); transition: transform 180ms ease; }
+.quest-chapter[open] summary>svg { transform: rotate(180deg); }
+.quest-chapter-rune { display: grid; place-items: center; color: var(--quest-gold); }
+.quest-chapter-content { border-top: 1px solid rgb(var(--el-muted) / .15); padding: 16px; }
+.quest-chapter-content>.quest-primary { width: 100%; margin-bottom: 12px; }
+.quest-chapter-content>p { color: var(--quest-muted); font-size: .85rem; line-height: 1.7; margin-bottom: 12px; }
+.quest-chapter-content ul { display: grid; gap: 6px; }
+.quest-chapter-content li a,.quest-chapter-unavailable { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px 10px; border-radius: 10px; }
+.quest-chapter-content li a { background: rgb(var(--el-surface)); }
+.quest-chapter-content li a>svg:last-child { margin-left: auto; flex-shrink: 0; color: var(--quest-gold); }
+.quest-chapter-content li strong { font-size: .85rem; line-height: 1.5; overflow-wrap: anywhere; font-weight: 500; }
+.quest-chapter-content li small { font-size: .75rem; line-height: 1.5; color: var(--quest-muted); }
+.quest-chapter-unavailable { border: 1px dashed rgb(var(--el-muted) / .25); }
+.quest-chapter-create { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.quest-chapter-create input { flex: 1 1 180px; min-width: 0; }
+@media(prefers-reduced-motion:reduce) { .quest-chapter summary>svg { transition: none; } }

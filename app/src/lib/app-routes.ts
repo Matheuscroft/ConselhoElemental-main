@@ -51,7 +51,7 @@ export const APP_ROUTES: AppRoute[] = [
   { id: 'treinos-corpo', label: 'Treinos · Corpo', path: '/treinos/corpo', group: 'Treino', icon: Activity, description: 'Avaliações corporais', via: 'Navegação de treinos' },
 
   { id: 'dominios', label: 'Domínios', path: '/dominios', group: 'Domínios', icon: Globe, description: 'Áreas da vida e subáreas', sidebar: true, mobile: 'more' },
-  { id: 'cassino', label: 'Cassino Arcano', path: '/cassino-arcano', group: 'Domínios', icon: Dice6, description: 'Recompensas e sorteios', sidebar: true, mobile: 'more' },
+  { id: 'cassino', label: 'Cassino Arcano', path: '/cassino-arcano', group: 'Domínios', icon: Dice6, description: 'Escolha aleatória da próxima atividade', sidebar: true, mobile: 'more' },
 ];
 
 export interface InternalRoute {

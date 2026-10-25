@@ -1,4 +1,4 @@
-.elemental-pillars { color: #f2efe7; padding-bottom: 16px; }
+.elemental-pillars { container-type: inline-size; color: #f2efe7; padding-bottom: 16px; }
 .elemental-pillars :is(a, button):focus-visible { outline: 2px solid #d5b66f; outline-offset: 4px; }
 .pillars-back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: #aab4c4; font-size: 12px; }
 .pillars-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 0 28px; }
@@ -34,3 +34,35 @@
 @media (min-width: 1101px) {
   .elemental-pillars .expanded-element[data-open="false"] .expanded-element-trigger { flex-direction: column; padding-inline: 8px; }
 }
+
+/* R22: discovery first on phones, statistics as a secondary disclosure. */
+.pillars-heading h1 { font: 500 clamp(25px, 5vw, 36px)/1.2 Cinzel, Georgia, serif; }
+.pillars-heading h1 + p { max-width: 52ch; margin-top: 12px; color: #aab4c4; font-size: 14px; line-height: 1.7; }
+.pillars-eyebrow { display: flex; align-items: center; gap: 10px; }
+.pillars-explore { padding-top: 0; }
+.pillar-element-cards { display: grid; gap: 12px; margin: 18px 0 24px; align-items: start; }
+.pillar-element-card { min-width: 0; border-radius: 24px; overflow: clip; border: 1px solid color-mix(in srgb, var(--pillar-accent) 30%, transparent); background: radial-gradient(ellipse at 10% 0, color-mix(in srgb, var(--pillar-accent) 12%, transparent), transparent 70%), #101620; }
+.pillar-element-card[data-open="true"] { border-color: var(--pillar-accent); }
+.pillar-element-trigger { display: flex; width: 100%; min-height: 118px; align-items: center; gap: 12px; text-align: left; padding: 14px; }
+.pillar-element-trigger > img { width: 78px; height: 88px; object-fit: contain; flex-shrink: 0; }
+.pillar-element-trigger > span { flex: 1; min-width: 0; }
+.pillar-element-trigger strong { display: flex; gap: 8px; align-items: center; color: var(--pillar-accent); font: 500 21px/1.4 Cinzel, Georgia, serif; }
+.pillar-element-trigger small { display: block; color: #aab4c4; font-size: 12px; line-height: 1.6; margin-top: 6px; }
+.pillar-element-trigger > svg { flex-shrink: 0; color: var(--pillar-accent); transition: transform 200ms ease; }
+.pillar-element-card[data-open="true"] .pillar-element-trigger > svg { transform: rotate(180deg); }
+.pillar-element-content { padding: 0 18px 18px; }
+.pillar-element-content p { font-size: 14px; line-height: 1.7; color: #aab4c4; }
+.pillar-element-content a { display: flex; justify-content: space-between; align-items: center; min-height: 48px; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--pillar-accent) 45%, transparent); margin-top: 16px; color: var(--pillar-accent); font-size: 14px; }
+.pillar-element-card :is(a,button):focus-visible { outline-offset: -4px; }
+.pillars-balance { padding: 0; border-radius: 16px; background: #141b2780; border: 1px solid #aab4c424; }
+.pillars-balance > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 16px; justify-content: space-between; min-height: 80px; padding: 16px; }
+.pillars-balance > summary::-webkit-details-marker { display: none; }
+.pillars-balance > summary span { font-size: 15px; }
+.pillars-balance > summary small { display: block; color: #aab4c4; font-size: 12px; margin-top: 5px; }
+.pillars-balance > summary svg { flex-shrink: 0; }
+.pillars-balance[open] > summary svg { transform: rotate(180deg); }
+.pillars-balance > summary:focus-visible { outline: 2px solid #d5b66f; outline-offset: -4px; border-radius: 16px; }
+.pillars-balance-content { padding: 0 16px 16px; }
+.pillars-footer { border: 1px solid #d5b66f40; border-radius: 20px; padding: 20px; background: linear-gradient(120deg, #d5b66f0a, #141b2780); }
+@container (min-width: 620px) { .pillar-element-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .pillar-element-trigger > svg { transition: none; } }

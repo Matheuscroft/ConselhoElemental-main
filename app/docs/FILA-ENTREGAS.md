@@ -1,3 +1,120 @@
+## Checkpoint de progresso e próxima fase — 24/10/2026
+
+**0.1.64 local**, branch `codex/fitness-ui-integration`, base publicada `91fa5a5`. Fábio solicitou salvar o progresso e priorizar uso prático no celular, preservando atividades/conquistas na futura conta pessoal. [Resumo consolidado e plano](PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md). Checkpoint Git local desta entrega reúne R15–R24 e este plano; consulte o commit de mensagem `feat(ui): checkpoint elemental mobile R15-R24 and continuity`. Nenhum novo push/deploy.
+
+**Próximo:** R25-A backup exportável/restauração verificada → R25-B associação segura à conta com Matheus → R26 validação por jornadas mobile (360/390px, depois 768px). R25/R26 planejados, não implementados. Dados reais do navegador NÃO exportados nesta rodada; salvar código não é backup pessoal. Inspeção de auth encontrou importação local desativada e reset possível para conta cloud nova. Não prometer preservação até validar cobertura de core/treinos, conflitos, isolamento e recuperação. Stores/auth/cloud mantidos intactos.
+
+## R24 — Roda do Destino implementada, QA visual pendente
+
+[Entrega e evidências](plans/R24-RODA-DO-DESTINO.md). Aprovação explícita de Fábio: **“Sim, escolher atividades sem custo nem XP automático”**. Nova roda elemental com atividades reais, filtros de tipo/elemento, ciclos hoje/7 dias, resultado e links de execução. Removidos apenas custo/XP automático do sorteio; regras normais de conclusão preservadas.
+
+**Executado:** 134 testes Node, TypeScript, lint e build Vite `envDir:false` (11,79s) passaram. Lint inicial teve dois erros nas novas sincronizações de vista, corrigidos sem suprimir regra. 549 inicializadores internos anteriores de Rituais/Ciclos preservados por AST. Diff de stores/services/types/Supabase vazio. Chunks grandes e Browserslist antiga permanecem. QA renderizado/interações reais pendente; bloqueio anterior não contornado.
+
+Reservas R24 encerradas. Revisão documental pelo coordenador; revisão independente pendente. R15–R23 preservados. Pendências R19 e R12-D/E continuam na fila. Sem alteração de dados reais, migração ou comunicação externa.
+
+## R23 — catálogo compacto de Domínios implementado (24/10/2026)
+
+**0.1.63 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`. R15–R22 preservados. [Entrega e evidências](plans/R23-DOMINIOS-COMPACTO.md). Astro Boy sequencial; Fábio frontend, Matheus backend.
+
+**Entregue:** quatro grupos recolhíveis por elemento, linhas compactas com acesso direto, busca/filtro revelando resultados e modo explícito Gerenciar vínculos. Grupo aberto preservado na URL e no retorno do detalhe. Rail, Showcase, formulários e comandos existentes preservados.
+
+**Executado:** 128 testes Node, TypeScript, lint e build Vite `envDir:false` (17,21s) passaram. 26 inicializadores/handlers da página idênticos por AST; diff de domínio/backend vazio; versões e diff-check conferidos. Avisos de chunks/Browserslist permanecem.
+
+**Pendente:** conferência visual e interação real mobile/tablet, incluindo retorno e gestão com dados isolados. Sem contorno ao bloqueio anterior. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração. Demais pendências R19/R12-D/E preservadas.
+
+## R22 + R21 — descoberta mobile e ícones implementados (24/10/2026)
+
+**0.1.62 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`. R15–R20 preservados. [Entrega e evidências R22](plans/R22-DESCOBERTA-MOBILE.md), [ícones R21](plans/R21-ICONES-NAVEGACAO.md). Astro Boy sequencial; Fábio frontend, Matheus backend.
+
+**Entregue:** 26 destinos com símbolos distintos, Pilares separado de Domínios e Mais separado do Grimório. Ciclos: atalho à pontuação e expansão elemento → área → subárea no mesmo cartão. Pilares: descoberta dos elementos antes do equilíbrio. Mapa: busca, categorias expansíveis e Showcase por destino, com todos os acessos preservados. Layouts priorizam a largura real do conteúdo, toque, foco e movimento reduzido.
+
+**Executado:** 125 testes Node, TypeScript, lint e build Vite `envDir:false` (19,70s) passaram. 186 inicializadores/handlers existentes idênticos por AST; diff de domínio/backend vazio. Primeira execução teve duas falhas de testes antigos sem contexto Router, corrigidas para a navegação por Link; suíte completa repetida passou. Versões/diff-check conferidos. Avisos de chunks/Browserslist permanecem.
+
+**Pendente:** QA renderizado 360/390/768px, toque, teclado, rolagem/foco, navegação inferior e aceite visual. Não houve contorno ao bloqueio anterior. Próximo: validar as três telas e seguir as demais áreas; caso de vínculos R19 e contratos R12-D/E continuam pendentes para Matheus. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração.
+
+## R20 — navegação de Domínios implementada (24/10/2026)
+
+**0.1.60 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`; R15–R19 preservados. [Entrega e limites](plans/R20-DOMINIOS-NAVEGACAO.md). Astro Boy sequencial. Aparência do rail e Showcase aprovada nos prints de Fábio; novas interações ainda sem aceite renderizado.
+
+**Entregue:** atalhos de seção/busca, filtros na URL, retorno contextual à lista, indicadores removíveis de filtros e troca direta entre áreas com select e anterior/próxima. Composição aprovada preservada. Atalhos com foco e movimento reduzido; criação atualiza filtros em uma operação visual.
+
+**Executado:** 122 testes Node, TypeScript, lint e build Vite `envDir:false` (14,50 s) passaram. Cinco testes novos de navegação/retorno/foco simulado. 18 inicializadores/handlers idênticos por AST; diff de domínio/backend vazio; versões e diff-check conferidos. Avisos de chunks/Browserslist permanecem. QA visual e navegação real pendentes pelo bloqueio salvo, sem contorno.
+
+**Próximo:** conferir catálogo filtrado → área → outra área → retorno, atalhos/mobile/teclado e formulários. Caso legado de primeiro desvínculo R19 continua para revisão de Matheus; regras não alteradas. Demais áreas/Jornadas/Obras e contratos R12-D/E permanecem na fila. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração.
+
+## R19 — Domínios implementado; aceite visual pendente (24/10/2026)
+
+**0.1.59 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`; R15–R18 preservados. [Referências, entrega e evidências](plans/R19-DOMINIOS.md). Astro Boy sequencial; frontend de Fábio, backend de Matheus.
+
+**Entregue:** Expanded Cards nos quatro elementos, filtro/busca de áreas, links e vínculos separados; Showcase no detalhe com resumo revelável; criação visual de área/subárea, prévia, radios, confirmação de remoção e foco restaurado. Yoga/Calistenia mantêm rotas próprias. Vídeos fornecidos analisados por quadros.
+
+**Executado:** 117 testes Node, TypeScript e lint passaram. Build Vite `envDir:false` passou em 7,64 s; 16 inicializadores/handlers preservados por AST, rota dedicada com tokens iguais após diferença apenas de formatação. Diff de domínio/backend vazio; versões/diff-check conferidos. QA renderizado/interações pendente pelo bloqueio salvo, sem contorno. Avisos de chunks/Browserslist permanecem.
+
+**Prioridade Matheus:** reproduzido em memória isolada o problema antigo de primeiro desvínculo de subárea: sem configuração explícita, a UI considera todas vinculadas, mas unlinkSubarea grava [] e todas desaparecem da lista vinculada. Sem correção de backend neste lote e sem dados reais alterados. Revisar contrato de inicialização e testar primeira criação/vinculação também; detalhes no relatório R19.
+
+**Próximo:** aceite visual de Domínios/mobile/teclado e regressão dos formulários, junto ao QA acumulado; revisão do caso de vínculos com Matheus. Restante de Jornadas/Obras e contratos R12-D/E permanece na fila. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração.
+
+## R18 — Astrolábio implementado; QA visual pendente (24/10/2026)
+
+**0.1.58 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`; R15–R17 preservados. [Entrega e evidências](plans/R18-ASTROLABIO.md). Astro Boy sequencial.
+
+**Entregue:** panorama atual separado da evolução por período; abas refinadas, intervalo explícito, tabela diária acessível, equilíbrio com estado vazio, cartões elementais expansíveis e barras rotuladas de Rituais concluídos. Runa própria e atalhos ao histórico/áreas. Sem alterações de cálculos, stores ou backend.
+
+**Executado:** 113 testes Node, TypeScript, lint e build `envDir:false` (8,90 s) passaram. Cinco inicializadores de dados idênticos por AST; diff de domínio/projeções/backend vazio. Carregador de testes corrigido após EISDIR inicial; suíte repetida passou. Versões/diff-check conferidos. Avisos de chunks/Browserslist permanecem; QA renderizado/interações pendente, sem contorno ao bloqueio salvo.
+
+**Sleek:** acesso de leitura confirmado por HTTP 200 após substituição da chave. Credencial no Chaves do macOS, fora do projeto. Sem geração paga ou envio de dados do app; não implica validação de escopos de escrita.
+
+**Próximo:** QA mobile/teclado/dados das entregas locais, depois detalhes de Jornadas/vínculos de Obras e demais áreas. Contratos de fragmentos/constância e divergência da Forja permanecem pendentes. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração.
+
+## R17 — Forja implementada; QA visual pendente (24/10/2026)
+
+**0.1.57 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`; R15/R16 preservados. [Entrega e contratos](plans/R17-FORJA.md). Astro Boy sequencial.
+
+**Entregue:** runa própria, captura rotulada com anotações expansíveis, busca, cartões com detalhes e ações visíveis no celular; edição antes inoperante ligada a `updateDraft`; classificação e exclusão confirmadas com comandos existentes. Seleção por ID atual e estado reiniciado por conta. Design system compartilhado, sem biblioteca adicional.
+
+**Executado:** 110 testes Node, TypeScript, lint e build `envDir:false` (10,81 s) passaram. Diff de domínio/backend vazio; versões e diff-check conferidos. Avisos de chunks/Browserslist permanecem. QA de navegador/interações/persistência não executado; sem contornar bloqueio salvo.
+
+**Atenção Matheus:** capítulo 3.1 da Lista Diária prevê área/dispatcher/MISSION/inbox exclusivo; implementação atual tem notas, criação também em Invocar e conversão para quatro tipos com padrões fixos. R17 preserva implementação e registra divergência, sem mudar contrato. Sleek ainda retornou `pending` após usuário informar aprovação da etapa 2; conexão não confirmada.
+
+**Próximo:** QA mobile/teclado/foco e ciclo completo da Forja, Invocar e capítulos de Obras; depois detalhes de Jornadas/vínculos. Fragmentos/constância dependem de R12-D/E. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy ou migração.
+
+## R16 — Invocar implementado; design system iniciado (24/10/2026)
+
+**0.1.56 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`; R15 preservado. [Entrega e avaliação de bibliotecas/skills/Sleek](plans/R16-INVOCAR-DESIGN-SYSTEM.md). Astro Boy sequencial; prioridade mudou para Invocar a pedido de Fábio.
+
+**Entregue:** cinco tipos com runas e seleção nativa; etapas nomeadas; campos/ações/foco refinados; resumo com nome/descrição; movimento finito/reduzido; confirmação sem emojis. Receitas opt-in do design system usando a paleta existente, piloto em Invocar. Chakra/MUI avaliados; recomendada consolidação sobre Radix/Tailwind já presentes. Nenhuma biblioteca npm adicional.
+
+**Executado:** 107/107 testes Node, TypeScript, lint e build Vite `envDir:false` (12,38 s). AST confirmou `requestSuggestion`, `handleSubmit` e `canProceed` idênticos. Diff de domínio/backend vazio; versões e diff-check conferidos. Duas comparações TypeScript e linha vazia de EOF corrigidas antes da checagem final. Avisos de chunks/Browserslist permanecem. QA renderizado local não executado, sem contornar bloqueio salvo.
+
+**Ferramentas:** sete skills instaladas no escopo pessoal; `hyperframes-animation` não encontrada no repositório indicado. Sleek: documentação/OpenAPI lidos e device flow iniciado; usuário informou conexão, mas API ainda retornou `pending`, e navegador interno mostrou “Sign in first”. Solicitado completar etapa Approve. Nenhuma chave persistida, nenhuma geração paga nem código/dados do app enviados. Requer retomar autenticação se o código expirar; não guardar código/chave no Git.
+
+**Próximo:** QA de Invocar e consolidação das receitas; detalhes de Jornadas/vínculos diretos de Obras continuam na fila. Fragmentos/constância dependem dos contratos R12-D/E. Reservas encerradas. Revisão documental pelo coordenador, independente pendente. Sem commit/push, deploy, migração ou alterações de regras.
+
+## Visão do restante — seis frentes abertas, 24/10/2026
+
+Agrupamento do escopo aprovado para orientar a evolução; não representa seis sessões, estimativa de prazo ou percentual concluído. As entradas anteriores permanecem como histórico/evidência, sem fila paralela.
+
+| Frente | O que falta | Dependência/aceite |
+| --- | --- | --- |
+| 1. Design system e Invocar | Revisar piloto em tela real; consolidar tokens/receitas, estados, ícones e movimento; catálogo de componentes e adoção gradual | Fábio; layout, teclado, toque, contraste e movimento reduzido comprovados |
+| 2. Jornadas e Grandes Obras | Detalhes atualizados por ID/conta, vínculos diretos, navegação da obra à atividade; delimitar edição/reordenação/exclusão de capítulos | Preservar comandos atuais; qualquer contrato novo com Matheus |
+| 3. Cobertura do app | Forja, Domínios/detalhes, Astrolábio/Cassino, onboarding/auth, editores antigos e áreas especializadas Temporal/Fitness ainda não uniformes | Auditoria por rota, dados/funcionalidades preservados; referências openGym delimitadas antes de integrar |
+| 4. Constância e fragmentos | Definir dia/fuso, elegibilidade, multiárea, Undo/reconclusão/idempotência e persistência; depois UI de recompensa/saldo reais | Fábio decide produto; Matheus contratos/backend. Quantidade já aprovada: 1 fragmento por conclusão válida, separado XP/Prana |
+| 5. Qualidade integrada | QA 360/390/768/1440, zoom, acessibilidade, fluxo completo, animações e desempenho; tratar chunks relevantes | Navegador local liberado; usar dados isolados e registrar evidências reais |
+| 6. Fechamento e repasse | Revisão integrada, atualização Astro Boy/Matheus, versão/relatório e publicação quando solicitada | Sem incluir credenciais/perfis; push/deploy têm escopos distintos |
+
+Sleek é apoio opcional à frente 1. Autenticação pendente não bloqueia evolução local. Backend e pontuação continuam sob responsabilidade de Matheus, sem alteração silenciosa pela repaginação.
+
+## R15 — capítulos de Grandes Obras implementados, QA visual pendente (23/10/2026)
+
+**0.1.55 local**, base publicada `91fa5a5`, branch `codex/fitness-ui-integration`. [Entrega, decisões e verificações](plans/R15-CAPITULOS-GRANDES-OBRAS.md). Astro Boy sequencial; frontend de Fábio, backend de Matheus preservado.
+
+**Entregue:** capítulos expansíveis com runas, contagem de rituais atuais e links diretos; sugestão de continuar sem bloquear outras etapas; referências ausentes explícitas. Detalhe consulta projeto por ID/conta, acompanha adição de capítulo e mantém percentuais registrados. Criação com cancelamento visível. Projeção recebe IDs de capítulo para nomes iguais, sem gravação.
+
+**Executado:** 104/104 testes Node, TypeScript, lint sem avisos e build `envDir:false` (7,43 s). Primeira falha de compatibilidade de metadado opcional corrigida e suíte repetida. Diff de domínio/backend/comandos vazio; somente apresentação e metadados de leitura alterados. Versões/links/diff-check conferidos. Avisos de chunks/Browserslist permanecem.
+
+**Limite/próximo:** QA real de expansão/criação/links/conta/teclado/mobile pendente pelo bloqueio salvo, sem nova tentativa ou contorno; depois vínculos diretos da obra e detalhe de Jornadas. Editor/reordenação/exclusão avançados de capítulos não implementados. Fragmentos/streak dependem dos contratos R12-D/E. Reservas encerradas; revisão documental pelo coordenador, independente pendente. Sem secrets, commit/push, deploy ou migração.
+
 ## R14 — revisão e publicação concluídas (23/10/2026)
 
 **0.1.54**, base `987e09e`, branch `codex/fitness-ui-integration`. R12/R13 revisados; [repasse consolidado I03/R01–R14](REPASSE-FRONTEND-PARA-BACKEND.md) e [verificações R14](03-Project-Management/reports/R14-REVISAO-E-PUBLICACAO.md). Matheus mantém backend; Fábio frontend.

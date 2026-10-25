@@ -1,3 +1,59 @@
+## 0.1.64 — Roda do Destino e checkpoint de progresso, 24/10/2026
+
+- Roda elemental com escolha gratuita de tarefas, ciclos elegíveis e jornadas; filtros, lista e resultado com navegação contextual.
+- Removidos custo de stamina e XP automático do Cassino conforme aprovação explícita; conclusão e recompensas normais intactas.
+- Plano de proteção do progresso antes da conta pessoal e consolidação da usabilidade mobile. Backup pessoal/migração ainda não executados.
+- 134 testes Node, TypeScript, lint e build passaram. QA visual pendente; stores/services/types/Supabase sem alterações.
+
+## 0.1.63 — catálogo compacto de Domínios, 24/10/2026
+
+- Áreas agrupadas por elemento com expansão e linhas compactas; busca/filtro mostram resultados diretamente.
+- Gerenciar vínculos separado da navegação; grupo aberto recuperado no retorno do detalhe.
+- 128 testes Node, TypeScript, lint e build passaram; QA visual/mobile pendente. Backend, dados e regras preservados.
+
+## 0.1.62 — descoberta mobile e ícones de navegação, 24/10/2026
+
+- R21: Pilares/Domínios separados; 26 destinos com símbolos próprios e botão Mais distinto do Grimório.
+- R22: pontuação expansível em Ciclos com atalho e detalhamento local; Pilares prioriza elementos e mantém equilíbrio recolhível; Mapa tem busca, categorias e Showcase por destino.
+- Controles de toque, foco, movimento reduzido e colunas por largura disponível. Sem alteração de pontuação, stores ou backend.
+- 125 testes Node, TypeScript, lint e build passaram. Conferência visual/mobile ainda pendente; continuidade nos relatórios R21/R22.
+
+## 0.1.60 — navegação contextual de Domínios, 24/10/2026
+
+- Atalhos à lista/busca/subáreas, filtros na URL e retorno ao catálogo com contexto preservado.
+- Seletor de áreas e anterior/próxima por elemento; limpeza de filtros e foco com movimento reduzido. Rail e Showcase aprovados preservados.
+- 122 testes Node, TypeScript, lint e build passaram; QA visual/navegação real pendente. Backend e problema legado de vínculos R19 preservados para revisão de Matheus.
+
+## 0.1.59 — Domínios com Expanded Cards e Showcase, 24/10/2026
+
+- Navegação elemental expansível, busca e organização das áreas; Showcase no detalhe e links de módulo separados dos controles.
+- Formulários de área/subárea refinados com escolhas visuais, prévia, validação, confirmação de remoção e retorno de foco.
+- 117 testes Node, TypeScript, lint e build passaram; QA visual pendente. Backend preservado; comportamento antigo de primeiro desvínculo reproduzido em isolamento e registrado para Matheus em R19.
+
+## 0.1.58 — Astrolábio e leitura da evolução, 24/10/2026
+
+- Panorama atual separado do filtro de evolução; tabela diária, distribuição com estado vazio e cartões elementais expansíveis com rotas existentes.
+- Runa própria, navegação e barras rotuladas de Rituais concluídos; dados, regras e backend preservados.
+- 113 testes Node, TypeScript, lint e build passaram. QA visual/interações pendente. Acesso de leitura Sleek confirmado, sem geração remota.
+
+## 0.1.57 — Forja elemental e edição funcional, 24/10/2026
+
+- Captura com anotações expansíveis, busca, cartões com ações visíveis e ícone próprio; edição agora usa updateDraft existente.
+- Classificação e exclusão com confirmação, feedback persistente e acesso ao catálogo; estado de interface isolado por conta.
+- Stores, regras e backend preservados. 110 testes Node, TypeScript, lint e build passaram; QA visual/interações pendente. Divergência documental registrada em R17.
+
+## 0.1.56 — Invocar e base incremental do design system, 24/10/2026
+
+- Invocar com runas, seleção nativa, etapas nomeadas, revisão completa e receitas visuais reutilizáveis; movimento reduzido e rótulos refinados.
+- Comandos, consentimento/JWT, payloads, pontuação e backend preservados; 107 testes Node, TypeScript, lint e build passaram. QA visual pendente.
+- Avaliação de bibliotecas e sete skills pessoais instaladas; integração Sleek preparada sem chave no projeto. Detalhes em R16.
+
+## 0.1.55 — capítulos navegáveis de Grandes Obras, 23/10/2026
+
+- Capítulos expansíveis com atividades atuais, referências indisponíveis e links diretos à trilha; progresso registrado preservado.
+- Detalhe resolve projeto por ID/conta e acompanha adição de capítulos; cancelamento e controles de criação refinados.
+- Metadados de capítulo na projeção de leitura, sem alterações em backend, pontuação ou persistência. 104 testes Node passaram; QA visual pendente.
+
 ## 0.1.54 — revisão integrada e repasse R14, 23/10/2026
 
 - Compositor de Jornadas/Grandes Obras reinicia ao trocar conta; comandos de domínio preservados.

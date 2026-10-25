@@ -1,11 +1,12 @@
+import { ProjectChapters } from '@/components/quests/ProjectChapters';
 import { QuestComposer } from '@/components/quests/QuestComposer';
 import { QuestRune } from '@/components/quests/QuestRune';
 import { Link, useNavigate } from 'react-router-dom';
-import { trailHref } from '@/components/quests/quest-path';
+import { buildQuestTrails, trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { 
   Plus, 
@@ -14,7 +15,6 @@ import {
   Layers, 
   Calendar,
   Gift,
-  Flag
 } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
@@ -33,10 +33,15 @@ import {
 import type { Project, ElementId } from '@/types';
 
 export const GrandesObras: React.FC = () => {
-  const { currentAccountId, projects, addProject, addMissionToProject } = useAppStore();
+  const { currentAccountId, projects, tasks, habits, quests, addProject, addMissionToProject } = useAppStore();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('active');
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selection, setSelection] = useState<{ id: string; accountId: string | null } | null>(null);
+  const selectedProject = selection?.accountId === currentAccountId
+    ? projects.find(project => project.id === selection?.id) ?? null : null;
+  const selectedTrail = useMemo(() => selectedProject
+    ? buildQuestTrails({ tasks, habits, quests, projects: [selectedProject] }).find(trail => trail.kind === 'project')
+    : undefined, [selectedProject, tasks, habits, quests]);
   const [showDetail, setShowDetail] = useState(false);
   const [showAddMission, setShowAddMission] = useState(false);
   const [newMissionTitle, setNewMissionTitle] = useState('');
@@ -51,7 +56,9 @@ export const GrandesObras: React.FC = () => {
 
   // Open project detail
   const openProjectDetail = (project: Project) => {
-    setSelectedProject(project);
+    setSelection({ id: project.id, accountId: currentAccountId });
+    setShowAddMission(false);
+    setNewMissionTitle('');
     setShowDetail(true);
   };
 
@@ -67,12 +74,6 @@ export const GrandesObras: React.FC = () => {
     
     setNewMissionTitle('');
     setShowAddMission(false);
-    
-    // Refresh project data
-    const updatedProject = projects.find(p => p.id === selectedProject.id);
-    if (updatedProject) {
-      setSelectedProject(updatedProject);
-    }
   };
 
   // Create new project
@@ -157,7 +158,7 @@ export const GrandesObras: React.FC = () => {
       </Tabs>
 
       {/* Project Detail Modal */}
-      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+      <Dialog open={showDetail && !!selectedProject} onOpenChange={setShowDetail}>
         <DialogContent className="quest-dialog quest-catalog-detail" aria-labelledby="project-detail-title" aria-describedby="project-detail-description">
           {selectedProject && (
             <>
@@ -202,7 +203,7 @@ export const GrandesObras: React.FC = () => {
                 {/* Progress */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/50">Progresso Geral</span>
+                    <span className="text-white/50">Progresso registrado da obra</span>
                     <span className="text-mystic-gold">{selectedProject.progress}%</span>
                   </div>
                   <Progress value={selectedProject.progress} className="h-2" />
@@ -212,7 +213,7 @@ export const GrandesObras: React.FC = () => {
                 <div className="grid grid-cols-4 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-white/5">
                     <div className="text-lg font-bold">{selectedProject.missions.length}</div>
-                    <div className="text-[10px] text-white/50">Campanhas</div>
+                    <div className="text-[10px] text-white/50">Capítulos</div>
                   </div>
                   <div className="p-2 rounded-lg bg-white/5">
                     <div className="text-lg font-bold">{selectedProject.quests.length}</div>
@@ -231,7 +232,7 @@ export const GrandesObras: React.FC = () => {
                 {/* Missions */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-mystic text-sm">Campanhas</h4>
+                    <h4 className="font-mystic text-sm">Capítulos da obra</h4>
                     <Button 
                       size="sm" 
                       variant="ghost" 
@@ -244,13 +245,13 @@ export const GrandesObras: React.FC = () => {
                   </div>
                   
                   {showAddMission && (
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="quest-chapter-create">
                       <input
                         type="text"
                         value={newMissionTitle}
                         onChange={(e) => setNewMissionTitle(e.target.value)}
-                        aria-label="Nome da campanha"
-                        placeholder="Nome da campanha..."
+                        aria-label="Nome do capítulo"
+                        placeholder="Nome do capítulo..."
                         className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
                         autoFocus
                         onKeyDown={(e) => {
@@ -258,38 +259,15 @@ export const GrandesObras: React.FC = () => {
                           if (e.key === 'Escape') setShowAddMission(false);
                         }}
                       />
-                      <Button size="sm" className="quest-primary" aria-label="Adicionar campanha" onClick={handleAddMission}>
+                      <button type="button" className="quest-secondary" onClick={() => { setShowAddMission(false); setNewMissionTitle(''); }}>Cancelar</button>
+                      <Button size="sm" className="quest-primary" aria-label="Adicionar capítulo" disabled={!newMissionTitle.trim()} onClick={handleAddMission}>
                         <Plus className="w-4 h-4" />
                       </Button>
                     </div>
                   )}
                   
-                  <div className="space-y-2">
-                    {selectedProject.missions.map((mission) => (
-                      <div 
-                        key={mission.id}
-                        className={`flex items-center gap-2 p-2 rounded-lg ${
-                          mission.isCompleted ? 'bg-mystic-gold/10' : 'bg-white/5'
-                        }`}
-                      >
-                        <Flag className={`w-4 h-4 ${mission.isCompleted ? 'text-mystic-gold' : 'text-white/30'}`} />
-                        <span className={`text-sm flex-1 ${mission.isCompleted ? 'line-through text-white/50' : ''}`}>
-                          {mission.title}
-                        </span>
-                        <div className="h-1.5 w-16 bg-black/30 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-mystic-arcane rounded-full"
-                            style={{ width: `${mission.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                    {selectedProject.missions.length === 0 && (
-                      <p className="text-xs text-white/30 text-center py-2">
-                        Nenhuma campanha ainda
-                      </p>
-                    )}
-                  </div>
+                  {selectedTrail && <ProjectChapters trail={selectedTrail} />}
+
                 </div>
                 
                 {/* Reward */}
@@ -422,6 +400,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived,
   const totalItems = project.missions.length + project.quests.length + project.tasks.length + project.habits.length;
   return <article className="quest-catalog-card"><ShowcaseCard title={project.title} description={project.description} element={project.elementId}
     status={archived ? 'Obra arquivada' : completed ? 'Obra concluída' : 'Obra em andamento'} progress={project.progress}
-    chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} campanhas`] : [])]}
+    chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} capítulos`] : [])]}
     reward={project.reward} onOpen={onClick} /><Link className="quest-catalog-open" to={trailHref(`project:${project.id}`)} aria-label={`Abrir trilha de ${project.title}`}><ArcaneIcon name="jornada" size={20} />{archived || completed ? 'Consultar trilha' : 'Abrir trilha'}<span aria-hidden="true">→</span></Link></article>;
 };

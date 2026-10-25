@@ -3,13 +3,13 @@ import type { ElementId, Habit, Project, Quest, Task } from '@/types';
 export interface QuestStep {
   key: string; id: string; title: string; kind: 'task' | 'habit'; element: ElementId;
   completed: boolean; available: boolean; native: boolean; hasChildren: boolean;
-  chapter: string; plannedMinutes: number | null;
+  chapter: string; chapterId?: string; plannedMinutes: number | null;
 }
 export interface QuestTrail {
   key: string; id: string; kind: 'quest' | 'project'; title: string; description: string;
   element: ElementId; archived: boolean; completed: boolean; reward?: string;
   steps: QuestStep[]; done: number; total: number; next: QuestStep | undefined;
-  chapters: { id: string; title: string }[];
+  chapters: { id: string; title: string; progress?: number }[];
 }
 export type QuestSource = { tasks: Task[]; habits: Habit[]; quests: Quest[]; projects: Project[] };
 export const trailHref = (key: string, step?: string) => `/rituais?${new URLSearchParams({ trilha: key, ...(step ? { etapa: step } : {}) })}`;
@@ -29,14 +29,14 @@ export function buildQuestTrails(source: QuestSource): QuestTrail[] {
       if (!ref) return;
       steps.push({ key: `task:${id}`, id, title: ref.title, kind: 'task', element: ref.elementId, completed: !!task?.isCompleted,
         available: !!task, native: ref.sourceModule === 'modulo_treino', hasChildren: !!ref.childItems?.length,
-        chapter, plannedMinutes: task?.plannedTimeMinutes ?? null });
+        chapter, chapterId: parentId, plannedMinutes: task?.plannedTimeMinutes ?? null });
     });
     habitIds.forEach(id => {
       const habit = habits.get(id);
       const ref = habit ?? habitRefs.find(h => h.id === id);
       if (!ref) return;
       steps.push({ key: `habit:${id}`, id, title: ref.name || ref.title, kind: 'habit', element: ref.elementId,
-        completed: false, available: !!habit, native: ref.sourceModule === 'modulo_treino', hasChildren: !!ref.childHabits?.length, chapter, plannedMinutes: null });
+        completed: false, available: !!habit, native: ref.sourceModule === 'modulo_treino', hasChildren: !!ref.childHabits?.length, chapter, chapterId: parentId, plannedMinutes: null });
     });
     const rank = new Map(order.map((id, index) => [id, index]));
     return steps.sort((a, b) => (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity));
@@ -56,7 +56,7 @@ export function buildQuestTrails(source: QuestSource): QuestTrail[] {
   const projects = source.projects.map(project => finish({
     key: `project:${project.id}`, id: project.id, kind: 'project', title: project.title, description: project.description ?? '', element: project.elementId,
     archived: project.status === 'archived', completed: project.isCompleted || project.status === 'completed', reward: project.reward,
-    chapters: project.missions.map(m => ({ id: m.id, title: m.title })),
+    chapters: project.missions.map(m => ({ id: m.id, title: m.title, ...(typeof m.progress === 'number' ? { progress: m.progress } : {}) })),
     steps: [
       ...stepsFor(project.tasks, project.habits, project.id, project.title),
       ...project.missions.flatMap(mission => stepsFor(mission.tasks, mission.habits, mission.id, mission.title)),

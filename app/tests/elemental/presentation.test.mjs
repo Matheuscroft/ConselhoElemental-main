@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { loadComponent } from './load-component.mjs';
 
@@ -39,11 +40,12 @@ test('showcase keeps metadata, supplied progress and the detail callback without
   assert.equal(opened, 1);
 });
 
-test('expanded rail exposes four real buttons and one expanded panel in server markup', () => {
+test('expanded rail exposes four real buttons and collapsed destination previews in server markup', () => {
   const elements = ['fogo', 'ar', 'agua', 'terra'].map(id => ({ id, name: id, description: `Área ${id}`, scoreLabel: '0 pontos registrados' }));
-  const html = renderToStaticMarkup(React.createElement(ExpandedElements, { elements, onExplore() {} }));
+  const html = renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(ExpandedElements, { elements })));
   assert.equal((html.match(/aria-controls="expanded-/g) || []).length, 4);
-  assert.equal((html.match(/aria-expanded="true"/g) || []).length, 1);
-  assert.equal((html.match(/ hidden=""/g) || []).length, 3);
+  assert.equal((html.match(/aria-expanded="true"/g) || []).length, 0);
+  assert.equal((html.match(/ inert=""/g) || []).length, 4);
+  for (const { id } of elements) assert.ok(html.includes(`href="/santuario/elementos/${id}"`));
   for (const { id } of elements) assert.ok(html.includes(`-${id}"`));
 });

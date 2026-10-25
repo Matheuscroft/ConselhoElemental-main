@@ -1,189 +1,93 @@
-import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Dice6, Sparkles, Zap, Trophy, Flame } from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowUpRight, ChevronDown, RotateCw } from 'lucide-react';
+import { useReducedMotion } from 'framer-motion';
 import { AppLayout } from '@/components/layout';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { useAppStore } from '@/stores/appStore';
+import { ELEMENTS } from '@/constants';
+import type { ElementId } from '@/types';
+import { DestinyWheel } from '@/components/destiny/DestinyWheel';
+import { chooseDestiny, destinyOptions, destinyRotation, filterDestinyOptions, DESTINY_LABELS, type DestinyKind, type DestinyOption } from '@/components/destiny/destiny-options';
+import '@/styles/elemental-design-system.css';
+import '@/components/destiny/destiny.css';
 
+export function CassinoArcano() {
+  const accountId = useAppStore(state => state.currentAccountId);
+  return <AppLayout showAura={false}><DestinyWorkspace key={accountId ?? 'local'} /></AppLayout>;
+}
 
-export const CassinoArcano: React.FC = () => {
-  const { tasks, habits, getCompletedTasksToday, addExperience } = useAppStore();
-  const tasksToday = getCompletedTasksToday();
-  const streak = useAppStore(s => s.user.streak);
-  
-  // Stamina Session State (Derivada para a sessão)
-  const [spentStamina, setSpentStamina] = useState(0);
-  const currentStamina = Math.max(0, Math.min(100, 60 + (tasksToday * 8)) - spentStamina);
-  const spinCost = 20;
-
-  // Colecionar atividades elegíveis
-  const pendingTasks = tasks.filter(t => !t.isCompleted);
-  const pendingHabits = habits.filter(h => !h.childHabits?.length && !h.completions.some(c => new Date(c.completionDate).toDateString() === new Date().toDateString()));
-
-  // Roleta Segments (Mínimo de 8 slots para a roda ter visual legal)
-  const segments = useMemo(() => {
-    const items = [];
-    pendingTasks.slice(0, 3).forEach(t => items.push({ id: t.id, type: 'task', title: t.title, color: '#FF6B35', reward: 50, icon: '📜' }));
-    pendingHabits.slice(0, 3).forEach(h => items.push({ id: h.id, type: 'habit', title: h.name, color: '#48CAE4', reward: 30, icon: '🔄' }));
-    
-    // Fill if not enough pending activities
-    while(items.length < 8) {
-      if (items.length === 7) {
-        items.push({ id: 'jackpot', type: 'jackpot', title: 'JACKPOT EXP', color: '#FFD700', reward: 500, icon: '💎' });
-      } else {
-        items.push({ id: `xp-${items.length}`, type: 'xp', title: '+20 XP', color: '#9D4EDD', reward: 20, icon: '✨' });
-      }
-    }
-    return items;
-  }, [pendingTasks, pendingHabits]);
-
-  // Spin State
-  const [isSpinning, setIsSpinning] = useState(false);
+function DestinyWorkspace() {
+  const { tasks, quests, getHabitsForDate } = useAppStore();
+  const reduced = !!useReducedMotion();
+  const [kind, setKind] = useState<DestinyKind | 'all'>('all');
+  const [element, setElement] = useState<ElementId | 'all'>('all');
+  const [days, setDays] = useState<1 | 7>(1);
+  const [now, setNow] = useState(() => new Date());
   const [rotation, setRotation] = useState(0);
-  const [result, setResult] = useState<any>(null);
+  const [spinning, setSpinning] = useState(false);
+  const [snapshot, setSnapshot] = useState<DestinyOption[]>([]);
+  const [result, setResult] = useState<DestinyOption | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const locked = useRef(false);
+  const resultRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const refresh = () => { if (document.visibilityState !== 'hidden') setNow(new Date()); };
+    const interval = setInterval(refresh, 60_000);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', refresh); if (timer.current) clearTimeout(timer.current); };
+  }, []);
+  useEffect(() => {
+    if (!result) return;
+    const frame = requestAnimationFrame(() => {
+      resultRef.current?.focus({ preventScroll: true });
+      resultRef.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'instant' : 'smooth' });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [result, reduced]);
 
-  const handleSpin = () => {
-    if (currentStamina < spinCost || isSpinning) return;
-    
-    setSpentStamina(prev => prev + spinCost);
-    setIsSpinning(true);
+  const allOptions = destinyOptions(tasks, quests, getHabitsForDate, now, days);
+  const options = filterDestinyOptions(allOptions, kind, element);
+  const currentResult = result ? options.find(item => item.key === result.key && item.href === result.href) : null;
+  const displayedOptions = spinning || result ? snapshot : options;
+  const spin = () => {
+    if (locked.current) return;
+    const fresh = filterDestinyOptions(destinyOptions(tasks, quests, getHabitsForDate, new Date(), days), kind, element);
+    const chosen = chooseDestiny(fresh, Math.random());
+    if (!chosen) { setNow(new Date()); return; }
+    locked.current = true;
+    setSnapshot(fresh);
+    setSpinning(true);
     setResult(null);
-
-    const prizeIndex = Math.floor(Math.random() * segments.length);
-    const sliceAngle = 360 / segments.length;
-    // 5 voltas completas + alinhamento do centro do slice vencedor
-    const targetRotation = rotation + (360 * 5) + (360 - (prizeIndex * sliceAngle)) - (sliceAngle / 2);
-
-    setRotation(targetRotation);
-
-    setTimeout(() => {
-      setIsSpinning(false);
-      const wonItem = segments[prizeIndex];
-      setResult(wonItem);
-      
-      // Concede XP caso tenha caído num slot de bônus
-      if (wonItem.type === 'jackpot' || wonItem.type === 'xp') {
-        addExperience(wonItem.reward);
-      }
-    }, 5000);
+    setRotation(previous => destinyRotation(previous, fresh.findIndex(item => item.key === chosen.key), fresh.length));
+    timer.current = setTimeout(() => {
+      locked.current = false;
+      timer.current = null;
+      setSpinning(false);
+      setNow(new Date());
+      setResult(chosen);
+    }, reduced ? 0 : 2700);
   };
 
-  return (
-    <AppLayout title="Cassino Arcano" hideNav={false}>
-      <div className="space-y-8 max-w-2xl mx-auto flex flex-col items-center text-center">
-        
-        {/* Header Casino */}
-        <div className="w-full glass-card p-6 shadow-glow-arcane relative">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-mystic-gold/10 blur-[40px] rounded-full" />
-          <h2 className="font-mystic text-3xl font-bold text-glow-arcane mb-2">A Roda do Destino</h2>
-          <p className="text-sm text-white/60 mb-6">Aposte Stamina para sortear sua próxima atividade ou ganhar XP massivo.</p>
-          
-          <div className="flex justify-center gap-6">
-            <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-amber-400 flex items-center gap-1 justify-center"><Zap className="w-5 h-5 fill-amber-500" /> {currentStamina}</p>
-              <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Stamina Restante</p>
-            </div>
-            <div className="w-px bg-white/10" />
-            <div className="text-center">
-              <p className="text-2xl font-mono font-bold text-mystic-gold flex items-center gap-1 justify-center"><Flame className="w-5 h-5 text-orange-500" /> {streak}</p>
-              <p className="text-[10px] text-white/50 uppercase tracking-widest mt-1">Streak</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Roulette UI */}
-        <div className="relative w-[300px] h-[300px] md:w-[400px] md:h-[400px]">
-          {/* Ponteiro */}
-          <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
-            <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[24px] border-l-transparent border-r-transparent border-t-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]" />
-          </div>
-
-          <motion.div
-            className="w-full h-full rounded-full border-8 border-black/80 relative overflow-hidden shadow-glow-arcane"
-            animate={{ rotate: rotation }}
-            transition={{ duration: 5, ease: [0.2, 0.8, 0.1, 1] }}
-          >
-            {/* SVG Wheel Generator */}
-            <svg viewBox="0 0 100 100" className="w-full h-full rotate-[-90deg]">
-              {segments.map((seg, i) => {
-                const angle = 360 / segments.length;
-                const offset = i * angle;
-                return (
-                  <g key={seg.id} transform={`rotate(${offset}, 50, 50)`}>
-                    <path
-                      d={`M 50 50 L 100 50 A 50 50 0 0 1 ${50 + 50 * Math.cos((angle * Math.PI) / 180)} ${50 + 50 * Math.sin((angle * Math.PI) / 180)} Z`}
-                      fill={seg.color}
-                      opacity={0.8}
-                      stroke="#050508"
-                      strokeWidth="0.5"
-                    />
-                    <text
-                      x="85"
-                      y="52"
-                      fill="#FFF"
-                      fontSize="5"
-                      fontFamily="Inter"
-                      fontWeight="bold"
-                      transform={`rotate(${angle / 2}, 50, 50)`}
-                      textAnchor="end"
-                      className="drop-shadow-md"
-                    >
-                      {seg.icon}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
-            <div className="absolute inset-0 bg-gradient-radial-magic opacity-40 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-black/90 rounded-full border-4 border-mystic-arcane flex items-center justify-center shadow-lg">
-              <Dice6 className="w-8 h-8 text-mystic-gold animate-pulse" />
-            </div>
-          </motion.div>
-        </div>
-
-        <button
-          onClick={handleSpin}
-          disabled={isSpinning || currentStamina < spinCost}
-          className={`px-10 py-4 rounded-full font-bold text-lg transition-all shadow-glass flex items-center gap-2 ${
-            isSpinning || currentStamina < spinCost 
-            ? 'bg-white/5 text-white/30 cursor-not-allowed border border-white/10' 
-            : 'bg-gradient-to-r from-mystic-arcane to-purple-600 text-white hover:scale-105 border border-mystic-cyan/50 shadow-glow-arcane cursor-pointer'
-          }`}
-        >
-          {isSpinning ? <Sparkles className="w-5 h-5 animate-spin" /> : <Trophy className="w-5 h-5" />}
-          {isSpinning ? 'Sorteando Destino...' : `Girar Roda (Custo: ${spinCost})`}
-        </button>
-
-        {/* Result Reveal */}
-        <AnimatePresence>
-          {result && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
-            >
-              <div className="glass-card max-w-sm w-full p-8 text-center shadow-glow-gold border-mystic-gold/50">
-                <p className="text-xs uppercase tracking-widest text-mystic-gold mb-2 font-mono">Destino Revelado</p>
-                <div className="text-6xl mb-4">{result.icon}</div>
-                <h3 className="font-mystic text-2xl text-white mb-2">{result.title}</h3>
-                
-                <div className="bg-black/40 rounded-xl p-4 my-6">
-                  <p className="text-sm text-white/60 mb-1">Recompensa ao completar:</p>
-                  <p className="text-3xl font-bold text-emerald-400">+{result.reward} XP</p>
-                </div>
-                
-                <button
-                  onClick={() => setResult(null)}
-                  className="w-full py-3 rounded-xl bg-mystic-gold text-black font-bold hover:bg-yellow-400 transition-colors"
-                >
-                  Aceitar Destino
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-      </div>
-    </AppLayout>
-  );
-};
+  return <div className="elemental-system destiny-workspace">
+    <header className="destiny-heading"><span className="destiny-seal"><ArcaneIcon name="cassino" size={30} /></span><div><p>Cassino Arcano</p><h1>Roda do Destino</h1><p>Menos tempo escolhendo. Um próximo passo para você.</p></div></header>
+    <div className="destiny-free"><ArcaneIcon name="invocar" size={18} /><span>Sorteio gratuito. Você decide quando começar.</span></div>
+    <section className="destiny-arena" aria-label="Escolha aleatória de atividade">
+      <DestinyWheel options={displayedOptions} rotation={rotation} spinning={spinning} reduced={reduced} />
+      <p className="destiny-count" role="status">{spinning ? 'Escolhendo entre suas atividades…' : `${options.length} ${options.length === 1 ? 'opção participa' : 'opções participam'} do sorteio`}</p>
+      <button type="button" className="elemental-action destiny-spin" onClick={spin} disabled={spinning || !options.length}><RotateCw size={20} aria-hidden="true" />{spinning ? 'Consultando o destino…' : result ? 'Escolher outra atividade' : 'Escolher minha próxima atividade'}</button>
+      <p className="destiny-note">{displayedOptions.length > 12 ? 'O anel é simbólico. Todas as opções da lista participam com a mesma chance.' : 'Cada opção tem a mesma chance. Nenhuma atividade é iniciada automaticamente.'}</p>
+    </section>
+    {result && <div ref={resultRef} tabIndex={-1} className="destiny-result" style={{ '--destiny-accent': `var(--element-${result.element})` } as CSSProperties}>
+      <div className="destiny-result-cover"><img src={`/sanctuary/elements/${result.element}-v1.webp`} width={100} height={100} alt="" /><div><p>{currentResult ? 'Seu próximo passo' : 'Opção indisponível agora'}</p><h2>{currentResult?.title ?? result.title}</h2><span>{DESTINY_LABELS[result.kind]} · {currentResult?.when ?? result.when}</span></div></div>
+      {currentResult ? <><p className="destiny-result-description">{currentResult.description || 'Abra a atividade para ver seus detalhes e começar no seu ritmo.'}</p><Link className="destiny-open" to={currentResult.href}>Abrir {DESTINY_LABELS[result.kind].toLocaleLowerCase('pt-BR')}<ArrowUpRight size={20} aria-hidden="true" /></Link><small>XP e recompensas seguem as regras normais de conclusão.</small></> : <p className="destiny-result-description">A atividade foi alterada, concluída ou saiu dos filtros. Faça uma nova escolha.</p>}
+    </div>}
+    <section className="destiny-settings" aria-labelledby="destiny-settings-title"><h2 id="destiny-settings-title">O que o destino pode escolher?</h2>
+      <fieldset disabled={spinning} className="destiny-types"><legend>Tipo de atividade</legend>{(['all', 'task', 'habit', 'quest'] as const).map(value => <label key={value}><input type="radio" name="destiny-kind" value={value} checked={kind === value} onChange={() => setKind(value)} /><span><ArcaneIcon name={value === 'task' ? 'ritual' : value === 'habit' ? 'ciclo' : value === 'quest' ? 'jornada' : 'explorar'} size={20} />{value === 'all' ? 'Todas' : value === 'task' ? 'Tarefas' : value === 'habit' ? 'Ciclos' : 'Jornadas'}</span></label>)}</fieldset>
+      <fieldset disabled={spinning} className="destiny-selects"><legend className="sr-only">Filtros do sorteio</legend><label>Elemento<select value={element} onChange={event => setElement(event.target.value as ElementId | 'all')}><option value="all">Todos os elementos</option>{(['terra', 'fogo', 'agua', 'ar'] as const).map(id => <option key={id} value={id}>{ELEMENTS[id].name}</option>)}</select></label><label>Recorrência dos ciclos<select value={days} onChange={event => setDays(Number(event.target.value) as 1 | 7)}><option value={1}>Hoje</option><option value={7}>Próximos 7 dias</option></select></label></fieldset>
+      <p className="destiny-note">Tarefas pendentes e jornadas em andamento. Ciclos seguem sua recorrência e entram uma vez, na primeira data disponível do período.</p>
+    </section>
+    {!options.length && <div className="destiny-empty"><ArcaneIcon name="ritual" size={32} /><h2>Nenhuma atividade nestes filtros</h2><p>Experimente outro tipo, elemento ou período. Você também pode criar uma nova atividade.</p><Link to="/invocar">Criar atividade<ArrowUpRight size={18} aria-hidden="true" /></Link></div>}
+    {!!displayedOptions.length && <details className="destiny-options"><summary><span>{result ? 'Opções da última escolha' : 'Ver opções do sorteio'}<small>{displayedOptions.length} participantes</small></span><ChevronDown size={19} aria-hidden="true" /></summary><ol>{displayedOptions.map((item, index) => <li key={item.key}><span className="destiny-option-number">{index + 1}</span><ElementIcon element={item.element} size={19} /><div><strong>{item.title}</strong><small>{DESTINY_LABELS[item.kind]} · {item.when}{item.minutes && item.minutes > 0 ? ` · ${item.minutes} min previstos` : ''}</small></div></li>)}</ol></details>}
+  </div>;
+}

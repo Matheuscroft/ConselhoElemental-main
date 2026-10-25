@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve, dirname } from 'node:path';
 import ts from 'typescript';
@@ -17,7 +17,7 @@ export function loadComponent(file) {
   const localRequire = (id) => {
     if (!id.startsWith('.') && !id.startsWith('@/')) return require(id);
     const target = id.startsWith('@/') ? resolve(root, 'src', id.slice(2)) : resolve(dirname(absolute), id);
-    const path = [target, `${target}.tsx`, `${target}.ts`].find((candidate) => existsSync(candidate));
+    const path = [target, `${target}.tsx`, `${target}.ts`, resolve(target, 'index.ts'), resolve(target, 'index.tsx')].find((candidate) => existsSync(candidate) && statSync(candidate).isFile());
     if (!path) throw new Error(`Missing presentation import ${id}`);
     return loadComponent(path);
   };
