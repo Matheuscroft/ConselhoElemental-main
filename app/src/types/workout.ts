@@ -13,10 +13,13 @@ export type MuscleGroupId =
   | 'triceps'
   | 'forearms'
   | 'core'
+  | 'obliques'
   | 'glutes'
   | 'quadriceps'
   | 'hamstrings'
   | 'calves'
+  | 'tibialis'
+  | 'serratus'
   | 'adductors'
   | 'lower_back';
 
@@ -25,7 +28,7 @@ export interface MuscleContribution {
   percentage: number;
 }
 
-export type WorkoutExerciseSource = 'native' | 'calistenia' | 'yoga' | 'custom';
+export type WorkoutExerciseSource = 'native' | 'calistenia' | 'musculacao' | 'yoga' | 'custom';
 
 export type WorkoutExerciseCategory =
   | 'running'
@@ -44,6 +47,56 @@ export type WorkoutExerciseCategory =
 export type ExerciseMeasureMode = 'reps' | 'duration';
 export type WorkoutExerciseLevel = 'beginner' | 'intermediate' | 'advanced' | 'custom';
 export type ExerciseLoadMode = 'weighted' | 'bodyweight' | 'none';
+
+export type YogaPoseCategory = 'standing' | 'seated' | 'supine' | 'prone' | 'kneeling' | 'balance' | 'inversion' | 'restorative' | 'flow';
+export type YogaEnergyFocus = 'RESTORATIVE' | 'STRENGTH' | 'FLEXIBILITY' | 'MOBILITY';
+
+/** Anotação anatômica informativa; estimativas não são validadas nem usadas na pontuação. */
+export interface YogaMuscleActivationEstimate {
+  muscleGroup: string;
+  percentage: number;
+}
+
+export interface YogaSourceReference {
+  label: string;
+  url?: string;
+}
+
+export type ExerciseSourceReference = YogaSourceReference;
+
+/** Metadados ricos e específicos de Yoga, preservados ao importar o catálogo no WorkoutStore. */
+export interface YogaExerciseProfile {
+  poseCategory?: YogaPoseCategory;
+  pillars?: string[];
+  muscleActivation?: YogaMuscleActivationEstimate[];
+  jointsInvolved?: string[];
+  energyFocus?: YogaEnergyFocus;
+  translation?: string;
+  commonMisalignments?: string[];
+  props?: string[];
+  safetyNotes?: string[];
+  sourceReferences?: ExerciseSourceReference[];
+  dataConfidence?: 'curated' | 'provisional';
+  muscleActivationNote?: string;
+}
+
+export type StrengthEquipmentId = 'barbell' | 'ez_bar' | 'dumbbell' | 'kettlebell' | 'cable' | 'selectorized_machine' | 'plate_loaded_machine' | 'smith_machine' | 'bench' | 'preacher_bench' | 'rack' | 'resistance_band' | 'weight_plate' | 'wrist_roller';
+export type StrengthMovementPattern = 'horizontal_push' | 'vertical_push' | 'horizontal_pull' | 'vertical_pull' | 'elbow_flexion' | 'elbow_extension' | 'squat' | 'hinge' | 'hip_extension' | 'hip_abduction' | 'hip_adduction' | 'knee_extension' | 'knee_flexion' | 'calf_raise' | 'trunk_flexion' | 'anti_rotation' | 'carry' | 'shrug' | 'wrist_flexion' | 'wrist_extension' | 'isometric_hold';
+export interface StrengthExerciseProfile {
+  equipmentIds: StrengthEquipmentId[];
+  movementPattern: StrengthMovementPattern;
+  contraction: 'dynamic' | 'isometric';
+  exerciseType: 'compound' | 'isolation';
+  laterality: 'bilateral' | 'unilateral' | 'alternating';
+  grip?: 'supinated' | 'pronated' | 'neutral' | 'mixed' | 'varied';
+  setupNotes: string[];
+  executionCues: string[];
+  commonMistakes: string[];
+  safetyNotes: string[];
+  variations: string[];
+  sourceReferences?: ExerciseSourceReference[];
+  dataConfidence: 'curated' | 'provisional';
+}
 
 /** Formato antigo do catálogo, mantido para Store/UI ainda não migradas. */
 export interface LegacyWorkoutExercise {
@@ -75,6 +128,8 @@ export interface LegacyWorkoutExercise {
   /** Search/display tags, independent of contribution percentages. */
   primaryMuscles?: MuscleGroupId[];
   secondaryMuscles?: MuscleGroupId[];
+  yogaProfile?: YogaExerciseProfile;
+  strengthProfile?: StrengthExerciseProfile;
   legacyId?: string;
 }
 

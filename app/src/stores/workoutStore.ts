@@ -14,6 +14,7 @@ import { CALISTENIA_EXERCISES } from '@/constants/calistenia-exercises';
 import { correctPreviousMuscleTags } from '@/constants/calistenia-muscles';
 import { SPORT_ACTIVITIES } from '@/constants/sport-activities';
 import { YOGA_POSES } from '@/constants/yoga-poses';
+import { STRENGTH_TRAINING_EXERCISES } from '@/constants/strength-training-exercises';
 import type {
   BodyMeasurement,
   BodyMeasurementInput,
@@ -392,6 +393,23 @@ const buildLegacyCatalog = (): WorkoutExercise[] => {
       muscleFallback: yogaFallbackDistribution(pose.family, pose.focus),
     }),
     nameAlternate: pose.nameSanskrit,
+    description: pose.description ?? pose.focus,
+    yogaProfile: {
+      poseCategory: pose.category,
+      pillars: pose.pillars ? [...pose.pillars] : undefined,
+      muscleActivation: pose.muscleActivation
+        ? Object.entries(pose.muscleActivation).map(([muscleGroup, percentage]) => ({ muscleGroup, percentage }))
+        : undefined,
+      jointsInvolved: pose.jointsInvolved ? [...pose.jointsInvolved] : undefined,
+      energyFocus: pose.energyFocus,
+      translation: pose.translation,
+      commonMisalignments: pose.commonMisalignments ? [...pose.commonMisalignments] : undefined,
+      props: pose.props ? [...pose.props] : undefined,
+      safetyNotes: pose.safetyNotes ? [...pose.safetyNotes] : undefined,
+      sourceReferences: pose.sources ? pose.sources.map((source) => ({ ...source })) : undefined,
+      dataConfidence: pose.dataConfidence,
+      muscleActivationNote: 'Estimativa descritiva não validada; não representa medição e não altera XP, ER ou distribuição de pontuação.',
+    },
   }));
 
   const calisteniaCatalog = CALISTENIA_EXERCISES.map((exercise) =>
@@ -404,7 +422,7 @@ const buildLegacyCatalog = (): WorkoutExercise[] => {
     })
   );
 
-  return [...yogaCatalog, ...calisteniaCatalog];
+  return [...yogaCatalog, ...calisteniaCatalog, ...STRENGTH_TRAINING_EXERCISES];
 };
 
 const DEFAULT_WORKOUT_CATALOG = buildLegacyCatalog();
@@ -417,14 +435,60 @@ const cloneExercise = (exercise: WorkoutExercise): WorkoutExercise => ({
   contraindications: [...exercise.contraindications],
   variations: [...exercise.variations],
   muscleDistribution: cloneContributions(exercise.muscleDistribution),
+  yogaProfile: exercise.yogaProfile ? {
+    ...exercise.yogaProfile,
+    pillars: exercise.yogaProfile.pillars ? [...exercise.yogaProfile.pillars] : undefined,
+    muscleActivation: exercise.yogaProfile.muscleActivation?.map((item) => ({ ...item })),
+    jointsInvolved: exercise.yogaProfile.jointsInvolved ? [...exercise.yogaProfile.jointsInvolved] : undefined,
+    commonMisalignments: exercise.yogaProfile.commonMisalignments ? [...exercise.yogaProfile.commonMisalignments] : undefined,
+    props: exercise.yogaProfile.props ? [...exercise.yogaProfile.props] : undefined,
+    safetyNotes: exercise.yogaProfile.safetyNotes ? [...exercise.yogaProfile.safetyNotes] : undefined,
+    sourceReferences: exercise.yogaProfile.sourceReferences?.map((source) => ({ ...source })),
+  } : undefined,
+  strengthProfile: exercise.strengthProfile ? {
+    ...exercise.strengthProfile,
+    equipmentIds: [...exercise.strengthProfile.equipmentIds],
+    setupNotes: [...exercise.strengthProfile.setupNotes],
+    executionCues: [...exercise.strengthProfile.executionCues],
+    commonMistakes: [...exercise.strengthProfile.commonMistakes],
+    safetyNotes: [...exercise.strengthProfile.safetyNotes],
+    variations: [...exercise.strengthProfile.variations],
+    sourceReferences: exercise.strengthProfile.sourceReferences?.map((source) => ({ ...source })),
+  } : undefined,
 });
 
 const extendDefaultCatalog = (existing: WorkoutExercise[]): WorkoutExercise[] => [
   ...existing.map((saved) => {
     const exercise = correctPreviousMuscleTags(saved);
     const reference = DEFAULT_WORKOUT_CATALOG.find((item) => item.id === exercise.id);
-    return { ...exercise, primaryMuscles: exercise.primaryMuscles ?? reference?.primaryMuscles,
-      secondaryMuscles: exercise.secondaryMuscles ?? reference?.secondaryMuscles };
+    const baseYoga = reference?.yogaProfile;
+    const savedYoga = exercise.yogaProfile;
+    const baseStrength = reference?.strengthProfile;
+    const savedStrength = exercise.strengthProfile;
+    return {
+      ...exercise,
+      primaryMuscles: exercise.primaryMuscles ?? reference?.primaryMuscles,
+      secondaryMuscles: exercise.secondaryMuscles ?? reference?.secondaryMuscles,
+      yogaProfile: baseYoga ? {
+        ...baseYoga,
+        ...savedYoga,
+        pillars: savedYoga?.pillars ?? baseYoga.pillars,
+        muscleActivation: savedYoga?.muscleActivation ?? baseYoga.muscleActivation,
+        jointsInvolved: savedYoga?.jointsInvolved ?? baseYoga.jointsInvolved,
+        sourceReferences: savedYoga?.sourceReferences ?? baseYoga.sourceReferences,
+      } : savedYoga,
+      strengthProfile: baseStrength ? {
+        ...baseStrength,
+        ...savedStrength,
+        equipmentIds: savedStrength?.equipmentIds ?? baseStrength.equipmentIds,
+        setupNotes: savedStrength?.setupNotes ?? baseStrength.setupNotes,
+        executionCues: savedStrength?.executionCues ?? baseStrength.executionCues,
+        commonMistakes: savedStrength?.commonMistakes ?? baseStrength.commonMistakes,
+        safetyNotes: savedStrength?.safetyNotes ?? baseStrength.safetyNotes,
+        variations: savedStrength?.variations ?? baseStrength.variations,
+        sourceReferences: savedStrength?.sourceReferences ?? baseStrength.sourceReferences,
+      } : savedStrength,
+    };
   }), ...DEFAULT_WORKOUT_CATALOG.filter((exercise) => !existing.some((item) => item.id === exercise.id)).map(cloneExercise),
 ];
 

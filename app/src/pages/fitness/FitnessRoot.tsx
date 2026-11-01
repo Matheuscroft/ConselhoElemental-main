@@ -21,12 +21,11 @@ import { HealthDashboard } from './HealthDashboard';
 import { HealthInsights } from './HealthInsights';
 import { HealthWeeklySummary } from './HealthWeeklySummary';
 import { Corpo } from '@/pages/Corpo';
-import type { Exercise, Workout, WorkoutExerciseCategory, WorkoutTemplate } from '@/types/workout';
+import type { Exercise, WorkoutExerciseCategory, WorkoutTemplate } from '@/types/workout';
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
 import type { CategoryOption } from '@/components/fitness-kit';
 import { RunningReferenceIcon, CoreReferenceIcon, SwimmingReferenceIcon, MartialArtsReferenceIcon, YogaReferenceIcon, CyclingReferenceIcon } from '@/components/fitness-kit/WorkoutReferenceIcons';
 
-const EMPTY_WORKOUTS: Workout[] = [];
 const modalities = [
   { id: 'running', label: 'Corrida', icon: RunningReferenceIcon },
   { id: 'calisthenics', label: 'Calistenia', icon: CoreReferenceIcon },
@@ -36,17 +35,6 @@ const modalities = [
   { id: 'cycling', label: 'Ciclismo', icon: CyclingReferenceIcon },
   { id: 'strength', label: 'Musculação', icon: Dumbbell },
 ] satisfies (CategoryOption & { id: WorkoutExerciseCategory })[];
-
-function LegacyTemplateCard({ workout, catalog }: { workout: Workout; catalog: Exercise[] }) {
-  const navigate = useNavigate();
-  const [editing, setEditing] = useState(false);
-  return <FitnessCard className="space-y-4 p-5">
-    <h3 className="break-words text-lg font-semibold">{workout.name}</h3>
-    <p className="text-sm text-fitness-muted">{workout.exercises.length} exercícios · {workout.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0)} séries</p>
-    <div className="grid grid-cols-2 gap-2"><FitnessButton size="md" onClick={() => navigate(`/treinos/preview/${workout.id}`)}>Ver treino</FitnessButton><FitnessButton variant="secondary" size="md" onClick={() => setEditing(true)}><Pencil size={16} />Editar</FitnessButton></div>
-    {editing && <NativeTemplateDialog legacyWorkout={workout} catalog={catalog} modality={workout.category} onClose={() => setEditing(false)} />}
-  </FitnessCard>;
-}
 
 function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalog: Exercise[] }) {
   const [params, setParams] = useSearchParams();
@@ -124,14 +112,11 @@ function FitnessLibraryRoot() {
   const catalog = useWorkoutStore((state) => state.nativeCatalog);
   const templates = useWorkoutStore((state) => state.templates);
   const active = useWorkoutStore((state) => state.activeNativeSession);
-  const accountData = useWorkoutStore((state) => state.accountDataById);
-  const accountId = useWorkoutStore((state) => state.currentAccountId);
-  const legacyWorkouts = accountData[accountId ?? 'local']?.workouts ?? EMPTY_WORKOUTS;
   const availableModalities = useMemo(() => {
     const known = new Set<string>(modalities.map((item) => item.id));
-    const additional = new Set<WorkoutExerciseCategory>([...catalog.map((exercise) => exercise.modality), ...legacyWorkouts.map((workout) => workout.category)]);
+    const additional = new Set<WorkoutExerciseCategory>([...catalog.map((exercise) => exercise.modality), ...templates.map((template) => template.modality)]);
     return [...modalities, ...Array.from(additional).filter((id) => !known.has(id)).map((id) => ({ id, label: CATEGORY_LABELS[id], icon: CATEGORY_ICONS[id] }))];
-  }, [catalog, legacyWorkouts]);
+  }, [catalog, templates]);
   const modality = availableModalities.find((item) => item.id === requested);
   const legacyActive = useWorkoutStore.getState().getActiveSession();
   const createButtonRef = useRef<HTMLButtonElement>(null);
@@ -190,8 +175,7 @@ function FitnessLibraryRoot() {
           {modality && <>
             <section className="space-y-4"><SectionHeader title="Meus treinos" />
               {selectedTemplates.map((template) => <TemplateCard key={template.id} template={template} catalog={selectedCatalog} />)}
-              {legacyWorkouts.filter((workout) => workout.category === modality.id && workout.status !== 'cancelled').map((workout) => <LegacyTemplateCard key={workout.id} workout={workout} catalog={selectedCatalog} />)}
-              {!selectedTemplates.length && !legacyWorkouts.some((workout) => workout.category === modality.id && workout.status !== 'cancelled') && <p className="text-sm text-fitness-muted">Monte seu primeiro treino com os exercícios desta modalidade.</p>}
+              {!selectedTemplates.length && <p className="text-sm text-fitness-muted">Monte seu primeiro treino com os exercícios desta modalidade.</p>}
             </section>
             <section className="space-y-4"><SectionHeader title="Catálogo" subtitle={`Exercícios de ${modality.label}`} /><MuscleExerciseCatalog key={modality.id} icon={CATEGORY_ICONS[modality.id]} exercises={selectedCatalog} onSelect={setDetail} /></section>
           </>}

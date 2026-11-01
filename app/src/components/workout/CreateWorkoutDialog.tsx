@@ -49,6 +49,7 @@ const SOURCE_FILTERS: Array<{ value: 'all' | WorkoutExerciseSource; label: strin
   { value: 'all', label: 'Todos' },
   { value: 'yoga', label: 'Yoga' },
   { value: 'calistenia', label: 'Calistenia' },
+  { value: 'musculacao', label: 'Musculação' },
 ];
 
 interface NumberFieldProps {

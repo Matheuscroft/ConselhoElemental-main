@@ -10,10 +10,13 @@ const muscleRegions: Record<MuscleGroupId, { id: string; label: string; emoji: s
   triceps: { id: 'arms', label: 'Braços', emoji: '💪' },
   forearms: { id: 'arms', label: 'Braços', emoji: '💪' },
   core: { id: 'core', label: 'Abdômen', emoji: '🧍' },
+  obliques: { id: 'core', label: 'Abdômen', emoji: '🧍' },
   glutes: { id: 'legs', label: 'Pernas', emoji: '🦵' },
   quadriceps: { id: 'legs', label: 'Pernas', emoji: '🦵' },
   hamstrings: { id: 'legs', label: 'Pernas', emoji: '🦵' },
   calves: { id: 'legs', label: 'Pernas', emoji: '🦵' },
+  tibialis: { id: 'legs', label: 'Pernas', emoji: '🦵' },
+  serratus: { id: 'shoulders', label: 'Ombros', emoji: '🏋️' },
   adductors: { id: 'legs', label: 'Pernas', emoji: '🦵' },
 };
 

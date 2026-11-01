@@ -1,10 +1,9 @@
-import { useNavigate } from 'react-router-dom';
 import { useId, useMemo, useState } from 'react';
 import { ArrowUp, ChevronDown, Grid2X2, Plus, Trash2, X } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { FitnessButton, FitnessCard, VideoExercisePlayer } from '@/components/fitness-kit';
 import { useWorkoutStore } from '@/stores/workoutStore';
-import type { Exercise, PlannedExercise, UUIDv4, WorkoutExerciseCategory, WorkoutSet, WorkoutTemplate, Workout, MuscleGroupId } from '@/types/workout';
+import type { Exercise, PlannedExercise, UUIDv4, WorkoutExerciseCategory, WorkoutSet, WorkoutTemplate, Workout } from '@/types/workout';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { formatEarthXp, projectTemplateReward } from '@/lib/workout/native-reward-preview';
 import { FitnessDurationField } from './FitnessDurationField';
@@ -12,7 +11,7 @@ import { FitnessIntegerField } from './FitnessIntegerField';
 import { MUSCLE_REGIONS } from '@/constants/muscle-regions';
 import { getExerciseFocus } from '@/lib/workout/workout-focus';
 import './create-workout.css';
-import { CATEGORY_LABELS, MUSCLE_LABELS } from '@/lib/workout';
+import { CATEGORY_LABELS } from '@/lib/workout';
 import { CustomExerciseFields } from './CustomExerciseFields';
 import { resolveExerciseMedia, validExerciseMediaUrl } from '@/lib/workout/exercise-media';
 
@@ -37,9 +36,6 @@ function plannedExercise(exercise: Exercise, order: number): PlannedExercise {
 export function NativeTemplateDialog({ catalog, modality, presetId, template, legacyWorkout, onClose }: {
   catalog: Exercise[]; modality: WorkoutExerciseCategory; presetId?: string; template?: WorkoutTemplate; legacyWorkout?: Workout; onClose: () => void;
 }) {
-  const navigate = useNavigate();
-  const startSession = useWorkoutStore((state) => state.startSession);
-  const activeSession = useWorkoutStore((state) => state.activeNativeSession);
   const timedActivity = ['running', 'swimming', 'cycling', 'martial_arts'].includes(modality);
   const formId = useId();
   const saveTemplate = useWorkoutStore((state) => state.saveTemplate);
@@ -52,8 +48,8 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
   const [muscleFilter, setMuscleFilter] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [customOpen, setCustomOpen] = useState(false);
-  const [collapsedExercises, setCollapsedExercises] = useState<Set<string>>(() => new Set());
-  const [collapsedSeries, setCollapsedSeries] = useState<Set<string>>(() => new Set());
+  const [collapsedExercises, setCollapsedExercises] = useState<Set<string>>(() => new Set((template?.exercises ?? legacyWorkout?.exercises ?? []).map((exercise) => exercise.id)));
+  const [collapsedSeries, setCollapsedSeries] = useState<Set<string>>(() => new Set((template?.exercises ?? legacyWorkout?.exercises ?? []).flatMap((exercise) => exercise.sets.map((series) => series.id))));
   const [plans, setPlans] = useState<PlannedExercise[]>(() => {
     if (template) return structuredClone(template.exercises).sort((a, b) => a.order - b.order);
     if (legacyWorkout) return legacyWorkout.exercises.map((plan) => {
@@ -81,6 +77,12 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
     durationEstimateMode: manualMinutes === null ? 'auto' : 'manual', effortLevel });
   const updateSeries = (exerciseId: string, setId: string, update: (series: WorkoutSet) => WorkoutSet) =>
     setPlans((current) => current.map((plan) => plan.id !== exerciseId ? plan : { ...plan, sets: plan.sets.map((series) => series.id === setId ? update(series) : series) }));
+  const addExercise = (exercise: Exercise) => {
+    const plan = plannedExercise(exercise, plans.length);
+    setPlans((current) => [...current, { ...plan, order: current.length }]);
+    setCollapsedExercises((current) => new Set(current).add(plan.id));
+    setCollapsedSeries((current) => new Set([...current, ...plan.sets.map((series) => series.id)]));
+  };
 
   return <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
     <DialogContent
@@ -90,7 +92,6 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
       <form id={formId} className="workout-builder-body space-y-5" onSubmit={(event) => {
         event.preventDefault();
         if (!plans.length) { setError('Adicione pelo menos um exercício.'); return; }
-        if (plans.some((plan) => plan.muscleDistributionOverride?.length && Math.abs(plan.muscleDistributionOverride.reduce((sum, entry) => sum + entry.percentage, 0) - 100) > 0.01)) { setError('O perfil muscular informado precisa somar 100%.'); return; }
         if (plans.some((plan) => !validExerciseMediaUrl(plan.imageUrl) || !validExerciseMediaUrl(plan.videoUrl))) { setError('Use uma URL http/https ou um caminho de arquivo do app para a mídia.'); return; }
         if (legacyWorkout) {
           if (plans.some((plan) => !catalog.find((exercise) => exercise.id === plan.exerciseId)?.legacyId)) { setError('O catálogo deste treino está incompleto. Nenhum dado foi alterado.'); return; }
@@ -106,13 +107,7 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
           durationEstimateMode: manualMinutes === null ? 'auto' : 'manual', estimatedDurationMinutes: Number(estimatedMinutes),
           exercises: plans.map((plan, order) => ({ ...plan, order })) });
         if (!saved) { setError('Confira o nome e use valores inteiros positivos nas repetições e nos segundos.'); return; }
-        const startNow = (event.nativeEvent as SubmitEvent).submitter?.getAttribute('data-start') === 'true';
-        if (startNow) {
-          const session = startSession(saved.id);
-          if (!session) { setError('Treino salvo. Conclua a sessão em andamento antes de iniciar outro.'); return; }
-          onClose();
-          navigate(`/fitness/ativo/${session.id}`);
-        } else onClose();
+        onClose();
       }}>
         <label className="block space-y-2 text-sm">Nome do treino<input required value={name} onChange={(event) => setName(event.target.value)} className={field} placeholder="Ex.: Força e equilíbrio" maxLength={100} /></label>
         <p className="text-sm text-fitness-muted">Modalidade: <span className="font-medium text-fitness-text">{CATEGORY_LABELS[modality]}</span></p>
@@ -130,7 +125,6 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
               <label className="block text-xs text-fitness-muted">URL direta do vídeo (opcional)<input className={field} defaultValue={plan.videoUrl ?? ''} placeholder="https://.../video.mp4" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, videoUrl: event.target.value.trim() || undefined } : item))} /></label>
               <label className="block text-xs text-fitness-muted">Observações<textarea className="w-full rounded-xl border border-white/10 bg-fitness-canvas p-3 text-base" value={plan.notes ?? ''} onChange={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, notes: event.target.value } : item))} /></label>
             </div></details>
-            <details className="rounded-xl border border-white/10 p-3"><summary className="min-h-11 cursor-pointer text-sm text-fitness-primary">Perfil muscular informado (opcional)</summary><p className="mb-3 text-xs text-fitness-muted">Informe a distribuição desejada em %. Deixe vazio para usar o catálogo, quando disponível.</p><div className="grid grid-cols-2 gap-3">{Object.entries(MUSCLE_LABELS).map(([muscleId, label]) => <label key={muscleId} className="text-xs text-fitness-muted">{label}<input className={field} type="number" min="0" max="100" step="any" aria-label={`Contribuição de ${label} em ${plan.exerciseNameSnapshot}`} value={plan.muscleDistributionOverride?.find((entry) => entry.muscleId === muscleId)?.percentage ?? ''} onChange={(event) => setPlans((current) => current.map((item) => { if (item.id !== plan.id) return item; const entries = (item.muscleDistributionOverride ?? []).filter((entry) => entry.muscleId !== muscleId); if (Number(event.target.value) > 0) entries.push({ muscleId: muscleId as MuscleGroupId, percentage: Number(event.target.value) }); return { ...item, muscleDistributionOverride: entries.length ? entries : undefined }; }))} /></label>)}</div></details>
             <div id={`exercise-series-${plan.id}`} hidden={collapsedExercises.has(plan.id)} className="space-y-4" onInvalidCapture={(event) => { if (!collapsedExercises.has(plan.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedExercises((current) => { const next = new Set(current); next.delete(plan.id); return next; }); requestAnimationFrame(() => input.focus()); }}>
             {plan.sets.map((series) => <div key={series.id} className="space-y-2 rounded-xl bg-fitness-canvas/50 p-3">
               <div className="flex items-center gap-2"><button type="button" aria-expanded={!collapsedSeries.has(series.id)} aria-controls={`series-fields-${series.id}`} className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary" onClick={() => setCollapsedSeries((current) => { const next = new Set(current); if (next.has(series.id)) next.delete(series.id); else next.add(series.id); return next; })}><ChevronDown size={15} className={`shrink-0 text-fitness-muted transition-transform ${collapsedSeries.has(series.id) ? '-rotate-90' : ''}`} /><span className="min-w-0 space-y-1"><span className="block text-sm font-medium">Série {series.setNumber}</span>{collapsedSeries.has(series.id) && <span className="flex flex-wrap items-center gap-1.5 text-xs"><span className="rounded-md bg-fitness-primary/10 px-2 py-0.5 text-fitness-primary">{series.measureMode === 'reps' ? `${series.targetReps ?? '—'} reps` : `${series.targetDurationSeconds ?? '—'}s`}</span>{(series.targetLoadKg ?? 0) > 0 && <span className="text-fitness-muted">{series.targetLoadKg?.toLocaleString('pt-BR')} kg ·</span>}<span className="text-fitness-muted">{series.restSeconds ?? 0}s pausa</span>{series.loadFactor === 1.5 && <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-emerald-300">PR</span>}{series.loadFactor === 0.8 && <span className="text-fitness-muted">Leve</span>}</span>}</span></button><button type="button" disabled={plan.sets.length === 1} aria-label={`Remover série ${series.setNumber} de ${plan.exerciseNameSnapshot}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-fitness-muted disabled:opacity-30" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: item.sets.filter((set) => set.id !== series.id).map((set, i) => ({ ...set, setNumber: i + 1 })) }))}><Trash2 size={15} /></button></div>
@@ -153,12 +147,12 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
         {legacyWorkout && <div className="rounded-2xl bg-fitness-primary/10 p-4 text-sm text-fitness-text-soft">{plans.length} exercícios · {plans.reduce((sum, plan) => sum + plan.sets.length, 0)} séries · {estimatedMinutes} min planejados. A recompensa será apresentada ao concluir a sessão.</div>}
 </div></details>
         <section className="space-y-3"><h3 className="font-sans text-lg font-semibold">Adicionar do catálogo</h3>{catalog.some((exercise) => exercise.primaryMuscles?.length) && <div role="group" aria-label="Filtrar exercícios por região muscular" className="flex flex-wrap gap-1.5"><button type="button" title="Todos os exercícios" aria-label="Todos os exercícios" aria-pressed={!muscleFilter} onClick={() => setMuscleFilter(null)} className={`grid h-10 w-10 place-items-center rounded-xl border outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${!muscleFilter ? 'border-fitness-primary bg-fitness-primary/15 text-fitness-primary' : 'border-white/10 text-fitness-muted'}`}><Grid2X2 size={16} /></button>{MUSCLE_REGIONS.map((region) => <button key={region.id} type="button" title={region.label} aria-label={`Filtrar por ${region.label}`} aria-pressed={muscleFilter === region.id} onClick={() => setMuscleFilter((current) => current === region.id ? null : region.id)} className={`grid h-10 w-10 place-items-center rounded-xl border text-lg outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${muscleFilter === region.id ? 'border-fitness-primary bg-fitness-primary/15' : 'border-white/10 bg-fitness-surface'}`}><span aria-hidden="true">{region.emoji}</span></button>)}</div>}<label className="block"><span className="sr-only">Buscar exercícios</span><input className={field} placeholder="Buscar exercício" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-          <div className="max-h-52 space-y-2 overflow-y-auto">{matches.map((exercise) => { const focus = getExerciseFocus(exercise.id, catalog); return <button type="button" key={exercise.id} disabled={plans.some((plan) => plan.exerciseId === exercise.id)} className="flex min-h-12 w-full items-center justify-between rounded-xl bg-fitness-surface px-4 text-left text-sm disabled:opacity-40" onClick={() => setPlans((current) => [...current, plannedExercise(exercise, current.length)])}><span className="min-w-0 flex-1 break-words">{focus && <span role="img" aria-label={`Foco: ${focus.label}`} className="mr-2">{focus.emoji}</span>}{exercise.name}</span><Plus size={16} className="ml-2 shrink-0" /></button>; })}{matches.length === 0 && <p className="py-3 text-sm text-fitness-muted">Nenhum exercício encontrado nesta modalidade.</p>}</div>
+          <div className="max-h-52 space-y-2 overflow-y-auto">{matches.map((exercise) => { const focus = getExerciseFocus(exercise.id, catalog); return <button type="button" key={exercise.id} disabled={plans.some((plan) => plan.exerciseId === exercise.id)} className="flex min-h-12 w-full items-center justify-between rounded-xl bg-fitness-surface px-4 text-left text-sm disabled:opacity-40" onClick={() => addExercise(exercise)}><span className="min-w-0 flex-1 break-words">{focus && <span role="img" aria-label={`Foco: ${focus.label}`} className="mr-2">{focus.emoji}</span>}{exercise.name}</span><Plus size={16} className="ml-2 shrink-0" /></button>; })}{matches.length === 0 && <p className="py-3 text-sm text-fitness-muted">Nenhum exercício encontrado nesta modalidade.</p>}</div>
         </section>
-        {customOpen ? <CustomExerciseFields modality={modality} proposedName={search} onCancel={() => setCustomOpen(false)} onAdded={(exercise) => { setPlans((current) => [...current, plannedExercise(exercise, current.length)]); setSearch(''); setCustomOpen(false); }} /> : <FitnessButton variant="secondary" size="md" className="w-full" onClick={() => setCustomOpen(true)}><Plus size={16} />Criar exercício</FitnessButton>}
+        {customOpen ? <CustomExerciseFields modality={modality} proposedName={search} onCancel={() => setCustomOpen(false)} onAdded={(exercise) => { addExercise(exercise); setSearch(''); setCustomOpen(false); }} /> : <FitnessButton variant="secondary" size="md" className="w-full" onClick={() => setCustomOpen(true)}><Plus size={16} />Criar exercício</FitnessButton>}
         {error && <p role="alert" className="text-sm text-fitness-coral">{error}</p>}
       </form>
-      <footer className="workout-builder-footer"><p>{plans.length} exercícios · {estimatedMinutes} min planejados</p><div><button type="button" className="workout-builder-cancel" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className={legacyWorkout ? "workout-builder-submit" : "workout-builder-cancel flex-1 bg-fitness-surface"} disabled={!plans.length || !name.trim()}>Salvar treino</button></div>{!legacyWorkout && <button type="submit" form={formId} data-start="true" className="workout-builder-submit mt-2 w-full" disabled={!plans.length || !name.trim() || !!activeSession}>Salvar e iniciar agora</button>}{activeSession && !legacyWorkout && <p className="mt-2">Há uma sessão em andamento. Você pode salvar este plano e iniciar depois.</p>}</footer>
+      <footer className="workout-builder-footer"><p>{plans.length} exercícios · {estimatedMinutes} min planejados</p><div><button type="button" className="workout-builder-cancel" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className={legacyWorkout ? "workout-builder-submit" : "workout-builder-cancel flex-1 bg-fitness-surface"} disabled={!plans.length || !name.trim()}>Salvar treino</button></div></footer>
     </DialogContent>
   </Dialog>;
 }

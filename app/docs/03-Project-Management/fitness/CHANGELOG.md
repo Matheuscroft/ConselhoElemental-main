@@ -1,3 +1,10 @@
+## 0.1.69 — 31/10/2026 · catálogos e biblioteca de Treinos
+
+- Expandido o catálogo de Calistenia com variantes de empurrar, puxar, pernas, core e abdômen; filtros anatômicos incluem oblíquos.
+- Ampliados os catálogos de Yoga, Musculação, Corrida, Natação, Ciclismo e Artes marciais, com perfis descritivos e filtros adequados.
+- A lista oficial de treinos exibe somente `WorkoutTemplate`; editor inicia exercícios/séries recolhidos, inclusive os recém-adicionados, remove o subcard de perfil muscular manual e salva sem iniciar a sessão.
+- Fórmulas, XP, Prana e persistência Core inalterados. TypeScript, ESLint direcionado e `git diff --check` passaram nos arquivos alterados; sem QA visual/funcional nesta publicação.
+
 ## 0.1.68 — 25/10/2026 · constância programada e repasse R15–R26
 
 - Aprovação explícita de Fábio: descanso não quebra constância; ciclos diários/semanais/mensais contam uma conclusão por data elegível na agenda atual.
