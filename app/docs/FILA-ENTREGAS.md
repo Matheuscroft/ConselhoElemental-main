@@ -1,3 +1,75 @@
+## R44 — escolher tipo de subitem na edição (01/11/2026)
+
+Removidas do menu rápido as ações para converter subitem em Pontuável, Checklist ou Nota. O modal Editar subitem agora oferece três cards selecionáveis; Checklist e Nota ocultam área, tempo e pontuação, e Nota fica sem checkbox na lista após salvar. Conversão e limpeza são aplicadas somente ao salvar; cancelamento mantém os dados. ESLint de Ciclos.tsx e TypeScript da aplicação passaram; sem testes automatizados ou QA visual.
+
+## R40 — simplificar cards e tirar streak em Ciclos (01/11/2026)
+
+Removidos selo/ranque de streak e badge de atividade recente. Cards de tarefa mostram checkbox de concluir/desfazer antes do nome; botão textual “Concluir” removido, “Iniciar” segue separado. Badge elemental agora mostra ícone e nome em tamanho legível. Nenhuma alteração em streak persistido, bônus, XP, Prana ou cálculo. TypeScript/ESLint/diff-check em validação; sem testes automatizados/QA visual.
+
+## R41 — editar sequência normal direto pelo item atual (01/11/2026)
+
+O menu de três pontos do ciclo na vez oferece “Editar sequência” e abre o editor na aba Sequências. Nome, dias, membros e ordem são rascunhados sem persistência imediata; um único “Salvar alterações” aplica o conjunto e “Cancelar” descarta. ESLint/TypeScript/diff-check aprovados; sem testes automatizados/QA visual.
+
+## R42 — filhos em Ciclos com hierarquia visual mais clara (01/11/2026)
+
+Subitens agora usam o checkbox do pai, alinhado antes do nome. Removida a aparência de pequenos cards escuros repetidos; a lista usa recuo e guia lateral para mostrar a relação de subtarefa. Identidade de ação/checklist/nota, comandos e pontuação preservados. ESLint/TypeScript/diff-check aprovados; sem teste automatizado/QA visual.
+
+## R43 — disclosure simples para subitens de Ciclos (01/11/2026)
+
+Controle “Ações concluídas/total” substituído por um chevron discreto no cabeçalho de cada item com filhos, conforme padrão dos cards de Treino. A seta indica aberto/fechado; sem botão, texto ou contagem adicional. ESLint/TypeScript/diff-check aprovados; sem teste automatizado/QA visual.
+
+## R39 — editor salva plano sem iniciar execução (31/10/2026)
+
+Removido o botão “Salvar e iniciar agora” do editor. Salvamento apenas atualiza a biblioteca; executar segue pelo botão da tela de treinos. Sem alteração de store ou regra de execução.
+
+## R38 — ocultar subcard de perfil muscular informado (31/10/2026)
+
+Removida do editor nativo a seção manual de percentuais musculares por exercício. Perfis/overrides preexistentes continuam sendo preservados ao salvar; filtros anatômicos do catálogo e ficha do exercício continuam disponíveis. A remoção não altera pontuação ou cálculo.
+
+## R37 — exercício adicionado ao editor inicia recolhido (31/10/2026)
+
+Exercícios incluídos do catálogo ou criados manualmente no modal de edição passam a entrar com card e todas as séries recolhidos, seguindo o padrão pedido para o treino existente. É possível expandir para inspecionar/editar os valores. Sem impacto em store ou pontuação.
+
+## R36 — editor inicia treino existente recolhido (31/10/2026)
+
+Ao editar um template existente, cards de exercícios e séries começam fechados e mostram os resumos já disponíveis. O usuário pode expandir qualquer nível para ajustar campos; itens novos continuam acessíveis. Sem alteração de dados, cálculo ou pontuação.
+
+## R35 — lista oficial usa apenas WorkoutTemplate (31/10/2026)
+
+Removido da lista canônica de modalidade o card dos registros `Workout` legados, que mostrava somente Ver treino/Editar. A lista e a grade de modalidades agora derivam de catálogo e `WorkoutTemplate`. Nenhuma store ou registro legado apagado; histórico e fluxo legado permanecem preservados fora da biblioteca oficial.
+
+## R33 — variações de abdômen na Calistenia (31/10/2026)
+
+Quatro novas fichas: crunch curto, toque nos tornozelos, bicicleta para oblíquos e elevação/descida de pernas com pausa sem tocar o chão. O V-Up já existia e foi mantido. Catálogo 65 → 69; filtro anatômico agora distingue oblíquos. TypeScript, ESLint direcionado, inventário estático e `git diff --check` passaram. Instruções/fontes e limites em `docs/03-Project-Management/reports/CATALOGO-CALISTENIA-ABDOME.md`. Pontuação inalterada; sem testes automatizados/QA visual/commit/push.
+
+## R34 — elevação lateral suspensa para oblíquos (31/10/2026)
+
+Adicionada Elevação Lateral de Joelhos na Barra, com ênfase explícita nos oblíquos e nos filtros anatômicos. Padrão: joelhos sobem em direção a um lado, retornam ao centro com controle e alternam lado; windshield wiper fica como variação avançada. Uma ficha, sem alteração de pontuação/persistência. Fonte e validação em `docs/03-Project-Management/reports/CATALOGO-CALISTENIA-ABDOME.md`.
+
+## R32 — catálogo de Calistenia expandido (31/10/2026)
+
+Catálogo ampliado de 21 para 65 exercícios, preservando IDs. Inclui variações de flexão/barra solicitadas e progressões de pernas, panturrilhas, core e isometrias. Holds por segundos; movimentos dinâmicos/negativos por reps. Tags para filtros anatômicos incluem serrátil anterior e tibial anterior sem percentuais fictícios. Relatório e fontes: `docs/03-Project-Management/reports/CATALOGO-CALISTENIA-EXPANSAO.md`. Pontuação e persistência não alteradas. Validações no relatório; sem commit/push.
+
+## R31 — expansão dos catálogos de esportes (31/10/2026)
+
+138 modelos por tempo em Corrida (18), Natação (16), Ciclismo (21) e Artes marciais (83, 25 disciplinas), preservando IDs antigos. Busca e filtro por categoria/disciplina seguem o fluxo existente. Detalhes e fontes em `docs/03-Project-Management/reports/CATALOGO-ESPORTES-EXPANSAO.md`. Pontuação e persistência inalteradas. Validação e QA visual descritos no relatório; sem commit/push.
+
+## R30 — catálogo Musculação e filtros (31/10/2026)
+
+Adicionadas 124 fichas de resistência externa com tipos descritivos de equipamento, padrão, contração, pegada, lateralidade, cues/cuidados e tags musculares. WorkoutStore incorpora e clona os perfis; catálogo filtra região, secundários, equipamento e isometria/dinâmico; detalhes mostram a ficha e a origem legado lista Musculação. Barra/anilhas ficam em Musculação; peso corporal dedicado segue Calistenia. Nenhuma regra de XP/ER/Prana mudou; source musculacao usa a conversão já vigente. Fontes e taxonomia em `docs/03-Project-Management/reports/CATALOGO-MUSCULACAO-EXPANSAO.md`. TypeScript e ESLint dos arquivos alterados passaram; sem teste funcional/visual, commit ou push.
+
+## R29 — catálogo Yoga ampliado (31/10/2026)
+
+Catálogo ampliado de 12 para 41 posturas (29 adições), mantendo IDs existentes. Perfil Yoga tipado com categoria, focos, estimativa muscular, articulações, referências e confiança; workoutStore preserva o perfil e ExerciseDetailSheet o exibe. Percentuais são provisórios e apenas informativos; nenhuma mudança em XP/ER/Prana ou persistência remota. Fontes/licença e limites em `docs/03-Project-Management/reports/CATALOGO-YOGA-EXPANSAO.md`. Revisão funcional/visual pendente; sem commit/push.
+
+## R28 — navegação global no Santuário (31/10/2026)
+
+O Santuário usava `ElementalPreview` como casca própria e não montava `MobileBottomNav`. A mesma falta se aplicava às páginas de detalhe elemental e aos aliases de prévia (4 definições de rota, 2 vistas conceituais). Pilares e Ciclos já usam `AppLayout`; Fitness usa `FitnessPageShell`. Barra global adicionada à casca elemental e espaço inferior reservado. QA visual/toque em celular pendente; sem teste automatizado, commit ou push.
+
+## R27 — painel “Todas as páginas” em mobile (31/10/2026)
+
+Implementado localmente no Santuário e nos demais pontos que compartilham AllRoutesSheet. No celular, o painel ocupa até 92dvh, mantém título e busca à vista, rola apenas a lista, respeita áreas seguras e apresenta destinos como linhas largas com alvo de toque maior. Em telas maiores, a grade de cartões permanece. Sem mudanças em rotas, stores ou dados. Revisão estática e `git diff --check` passaram; QA visual/toque real em 360/390/768px não executado. Sem commit/push.
+
 ## R26-D e publicação R15–R26 — main confirmado (25/10/2026)
 
 **0.1.68**, branch codex/fitness-ui-integration; base 88c9021 e alterações R26-A/B/C preservadas. [Revisão e situação de publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md), [repasse para Matheus](REPASSE-FRONTEND-PARA-BACKEND.md), [constância R26-D](plans/R26-D-CONSTANCIA-PROGRAMADA.md). Push autorizado concluído: `91fa5a5 → 0a1db75`; `ls-remote` confirmou o SHA completo no relatório. Inclui checkpoint 88c9021 e versão 0.1.68. Registro documental de fechamento vem em seguida, sem mudança de código.

@@ -1,7 +1,7 @@
 import { NavigationGroup } from '@/components/elemental/NavigationCards';
 import { RouteIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { APP_ROUTES, type RouteGroup } from '@/lib/app-routes';
@@ -50,18 +50,21 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
 
   return (
     <Sheet open={open} onOpenChange={changeOpen}>
-      <SheetContent side="bottom" className={cn('max-h-[85dvh] overflow-y-auto rounded-t-3xl', styles.content)}>
-        <SheetHeader>
-          <SheetTitle className={styles.title}>Todas as páginas</SheetTitle>
-          <SheetDescription>Encontre o que você quer fazer e continue sua jornada.</SheetDescription>
-        </SheetHeader>
-        <div className="px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] space-y-5">
-          <label className="elemental-route-search"><Search size={18} aria-hidden="true" /><span className="sr-only">Buscar páginas do app</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar ritual, treino, calendário…" /></label>
-          {search && <p className="text-sm text-fitness-muted" role="status">{routes.length} páginas encontradas</p>}
+      <SheetContent side="bottom" className={cn('h-[min(92dvh,52rem)] max-h-[calc(100dvh_-_env(safe-area-inset-top))] gap-0 overflow-hidden rounded-t-3xl p-0', styles.content)}>
+        <div className="shrink-0 border-b border-white/10 px-4 pb-3 pt-3">
+          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current/25" aria-hidden="true" />
+          <SheetHeader className="gap-1 p-0 pr-10">
+            <SheetTitle className={styles.title}>Todas as páginas</SheetTitle>
+            <SheetDescription>Encontre o que você quer fazer e continue sua jornada.</SheetDescription>
+          </SheetHeader>
+          <label className="elemental-route-search mt-3"><Search size={18} aria-hidden="true" /><span className="sr-only">Buscar páginas do app</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar ritual, treino, calendário…" /></label>
+          {search && <p className="mt-2 text-sm text-fitness-muted" role="status">{routes.length} páginas encontradas</p>}
+        </div>
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
           {routes.length === 0 && <button type="button" className="min-h-11 text-mystic-gold" onClick={() => setQuery('')}>Limpar busca e ver todas</button>}
           {GROUPS.filter((group) => routes.some((route) => route.group === group)).map((group) => (
             <NavigationGroup key={group} group={group} count={routes.filter((route) => route.group === group).length} initiallyOpen={APP_ROUTES.some((route) => route.group === group && route.path === pathname)} reveal={!!search}>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                 {routes.filter((route) => route.group === group).map((route) => {
                   const isActive = pathname === route.path;
                   return (
@@ -74,13 +77,14 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
                         navigate(route.path);
                       }}
                       className={cn(
-                        'flex min-h-20 flex-col items-center justify-center gap-2 p-3 rounded-xl text-center transition-colors',
+                        'flex min-h-[60px] flex-row items-center justify-start gap-3 rounded-xl px-4 py-3 text-left transition-colors sm:min-h-20 sm:flex-col sm:justify-center sm:gap-2 sm:p-3 sm:text-center',
                         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary',
                         isActive ? styles.tileActive : styles.tile
                       )}
                     >
-                      <RouteIcon routeId={route.id} size={24} className={styles.icon} />
-                      <span className="text-xs font-medium leading-snug">{route.label}</span>
+                      <RouteIcon routeId={route.id} size={22} className={cn(styles.icon, 'shrink-0 sm:size-6')} />
+                      <span className="min-w-0 flex-1 text-sm font-medium leading-snug sm:flex-initial sm:text-xs">{route.label}</span>
+                      <ArrowRight size={16} aria-hidden="true" className="shrink-0 opacity-60 sm:hidden" />
                     </button>
                   );
                 })}

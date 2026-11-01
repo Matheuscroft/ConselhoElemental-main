@@ -1,3 +1,17 @@
+## 0.1.70 — 01/11/2026 · simplificação dos cards em Ciclos
+
+- Removidos o selo/ranque de streak e o badge de atividade recente dos cards.
+- A conclusão/desmarcação de hábitos usa checkbox junto ao nome; removido o botão textual separado “Concluir”. O botão de iniciar continua independente.
+- Badge elemental maior, com ícone e nome legível. Sem alteração de streak, bônus, XP, Prana ou cálculo.
+- Menu do item atual em sequência normal abre o editor da sequência. Nome, dias, inclusão/remoção e ordem dos ciclos ficam em rascunho e são aplicados por um único botão “Salvar alterações”; “Cancelar” descarta o rascunho.
+- Expansão de itens com filhos indicada por um chevron discreto no cabeçalho, seguindo os cards de Treino; removidos botão/contador “Ações 0/2” e badge de quantidade.
+- Itens de ação mostram o nome e checkbox sem os rótulos redundantes “Ação”/“Conclua quando realizar”; Checklist, Nota e Etapa continuam identificados.
+- Removidos os números de posição exibidos abaixo do nome dos subitens; a hierarquia é comunicada pelo recuo e chevrons.
+- Badges de área/subárea dos subitens passam a seguir o formato compacto do agregador, em uma linha com reticências quando necessário.
+- Nos subitens, o nome ocupa a linha superior; os badges compactos do elemento (ex.: Terra) e da área/subárea ficam alinhados lado a lado logo abaixo.
+- Correção: badges de elemento pertencem aos cards principais, não aos subitens; nos cards principais ficam alinhados à área/subárea abaixo do nome.
+- Badge elemental permanece maior que o badge de área/subárea, com alinhamento vertical central na mesma linha.
+
 ## 0.1.69 — 31/10/2026 · catálogos e biblioteca de Treinos
 
 - Expandido o catálogo de Calistenia com variantes de empurrar, puxar, pernas, core e abdômen; filtros anatômicos incluem oblíquos.

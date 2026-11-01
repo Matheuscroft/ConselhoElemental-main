@@ -2700,7 +2700,20 @@ export const useAppStore = create<AppState>()(
         const siblingHabits = parentHabit ? parentHabit.childHabits : [];
         const nextSortOrder = calculateNextSortOrder(siblingHabits);
 
-        const areaForElement = habitData.areaId ? getAreaById(habitData.areaId) : undefined;
+        const resolvedAreaId = habitData.areaId ?? parentHabit?.areaId ?? 'sem-categoria';
+        const allKnownAreas = [...AREAS, ...state.customAreas];
+        const allKnownSubareas = [
+          ...allKnownAreas.flatMap((area) => area.subareas || []),
+          ...Object.values(state.customSubareas).flat(),
+        ];
+        const areaForElement = allKnownAreas.find((area) => area.id === resolvedAreaId);
+        const requestedSubareaId = habitData.subareaId
+          ?? (resolvedAreaId === parentHabit?.areaId ? parentHabit?.subareaId : null)
+          ?? null;
+        const subareaForArea = requestedSubareaId
+          ? allKnownSubareas.find((subarea) => subarea.id === requestedSubareaId && subarea.parentId === resolvedAreaId)
+          : undefined;
+        const resolvedSubareaId = subareaForArea?.id ?? null;
         const resolvedElementId = habitData.elementId
           ?? areaForElement?.elementId
           ?? parentHabit?.elementId
@@ -2713,8 +2726,8 @@ export const useAppStore = create<AppState>()(
           description: habitData.description || '',
           type: 'HABIT',
           lifecycleType: 'HABIT',
-          areaId: habitData.areaId ?? parentHabit?.areaId ?? 'sem-categoria',
-          subareaId: habitData.subareaId ?? parentHabit?.subareaId ?? null,
+          areaId: resolvedAreaId,
+          subareaId: resolvedSubareaId,
           elementId: resolvedElementId,
           semanticType: habitData.semanticType || 'VALUABLE',
           semanticValueBackup: {
@@ -2727,10 +2740,10 @@ export const useAppStore = create<AppState>()(
           baseValue: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
           effortLevel: 1,
           actualTimeMinutes: null,
-          areaPrimaryId: habitData.areaId ?? parentHabit?.areaId ?? 'sem-categoria',
+          areaPrimaryId: resolvedAreaId,
           areaSecondaryId1: null,
           areaSecondaryId2: null,
-          subareaPrimaryId: habitData.subareaId ?? parentHabit?.subareaId ?? null,
+          subareaPrimaryId: resolvedSubareaId,
           subareaSecondaryId1: null,
           subareaSecondaryId2: null,
           lastStartedAt: null,
@@ -2793,6 +2806,12 @@ export const useAppStore = create<AppState>()(
       },
 
       updateHabitChild: (habitId, updates) => {
+        const currentState = get();
+        const allKnownAreas = [...AREAS, ...currentState.customAreas];
+        const allKnownSubareas = [
+          ...allKnownAreas.flatMap((area) => area.subareas || []),
+          ...Object.values(currentState.customSubareas).flat(),
+        ];
         const findParentId = (habits: Habit[], targetId: string): string | null => {
           for (const habit of habits) {
             if (habit.childHabits.some((child) => child.id === targetId)) {
@@ -2811,7 +2830,27 @@ export const useAppStore = create<AppState>()(
         const updateRecursively = (habits: Habit[]): Habit[] => {
           return habits.map((habit) => {
             if (habit.id === habitId) {
-              return syncHabitSemanticBackups({ ...habit, ...updates, updatedAt: new Date() });
+              const merged = { ...habit, ...updates, updatedAt: new Date() };
+              const semanticType = String(merged.semanticType ?? 'VALUABLE').toUpperCase();
+              const isNote = semanticType === 'NOTE' || semanticType === 'TEXT';
+              const resolvedAreaId = isNote ? 'sem-categoria' : merged.areaId || 'sem-categoria';
+              const requestedSubareaId = isNote ? null : merged.subareaId || null;
+              const resolvedSubareaId = requestedSubareaId
+                && allKnownSubareas.some((subarea) => subarea.id === requestedSubareaId && subarea.parentId === resolvedAreaId)
+                ? requestedSubareaId
+                : null;
+              const resolvedArea = allKnownAreas.find((area) => area.id === resolvedAreaId);
+              return syncHabitSemanticBackups({
+                ...merged,
+                areaId: resolvedAreaId,
+                subareaId: resolvedSubareaId,
+                areaPrimaryId: resolvedAreaId,
+                subareaPrimaryId: resolvedSubareaId,
+                elementId: resolvedArea?.elementId ?? merged.elementId,
+                plannedPoints: isNote ? 0 : merged.plannedPoints,
+                baseValue: isNote ? 0 : merged.baseValue,
+                plannedTimeMinutes: isNote ? 0 : merged.plannedTimeMinutes,
+              });
             }
             if (habit.childHabits.length > 0) {
               return {
@@ -3495,16 +3534,23 @@ export const useAppStore = create<AppState>()(
         const aggregateHabits = (habits: Habit[]): HabitAggregation => {
           return habits.reduce(
             (acc: HabitAggregation, habit: Habit): HabitAggregation => {
-              const childAgg = habit.childHabits.length > 0 ? aggregateHabits(habit.childHabits) : null;
-              const value = childAgg ? childAgg.totalPoints : habit.plannedPoints;
-              const time = childAgg ? childAgg.totalTime : habit.plannedTimeMinutes;
+              const semanticType = String(habit.semanticType ?? 'VALUABLE').toUpperCase();
+              const isNote = semanticType === 'NOTE' || semanticType === 'TEXT';
+              const isStructural = semanticType === 'VALUELESS' || semanticType === 'STRUCTURAL';
+              const childAgg = !isNote && habit.childHabits.length > 0 ? aggregateHabits(habit.childHabits) : null;
+              const value = isNote || (isStructural && !childAgg)
+                ? 0
+                : childAgg ? childAgg.totalPoints : habit.plannedPoints;
+              const time = isNote || (isStructural && !childAgg)
+                ? 0
+                : childAgg ? childAgg.totalTime : habit.plannedTimeMinutes;
 
               const areaTotals = { ...acc.areaTotals };
               if (childAgg) {
                 Object.entries(childAgg.areaTotals).forEach(([areaId, areaValue]: [string, number]) => {
                   areaTotals[areaId] = (areaTotals[areaId] || 0) + areaValue;
                 });
-              } else if (habit.areaId) {
+              } else if (!isNote && !isStructural && habit.areaId && value > 0) {
                 areaTotals[habit.areaId] = (areaTotals[habit.areaId] || 0) + value;
               }
 
@@ -3538,7 +3584,10 @@ export const useAppStore = create<AppState>()(
                    ? (aggregated.totalPoints || 0) 
                    : (h.semanticValueBackup?.plannedPoints ?? h.plannedPoints),
                 plannedTimeMinutes: hasChildren ? (aggregated.totalTime || 0) : h.plannedTimeMinutes,
-                areaId: hasChildren && topAreaId ? topAreaId : h.areaId,
+                areaId: hasChildren ? topAreaId || 'sem-categoria' : h.areaId,
+                areaPrimaryId: hasChildren ? topAreaId || 'sem-categoria' : h.areaPrimaryId,
+                subareaId: hasChildren ? null : h.subareaId,
+                subareaPrimaryId: hasChildren ? null : h.subareaPrimaryId,
                 isAggregator: hasChildren,
               };
             };

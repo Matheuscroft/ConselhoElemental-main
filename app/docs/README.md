@@ -1,4 +1,4 @@
-> Atualização 25/10/2026 · **0.1.68**: [repasse R15–R26](REPASSE-FRONTEND-PARA-BACKEND.md), [verificações e publicação](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md) e [continuidade](CONTINUIDADE.md). Constância programada parcial implementada; fragmentos, backup/conta e QA mobile continuam pendentes.
+> Atualização 01/11/2026 · **0.1.70**: [continuidade](CONTINUIDADE.md) e [changelog do módulo](03-Project-Management/fitness/CHANGELOG.md). Ciclos mostra histórico recente de conclusões, sem badge/ranking de streak. Marcos de consistência com bônus de XP seguem sem valores definidos; sem mudança de pontuação ou Prana.
 
 # Arquitetura — Conselho Elemental
 

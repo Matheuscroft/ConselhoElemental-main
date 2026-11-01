@@ -1,9 +1,6 @@
-import { calculateHabitStreak, habitStreakRule } from '@/lib/temporal/habit-streak';
 import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-semantics';
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
-import { CycleStreakBadge } from '@/components/cycles/CycleStreakBadge';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
-import { CycleSubitemsToggle } from '@/components/cycles/CycleSubitemsToggle';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
 import { ExpandedDayCard } from '@/components/cycles/ExpandedDayCard';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
@@ -25,7 +22,6 @@ import {
   Calendar,
   ChevronLeft, 
   ChevronRight, 
-  ChevronUp,
   ChevronDown,
   Play, 
   Pause, 
@@ -141,7 +137,6 @@ export const Ciclos: React.FC = () => {
     createCycleSequence,
     updateCycleSequence,
     toggleCycleSequenceActive,
-    moveHabitInSequence,
     reorderHabitsInSequence,
     resetCycleSequenceToStart, skipCycleSequence,
     deleteCycleSequence,
@@ -188,6 +183,7 @@ export const Ciclos: React.FC = () => {
   const [editName, setEditName] = useState('');
   const [editArea, setEditArea] = useState<string>('none');
   const [editSubarea, setEditSubarea] = useState<string>('none');
+  const [editChildType, setEditChildType] = useState<ChildExecutionType>('valuable');
   const [editPoints, setEditPoints] = useState(1);
   const [editTimeMinutes, setEditTimeMinutes] = useState<number>(0);
   const [editTimeSeconds, setEditTimeSeconds] = useState<number>(0);
@@ -206,6 +202,9 @@ export const Ciclos: React.FC = () => {
   const [sequenceQuery, setSequenceQuery] = useState('');
   const [cyclesViewMode, setCyclesViewMode] = useState<'ordered' | 'pending-first'>('ordered');
   const [selectedSequenceId, setSelectedSequenceId] = useState<string | null>(null);
+  const [sequenceNameDraft, setSequenceNameDraft] = useState('');
+  const [sequenceDraftDaysOfWeek, setSequenceDraftDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [sequenceDraftMemberIds, setSequenceDraftMemberIds] = useState<string[]>([]);
   const [sequenceHabitToAdd, setSequenceHabitToAdd] = useState<string>('none');
   const [editDaysOfWeek, setEditDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [draggedSequenceHabitId, setDraggedSequenceHabitId] = useState<string | null>(null);
@@ -456,7 +455,7 @@ export const Ciclos: React.FC = () => {
       return;
     }
 
-    const orderedHabitIds = selectedSequenceMembers.map((item) => item.membership.habitId);
+    const orderedHabitIds = sequenceDraftMemberIds;
     const fromIndex = orderedHabitIds.findIndex((id) => id === draggedSequenceHabitId);
     const toIndex = orderedHabitIds.findIndex((id) => id === targetHabitId);
 
@@ -470,7 +469,7 @@ export const Ciclos: React.FC = () => {
     const [moved] = nextOrder.splice(fromIndex, 1);
     nextOrder.splice(toIndex, 0, moved);
 
-    reorderHabitsInSequence(selectedSequenceSummary.sequence.id, nextOrder);
+    setSequenceDraftMemberIds(nextOrder);
 
     setDraggedSequenceHabitId(null);
     setDragOverSequenceHabitId(null);
@@ -938,13 +937,10 @@ export const Ciclos: React.FC = () => {
     return subitemKind(child as HabitSemanticMetadata);
   };
 
-  const handleConvertChildType = (childId: string, targetType: ChildExecutionType) => {
-    const child = findHabitById(habits, childId);
-    if (!child) return;
-
+  const buildChildTypeTransition = (child: Habit, targetType: ChildExecutionType) => {
     const metadata = child as HabitSemanticMetadata;
     const currentType = getChildExecutionType(child);
-    if (currentType === targetType) return;
+    if (currentType === targetType) return {};
 
     const currentSnapshot = {
       plannedPoints: Math.max(0, child.plannedPoints ?? 0),
@@ -969,37 +965,25 @@ export const Ciclos: React.FC = () => {
       updates.semanticStructuralBackup = currentSnapshot;
     }
 
-    if (targetType === 'valuable') {
-      const restored = updates.semanticValueBackup
-        ?? metadata.semanticValueBackup
-        ?? {
-          plannedPoints: Math.max(1, child.plannedPoints || 1),
-          plannedTimeMinutes: Math.max(0, child.plannedTimeMinutes || 0),
-        };
+    return updates;
+  };
 
-      updates.plannedPoints = Math.max(1, restored.plannedPoints || 1);
-      updates.plannedTimeMinutes = Math.max(0, restored.plannedTimeMinutes || 0);
-      updates.semanticValueBackup = restored;
-      updateHabitChild(childId, updates);
-      return;
+  const handleSelectEditChildType = (targetType: ChildExecutionType) => {
+    if (targetType === 'valuable' && editingHabit) {
+      const metadata = editingHabit as HabitSemanticMetadata;
+      const currentType = getChildExecutionType(editingHabit);
+      const restored = currentType === 'valuable'
+        ? { plannedPoints: editPoints, plannedTimeMinutes: hasTime ? editTimeMinutes + editTimeSeconds / 60 : 0 }
+        : metadata.semanticValueBackup;
+      setEditPoints(Math.max(1, restored?.plannedPoints || 1));
+      const minutes = Math.max(0, restored?.plannedTimeMinutes || 0);
+      setHasTime(minutes > 0);
+      setEditTimeMinutes(Math.floor(minutes));
+      setEditTimeSeconds(Math.round((minutes % 1) * 60));
+    } else if (targetType !== 'valuable') {
+      setHasTime(false);
     }
-
-    if (targetType === 'structural') {
-      const restored = updates.semanticStructuralBackup
-        ?? metadata.semanticStructuralBackup
-        ?? { plannedPoints: 0, plannedTimeMinutes: 0 };
-
-      updates.plannedPoints = Math.max(0, restored.plannedPoints || 0);
-      updates.plannedTimeMinutes = 0;
-      updates.semanticStructuralBackup = restored;
-      updateHabitChild(childId, updates);
-      return;
-    }
-
-    // text/nota: item puramente textual (sem checkbox, sem valor, sem tempo)
-    updates.plannedPoints = 0;
-    updates.plannedTimeMinutes = 0;
-    updateHabitChild(childId, updates);
+    setEditChildType(targetType);
   };
 
   const getExecutionChildren = (habit: Habit | null) => {
@@ -1073,16 +1057,63 @@ export const Ciclos: React.FC = () => {
     ? sequenceSummaries.find((item) => item.sequence.id === selectedSequenceId) || null
     : null;
 
+  const openCycleSequenceEditor = (sequenceId: string) => {
+    const sequence = cycleSequences.find((item) => item.id === sequenceId);
+    if (!sequence) return;
+    setSequenceNameDraft(sequence.name);
+    setSequenceDraftDaysOfWeek([...(sequence.recurrenceConfig.daysOfWeek ?? [0, 1, 2, 3, 4, 5, 6])]);
+    setSequenceDraftMemberIds(getMembersForSequence(sequenceId).map((membership) => membership.habitId));
+    setSequenceHabitToAdd('none');
+    setWorkspaceView('sequences');
+    setSelectedSequenceId(sequenceId);
+  };
+
   const selectedSequenceMembers = selectedSequenceSummary
-    ? getMembersForSequence(selectedSequenceSummary.sequence.id).map((membership) => ({
-        membership,
-        habit: findHabitById(habits, membership.habitId),
+    ? sequenceDraftMemberIds.map((habitId, position) => ({
+        membership: sequenceMemberships.find((item) => item.sequenceId === selectedSequenceSummary.sequence.id && item.habitId === habitId)
+          ?? { id: `draft-${habitId}`, sequenceId: selectedSequenceSummary.sequence.id, habitId, position, addedAt: new Date(0) },
+        habit: findHabitById(habits, habitId),
       }))
     : [];
 
-  const availableStandaloneHabits = habits
-    .filter((habit) => !habit.controlledBySequenceId)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const availableSequenceHabits = selectedSequenceSummary
+    ? habits
+        .filter((habit) => !habit.controlledBySequenceId || habit.controlledBySequenceId === selectedSequenceSummary.sequence.id)
+        .filter((habit) => !sequenceDraftMemberIds.includes(habit.id))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    : [];
+
+  const moveDraftSequenceMember = (habitId: string, direction: 'up' | 'down') => {
+    setSequenceDraftMemberIds((current) => {
+      const index = current.indexOf(habitId);
+      const target = index + (direction === 'up' ? -1 : 1);
+      if (index < 0 || target < 0 || target >= current.length) return current;
+      const next = [...current];
+      [next[index], next[target]] = [next[target], next[index]];
+      return next;
+    });
+  };
+
+  const handleSaveCycleSequenceDraft = () => {
+    if (!selectedSequenceSummary || !sequenceNameDraft.trim()) return;
+    const { sequence } = selectedSequenceSummary;
+    const currentMemberIds = useAppStore.getState().sequenceMemberships
+      .filter((membership) => membership.sequenceId === sequence.id)
+      .map((membership) => membership.habitId);
+    const targetMemberIds = sequenceDraftMemberIds;
+
+    updateCycleSequence(sequence.id, {
+      name: sequenceNameDraft.trim(),
+      recurrenceType: 'DAILY',
+      recurrenceConfig: { ...sequence.recurrenceConfig, daysOfWeek: sequenceDraftDaysOfWeek },
+    });
+    currentMemberIds.filter((id) => !targetMemberIds.includes(id)).forEach((id) => removeHabitFromSequence(sequence.id, id));
+    targetMemberIds.filter((id) => !currentMemberIds.includes(id)).forEach((id) => addHabitToSequence(sequence.id, id));
+    reorderHabitsInSequence(sequence.id, targetMemberIds);
+    setSelectedSequenceId(null);
+    setSequenceHabitToAdd('none');
+    toast.success('Sequência atualizada.');
+  };
 
   const standaloneHabitsForDate = useMemo(() => {
     const seenIds = new Set<string>();
@@ -1175,7 +1206,10 @@ export const Ciclos: React.FC = () => {
     setEditArea(habit.areaId || 'none');
     setEditSubarea(habit.subareaId || 'none');
     setEditPoints(habit.plannedPoints || 1);
-    setEditDaysOfWeek(habit.recurrenceConfig.daysOfWeek || [0, 1, 2, 3, 4, 5, 6]);
+    setEditChildType(isChild ? getChildExecutionType(habit) : 'valuable');
+    if (!isChild) {
+      setEditDaysOfWeek(habit.recurrenceConfig.daysOfWeek || [0, 1, 2, 3, 4, 5, 6]);
+    }
     const totalMinutes = habit.plannedTimeMinutes || 0;
     setEditTimeMinutes(Math.floor(totalMinutes));
     setEditTimeSeconds(Math.round((totalMinutes % 1) * 60));
@@ -1190,31 +1224,48 @@ export const Ciclos: React.FC = () => {
     if (!habit) return;
 
     const isAggregatorLocked = habit.childHabits.length > 0;
+    const targetChildType = editingHabitIsChild ? editChildType : getChildExecutionType(habit);
+    const isEditingNonValuable = editingHabitIsChild && targetChildType !== 'valuable';
     const nextPlannedTimeMinutes = isAggregatorLocked
       ? habit.plannedTimeMinutes
-      : (hasTime && (editTimeMinutes > 0 || editTimeSeconds > 0)
+      : (!isEditingNonValuable && hasTime && (editTimeMinutes > 0 || editTimeSeconds > 0)
         ? editTimeMinutes + (editTimeSeconds / 60)
         : 0);
 
-    const nextAreaId = editArea === 'none' ? habit.areaId : editArea;
-    const nextSubareaId = isAggregatorLocked
-      ? habit.subareaId
-      : (editSubarea === 'none' ? null : editSubarea || null);
+    const nextAreaId = isEditingNonValuable ? 'sem-categoria' : editArea === 'none' ? habit.areaId : editArea;
+    const selectedSubareaId = editSubarea === 'none' ? null : editSubarea || null;
+    const selectedSubareaBelongsToArea = Boolean(
+      selectedSubareaId && getMergedSubareasForArea(nextAreaId).some((subarea) => subarea.id === selectedSubareaId)
+    );
+    const nextSubareaId = isEditingNonValuable
+      ? null
+      : isAggregatorLocked
+        ? habit.subareaId
+        : selectedSubareaBelongsToArea ? selectedSubareaId : null;
     
+    const transition = editingHabitIsChild ? buildChildTypeTransition(habit, targetChildType) : {};
     const payload: Partial<Habit> = {
+      ...transition,
       name: editName.trim(),
       title: editName.trim(),
+      ...(editingHabitIsChild ? { semanticType: targetChildType } : {}),
       areaId: nextAreaId,
       subareaId: nextSubareaId,
-      recurrenceType: 'DAILY',
-      recurrenceConfig: {
-        ...habit.recurrenceConfig,
-        daysOfWeek: editDaysOfWeek,
-      },
-      plannedPoints: isAggregatorLocked ? habit.plannedPoints : Math.max(1, editPoints),
+      areaPrimaryId: nextAreaId,
+      subareaPrimaryId: nextSubareaId,
+      plannedPoints: isEditingNonValuable ? 0 : isAggregatorLocked ? habit.plannedPoints : Math.max(1, editPoints),
+      baseValue: isEditingNonValuable ? 0 : habit.baseValue,
       plannedTimeMinutes: nextPlannedTimeMinutes,
       elementId: (allAreasForEdit.find((area) => area.id === nextAreaId)?.elementId || habit.elementId),
     };
+
+    if (!editingHabitIsChild) {
+      payload.recurrenceType = 'DAILY';
+      payload.recurrenceConfig = {
+        ...habit.recurrenceConfig,
+        daysOfWeek: editDaysOfWeek,
+      };
+    }
 
     if (editingHabitIsChild) {
       updateHabitChild(editingHabitId, payload);
@@ -1225,6 +1276,7 @@ export const Ciclos: React.FC = () => {
     setShowQuickEdit(false);
     setEditingHabitId(null);
     setEditingHabitIsChild(false);
+    setEditChildType('valuable');
     setEditName('');
     setEditArea('none');
     setEditSubarea('none');
@@ -1307,21 +1359,9 @@ export const Ciclos: React.FC = () => {
   const totalToday = habitsForDate.length;
   const progressToday = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
-  // Same read-only calculation as the badges, including existing records before their next write.
-  const displayedStreak = (habit: Habit) => {
-    const rotates = sequenceMemberships.some(member => member.habitId === habit.id);
-    return habitStreakRule(habit, rotates) === 'scheduled'
-      ? calculateHabitStreak(habit.completions, habit).streak : habit.streak;
-  };
-  // Top streaks
-  const topStreaks = [...habits]
-    .sort((a, b) => displayedStreak(b) - displayedStreak(a))
-    .slice(0, 3)
-    .filter((h) => displayedStreak(h) > 0);
-
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 
-  const renderChildHabits = (childHabits: Habit[], depth = 0, parentHabitId?: string, parentPath = '') => {
+  const renderChildHabits = (childHabits: Habit[], depth = 0, parentHabitId?: string) => {
     const sortedHabits = [...childHabits].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
     // Helper para renderizar badges de área/subárea de um child
@@ -1331,17 +1371,20 @@ export const Ciclos: React.FC = () => {
       const childAreaDisplayName = childArea?.name || 'Sem Categoria';
       const childSubarea = child.subareaId ? getAreaById(child.subareaId) : undefined;
       const childHasChildren = child.childHabits.length > 0;
+
+      if (childType === 'text') return null;
       
       // Se tem filhos, calcula e mostra badges agregados dos netos
       if (childHasChildren && child.areaId) {
         const getChildAggregatedAreas = (habits: Habit[]): Record<string, { points: number; subareaId?: string | null }> => {
           const areaTotals: Record<string, { points: number; subareaIds: Set<string | null> }> = {};
           const processHabit = (h: Habit) => {
+            if (getChildExecutionType(h) === 'text') return;
             if (h.childHabits.length > 0) {
               h.childHabits.forEach(processHabit);
             } else {
               const value = h.plannedPoints || 0;
-              if (h.areaId && value > 0) {
+              if (getChildExecutionType(h) === 'valuable' && h.areaId && value > 0) {
                 if (!areaTotals[h.areaId]) {
                   areaTotals[h.areaId] = { points: 0, subareaIds: new Set() };
                 }
@@ -1380,7 +1423,7 @@ export const Ciclos: React.FC = () => {
             <Badge 
               key={areaId}
               variant="outline"
-              className="text-[9px] truncate max-w-full sm:max-w-xs"
+              className="cycle-subitem-area-badge text-[10px] min-w-0 max-w-full"
               style={{ 
                 backgroundColor: `${aggArea.color}10`, 
                 borderColor: `${aggArea.color}50`,
@@ -1388,7 +1431,7 @@ export const Ciclos: React.FC = () => {
               }}
               title={badgeLabel}
             >
-              {badgeLabel}
+              <span>{badgeLabel}</span>
             </Badge>
           );
         });
@@ -1401,7 +1444,7 @@ export const Ciclos: React.FC = () => {
           <Badge
             key="own-area"
             variant="outline"
-            className="text-[9px] truncate max-w-full sm:max-w-xs"
+            className="cycle-subitem-area-badge text-[10px] min-w-0 max-w-full"
             style={{
               backgroundColor: `${(childArea?.color || '#808080')}20`,
               borderColor: `${(childArea?.color || '#808080')}80`,
@@ -1409,7 +1452,7 @@ export const Ciclos: React.FC = () => {
             }}
             title={badgeLabel}
           >
-            {badgeLabel}
+            <span>{badgeLabel}</span>
           </Badge>
         );
       }
@@ -1437,9 +1480,8 @@ export const Ciclos: React.FC = () => {
             Solte aqui para mover para o mesmo nivel do pai
           </div>
         )}
-        {sortedHabits.map((child, index) => {
+        {sortedHabits.map((child) => {
           const childType = subitemKind(child as HabitSemanticMetadata);
-          const childPath = parentPath ? `${parentPath}.${index + 1}` : `${index + 1}`;
           const childIsCheckable = childType === 'valuable' || childType === 'structural';
           const childCompleted = isHabitCompleted(child);
           const childCompletion = getCompletionForDate(child);
@@ -1473,36 +1515,29 @@ export const Ciclos: React.FC = () => {
                 }`}
               >
                 {childIsCheckable ? (
-                  !childCompleted ? (
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleQuickCompleteChildHabit(child);
-                      }}
-                      aria-pressed={false} aria-label={`Concluir ${child.name}`} className="cycle-child-check rounded border border-white/30 hover:border-white/50"
-                    >
-                      <Check className="w-3 h-3" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleQuickUncompleteChildHabit(child);
-                      }}
-                      className="cycle-child-check rounded border bg-mystic-gold border-mystic-gold hover:bg-mystic-gold/80"
-                      aria-pressed={true} aria-label={`Desfazer conclusão de ${child.name}`} title="Desfazer conclusão"
-                    >
-                      <Check className="w-3 h-3 text-black" />
-                    </button>
-                  )
+                  <button type="button" role="checkbox" aria-checked={childCompleted}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (childCompleted) handleQuickUncompleteChildHabit(child);
+                      else handleQuickCompleteChildHabit(child);
+                    }}
+                    aria-label={`${childCompleted ? 'Desmarcar' : 'Concluir'} ${child.name}`}
+                    className="cycle-task-checkbox cycle-child-check">
+                    {childCompleted && <Check size={16} aria-hidden="true" />}
+                  </button>
                 ) : (
-                  <span className="w-5 h-5" aria-hidden="true" />
+                  <span className="cycle-child-check-spacer" aria-hidden="true" />
                 )}
 
                 <div className="cycle-main-content flex-1 min-w-0">
-                  <CycleSubitemIdentity name={child.name} kind={childType} childCount={child.childHabits.length} path={childPath} completed={childCompleted} />
-                  <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px]">
-                    {childType !== 'text' && renderChildAreaBadges(child)}
+                  <CycleSubitemIdentity name={child.name} kind={childType} completed={childCompleted}
+                    expanded={childExpanded} onToggle={hasChildren ? () => toggleHabitChildExpansion(child.id) : undefined} />
+                  <div className="cycle-subitem-metadata mt-1 text-[10px]">
+                    {childType !== 'text' && (
+                      <div className="cycle-subitem-area-row">
+                        {renderChildAreaBadges(child)}
+                      </div>
+                    )}
 
                     {childType === 'valuable' && child.plannedTimeMinutes > 0 && (
                       <Badge variant="outline" className="bg-white/5 text-white/60 text-[9px]">
@@ -1517,16 +1552,6 @@ export const Ciclos: React.FC = () => {
                     </div>
                   )}
                 </div>
-
-                {hasChildren && (
-                  <button
-                    aria-expanded={!!child.isExpanded} aria-label={`${child.isExpanded ? 'Recolher' : 'Mostrar'} subitens de ${child.name}`}
-                    onClick={() => toggleHabitChildExpansion(child.id)}
-                    className="text-white/40 hover:text-white/70"
-                  >
-                    {childExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}<span>{child.childHabits.length} subitens</span>
-                  </button>
-                )}
 
                 <div className="cycle-child-actions">
                   <DropdownMenu>
@@ -1549,17 +1574,6 @@ export const Ciclos: React.FC = () => {
                         <ArrowDown className="w-3 h-3 mr-2" />
                         Mover para baixo
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => handleConvertChildType(child.id, 'valuable')}>
-                        Definir como Pontuável
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleConvertChildType(child.id, 'structural')}>
-                        Definir como Checklist
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleConvertChildType(child.id, 'text')}>
-                        Definir como Nota
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => deleteHabitChild(child.id)} className="text-red-400">
                         <Trash2 className="w-3 h-3 mr-2" />
                         Excluir
@@ -1577,7 +1591,7 @@ export const Ciclos: React.FC = () => {
 
               {hasChildren && childExpanded && (
                 <div className="mt-2">
-                  {renderChildHabits(child.childHabits, depth + 1, child.id, childPath)}
+                  {renderChildHabits(child.childHabits, depth + 1, child.id)}
                 </div>
               )}
             </div>
@@ -1589,6 +1603,8 @@ export const Ciclos: React.FC = () => {
 
   // Computed variables for edit form
   const editingHabit = editingHabitId ? findHabitById(habits, editingHabitId) : null;
+  const isEditingNote = Boolean(editingHabitIsChild && editChildType === 'text');
+  const isEditingNonValuable = Boolean(editingHabitIsChild && editChildType !== 'valuable');
   const isEditAggregatorLocked = Boolean(editingHabit?.childHabits.length);
   const selectedAreaForEdit = editArea !== 'none' ? allAreasForEdit.find((area) => area.id === editArea) : null;
   const dynamicSubareasForEdit = selectedAreaForEdit ? getMergedSubareasForArea(selectedAreaForEdit.id) : [];
@@ -1873,40 +1889,42 @@ export const Ciclos: React.FC = () => {
                           : ''
                       }`}
                     >
-                      <CycleStreakBadge schedule={sequenceHabit} rotates habitId={`${destinyAccountId}:${sequenceHabit.id}`} name={sequenceHabit.name}
-                      value={sequenceHabit.streak} record={sequenceHabit.longestStreak} lastCompletedAt={sequenceHabit.lastCompletedAt} referenceDate={selectedDate} completions={sequenceHabit.completions} />
-
-                      <div className="mb-3 flex items-start justify-between gap-3">
-                        <div className="min-w-0"><p className="break-words font-medium">{item.sequence.name}</p><p className="mt-1 text-xs text-white/50">Passo {item.currentPositionLabel}</p></div>
-                        <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 text-violet-300 hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>{isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
+                      <div className="cycle-sequence-card-header mb-3">
+                        <div className="cycle-sequence-card-title">
+                          <p className="break-words font-medium">{item.sequence.name}</p>
+                          <span>Passo {item.currentPositionLabel}</span>
+                        </div>
+                        <div className="cycle-sequence-card-actions">
+                          <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/10 text-violet-300 hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>
+                          {isFitnessSequence && <DropdownMenu><DropdownMenuTrigger asChild><button aria-label={`Ações de ${item.sequence.name}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-lg hover:bg-white/10"><MoreVertical size={17} /></button></DropdownMenuTrigger><DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10"><DropdownMenuItem onClick={() => navigate('/fitness')}><Edit2 size={16} className="mr-2" />Editar sequência em Treinos</DropdownMenuItem><DropdownMenuItem className="text-red-400" onClick={() => navigate('/fitness')}><Trash2 size={16} className="mr-2" />Excluir sequência em Treinos</DropdownMenuItem></DropdownMenuContent></DropdownMenu>}
+                        </div>
                       </div>
                       {isFitnessSequence ? <FitnessHabitWidget habit={sequenceHabit} date={selectedDate} embedded showAdministrativeActions={false} /> : (
                       <div className="cycle-main-row">
                         <div className="cycle-main-content flex-1 min-w-0">
                           <div className="cycle-card-heading flex items-start justify-between gap-2">
                             <div>
-                              <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+                              <div className="cycle-task-title">
+                                <button type="button" role="checkbox" aria-checked={completed}
+                                  aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${sequenceHabit.name}`}
+                                  className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(sequenceHabit); else handleQuickCompleteHabit(sequenceHabit); }}>
+                                  {completed && <Check size={16} aria-hidden="true" />}
+                                </button>
+                                <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
                                 {sequenceHabit.name}
-                              </p>
+                                </p>
+                                {childHabits.length > 0 && <button type="button" className="cycle-children-disclosure" aria-expanded={!!sequenceHabit.isExpanded}
+                                  aria-label={`${sequenceHabit.isExpanded ? 'Recolher' : 'Mostrar'} subitens de ${sequenceHabit.name}`}
+                                  onClick={(event) => { event.stopPropagation(); toggleHabitChildExpansion(sequenceHabit.id); }}>
+                                  <ChevronDown size={18} className={`transition-transform ${sequenceHabit.isExpanded ? '' : '-rotate-90'}`} aria-hidden="true" />
+                                </button>}
+                              </div>
                               {sequenceHabit.description && (
                                 <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{sequenceHabit.description}</p>
                               )}
                             </div>
 
                             <div className="flex items-center gap-1">
-                              {showSequenceElementBadge && (
-                                <span
-                                  className="w-7 h-7 rounded-full border flex items-center justify-center text-base leading-none"
-                                  style={{
-                                    backgroundColor: `${seqElement.color}1f`,
-                                    borderColor: `${seqElement.color}66`,
-                                  }}
-                                  title={seqElement.name}
-                                >
-                                  <ElementIcon element={seqElement.id} />
-                                </span>
-                              )}
-
                               {!completed && (
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
@@ -1916,6 +1934,10 @@ export const Ciclos: React.FC = () => {
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end" className="cycle-menu bg-mystic-purple border-white/10">
                                   {!completed && <DropdownMenuItem onClick={() => setActiveAddHabitTarget(sequenceHabit.id)}><PlusCircle className="w-4 h-4 mr-2" />Adicionar subitem</DropdownMenuItem>}
+                                    <DropdownMenuItem onClick={() => openCycleSequenceEditor(item.sequence.id)}>
+                                      <Edit2 className="w-4 h-4 mr-2" />Editar sequência
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                       disabled={!canReorderVisibleCards} onClick={() => handleMoveMixedCard('sequence', item.sequence.id, 'up')}
                                     >
@@ -1956,6 +1978,19 @@ export const Ciclos: React.FC = () => {
                           </div>
 
                           <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] min-w-0">
+                            {showSequenceElementBadge && (
+                              <span
+                                className="cycle-element-badge"
+                                style={{
+                                  backgroundColor: `${seqElement.color}1f`,
+                                  borderColor: `${seqElement.color}66`,
+                                  color: seqElement.color,
+                                }}
+                                title={seqElement.name}
+                              >
+                                <ElementIcon element={seqElement.id} /><span>{seqElement.name}</span>
+                              </span>
+                            )}
                             <Badge variant="outline" className="bg-mystic-arcane/20 border-mystic-arcane/40 text-mystic-gold text-[10px] truncate max-w-full sm:max-w-xs">
                               Sequência: {item.sequence.name} ({item.currentPositionLabel})
                             </Badge>
@@ -1983,15 +2018,7 @@ export const Ciclos: React.FC = () => {
                           </div>
 
                           <CycleExecutionActions name={sequenceHabit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
-                            onStart={() => handleStartHabit(sequenceHabit.id)}
-                            onComplete={() => handleQuickCompleteHabit(sequenceHabit)}
-                            onUndo={() => handleQuickUncompleteHabit(sequenceHabit)} />
-
-                          {childHabits.length > 0 && (
-                            <CycleSubitemsToggle name={sequenceHabit.name} expanded={!!sequenceHabit.isExpanded}
-                              completed={subitemSummary.completedCount} total={subitemSummary.actionableCount} notes={subitemSummary.noteCount}
-                              onToggle={() => toggleHabitChildExpansion(sequenceHabit.id)} />
-                          )}
+                            onStart={() => handleStartHabit(sequenceHabit.id)} />
 
                           <div className="mt-2">
                             {isAddTargetForHabit(sequenceHabit.id) && (
@@ -2015,7 +2042,7 @@ export const Ciclos: React.FC = () => {
                         </div>
                       </div>
                       )}
-                      {isFitnessSequence && <ol aria-label="Fila de treinos" className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/10 pt-2">{sequenceMemberships.filter((membership) => membership.sequenceId === item.sequence.id).sort((a, b) => a.position - b.position).map((membership, index) => { const member = findHabitById(habits, membership.habitId); return <li key={membership.id} aria-current={membership.habitId === sequenceHabit.id ? 'step' : undefined} className={`flex min-w-0 items-center gap-2 text-xs ${membership.habitId === sequenceHabit.id ? 'font-medium text-emerald-300' : 'text-white/50'}`}>{index > 0 && <span aria-hidden="true" className="text-white/30">→</span>}<span className="break-words">{member?.title || member?.name || 'Treino indisponível'}</span></li>; })}</ol>}
+                      <ol aria-label={`Ordem dos itens da sequência ${item.sequence.name}`} className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/10 pt-2">{sequenceMemberships.filter((membership) => membership.sequenceId === item.sequence.id).sort((a, b) => a.position - b.position).map((membership, index) => { const member = findHabitById(habits, membership.habitId); return <li key={membership.id} aria-current={membership.habitId === sequenceHabit.id ? 'step' : undefined} className={`flex min-w-0 items-center gap-2 text-xs ${membership.habitId === sequenceHabit.id ? 'font-medium text-emerald-300' : 'text-white/50'}`}>{index > 0 && <span aria-hidden="true" className="text-white/30">→</span>}<span className="break-words">{member?.title || member?.name || 'Item indisponível'}</span></li>; })}</ol>
                     </motion.div>
                   );
                 }
@@ -2029,17 +2056,17 @@ export const Ciclos: React.FC = () => {
                 const areaDisplayName = area?.name || 'Sem Categoria';
                 const subarea = habit.subareaId ? getAreaById(habit.subareaId) : undefined;
                 const element = area ? ELEMENTS[area.elementId] : ELEMENTS[habit.elementId];
-                const showElementBadge = habit.areaId !== 'sem-categoria';
                 
                 // Calcular áreas agregadas dos filhos (com subareas)
                 const getAggregatedAreas = (habits: Habit[]): Record<string, { points: number; subareaId?: string | null }> => {
                   const areaTotals: Record<string, { points: number; subareaIds: Set<string | null> }> = {};
                   const processHabit = (h: Habit) => {
+                    if (getChildExecutionType(h) === 'text') return;
                     if (h.childHabits.length > 0) {
                       h.childHabits.forEach(processHabit);
                     } else {
                       const value = h.plannedPoints || 0;
-                      if (h.areaId && value > 0) {
+                      if (getChildExecutionType(h) === 'valuable' && h.areaId && value > 0) {
                         if (!areaTotals[h.areaId]) {
                           areaTotals[h.areaId] = { points: 0, subareaIds: new Set() };
                         }
@@ -2069,6 +2096,16 @@ export const Ciclos: React.FC = () => {
                     if (b[0] === 'sem-categoria') return -1;
                     return b[1].points - a[1].points;
                   });
+                const aggregatedElementIds = Array.from(new Set(
+                  aggregatedAreaList.flatMap(([areaId]) => {
+                    const aggregatedArea = allAreasForEdit.find((item) => item.id === areaId)
+                      || AREAS.find((item) => item.id === areaId);
+                    return aggregatedArea ? [aggregatedArea.elementId] : [];
+                  })
+                ));
+                const elementBadgeIds = hasChildren
+                  ? aggregatedElementIds
+                  : habit.areaId !== 'sem-categoria' ? [element.id] : [];
                 
                 if (habit.sourceModule === 'modulo_treino') return <FitnessHabitWidget key={habit.id} habit={habit} date={selectedDate} />;
                 const primaryAreaBadgeLabel = !hasChildren && habit.areaId
@@ -2098,38 +2135,32 @@ export const Ciclos: React.FC = () => {
                         : ''
                     }`}
                   >
-                    {/* Streak badge */}
-                    <CycleStreakBadge schedule={habit} rotates={sequenceMemberships.some(member => member.habitId === habit.id)} habitId={`${destinyAccountId}:${habit.id}`} name={habit.name}
-                      value={habit.streak} record={habit.longestStreak} lastCompletedAt={habit.lastCompletedAt} referenceDate={selectedDate} completions={habit.completions} />
-
                     <div className="cycle-main-row">
                       <div className="cycle-main-content flex-1 min-w-0">
                         <div className="cycle-card-heading flex items-start justify-between">
                           <div>
-                            <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+                            <div className="cycle-task-title">
+                              <button type="button" role="checkbox" aria-checked={completed}
+                                aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${habit.name}`}
+                                className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(habit); else handleQuickCompleteHabit(habit); }}>
+                                {completed && <Check size={16} aria-hidden="true" />}
+                              </button>
+                              <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
                               {habit.name}
-                            </p>
+                              </p>
+                              {childHabits.length > 0 && <button type="button" className="cycle-children-disclosure" aria-expanded={!!habit.isExpanded}
+                                aria-label={`${habit.isExpanded ? 'Recolher' : 'Mostrar'} subitens de ${habit.name}`}
+                                onClick={(event) => { event.stopPropagation(); toggleHabitChildExpansion(habit.id); }}>
+                                <ChevronDown size={18} className={`transition-transform ${habit.isExpanded ? '' : '-rotate-90'}`} aria-hidden="true" />
+                              </button>}
+                            </div>
                             {habit.description && (
                               <p className="text-xs text-white/40 mt-0.5 line-clamp-1">{habit.description}</p>
                             )}
                           </div>
 
-                          {!completed && (
-                            <div className="flex items-center gap-1">
-                              {showElementBadge && (
-                                <span
-                                  className="w-7 h-7 rounded-full border flex items-center justify-center text-base leading-none"
-                                  style={{
-                                    backgroundColor: `${element.color}1f`,
-                                    borderColor: `${element.color}66`,
-                                  }}
-                                  title={element.name}
-                                >
-                                  <ElementIcon element={element.id} />
-                                </span>
-                              )}
-
-
+                          <div className="flex items-center gap-1">
+                              {!completed && (
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                   <button aria-label={`Ações de ${habit.name}`} className="p-1 rounded-lg hover:bg-white/10">
@@ -2195,12 +2226,30 @@ export const Ciclos: React.FC = () => {
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
-                            </div>
-                          )}
+                              )}
+                          </div>
                         </div>
 
                         <div className="cycle-card-metadata mt-2 flex items-start justify-between gap-2 min-w-0">
                           <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                            {elementBadgeIds.map((elementId) => {
+                              const badgeElement = ELEMENTS[elementId];
+                              if (!badgeElement) return null;
+                              return (
+                                <span
+                                  key={elementId}
+                                  className="cycle-element-badge"
+                                  style={{
+                                    backgroundColor: `${badgeElement.color}1f`,
+                                    borderColor: `${badgeElement.color}66`,
+                                    color: badgeElement.color,
+                                  }}
+                                  title={badgeElement.name}
+                                >
+                                  <ElementIcon element={badgeElement.id} /><span>{badgeElement.name}</span>
+                                </span>
+                              );
+                            })}
                             {habit.controlledBySequenceId && (
                               <Badge variant="outline" className="bg-mystic-gold/10 border-mystic-gold/40 text-mystic-gold text-[10px] truncate max-w-full sm:max-w-xs">
                                 Em sequência
@@ -2258,16 +2307,8 @@ export const Ciclos: React.FC = () => {
                           </div>
 
                           <CycleExecutionActions name={habit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
-                            onStart={() => handleStartHabit(habit.id)}
-                            onComplete={() => handleQuickCompleteHabit(habit)}
-                            onUndo={() => handleQuickUncompleteHabit(habit)} />
+                            onStart={() => handleStartHabit(habit.id)} />
                         </div>
-
-                      {childHabits.length > 0 && (
-                        <CycleSubitemsToggle name={habit.name} expanded={!!habit.isExpanded}
-                          completed={subitemSummary.completedCount} total={subitemSummary.actionableCount} notes={subitemSummary.noteCount}
-                          onToggle={() => toggleHabitChildExpansion(habit.id)} />
-                      )}
 
                       <div className="mt-2">
                         {isAddTargetForHabit(habit.id) && (
@@ -2335,7 +2376,7 @@ export const Ciclos: React.FC = () => {
           <div className="space-y-2">
             <p className="text-[11px] text-white/45">Abra uma sequência para ver os passos e gerenciar sua execução. A ordem da rotina é ajustada na aba Rotina.</p>
             {visibleSequenceSummaries.map((item) => (
-              <CycleSequenceShowcase key={item.sequence.id} active={item.sequence.isActive} onOpen={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : setSelectedSequenceId(item.sequence.id)} name={item.sequence.name} description={item.sequence.description}
+              <CycleSequenceShowcase key={item.sequence.id} active={item.sequence.isActive} onOpen={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : openCycleSequenceEditor(item.sequence.id)} name={item.sequence.name} description={item.sequence.description}
                 headerExtra={<Badge variant="outline" className="shrink-0 bg-white/5 text-[10px]">Passo {item.currentPositionLabel}</Badge>}
                 members={getMembersForSequence(item.sequence.id).map((membership) => {
                   const member = findHabitById(habits, membership.habitId);
@@ -2345,7 +2386,7 @@ export const Ciclos: React.FC = () => {
                   <button type="button" title="Pular a vez" aria-label={`Pular a vez de ${item.sequence.name}`} disabled={!canSkipSequence(item.sequence)} onClick={() => handleSkipSequence(item.sequence.id)} className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 text-fitness-primary hover:bg-white/5 disabled:opacity-30"><SkipForward size={15} /></button>
                   <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => toggleCycleSequenceActive(item.sequence.id)}>{item.sequence.isActive ? 'Pausar' : 'Retomar'}</Button>
                   <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => resetCycleSequenceToStart(item.sequence.id)}>Reiniciar</Button>
-                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : setSelectedSequenceId(item.sequence.id)}>Detalhes</Button>
+                  <Button size="sm" variant="outline" className="h-8 rounded-lg border-white/10 px-2.5 text-xs" onClick={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : openCycleSequenceEditor(item.sequence.id)}>Detalhes</Button>
                 </div>
               </CycleSequenceShowcase>
             ))}
@@ -2354,31 +2395,8 @@ export const Ciclos: React.FC = () => {
       </motion.div>
 
       </section>
-      <details ref={insightsRef} className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e constância</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
+      <details ref={insightsRef} className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e atividade recente</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
         <div className="cycle-score-showcase"><ScoreHierarchyPanel presentation="explorer" tasks={tasks} habits={habits} customAreas={customAreas} customSubareas={customSubareas} /></div>
-      {/* Top Streaks */}
-      {topStreaks.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-6"
-        >
-          <div className="flex items-center gap-2 mb-3">
-            <ArcaneIcon name="conquista" size={20} />
-            <h3 className="font-mystic text-sm">Sequências de constância</h3>
-          </div>
-          <div className="cycle-constancy-list">
-            {topStreaks.map(habit => <div key={habit.id}>
-              <p>{habit.name}</p>
-              <CycleStreakBadge schedule={habit} rotates={sequenceMemberships.some(member => member.habitId === habit.id)} habitId={`${destinyAccountId}:${habit.id}`} name={habit.name}
-                value={habit.streak} record={habit.longestStreak} lastCompletedAt={habit.lastCompletedAt}
-                referenceDate={selectedDate} completions={habit.completions} />
-            </div>)}
-          </div>
-        </motion.div>
-      )}
-
       </div></details>
       {/* Timer Modal */}
       <Dialog open={showTimer} onOpenChange={handleTimerModalChange}>
@@ -2561,8 +2579,8 @@ export const Ciclos: React.FC = () => {
       <Dialog open={showQuickEdit} onOpenChange={setShowQuickEdit}>
         <DialogContent aria-labelledby="cycles-edit-title" aria-describedby="cycles-edit-description" className="cycle-dialog cycle-editor-dialog max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle id="cycles-edit-title" className="font-mystic text-xl">Editar Ciclo</DialogTitle>
-          <DialogDescription id="cycles-edit-description">Ajuste o ciclo e seus dias de execução. Itens com filhos mantêm os valores herdados.</DialogDescription>
+            <DialogTitle id="cycles-edit-title" className="font-mystic text-xl">{editingHabitIsChild ? 'Editar subitem' : 'Editar Ciclo'}</DialogTitle>
+          <DialogDescription id="cycles-edit-description">{isEditingNote ? 'Nota é um texto livre, sem área, pontuação ou checkbox.' : editingHabitIsChild && isEditingNonValuable ? 'Checklist registra conclusão sem área, tempo ou pontuação.' : editingHabitIsChild ? 'Ajuste este subitem. A frequência é herdada do ciclo agregador.' : 'Ajuste o ciclo e seus dias de execução. Itens com filhos mantêm os valores herdados.'}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -2573,9 +2591,9 @@ export const Ciclos: React.FC = () => {
             )}
 
             <div>
-              <label className="text-sm text-white/70 mb-2 block">Nome do Ciclo</label>
+              <label className="text-sm text-white/70 mb-2 block">{editingHabitIsChild ? 'Nome do subitem' : 'Nome do Ciclo'}</label>
               <Input
-                aria-label="Nome do ciclo" value={editName}
+                aria-label={editingHabitIsChild ? 'Nome do subitem' : 'Nome do ciclo'} value={editName}
                 onChange={(e) => setEditName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && editName.trim()) {
@@ -2588,14 +2606,50 @@ export const Ciclos: React.FC = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            {editingHabitIsChild && (
+              <fieldset className="space-y-2">
+                <legend className="text-sm text-white/70">Tipo de subitem</legend>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                  {([
+                    { type: 'valuable', title: 'Pontuável', description: 'Área e recompensa' },
+                    { type: 'structural', title: 'Checklist', description: 'Concluir sem pontuação' },
+                    { type: 'text', title: 'Nota', description: 'Texto livre, sem checkbox' },
+                  ] as const).map(({ type, title, description }) => {
+                    const selected = editChildType === type;
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        aria-pressed={selected}
+                        onClick={() => handleSelectEditChildType(type)}
+                        className={`rounded-lg border p-3 text-left transition-colors ${selected
+                          ? 'border-mystic-arcane bg-mystic-arcane/20 text-white'
+                          : 'border-white/10 bg-white/[0.03] text-white/70 hover:border-white/25 hover:bg-white/[0.07]'
+                        }`}
+                      >
+                        <span className="block text-sm font-medium">{title}</span>
+                        <span className="mt-1 block text-xs text-white/50">{description}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {isEditingNote && <p className="text-xs text-white/50">Notas não recebem pontuação, área ou checkbox de conclusão.</p>}
+              </fieldset>
+            )}
+
+            {!isEditingNonValuable && <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-sm text-white/70 mb-2 block">Área Principal</label>
                 <Select 
                   value={editArea} 
                   onValueChange={(value) => {
                     setEditArea(value);
-                    if (value === 'none') setEditSubarea('none');
+                    if (value !== 'none') {
+                      const validSubareas = getMergedSubareasForArea(value);
+                      if (!validSubareas.some((subarea) => subarea.id === editSubarea)) {
+                        setEditSubarea('none');
+                      }
+                    }
                   }}
                   disabled={isEditAggregatorLocked}
                 >
@@ -2648,9 +2702,9 @@ export const Ciclos: React.FC = () => {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+            </div>}
 
-            <div>
+            {!editingHabitIsChild && <div>
               <label className="text-sm text-white/70 mb-2 block">Dias da semana</label>
               <div className="flex flex-wrap gap-1.5">
                 {WEEKDAYS_SHORT.map((label, dayIndex) => {
@@ -2672,27 +2726,42 @@ export const Ciclos: React.FC = () => {
                   );
                 })}
               </div>
-            </div>
+            </div>}
 
-            <div>
+            {!isEditingNonValuable && <div>
               <label className="text-sm text-white/70 mb-2 block">Pontuação Base</label>
-              <Input
-                type="number"
-                min="1"
-                max="100"
-                aria-label="Pontuação base" value={editPoints}
-                onChange={(e) => setEditPoints(Math.max(1, parseInt(e.target.value) || 1))}
-                disabled={isEditAggregatorLocked}
-                className="bg-white/5 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  step="1"
+                  aria-label="Pontuação base" value={editPoints}
+                  onChange={(e) => setEditPoints(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
+                  disabled={isEditAggregatorLocked}
+                  className="bg-white/5 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <button type="button" aria-label="Diminuir pontuação" title="Diminuir pontuação"
+                  onClick={() => setEditPoints((value) => Math.max(1, value - 1))}
+                  disabled={isEditAggregatorLocked || editPoints <= 1}
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/15 text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40">
+                  <ArrowDown size={16} aria-hidden="true" />
+                </button>
+                <button type="button" aria-label="Aumentar pontuação" title="Aumentar pontuação"
+                  onClick={() => setEditPoints((value) => Math.min(100, value + 1))}
+                  disabled={isEditAggregatorLocked || editPoints >= 100}
+                  className="grid h-11 w-11 shrink-0 place-items-center rounded-lg border border-white/15 text-white/75 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40">
+                  <ArrowUp size={16} aria-hidden="true" />
+                </button>
+              </div>
               {Boolean(editingHabitId && habits.find((h) => h.id === editingHabitId)?.childHabits.length) && (
                 <p className="text-xs text-yellow-400/70 mt-1">
                   Este ciclo é agregador (tem subciclos). Pontuação vem dos subitens.
                 </p>
               )}
-            </div>
+            </div>}
 
-            <div className="space-y-3">
+            {!isEditingNonValuable && <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -2739,7 +2808,7 @@ export const Ciclos: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </div>}
 
             <div className="flex gap-3 pt-2">
               <Button
@@ -2774,9 +2843,9 @@ export const Ciclos: React.FC = () => {
         <DialogContent aria-labelledby="cycles-sequence-title" aria-describedby="cycles-sequence-description" className="cycle-dialog cycle-editor-dialog cycle-sequence-editor max-w-lg max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle id="cycles-sequence-title" className="font-mystic text-xl">
-              {selectedSequenceSummary?.sequence.name || 'Sequência'}
+              Editar sequência
             </DialogTitle>
-          <DialogDescription id="cycles-sequence-description">Organize os passos e os dias. As alterações desta sequência são salvas ao tocar nos controles.</DialogDescription>
+          <DialogDescription id="cycles-sequence-description">Edite o nome, os dias e a ordem dos ciclos. Salve as mudanças juntas ao terminar.</DialogDescription>
           </DialogHeader>
 
           {selectedSequenceSummary && (
@@ -2790,11 +2859,17 @@ export const Ciclos: React.FC = () => {
                 </Badge>
               </div>
 
+              <div className="cycle-sequence-name-field">
+                <label className="cycle-composer-name min-w-0 flex-1">Nome da sequência
+                  <Input value={sequenceNameDraft} onChange={(event) => setSequenceNameDraft(event.target.value)} maxLength={80} aria-label="Nome da sequência" />
+                </label>
+              </div>
+
               <div className="rounded-xl border border-white/10 p-3 bg-black/20">
                 <p className="text-xs text-white/60 mb-2">Dias da semana da sequência</p>
                 <div className="flex flex-wrap gap-1.5">
                   {WEEKDAYS_SHORT.map((label, dayIndex) => {
-                    const selectedDays = selectedSequenceSummary.sequence.recurrenceConfig.daysOfWeek || [0, 1, 2, 3, 4, 5, 6];
+                    const selectedDays = sequenceDraftDaysOfWeek;
                     const active = selectedDays.includes(dayIndex);
 
                     return (
@@ -2806,13 +2881,7 @@ export const Ciclos: React.FC = () => {
                             ? (selectedDays.length > 1 ? selectedDays.filter((day) => day !== dayIndex) : selectedDays)
                             : [...selectedDays, dayIndex].sort((a, b) => a - b);
 
-                          updateCycleSequence(selectedSequenceSummary.sequence.id, {
-                            recurrenceType: 'DAILY',
-                            recurrenceConfig: {
-                              ...selectedSequenceSummary.sequence.recurrenceConfig,
-                              daysOfWeek: nextDays,
-                            },
-                          });
+                          setSequenceDraftDaysOfWeek(nextDays);
                         }}
                         className={`px-2 py-1 rounded-md text-[11px] border transition-colors ${
                           active
@@ -2837,7 +2906,7 @@ export const Ciclos: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-mystic-purple border-white/10">
                       <SelectItem value="none">Selecione...</SelectItem>
-                      {availableStandaloneHabits.filter((habit) => selectedSequenceSummary.sequence.memberRestriction !== 'WORKOUT' || habit.sourceModule === 'modulo_treino').map((habit) => (
+                      {availableSequenceHabits.filter((habit) => selectedSequenceSummary.sequence.memberRestriction !== 'WORKOUT' || habit.sourceModule === 'modulo_treino').map((habit) => (
                         <SelectItem key={habit.id} value={habit.id}>{habit.name}</SelectItem>
                       ))}
                     </SelectContent>
@@ -2846,7 +2915,7 @@ export const Ciclos: React.FC = () => {
                     size="sm"
                     onClick={() => {
                       if (sequenceHabitToAdd === 'none') return;
-                      addHabitToSequence(selectedSequenceSummary.sequence.id, sequenceHabitToAdd);
+                      setSequenceDraftMemberIds((current) => [...current, sequenceHabitToAdd]);
                       setSequenceHabitToAdd('none');
                     }}
                   >
@@ -2883,15 +2952,14 @@ export const Ciclos: React.FC = () => {
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <p className="text-sm">{habit?.name || 'Ciclo removido'}</p>
-                          <p className="text-[11px] text-white/50">Posição {membership.position + 1}</p>
-                          <p className="text-[10px] text-white/35">Arraste para reordenar</p>
+                      <p className="text-[11px] text-white/50">Posição {membership.position + 1}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button
                             size="sm"
                             variant="outline"
                             className="h-7 px-2"
-                            aria-label={`Mover ${habit?.name || 'ciclo'} para cima`} onClick={() => moveHabitInSequence(selectedSequenceSummary.sequence.id, membership.habitId, 'up')}
+                            aria-label={`Mover ${habit?.name || 'ciclo'} para cima`} onClick={() => moveDraftSequenceMember(membership.habitId, 'up')}
                           >
                             <ArrowUp className="w-3 h-3" />
                           </Button>
@@ -2899,7 +2967,7 @@ export const Ciclos: React.FC = () => {
                             size="sm"
                             variant="outline"
                             className="h-7 px-2"
-                            aria-label={`Mover ${habit?.name || 'ciclo'} para baixo`} onClick={() => moveHabitInSequence(selectedSequenceSummary.sequence.id, membership.habitId, 'down')}
+                            aria-label={`Mover ${habit?.name || 'ciclo'} para baixo`} onClick={() => moveDraftSequenceMember(membership.habitId, 'down')}
                           >
                             <ArrowDown className="w-3 h-3" />
                           </Button>
@@ -2907,7 +2975,7 @@ export const Ciclos: React.FC = () => {
                             size="sm"
                             variant="outline"
                             className="h-7 px-2 text-red-300"
-                            aria-label={`Remover ${habit?.name || 'ciclo'} da sequência`} onClick={() => removeHabitFromSequence(selectedSequenceSummary.sequence.id, membership.habitId)}
+                            aria-label={`Remover ${habit?.name || 'ciclo'} da sequência`} onClick={() => setSequenceDraftMemberIds((current) => current.filter((id) => id !== membership.habitId))}
                           >
                             <X className="w-3 h-3" />
                           </Button>
@@ -2918,7 +2986,7 @@ export const Ciclos: React.FC = () => {
                 )}
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex items-center justify-between">
+              <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
                 <Button
                   variant="outline"
                   className="border-red-400/40 text-red-300 hover:bg-red-500/10"
@@ -2937,7 +3005,10 @@ export const Ciclos: React.FC = () => {
                     setSequenceHabitToAdd('none');
                   }}
                 >
-                  Fechar
+                  Cancelar
+                </Button>
+                <Button type="button" disabled={!sequenceNameDraft.trim()} onClick={handleSaveCycleSequenceDraft}>
+                  Salvar alterações
                 </Button>
               </div>
             </div>

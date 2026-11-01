@@ -1,6 +1,7 @@
 import { QuestNextSteps } from '@/components/quests/QuestNextSteps';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { TopBar } from '@/components/layout/TopBar';
+import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
@@ -319,6 +320,7 @@ export default function ElementalPreview() {
       {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /><Link className="ep-back" to={HOME}><ArrowLeft size={17} />Voltar ao Santuário</Link></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
     </main>
     <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} />
+    <MobileBottomNav />
     <footer className="ep-footer"><span>Uma jornada. Quatro elementos.</span><Link to="/mapa">Explorar sua jornada <ArrowRight size={14} /></Link></footer>
   </div>;
 }

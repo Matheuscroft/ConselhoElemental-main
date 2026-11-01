@@ -10,7 +10,7 @@
   font-family: Inter, system-ui, sans-serif;
   line-height: 1.5;
 }
-.ep-page { min-height: 100dvh; background: radial-gradient(ellipse at 75% 25%, #24314444, transparent 50%), var(--ep-bg); }
+.ep-page { min-height: 100dvh; padding-bottom: calc(4rem + env(safe-area-inset-bottom)); background: radial-gradient(ellipse at 75% 25%, #24314444, transparent 50%), var(--ep-bg); }
 .elemental-preview h1, .elemental-preview h2, .elemental-preview h3, .elemental-preview p { margin: 0; }
 .elemental-preview h1, .elemental-preview h2 { font-family: Cinzel, Georgia, serif; font-weight: 500; }
 .elemental-preview h3 { font-family: Inter, system-ui, sans-serif; font-weight: 500; }

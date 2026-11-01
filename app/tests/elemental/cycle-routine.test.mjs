@@ -55,43 +55,21 @@ test('subitem composer exposes labelled controls, explicit cancel and no writes 
 });
 
 const { CycleExecutionActions } = loadComponent('src/components/cycles/CycleExecutionActions.tsx');
-const { CycleSubitemsToggle } = loadComponent('src/components/cycles/CycleSubitemsToggle.tsx');
 
-test('execution actions call only the explicitly selected command and stop propagation', () => {
+test('execution action exposes only the explicit start command and stops propagation', () => {
   const calls = [];
   let stopped = 0;
-  const commands = { name: 'Ler', completed: false, onStart: () => calls.push('start'), onComplete: () => calls.push('complete'), onUndo: () => calls.push('undo') };
+  const commands = { name: 'Ler', completed: false, onStart: () => calls.push('start') };
   const pending = CycleExecutionActions(commands);
   assert.deepEqual(calls, []);
   const buttons = nodes(pending, 'button');
   assert.equal(buttons[0].props['aria-label'], 'Iniciar Ler');
-  assert.equal(buttons[1].props['aria-label'], 'Concluir Ler');
   buttons[0].props.onClick({ stopPropagation: () => stopped++ });
   assert.deepEqual(calls, ['start']);
-  buttons[1].props.onClick({ stopPropagation: () => stopped++ });
-  assert.deepEqual(calls, ['start', 'complete']);
   const done = CycleExecutionActions({ ...commands, completed: true });
   const undo = nodes(done, 'button');
-  assert.equal(undo.length, 1);
-  assert.equal(undo[0].props['aria-label'], 'Desfazer conclusão de Ler');
-  undo[0].props.onClick({ stopPropagation: () => stopped++ });
-  assert.deepEqual(calls, ['start', 'complete', 'undo']);
-  assert.equal(stopped, 3);
-});
-
-test('subitem disclosure describes supplied state and only toggles on request', () => {
-  let toggles = 0;
-  const config = { name: 'Água', expanded: false, completed: 1, total: 3, onToggle: () => toggles++ };
-  const closed = CycleSubitemsToggle(config);
-  assert.equal(toggles, 0);
-  assert.equal(closed.props['aria-expanded'], false);
-  assert.equal(closed.props['aria-label'], 'Mostrar subitens de Água, 1 de 3 concluídos');
-  closed.props.onClick();
-  assert.equal(toggles, 1);
-  const html = renderToStaticMarkup(React.createElement(CycleSubitemsToggle, { ...config, expanded: true }));
-  assert.match(html, /aria-expanded="true"/);
-  assert.match(html, /Recolher subitens/);
-  assert.doesNotMatch(renderToStaticMarkup(React.createElement(CycleSubitemsToggle, { ...config, completed: 0, total: 0 })), /NaN|Infinity/);
+  assert.equal(undo.length, 0);
+  assert.equal(stopped, 1);
 });
 
 test('ordering lives inside the native disclosure without an extra status picker', () => {
