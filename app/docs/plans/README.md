@@ -1,6 +1,6 @@
 ## Recompensas coloridas e publicação — T05 / 0.1.129
 
-- [Entrega e recebimento em main](XP-ELEMENTOS-PUBLICACAO-0.1.129.md). T04 incluída, 674 testes completos, gates fechados, sem deploy/SQL remoto.
+- [Entrega e recebimento em main](XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Publicado em main no commit técnico 3e48d3c; T04 incluída, 674 testes completos, gates fechados, sem deploy/SQL remoto.
 
 ## Treinos: superfícies restantes — T04 / 0.1.128 local
 

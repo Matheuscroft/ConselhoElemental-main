@@ -1,6 +1,6 @@
-## T05 — repasse atual 0.1.129 destinado à main
+## T05 — repasse atual 0.1.129 publicado na main
 
-[XP/elementos coloridos, T04 incorporada e recebimento por Matheus](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). 674 testes completos, tipos/lint/build passaram. Formatação/ícones de XP alinhados, fórmulas/stores/dados preservados. Preflight main be78b1e; registrar envio/hash após push. Gates false, SQL 128/129 somente local, main/integracao sem auto-deploy. Conta/F6, associação pessoal, fragmentos e GymMane pendentes.
+[XP/elementos coloridos, T04 incorporada e recebimento por Matheus](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). 674 testes completos, tipos/lint/build passaram. Formatação/ícones de XP alinhados, fórmulas/stores/dados preservados. Publicado: **3e48d3c** em main e integração, fast-forward confirmado; PR #1 MERGED. Gates false, SQL 128/129 somente local, main/integracao sem auto-deploy. Conta/F6, associação pessoal, fragmentos e GymMane pendentes.
 
 Correção incluída antes da publicação: ícone do treino/exercício segue a modalidade salva (bike/nado/corrida etc.), sem fallback indevido para halter; foco muscular preservado em força. Resolvedor compartilhado em biblioteca/editor/catálogo/Ciclos, sem alteração de dados.
 

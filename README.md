@@ -4,7 +4,7 @@ Aplicativo de gestão pessoal gamificada, React/Vite/TypeScript, com prioridade 
 
 ## Repasse atual — 0.1.129
 
-Pacote destinado à **main**, conforme pedido de Fábio: [estado e recebimento para Matheus](app/docs/plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Inclui as superfícies restantes de Treinos, selos de XP e elementos coloridos, preservando dados/cálculos. Fábio conduz frontend/mobile, Matheus backend/documentação, Astro Boy coordena.
+Pacote publicado na **main** (commit técnico `3e48d3c`), conforme pedido de Fábio: [estado e recebimento para Matheus](app/docs/plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Inclui as superfícies restantes de Treinos, selos de XP e elementos coloridos, preservando dados/cálculos. Fábio conduz frontend/mobile, Matheus backend/documentação, Astro Boy coordena.
 
 Conta integral/F6, associação pessoal, fragmentos e port GymMane continuam pendentes. Gates experimentais e deploy Git em main seguem desativados; push não transporta o progresso do navegador. A confirmação/hash de publicação ficam na continuidade.
 

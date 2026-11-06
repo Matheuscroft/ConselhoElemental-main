@@ -1,0 +1,25 @@
+{
+  "version": "0.1.129",
+  "technicalCommit": "3e48d3c764907c5339b6812f26aa1f0a384d6e30",
+  "remote": "https://github.com/Matheuscroft/ConselhoElemental-main.git",
+  "confirmedRefs": {
+    "main": "3e48d3c764907c5339b6812f26aa1f0a384d6e30",
+    "codex/fitness-ui-integration": "3e48d3c764907c5339b6812f26aa1f0a384d6e30"
+  },
+  "method": "git push --atomic; both fast-forward; no force",
+  "pullRequest": {
+    "number": 1,
+    "state": "MERGED",
+    "mergedAt": "2026-11-06T17:41:38Z",
+    "mergeCommit": "3e48d3c764907c5339b6812f26aa1f0a384d6e30"
+  },
+  "githubAfterPush": {
+    "workflows": 0,
+    "deployments": 0
+  },
+  "deploymentCommandExecuted": false,
+  "remoteSqlApplied": false,
+  "personalProgressTransferred": false,
+  "visualAcceptance": "pending; no inspection workaround",
+  "inventorySnapshot": "technical commit 3e48d3c; final documentation custody tracked separately"
+}
