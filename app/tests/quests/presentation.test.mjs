@@ -20,7 +20,9 @@ test('receipt displays supplied values without granting or inventing rewards', (
 test('unknown points and time stay unknown while zero is a recorded value', () => {
   const missing = render(QuestResultStats, { xp: 0, points: null, minutes: undefined });
   assert.equal((missing.match(/<dd>—<\/dd>/g) ?? []).length, 2);
-  assert.match(missing, /<dd>0<\/dd>/);
+  assert.match(missing, /Conclusão registrada/);
+  assert.match(missing, /Sem XP adicional/);
+  assert.doesNotMatch(missing, /XP indisponível/);
   const zero = render(QuestResultStats, { xp: 0, points: 0, minutes: 0 });
   assert.doesNotMatch(zero, /—/);
   assert.match(zero, /0 min/);

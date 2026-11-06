@@ -1,3 +1,4 @@
+import { RevealPanel } from '@/components/motion/RevealPanel';
 import { useId, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
@@ -23,9 +24,9 @@ export function ExpandedElements({ elements }: { elements: ElementPanel[] }) {
           <img src={`/sanctuary/elements/${element.id}-v1.webp`} alt="" width={120} height={120} loading="lazy" />
           <span><strong><ElementIcon element={element.id} size={20} />{element.name}</strong><small>{element.scoreLabel}</small></span><ChevronDown size={20} aria-hidden="true" />
         </button>
-        <div className="discovery-reveal" id={`expanded-${instance}-${element.id}`} data-open={open} inert={!open} aria-hidden={!open}><div><div className="pillar-element-content">
+        <RevealPanel id={`expanded-${instance}-${element.id}`} open={open}><div className="pillar-element-content">
           <p>{element.description}</p><Link to={elementHref(element.id)}>Explorar {element.name}<ArrowUpRight size={18} aria-hidden="true" /></Link>
-        </div></div></div>
+        </div></RevealPanel>
       </section>;
     })}
   </div>;

@@ -1,6 +1,7 @@
 import React, { useId } from 'react';
 import { Activity, Check, ChevronDown, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RevealPanel } from '@/components/motion/RevealPanel';
 
 export type ExerciseCardState = 'pending' | 'active' | 'completed' | 'skipped';
 
@@ -26,7 +27,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
     <div
       data-state={state}
       className={cn(
-        'relative overflow-hidden rounded-fit-sm shadow-fitness-card motion-safe:transition-colors motion-safe:duration-200',
+        'fitness-elemental-card relative overflow-hidden rounded-fit-sm motion-safe:transition-colors motion-safe:duration-200',
         completed ? 'bg-fitness-canvas' : 'bg-fitness-surface'
       )}
     >
@@ -40,8 +41,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
         <span
           aria-hidden="true"
           className={cn(
-            'grid h-11 w-11 shrink-0 place-items-center rounded-full',
-            completed ? 'bg-fitness-surface-muted text-fitness-muted-dark' : 'bg-fitness-lavender text-fitness-primary'
+            'fitness-elemental-badge grid h-11 w-11 shrink-0 place-items-center rounded-2xl',
+            completed ? 'bg-fitness-surface-muted text-fitness-muted-dark' : 'text-[rgb(var(--el-gold))]'
           )}
         >
           {skipped && <SkipForward className="h-5 w-5" strokeWidth={2} />}
@@ -59,21 +60,14 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
         />
       </button>
 
-      <div
-        id={panelId}
-        role="region"
-        aria-label={`Detalhes: ${title}`}
-        className={cn('grid motion-safe:transition-[grid-template-rows] motion-safe:duration-200', expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]')}
-      >
-        <div className="overflow-hidden">
-          <div className={cn('space-y-3 px-4 pb-6', !expanded && 'invisible')}>{children}</div>
-        </div>
-      </div>
+      <RevealPanel id={panelId} open={expanded}>
+        <div role="region" aria-label={`Detalhes: ${title}`} className="space-y-3 px-4 pb-6">{children}</div>
+      </RevealPanel>
 
       <div className="absolute inset-x-0 bottom-0 h-1.5" aria-hidden="true">
         <div
-          className={cn('h-full rounded-r-full motion-safe:transition-[width] motion-safe:duration-500', completed || skipped ? 'bg-fitness-muted-dark' : 'bg-fitness-green')}
-          style={{ width: `${completed ? 100 : clamped}%` }}
+          className={cn('fitness-motion-bar h-full w-full origin-left rounded-r-full', completed || skipped ? 'bg-fitness-muted-dark' : 'bg-fitness-green')}
+          style={{ transform: `scaleX(${(completed ? 100 : clamped) / 100})` }}
         />
       </div>
     </div>

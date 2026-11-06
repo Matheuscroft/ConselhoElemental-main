@@ -34,5 +34,10 @@
         }
       ]
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/fitness-ui-integration": false
+    }
+  }
 }

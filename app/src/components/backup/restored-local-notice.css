@@ -1,0 +1,12 @@
+.restored-local-notice { display: flex; align-items: center; gap: .75rem; width: min(100% - 2rem, 64rem); margin: .75rem auto; padding: .6rem .85rem; box-sizing: border-box; border: 1px solid #d5b66f55; border-radius: .85rem; background: #101721; color: #eceae3; font: .85rem/1.5 'Inter', sans-serif; overflow-wrap: anywhere; }
+.restored-local-notice > svg { flex-shrink: 0; color: #d5b66f; }
+.restored-local-notice span { flex: 1; min-width: 0; }
+.restored-local-notice strong, .restored-local-notice small { display: block; }
+.restored-local-notice small { color: #adb8c8; }
+.restored-local-notice a { display: inline-flex; align-items: center; min-height: 44px; color: #d5b66f; padding: .2rem; }
+.restored-local-notice a:focus-visible { outline: 2px solid #eceae3; outline-offset: 3px; }
+@media (max-width: 390px) { .restored-local-notice { flex-wrap: wrap; } .restored-local-notice a { margin-left: 2rem; } }
+
+.account-sync-status{position:relative;z-index:1;flex-wrap:wrap;margin:1rem auto;max-width:64rem}.account-sync-status span{flex-basis:12rem}.account-sync-status button{min-height:48px;padding:.6rem .8rem;border:1px solid rgba(213,182,111,.35);border-radius:.7rem;background:rgba(213,182,111,.08);color:inherit;font:inherit}.account-sync-status button:focus-visible{outline:2px solid #d5b66f;outline-offset:3px}.account-sync-status button:disabled{opacity:.6}
+
+@media (max-width: 480px) { .account-sync-status button { width: 100%; min-width: 0; white-space: normal; overflow-wrap: anywhere; } }

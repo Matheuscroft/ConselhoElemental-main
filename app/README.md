@@ -1,4 +1,6 @@
 <p align="center">
+
+> **Repasse 0.1.127 para Matheus:** [estado, mudanças, testes e próximos lotes de backend](docs/plans/REPASSE-BACKEND-0.1.127.md). Branch de revisão; conta integral/F6 e associação pessoal ainda pendentes, gates fechados.
   <img src="Mago_app.jpeg" width="250" alt="Logo Domínio do Mago - Elemental Arcane UI">
 </p>
 
@@ -22,7 +24,7 @@ O projeto utiliza uma stack moderna focada em performance e imersão visual:
 *   **Backend & Auth:** Supabase (PostgreSQL + GoTrue) com sincronização na nuvem.
 *   **Engine 3D:** React Three Fiber (R3F) e Drei para renderização procedural do Avatar (Mago) e proteção contra `WebGL Context Lost`.
 *   **Design System:** Tailwind CSS com Design Tokens customizados de Glassmorphism Premium (Elemental Arcane UI) e Radix UI (Shadcn) para componentes acessíveis.
-*   **Animações:** Framer Motion e SVGs dinâmicos.
+*   **Animações:** CSS, SVGs e transições de interface com suporte a movimento reduzido.
 
 ## 🗺 Funcionalidades Atuais (Core)
 

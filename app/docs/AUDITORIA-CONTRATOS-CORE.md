@@ -1,4 +1,48 @@
+## H02 — pacote de contratos para revisão backend — 0.1.127
+
+[Repasse integral para Matheus](plans/REPASSE-BACKEND-0.1.127.md): alterações de core/recibos/recorrência já pertencem aos lotes anteriores autorizados; H02 somente ícone/apresentação, compatibilidade de produtor e higiene/publicação. Sem mudança nova de fórmula/store/tipo neste lote. Candidato SQL 127 separado, gate fechado; sem reescrever revisões anteriores/aplicar remotamente. Conta integral/F6 e associação pessoal seguem pendentes.
+
+## T01 — produtor 124, sem mudança de domínio (06/11/2026)
+
+Interface de Treinos agora recebe chaves de ícone em metadados de apresentação, preservando IDs/conteúdo dos catálogos, voto de foco, filtros e callbacks. Stores/tipos/cálculos intactos. Auditor de backup aceita 124; candidato SQL separado exige revisão 123/gate fechado e preserva formato/bytes/ACLs. Testado em PGlite, sem aplicação hospedada. [Evidências e limites](plans/TREINOS-IDENTIDADE-0.1.124.md). As revisões locais 123/124 precisam de tratamento em escopo hospedado próprio; gates seguem false.
+
+## Compatibilidade após pull — 05/11/2026 / 0.1.123
+
+[Integração be78b1e](plans/INTEGRACAO-MAIN-2026-11-05.md): auditor de backup de Fitness aceita os grupos canônicos obliques/serratus/tibialis e origem musculacao adicionados remotamente, além de opcionais undefined antes do JSON. Record de MuscleGroupId exaustivo; desconhecidos/null continuam inválidos. Sem recalcular distribuição/XP/Prana ou editar fórmulas. Validação remota de área/subárea e notas preservada junto aos recibos/contadores locais; agenda personalizada não é sobrescrita ao editar nome. Migrações instaladas intactas; revisão 123 somente candidata local, não aplicada.
+
+## Agenda — R26-M2A / 0.1.106, 29/10/2026
+
+[Contrato/compatibilidade](plans/R26-M2A-AGENDA-COMPATIVEL.md): Ciclos e Temporal compartilham recorrência; novo Task recebe dueDate local YYYY-MM-DD; adapter usa due_date existente sem schema novo. Config anual explícita, limite opcional e YEARLY em Commitment; dia 31/29 de fevereiro pulados. Mensal antigo vazio não migrado; anual antigo alinha leitura à data inicial do Temporal, sem mexer em recibos. Novos anuais usam Habit/Commitment; Tasks antigos por marcadores mantêm histórico e aviso. 521 testes globais, tipos/lint/build; cliente sintético/SQL local não são aceite remoto. Constância anual/rotações e versionamento de agenda permanecem legados; Missão/project_id e demais divergências não foram reconciliados por inferência. Gates false.
+
+## Cobertura de associação — R25-1B1, 29/10/2026
+
+[Matriz e contrato](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md) conferem os 21 campos persistidos frente ao serviço atual. Recibos/árvores/quantidades testados viajam no payload, mas saldos independentes do personagem, perfis inativos e Fitness não têm cobertura integral. Publicação intermediária pode ficar parcial em falha. Cinco testes novos com serviço/stores reais e cliente sintético; 155 testes de backup passaram. Fontes do core/backend preservadas; versão 0.1.98 mantida. Não comprova perda pessoal, RLS/servidor ou associação real; não altera fórmulas nem autoriza nova política de migração.
+
+## Atualização R25-A2b10 — isolamento de auth/sync, 29/10/2026
+
+[Relatório específico](plans/R25-A-ISOLAMENTO-AUTH-SYNC.md) registra nove caracterizações com authStore/serviço reais e cliente sintético. Fluxo cloud-first existente pode aplicar/limpar/publicar domínio e não cobre backup integral; I/O em andamento pode terminar após logout. Fontes e regras preservadas; não é prova de operação remota ou perda pessoal. Contrato proposto de barreira antes do cliente e vínculo local/remoto exige integração própria com Matheus antes da liberação de restauração. 125 testes de backup passaram; versão mantida.
+
+## Resolução local R25-A2a — 27/10/2026
+
+Os dois achados R25-A1 abaixo foram corrigidos em **0.1.86**, com regressões executadas em stores reais isolados. Criação captura conta de saída, identidade do personagem permanece estável e hidratação de Treinos usa estado do callback. Backup bloqueia captura antes do carregamento dos dois stores. [Evidências e limites](plans/R25-A-BACKUP-DO-PROGRESSO.md). 264 testes passaram; não comprova restauração/conta online nem recuperação de perda anterior. Fórmulas intactas.
+
+## Achados R25-A1 — 27/10/2026
+
+[Detalhes e reprodução](plans/R25-A-BACKUP-DO-PROGRESSO.md): em instância sintética dos stores reais, criar A → adicionar rascunho → criar B → voltar A perdeu o rascunho (1 → 0); createAccount não captura o estado ativo de saída como switchAccount. Também observado readiness de Treinos false após inicialização síncrona: callback referencia o store durante sua construção. Ambos permanecem pendentes para R25-A2; não foram alterados nesta entrega de exportação/conferência. Não é evidência de perda nos dados pessoais, que não foram acessados. Associação de conta e restauração devem tratar esses casos primeiro.
+
+## Atualização R29-C — 27/10/2026
+
+[Contrato 0.1.82](plans/R29-C-CONQUISTAS.md): fechamento/reabertura explícita de Quest/Project agora credita/reverte xpBonus existente, registrado em completionBonus. Não fecha ciclos nem repaga tarefas; pontos agregados usam snapshot novo com fallback legado. Rituais atuais e subitens completáveis são pré-condição; conquistas sem rituais aceitam confirmação manual. 238 testes passaram; serviço remoto, exclusão/reconciliação histórica e sincronização não validados. Demais auditorias permanecem com suas datas e limites.
+
+## Atualização R29-R/B — 27/10/2026
+
+[Contrato 0.1.81](plans/R29-RECUPERACAO-E-RITUAIS.md): autorização explícita para recuperar XP levou à prévia local com backup e idempotência, sem aplicação em dados pessoais nesta rodada. Rituais simples preservam round(score/2); subitens novos recebem por folha usando score legado, snapshot e Undo exato. Pais não pagam novamente. Arredondamento por folha pode diferir do agregado antigo; histórico sem recibo de XP permanece sem reconciliação. Fórmulas de pontos/Prana e native adapter não alterados. 231 testes passaram; sync/actions canônicas, bônus de Quest/Project e QA visual continuam pendentes.
+
 # D01 — Auditoria estática dos contratos core
+
+## Atualização R29-A — 27/10/2026
+
+[Registro 0.1.80](plans/R29-XP-E-RECOMPENSAS.md): ausência de XP em Ciclos reproduzida e corrigida para novas conclusões, por pedido explícito do proprietário. Snapshot opcional no HabitCompletion, crédito por folha/elemento e Undo exato; histórico não recalculado. Demais divergências abaixo não são dadas como resolvidas; a matriz R29 distingue lacunas de Rituais/subitens/bônus. Esta atualização não transforma auditoria histórica em verificação recente.
 
 Data: 09/10/2026, America/Recife. Executor: `/root/auditoria_core_d01`; coordenação/aceite: Astro Boy. Checkout efetivo: `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app`; HEAD `03f05886e5c8afbc8d28dc8ff54da4945d44f626`. Entrega em revisão; não representa aceite funcional.
 

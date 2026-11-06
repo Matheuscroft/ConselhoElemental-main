@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-30",
+  "project_ref": "myvxvgeyseoyugskqlqr",
+  "migration": {
+    "version": "20261030211424",
+    "name": "account_archive_version_122",
+    "original_cli_version": "20261030211040",
+    "sha256": "eddb04b4faf01a42a0fc0ef065297cf38408f0d7e642d73992a523c2c73915d2"
+  },
+  "previous_validator_source_sha256": "25abb9a4660a380cc09d76f5859804c2335997f70dcc841b53e4b424ffb67275",
+  "post_verification": {
+    "synthetic_archive_sha256": "48efe57ff2c71cde38c0e33dedeb3b74b26d6b53a432552da4aefb9a1299eeab",
+    "release_closed": true,
+    "prosecdef": false,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "validator_source_sha256": "a1673918e5294ced9b1f5e17f2cac08e0bddf681f3a6ba8fed2cc9bf565216cb",
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  "limits": "Pure validator with a minimal synthetic structural envelope and catalog metadata only. No personal archive upload, Auth signup/email delivery, session adoption, account commit, gate activation or Vercel deployment."
+}

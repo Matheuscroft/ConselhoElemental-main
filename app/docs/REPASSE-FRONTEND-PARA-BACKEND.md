@@ -1,3 +1,39 @@
+## H02 — repasse atualizado para Matheus — 0.1.127
+
+[Resumo, recebimento e prioridades backend](plans/REPASSE-BACKEND-0.1.127.md). Kimono/faixa em artes marciais; 668 testes, tipos/lint/build passaram. Publicação preparada em branch de revisão com auto-deploy desativado somente nela. Gates false, revisão SQL 127 somente local, F6/conta pessoal e fragmentos pendentes. Histórico de T01–T03 e H01 preservado; usar este repasse/inventário mais recente.
+
+## T03 — Treinos 0.1.126: navegação do catálogo
+
+[Catálogo em seis grupos, busca e paginação](plans/TREINOS-CATALOGO-AGRUPADO-0.1.126.md). Os 124 exercícios permanecem com IDs/objetos/conteúdo intactos; stores/cálculos preservados. 668 testes completos, tipos/lint/build passaram. Aceite visual/mobile pendente; candidato SQL 126 somente local após 125, gates false. Atualizar inventário H01 antes de publicar; GymMane/F6 continuam separados.
+
+## T02 — ícones intuitivos de Treinos — 0.1.125 (06/11/2026)
+
+Fábio reprovou a família T01 por baixa identificação. [Revisão e evidências](plans/TREINOS-ICONES-INTUITIVOS-0.1.125.md): os 45 ícones foram redesenhados com corpo contextual/região dourada, silhuetas de movimento e equipamentos reconhecíveis. Selos/filtros ampliados e nomes visíveis no editor. APIs/IDs/stores/catálogos/cálculos preservados. Nova proposta implementada, aceite visual do usuário pendente.
+
+9 testes direcionados, TypeScript, lint e build passaram; prancha própria em 24/32/48px inspecionada. Não repetir como atual a suíte completa de 665 testes de T01. Sem inspeção do app/mobile por bloqueio salvo, sem contorno. Backup/versão 125 e candidato SQL 20261106033034 somente local; candidatos 123/124/125 ainda exigem escopo hospedado. Gates false; sem dados pessoais, SQL remoto ou publicação. Custódia sequencial/reservas encerradas. Próximo: avaliar nova família e conferir UI em Sol Médio quando disponível; GymMane/F6 permanecem separados. Registros abaixo históricos.
+
+## T01 — Treinos: ícones e identidade — 0.1.124 (06/11/2026)
+
+[Entrega, evidências e retomada](plans/TREINOS-IDENTIDADE-0.1.124.md). 45 SVGs originais; emojis/recortes antigos substituídos em modalidades, foco muscular, editor, catálogo, widget e XP. Casca/cartões/abas/botões/hero alinhados ao ouro e vidro escuro elemental. Filtros principais acessíveis, refinamentos agrupados, limpeza explícita e nomes com mais espaço. Stores/tipos/catálogos/cálculos preservados.
+
+665 testes completos passaram; TypeScript, lint e build locais aprovados. Prancha vetorial inspecionada; sem aceite visual do app/mobile, pois a inspeção local permanece bloqueada. Versão/backup 124 e candidato SQL 20261106031901 somente local; candidatos 123/124 ainda não aplicados. Gates false, sem dados pessoais, push/deploy/SQL remoto. Reservas encerradas após custódia sequencial. Próximo: aceite visual em Sol Médio; GymMane continua plano G01, F6/conta permanece pendente. Atualizar inventário H01 antes de publicar. Registros abaixo históricos.
+
+## G01 — avaliação GymMane (06/11/2026)
+
+[Plano e limites](plans/GYMMANE-AVALIACAO-INTEGRACAO-2026-11-05.md): referência para nova fase de Treinos, sem incorporação de código/assets. Portar fluxos Flutter para React preservando WorkoutStore, integração com Ciclos, conta e recibos; licença e paridade nativa precisam de decisão. Modelo inicial recomendado Astra Médio/Sol Alto; UI Sol Médio. Matheus revisa contratos de séries, progressão, catálogo/IDs, importação e backup antes de implementação; Fábio conduz identidade/aceite mobile. F6 e gates permanecem como no repasse anterior; G01 não garante conta pronta. Atualizar inventário H01 antes de publicar estes novos documentos.
+
+## Repasse preparado — H01 / 0.1.123 (05/11/2026)
+
+[Plano de entrega e trabalho backend](plans/REPASSE-BACKEND-0.1.123.md) e inventário de publicação atualizados. Ordem recomendada: fechar F6/conta nova; compatibilidade/aceite hospedado; associação pessoal com cópia/readback; aceite mobile/movimento; fragmentos/inventário. Matheus backend, Fábio frontend, Astro Boy coordena. Publicar branch de revisão com gates false permite continuar o backend sem apresentar conta experimental como pronta.
+
+Servidor 5173 reiniciado, HTTP 200; abertura no painel solicitada (queued). Inspeção CUA bloqueada pela permissão salva; sem aceite visual ou contorno. Código não alterado nesta revisão documental; 661 testes/checks são evidência da integração anterior, não nova rodada. Não houve commit, push, deploy, SQL remoto, acesso a secrets/sessões ou exportação pessoal. Git não contém localStorage; a migração do progresso para a conta/Vercel permanece pendente.
+
+## Repasse da integração — 05/11/2026 / 0.1.123
+
+Astro Boy incorporou os commits 3026e75 e be78b1e da main preservando trabalho local. Catálogos, editor de treino e simplificação de Ciclos remotos permanecem; contador genérico diário, recorrência/URL, recompensas por recibo e feedback locais foram reconciliados. Corrigida incompatibilidade do auditor de backup com novos grupos musculares e opcionais, sem recálculo de dados.
+
+[Relatório, snapshot e validação](plans/INTEGRACAO-MAIN-2026-11-05.md). Matheus: SQL já instalado 120/121/122 intacto; candidato 20261106022901_account_archive_version_123.sql somente local. Não rodar db push histórico, nem liberar escrita supondo aceite de Auth por testes sintéticos. F6 segue parcial; Fábio conduz frontend/mobile, Matheus backend, Astro Boy coordena o fechamento da conta. Sem deploy, push ou progresso pessoal transferido neste lote.
+
 # Repasse atual — R15–R26 · 0.1.68 · 25/10/2026
 
 **Publicado em main:** commit de código `0a1db75`, confirmado por `ls-remote`. [Evidências e fechamento](03-Project-Management/reports/R26-REVISAO-E-PUBLICACAO.md).

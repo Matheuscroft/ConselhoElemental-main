@@ -1,4 +1,6 @@
+import { TemporalReturnLink } from '@/components/temporal/TemporalReturnLink';
 import React, { Suspense, useEffect } from 'react';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TopBar } from './TopBar';
@@ -28,6 +30,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   showAura,
 }) => {
   const location = useLocation();
+  const reducedMotion = useMotionPreference();
   const { timer, tickTimer, user, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
 
@@ -86,7 +89,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-rose-300">{hp}/100</span>
                   </div>
                   <div className="h-2 w-full bg-black/60 rounded-full overflow-hidden border border-rose-900/30">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${hp}%` }} className="h-full bg-gradient-to-r from-red-600 to-rose-400" />
+                    <motion.div initial={false} transition={{ duration: reducedMotion ? 0 : .24 }} animate={{ width: `${hp}%` }} className="h-full bg-gradient-to-r from-red-600 to-rose-400" />
                   </div>
                 </div>
 
@@ -97,7 +100,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-amber-300">{stamina}/100</span>
                   </div>
                   <div className="h-2 w-full bg-black/60 rounded-full overflow-hidden border border-amber-900/30">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${stamina}%` }} className="h-full bg-gradient-to-r from-amber-600 to-yellow-400" />
+                    <motion.div initial={false} transition={{ duration: reducedMotion ? 0 : .24 }} animate={{ width: `${stamina}%` }} className="h-full bg-gradient-to-r from-amber-600 to-yellow-400" />
                   </div>
                 </div>
 
@@ -108,7 +111,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                     <span className="text-mystic-gold/80">{levelXp} / {levelProgress.xpToNextLevel}</span>
                   </div>
                   <div className="h-1.5 w-full bg-black/60 rounded-full overflow-hidden border border-mystic-gold/20">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${xpPercent}%` }} className="h-full bg-gradient-to-r from-mystic-gold/50 to-mystic-gold" />
+                    <motion.div initial={false} transition={{ duration: reducedMotion ? 0 : .24 }} animate={{ width: `${xpPercent}%` }} className="h-full bg-gradient-to-r from-mystic-gold/50 to-mystic-gold" />
                   </div>
                 </div>
               </div>
@@ -118,11 +121,12 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
-              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
+              transition={{ duration: reducedMotion ? .12 : .24, ease: [.23, 1, .32, 1] }}
             >
+              <TemporalReturnLink />
               {children}
             </motion.div>
           </AnimatePresence>

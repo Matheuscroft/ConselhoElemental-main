@@ -9,13 +9,13 @@ interface FitnessMetaPillProps {
   valueText: string;
 }
 
-/** Rótulo + cápsula violeta com 3 pontos (preenchidos conforme o nível). */
+/** Rótulo + cápsula dourada com 3 pontos (preenchidos conforme o nível). */
 export const FitnessMetaPill: React.FC<FitnessMetaPillProps> = ({ label, level, valueText }) => (
   <div className="flex flex-wrap items-center gap-2">
     <span className="text-base text-fitness-text">{label}</span>
-    <span className="flex h-7 items-center gap-1.5 rounded-full bg-fitness-primary px-3" title={valueText}>
+    <span className="flex h-7 items-center gap-1.5 rounded-full border border-[rgb(var(--el-gold)/0.25)] bg-[rgb(var(--el-gold)/0.1)] px-3" title={valueText}>
       {[1, 2, 3].map((dot) => (
-        <span key={dot} aria-hidden="true" className={cn('h-2 w-2 rounded-full bg-white', dot > level && 'opacity-40')} />
+        <span key={dot} aria-hidden="true" className={cn('h-2 w-2 rounded-full bg-[rgb(var(--el-gold))]', dot > level && 'opacity-40')} />
       ))}
       <span className="sr-only">{valueText}</span>
     </span>

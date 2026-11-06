@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, ChevronDown, RotateCw } from 'lucide-react';
-import { useReducedMotion } from 'framer-motion';
+import { useMotionPreference, readMotionPreference } from '@/components/motion/useMotionPreference';
+import { createDestinyReveal } from '@/components/destiny/destiny-reveal';
 import { AppLayout } from '@/components/layout';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { useAppStore } from '@/stores/appStore';
@@ -19,7 +20,7 @@ export function CassinoArcano() {
 
 function DestinyWorkspace() {
   const { tasks, quests, getHabitsForDate } = useAppStore();
-  const reduced = !!useReducedMotion();
+  const reduced = useMotionPreference();
   const [kind, setKind] = useState<DestinyKind | 'all'>('all');
   const [element, setElement] = useState<ElementId | 'all'>('all');
   const [days, setDays] = useState<1 | 7>(1);
@@ -28,54 +29,56 @@ function DestinyWorkspace() {
   const [spinning, setSpinning] = useState(false);
   const [snapshot, setSnapshot] = useState<DestinyOption[]>([]);
   const [result, setResult] = useState<DestinyOption | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const locked = useRef(false);
+  const [reveal] = useState(() => createDestinyReveal<DestinyOption>(chosen => {
+    setSpinning(false);
+    setNow(new Date());
+    setResult(chosen);
+  }));
   const resultRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const refresh = () => { if (document.visibilityState !== 'hidden') setNow(new Date()); };
     const interval = setInterval(refresh, 60_000);
     document.addEventListener('visibilitychange', refresh);
-    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', refresh); if (timer.current) clearTimeout(timer.current); };
-  }, []);
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', refresh); reveal.dispose(); };
+  }, [reveal]);
   useEffect(() => {
     if (!result) return;
     const frame = requestAnimationFrame(() => {
       resultRef.current?.focus({ preventScroll: true });
-      resultRef.current?.scrollIntoView({ block: 'nearest', behavior: reduced ? 'instant' : 'smooth' });
+      resultRef.current?.scrollIntoView({ block: 'nearest', behavior: readMotionPreference() ? 'instant' : 'smooth' });
     });
     return () => cancelAnimationFrame(frame);
-  }, [result, reduced]);
+  }, [result]);
+  useEffect(() => {
+    if (!reduced) return;
+    const timer = setTimeout(reveal.finish, 0);
+    return () => clearTimeout(timer);
+  }, [reduced, reveal]);
 
   const allOptions = destinyOptions(tasks, quests, getHabitsForDate, now, days);
   const options = filterDestinyOptions(allOptions, kind, element);
   const currentResult = result ? options.find(item => item.key === result.key && item.href === result.href) : null;
   const displayedOptions = spinning || result ? snapshot : options;
   const spin = () => {
-    if (locked.current) return;
+    if (reveal.pending) return;
     const fresh = filterDestinyOptions(destinyOptions(tasks, quests, getHabitsForDate, new Date(), days), kind, element);
     const chosen = chooseDestiny(fresh, Math.random());
     if (!chosen) { setNow(new Date()); return; }
-    locked.current = true;
     setSnapshot(fresh);
     setSpinning(true);
     setResult(null);
     setRotation(previous => destinyRotation(previous, fresh.findIndex(item => item.key === chosen.key), fresh.length));
-    timer.current = setTimeout(() => {
-      locked.current = false;
-      timer.current = null;
-      setSpinning(false);
-      setNow(new Date());
-      setResult(chosen);
-    }, reduced ? 0 : 2700);
+    reveal.start(chosen, reduced ? 0 : 2700);
   };
 
   return <div className="elemental-system destiny-workspace">
     <header className="destiny-heading"><span className="destiny-seal"><ArcaneIcon name="cassino" size={30} /></span><div><p>Cassino Arcano</p><h1>Roda do Destino</h1><p>Menos tempo escolhendo. Um próximo passo para você.</p></div></header>
     <div className="destiny-free"><ArcaneIcon name="invocar" size={18} /><span>Sorteio gratuito. Você decide quando começar.</span></div>
     <section className="destiny-arena" aria-label="Escolha aleatória de atividade">
-      <DestinyWheel options={displayedOptions} rotation={rotation} spinning={spinning} reduced={reduced} />
+      <DestinyWheel options={displayedOptions} rotation={rotation} spinning={spinning} reduced={reduced || !spinning} />
       <p className="destiny-count" role="status">{spinning ? 'Escolhendo entre suas atividades…' : `${options.length} ${options.length === 1 ? 'opção participa' : 'opções participam'} do sorteio`}</p>
-      <button type="button" className="elemental-action destiny-spin" onClick={spin} disabled={spinning || !options.length}><RotateCw size={20} aria-hidden="true" />{spinning ? 'Consultando o destino…' : result ? 'Escolher outra atividade' : 'Escolher minha próxima atividade'}</button>
+      <button type="button" className="elemental-action elemental-press destiny-spin" onClick={spin} disabled={spinning || !options.length}><RotateCw size={20} aria-hidden="true" />{spinning ? 'Consultando o destino…' : result ? 'Escolher outra atividade' : 'Escolher minha próxima atividade'}</button>
+      {spinning && <button type="button" className="destiny-skip elemental-press" onClick={reveal.finish}>Pular animação e ver atividade</button>}
       <p className="destiny-note">{displayedOptions.length > 12 ? 'O anel é simbólico. Todas as opções da lista participam com a mesma chance.' : 'Cada opção tem a mesma chance. Nenhuma atividade é iniciada automaticamente.'}</p>
     </section>
     {result && <div ref={resultRef} tabIndex={-1} className="destiny-result" style={{ '--destiny-accent': `var(--element-${result.element})` } as CSSProperties}>

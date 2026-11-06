@@ -1,11 +1,13 @@
-import { useId, useState } from 'react';
+import { useId, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { DISCOVERY_NAVIGATION_OPTIONS } from '@/components/layout/discovery-scroll';
+import { ATLAS_GROUPS as GROUPS, readAtlasFilters, updateAtlasFilters } from './atlas-navigation';
 import { Search, X } from 'lucide-react';
 import { NavigationGroup, RouteShowcase } from './NavigationCards';
 import { matchesAreaName } from './navigation';
 import { ArcaneIcon } from './ArcaneIcon';
 import type { AppRoute, RouteGroup } from '@/lib/app-routes';
 
-const GROUPS: RouteGroup[] = ['Núcleo', 'Tempo e ciclos', 'Treino', 'Domínios'];
 
 export function filterAtlasRoutes(routes: AppRoute[], query: string, group: RouteGroup | null) {
   return routes.filter(route => (!group || route.group === group) && matchesAreaName(`${route.label} ${route.description} ${route.group}`, query));
@@ -14,14 +16,17 @@ export function filterAtlasRoutes(routes: AppRoute[], query: string, group: Rout
 /** All destinations remain discoverable. Filtering changes presentation only. */
 export function PageAtlas({ routes, liveStatus }: { routes: AppRoute[]; liveStatus: Record<string, string> }) {
   const searchId = useId();
-  const [query, setQuery] = useState('');
-  const [group, setGroup] = useState<RouteGroup | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [params, setParams] = useSearchParams();
+  const { query, group } = readAtlasFilters(params.toString());
+  const setQuery = (query: string) => setParams(updateAtlasFilters(params.toString(), { query }), DISCOVERY_NAVIGATION_OPTIONS);
+  const setGroup = (group: RouteGroup | null) => setParams(updateAtlasFilters(params.toString(), { group }), DISCOVERY_NAVIGATION_OPTIONS);
   const results = filterAtlasRoutes(routes, query, group);
   const filtering = !!query.trim() || !!group;
-  const reset = () => { setQuery(''); setGroup(null); };
+  const reset = () => { setParams(updateAtlasFilters(params.toString(), { query: '', group: null }), DISCOVERY_NAVIGATION_OPTIONS); inputRef.current?.focus(); };
   return <div className="page-atlas">
     <div className="page-atlas-discovery">
-      <div className="page-atlas-search"><Search size={20} aria-hidden="true" /><label className="sr-only" htmlFor={searchId}>Buscar páginas</label><input id={searchId} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="O que você quer fazer?" />{query && <button type="button" onClick={() => setQuery('')} aria-label="Limpar busca"><X size={18} aria-hidden="true" /></button>}</div>
+      <div className="page-atlas-search"><Search size={20} aria-hidden="true" /><label className="sr-only" htmlFor={searchId}>Buscar páginas</label><input ref={inputRef} id={searchId} type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="O que você quer fazer?" />{query && <button type="button" onClick={() => { setQuery(''); inputRef.current?.focus(); }} aria-label="Limpar busca"><X size={18} aria-hidden="true" /></button>}</div>
       <div className="page-atlas-filters" role="group" aria-label="Filtrar páginas por categoria"><button type="button" aria-pressed={!group} onClick={() => setGroup(null)}>Todas</button>{GROUPS.map(item => <button type="button" key={item} aria-pressed={group === item} onClick={() => setGroup(group === item ? null : item)}>{item}</button>)}</div>
       <p className="page-atlas-count" role="status">{results.length} {results.length === 1 ? 'página disponível' : 'páginas disponíveis'}{filtering && <button type="button" onClick={reset}>Limpar filtros</button>}</p>
     </div>

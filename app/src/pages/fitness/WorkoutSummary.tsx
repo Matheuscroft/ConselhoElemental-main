@@ -1,3 +1,4 @@
+import { RewardSummary } from '@/components/rewards/RewardSummary';
 import { NativeSessionDetails } from '@/components/workout/NativeSessionDetails';
 import { ActivitySessionMetrics } from '@/components/workout/ActivitySessionMetrics';
 import { activityMetrics } from '@/lib/workout/activity-metrics';
@@ -113,7 +114,7 @@ export const WorkoutSummary: React.FC = () => {
     return <WorkoutSummaryView name={nativeSession.nameSnapshot} icon={Icon} timeRange={timeRange} metrics={nativeMetrics} onBack={() => navigate('/treinos/historico')} onShare={() => void share()} onSave={() => navigate('/treinos/historico')}>
       <FitnessCard radius="lg" className="overflow-hidden border border-fitness-green/25 bg-gradient-to-br from-fitness-green/15 via-fitness-surface to-fitness-surface p-6">
         <p className="text-sm font-medium text-fitness-muted">Recompensa conquistada</p>
-        {xp == null ? <p className="mt-2 text-base text-fitness-muted">XP indisponível neste registro histórico.</p> : <p className="mt-1 text-3xl font-bold text-fitness-green">+{formatEarthXp(xp)} XP <span aria-label="Terra">🌿</span></p>}
+        <RewardSummary xp={xp ?? null} elements={xp == null ? [] : [{ element: "terra", amount: xp }]} />
         <p className="mt-1 text-sm text-fitness-muted">Terra · registrada ao concluir</p>
         {coreLog?.ruleVersion?.startsWith('core-native-workout-block-') && <p className="mt-4 text-sm text-fitness-text-soft">{completedSets.length} blocos concluídos · {formatLongClock(coreLog.actualTimeMinutes * 60)} ativos · esforço ponderado {coreLog.actualEffortLevel}/5</p>}
       </FitnessCard>
@@ -191,7 +192,7 @@ export const WorkoutSummary: React.FC = () => {
       <ActivitySessionMetrics session={session} />
       <FitnessCard radius="lg" className="border border-fitness-green/25 bg-fitness-green/10 p-5">
         <p className="text-sm font-medium text-fitness-muted">Recompensa registrada</p>
-        {legacyReward == null ? <p className="mt-1 text-sm text-fitness-muted">XP indisponível neste registro histórico.</p> : <p className="mt-1 text-2xl font-bold text-fitness-green">+{formatEarthXp(legacyReward)} XP <span aria-label="Terra">🌿</span></p>}
+        <RewardSummary xp={legacyReward ?? null} elements={legacyReward == null ? [] : [{ element: "terra", amount: legacyReward }]} />
         <p className="mt-1 text-sm text-fitness-muted">Terra · registrada ao concluir</p>
       </FitnessCard>
       <FitnessCard radius="lg" className="flex flex-col items-center p-6 text-center">

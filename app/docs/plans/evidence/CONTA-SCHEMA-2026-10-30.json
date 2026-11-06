@@ -1,0 +1,561 @@
+{
+  "observed_on": "2026-10-30",
+  "project": {
+    "name": "DominioDoMagoDB",
+    "ref": "myvxvgeyseoyugskqlqr",
+    "status": "ACTIVE_HEALTHY",
+    "postgres_version": "17.11"
+  },
+  "scope": "Catalog metadata only; row estimates deliberately omitted. No personal rows or Auth sessions.",
+  "migration_history": [],
+  "progress_schema_present": false,
+  "progress_rpcs": [],
+  "required_dependencies": {
+    "auth_uid": true,
+    "sha256": true,
+    "gen_random_uuid": true,
+    "anon": true,
+    "authenticated": true
+  },
+  "tables": [
+    {
+      "name": "public.profiles",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "avatar",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.custom_areas",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "color",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "parent_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.custom_subareas",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "color",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "metadata",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.tasks",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "area_primary_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "due_date",
+          "type": "timestamptz",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.habits",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "recurrence_type",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.projects",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.quests",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "element_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "area_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.drafts",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.cycle_sequences",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    },
+    {
+      "name": "public.sequence_memberships",
+      "rls_enabled": true,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "local_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "sequence_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "habit_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamptz",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamptz",
+          "nullable": false
+        }
+      ],
+      "primary_keys": [
+        "id"
+      ]
+    }
+  ],
+  "other_public_tables_preserved": [
+    "public.google_calendar_connections",
+    "public.google_calendar_events_cache"
+  ]
+}

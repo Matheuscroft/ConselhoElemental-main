@@ -13,7 +13,7 @@ const render = extra => renderToStaticMarkup(React.createElement(MemoryRouter, n
 test('catalogue groups every supplied area without presenting link mutations as navigation', () => {
   const html = render();
   assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4);
-  assert.equal((html.match(/hidden=""/g) ?? []).length, 4);
+  assert.equal((html.match(/inert=""/g) ?? []).length, 4);
   assert.equal((html.match(/<li /g) ?? []).length, areas.length);
   assert.match(html, /Gerenciar vínculos/);
   assert.doesNotMatch(html, /aria-label="Desvincular/);
@@ -24,12 +24,12 @@ test('catalogue groups every supplied area without presenting link mutations as 
 test('opening one group leaves others closed; searching or element selection reveals relevant rows', () => {
   const expanded = render({ expanded: 'agua' });
   assert.equal((expanded.match(/aria-expanded="true"/g) ?? []).length, 1);
-  assert.equal((expanded.match(/hidden=""/g) ?? []).length, 3);
+  assert.equal((expanded.match(/inert=""/g) ?? []).length, 3);
   const search = render({ searching: true, areas: areas.filter(a => a.name.includes('1')) });
-  assert.doesNotMatch(search, /hidden=""/);
+  assert.doesNotMatch(search, /inert=""/);
   assert.equal((search.match(/<li /g) ?? []).length, 4);
   const filtered = render({ selectedElement: 'ar', areas: areas.filter(a => a.elementId === 'ar') });
-  assert.doesNotMatch(filtered, /hidden=""/);
+  assert.doesNotMatch(filtered, /inert=""/);
   assert.equal((filtered.match(/<li /g) ?? []).length, 2);
   assert.match(render({ areas: [] }), /Nenhuma área corresponde/);
 });

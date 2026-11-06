@@ -60,3 +60,6 @@
 .destiny-workspace :is(a,summary,select,[tabindex="-1"]):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
 @container (min-width: 560px) { .destiny-selects { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .destiny-workspace * { scroll-behavior: auto; transition: none !important; } }
+
+.destiny-skip { min-height: 48px; padding: 10px 16px; border: 1px solid rgb(var(--el-gold) / .35); border-radius: 12px; color: rgb(var(--el-gold)); margin-top: 12px; }
+.destiny-skip:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }

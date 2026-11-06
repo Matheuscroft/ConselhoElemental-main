@@ -1,3 +1,397 @@
+## 0.1.127 — 06/11/2026 · artes marciais e repasse para backend
+
+- Ícone de artes marciais redesenhado como kimono com faixa dourada; mesmos nomes/APIs/modalidade. Prancha vetorial em tamanhos reais inspecionada.
+- Pacote local integrado preparado para Matheus: README raiz/app, repasse, inventário e prioridades de conta/F6/compatibilidade/fragmentos. Configuração Vercel impede auto-deploy apenas da branch de revisão; cache CLI fora do Git, arquivo local preservado.
+- Compatibilidade de backup do produtor 127 em candidato SQL separado somente local; migrações anteriores/gates preservados.
+- 668 testes completos, tipos/lint/build passaram. [Repasse e limites](../../plans/REPASSE-BACKEND-0.1.127.md). Sem aceite visual do app/mobile, dados pessoais ou SQL remoto.
+
+## 0.1.126 — 06/11/2026 · catálogo de Treinos organizado
+
+- 124 exercícios em seis grupos recolhidos com contadores e músculos; abertura progressiva em lotes de oito, recolhimento com foco e lista opcional.
+- Busca direta sem acentos/caixa por nome, músculo e equipamento, filtros preservados e resultados em lotes de 12. IDs/objetos/catálogos/stores/cálculos intactos.
+- Compatibilidade de backup 126 em candidato SQL separado somente local, sem alterar migrações anteriores/gates.
+- 668 testes completos, tipos/lint/build passaram. [Evidências e limites](../../plans/TREINOS-CATALOGO-AGRUPADO-0.1.126.md). Aceite visual ainda pendente; sem publicação ou banco remoto.
+
+## 0.1.125 — 06/11/2026 · ícones de Treinos mais intuitivos
+
+- Redesenhados os 45 símbolos após feedback de baixa identificação: contexto corporal cinza com região dourada, modalidades em movimento e equipamentos mais literais.
+- Escala ampliada em selos/filtros e rótulos visíveis no editor. APIs, catálogos, seleção, stores e cálculos preservados.
+- Backup aceita produtor 125; candidato SQL separado somente local, sem alterar revisões anteriores/gates.
+- 9 testes direcionados, tipos/lint/build passaram; prancha em 24/32/48px inspecionada. [Evidências e limites](../../plans/TREINOS-ICONES-INTUITIVOS-0.1.125.md). Aceite visual no app ainda pendente; sem publicação/banco remoto.
+
+## 0.1.124 — 06/11/2026 · Treinos com identidade elemental
+
+- 45 SVGs originais para modalidades, regiões/músculos e equipamentos; substituídos emojis/recortes antigos no catálogo, editor, foco dos treinos, widgets e XP.
+- Cartões, selos, abas, botões, FAB, cabeçalhos e hero alinhados ao ouro/vidro escuro do app. Filtros agrupados com reset, nomes de exercícios em até duas linhas e controles com foco visível.
+- Dados, IDs, stores e cálculos preservados. Compatibilidade de backup do produtor 124 em revisão SQL candidata **somente local**, sem alterar migrações anteriores ou gates.
+- 665 testes completos, tipos/lint/build locais aprovados; prancha de ícones inspecionada. Aceite visual do app/mobile pendente. [Evidências e limites](../../plans/TREINOS-IDENTIDADE-0.1.124.md). Sem GymMane importado, SQL remoto, push ou deploy.
+
+## 0.1.123 — 05/11/2026 · integração da main e compatibilidade
+
+- Pull ff-only de 3026e75/be78b1e com snapshot local preservado; catálogos/editor de treino remotos integrados ao frontend local.
+- Ciclos combina checkbox/árvore simplificados e edição contextual remotos com contador diário, recorrência/URL e feedback/recibos locais. Corrigido reset indevido da recorrência ao editar.
+- Backup compatível com os novos grupos musculares, fonte musculacao e opcionais do catálogo; campos inválidos continuam rejeitados. Sem alterar fórmulas ou recalcular progresso.
+- Tipos de UI e fixtures de regressão reconciliados. F6 de acesso retomável preservada, ainda parcial. Candidato SQL 123 apenas local; gates fechados e migrações instaladas intactas.
+- [Custódia, resultados e limites](../../plans/INTEGRACAO-MAIN-2026-11-05.md). Sem push, deploy, conta real ou transferência pessoal.
+
+## 0.1.122 — 2026-10-30
+
+- F5: modos separados de login/cadastro, confirmação de senha, reenvio explícito de e-mail e feedback junto ao acesso. Autenticar não exige cópia; transferir progresso mantém proteções e consentimentos existentes.
+- Retorno de Auth na URL padrão é limpo e isolado antes de App/legado, sem adotar tokens. Signup não concede autoridade de transferência; login confere getUser/identidade e aguarda inspeção do contexto.
+- Compatibilidade do produtor 122 aplicada por revisão privada separada com gate false, mantendo SQL anterior/formato/regras intactos.
+- 33 direcionados e 654 testes globais, TypeScript/lint e build envDir:false (36,81s) passaram. Sem conta/e-mail real, transferência pessoal, inspeção visual ou deploy/push. Próximo retomada após reload em Sol Alto.
+
+## 0.1.121 — 2026-10-30
+
+- F4: recuperação isolada PKCE com código retirado da URL, verificação de conta, confirmação de senha e saída apenas da sessão temporária. Gate continua false, sem envio real de e-mail/conta pessoal.
+- Corrigido uso do SDK: persistSession:true seleciona Map próprio, sem tokens no disco; descarte e resposta tardia testados no SDK instalado.
+- Validador hospedado aceita produtor 121 por revisão separada/condicionada ao hash e gate fechado, sem alterar migração-base, formato, XP ou arquivos guardados.
+- 640 testes finais, TypeScript/lint e build envDir:false (21,66s) passaram. Validador puro PG17 conferido com estrutura sintética, sem Auth/commit real, deploy ou transferência pessoal.
+
+## 0.1.120 — 2026-10-30
+
+- F3: preflight da migração integral recusa instalação existente, dependências incompatíveis, propriedade sem UUID obrigatório e tabelas legadas sem RLS antes de criar objetos.
+- Teste da variante de colunas observada no banco hospedado, preservando linhas sintéticas, colunas, políticas e triggers anteriores. Escrita continua fechada por padrão.
+- 23 testes direcionados e 625 globais, TypeScript/lint e build envDir:false (35,47s) aprovados.
+- Após autorização explícita, migração integral aplicada no DominioDoMagoDB com escrita false e permissões/RLS/triggers conferidos. Arquivo alinhado ao ID remoto 20261030202517, hash aprovado preservado. 625 testes novamente após o alinhamento; login/sync reais e progresso pessoal ainda pendentes, sem deploy.
+
+## 0.1.119 — 2026-10-30
+
+- F1: renovação de tokens somente no handoff online confirmado; visibilidade e cleanup serializados, sem credenciais persistidas.
+- Dispose idempotente impede repopulação tardia do armazenamento em memória.
+- 621 testes globais, tipos/lint/build (43,06s) passaram. Projeto Supabase confirmado inativo; sem validação hospedada, ativação de gates ou deploy.
+
+## 0.1.118 — 2026-10-30
+
+- Ciclos sincroniza seleção de dia/Hoje/calendário com URL; replace sem scroll e contexto de retorno validado.
+- Seleção interna preserva filtros/aba; deep links e conta mantêm tratamento anterior. Virada do dia conserva regra existente e atualiza URL quando segue Hoje.
+- Quatro testes novos; 614 globais, tipos/lint/build (37,80s) aprovados. Aceite browser/mobile pendente; dados e gates preservados.
+
+## 0.1.117 — 2026-10-30
+
+- Ciclos: data selecionada abre calendário; Hoje separado. Diálogo/sheet com mês pt-BR, salto direto e cancelamento sem seleção.
+- Mantidos callbacks de janela/data e Expanded Cards; foco retorna ao seletor sem scroll.
+- Cinco testes novos, 610 globais, tipos/lint/build (44,01s) aprovados. Sem aceite visual/mobile; dados e regras preservados.
+
+## 0.1.116 — 2026-10-30
+
+- R27-C2: controles inline da agenda conectados ao planner/transporte/conferência existentes, por lazy import e ainda ocultos pelo gate false.
+- Preparação confere projeções live/persistidas, perfil/modo/ocorrência e readback; campos mantidos em falha, sem gravação de domínio no App hidratado.
+- Retorno seguro ao período/dia Temporal; cancela só o próprio transporte quando seguro e conserva plano/journal em falha ambígua.
+- 16 testes novos; 605 globais, tipos/lint/build (40,74s) e parse CSS passaram. Sem browser real, notificações ou sync online. Próximo aceite em Sol Médio.
+
+## 0.1.115 — 2026-10-30
+
+- R27-C1: entrada pré-bootstrap e conferência isolada dos planos de lembretes, com retorno/cancelamento/recuperação associados ao plano revisado.
+- Consentimentos separados, revogação por alterações, proteção de toque duplo; sem mudança silenciosa do modo local ou sincronização de contas.
+- 16 testes novos; 589 globais, TypeScript/lint/build (32,32s) aprovados. Gate de gravação false; sem controles ativos nas atividades/timer/push ou aceite visual.
+- Dados/stores/serviços/cálculos preservados; whitelist SQL NÃO aplicada somente versão. Próximo C2 integração da preparação em Sol Alto.
+
+## 0.1.114 — 2026-10-30
+
+- R27-B2B: transporte temporário por aba com cópia validada, checksum/origem, readback e vínculo do plano exato ao coordenador existente.
+- Cancelamento limpa só o plano; recuperação pendente é preservada. Retorno exige alvo conferido, journal encerrado, modo local e confirmação nova.
+- Oito testes novos; 29 de lembretes e 573 globais aprovados; TypeScript/lint/build envDir:false (25,83s). Testes usam storage/locks sintéticos, sem QA real.
+- Servidor local reiniciado na porta 5173; painel solicitado, retorno queued, renderização não confirmada. Gate/UI/push seguem fechados. Próximo R27-C em Sol Alto.
+
+## 0.1.113 — 2026-10-30
+
+- R27-B2A: planner e coordenador isolado reutilizam lease global/journal/readback/recuperação; alvo limitado aos metadados de avisos.
+- Gate de escrita de lembretes permanece false; sem UI/timer/push ou gravação pessoal.
+- Sete testes novos, 565 globais, tipos/lint/build envDir:false (27,78s); interrupções em quatro gravações e concorrência cooperativa em mocks.
+- Fontes anteriores intactas salvo whitelists; sem remoto/deploy/push. Próximo B2B handoff/cancelamento em Sol Alto.
+
+## 0.1.112 — 2026-10-30
+
+- R27-B1: metadados opcionais de avisos no User, persistência/recarga/troca de perfil e backup integral existentes, sem raiz/store novo.
+- Comando com conta/usuário/revisão e elegibilidade por projeção/histórico; auditoria rejeita metadados inválidos e conserva compatibilidade sem campo.
+- Codec separado da agenda para preservar grafo de startup/recuperação após regressão detectada na primeira global.
+- 558 globais finais, 14 lembretes/35 direcionados, tipos/lint/build (30,32s) aprovados. Sem QA visual/remoto, UI/timer/push, migração ou publicação. Próximo B2 durabilidade/multitab em Sol Alto.
+
+## 0.1.111 — 2026-10-30
+
+- R27-A: contrato/módulo puro de lembretes por ocorrência Temporal, horário explícito, adiamento e dispensa com revisão/comandos verificáveis.
+- Oito testes novos, incluindo virada do ano/DST; 552 globais, tipos/lint/build envDir:false (29,09s) aprovados.
+- Sem UI/persistência/timer/push ativados; 90 fontes preexistentes protegidas idênticas. Whitelists frontend/SQL não aplicado somente versão.
+- Abertura do app no painel solicitada (queued), sem confirmar exibição ou inspeção. Próxima integração de persistência em Sol Alto.
+
+## 0.1.110 — 2026-10-30
+
+- R26-M2E: retorno seguro ao Ano permanece ao selecionar/fechar dia e trocar período; estado externo/arbitrário não é propagado.
+- Regressões ampliadas para retorno, cancelamento e retry após falha anterior à gravação, sem duplicação.
+- 544 testes globais e 44 Temporal, tipos/lint/build envDir:false (31,29s) aprovados. 90 fontes protegidas idênticas; whitelists SQL/frontend somente versão, gates false.
+- Sem QA visual, dados pessoais, remoto, migração, deploy ou push. Próximo contrato de lembretes em Sol Alto; aceite visual permanece pendente.
+
+## 0.1.109 — 2026-10-30
+
+- R26-M2D: abas temporais mantêm o dia selecionado ao trocar entre Mês, Calendário e Semana; Ano conserva o ano.
+- Compromissos recorrentes exibem a data inicial do cadastro, sem mudar ocorrências ou pontuação.
+- Reprodução de dois defeitos antes da correção; 42 testes Temporal e 542 globais finais, tipos/lint/build (30,54s) aprovados.
+- 90 fontes protegidas idênticas; somente whitelists de versão na custódia de backup/SQL não aplicado. QA visual ainda pendente; sem remoto, migração ou push.
+
+## 0.1.108 — 2026-10-30
+
+- R26-M2C: formulários anual/compromissos acessíveis com datas completas, notas e limites validados, preservando campos em falha.
+- Calendário agrupa cadastros recorrentes, confirma exclusão e alinha cabeçalhos à semana configurada; contexto celeste/prazos recolhíveis.
+- Ano/período na URL e retorno seguro dos cartões de mês/ciclo, sem alterar comandos ou recompensas.
+- 540 testes globais, nove novos; tipos/lint/build envDir:false (23,96s) aprovados. Sem QA visual real.
+- Domínio/dados/gates preservados; whitelist frontend/SQL não aplicado aceita a versão. Sem secrets, remoto, migração, deploy ou push.
+
+## 0.1.107 — 2026-10-29
+
+- R26-M2B: semana com agenda inline, mês em grade compacta e estatísticas recolhíveis; detalhes do dia compartilhados.
+- Data/período na URL de Semana/Mês/Calendário; contexto seguro de retorno e rolagem preservada apenas em navegação interna marcada.
+- Ciclos aceita entrada só por data, oferece planejamento semanal e criação rápida com editor mensal/anual, sem mudar os padrões de pontuação.
+- 531 testes globais, TypeScript/lint/build envDir:false (8,43s), parse CSS e diff-check aprovados. Sem QA visual real.
+- Stores/services/contratos/XP intactos; whitelist aceita a versão sem aplicar migration ou abrir gates. Sem dados pessoais/secrets/deploy/push. Próximo M2C Calendário/Ano em Sol Médio.
+
+## 0.1.106 — 2026-10-29
+
+- R26-M2A: agenda única para Ciclos/Temporal/rotações; edição conserva frequência, dias explícitos no formulário e limite opcional.
+- Data planejada de Ritual em chave local independente de createdAt/fuso; adapter usa coluna existente; compromissos nas quatro visões e links por ID.
+- Novas entradas anuais usam Habit/Commitment recorrentes; antigos registros/recibos mantidos com aviso, sem conversão ou recálculo de XP.
+- 521 testes globais + 28 direcionados finais, TypeScript/lint/build envDir:false (9,40s) e diff-check aprovados. Sem QA visual real ou validação hospedada.
+- Versão/whitelist atualizadas sem aplicar migration; gates false, sem secrets/dados pessoais/deploy/push. Próximo M2B mobile em Sol Médio; constância anual/legado ficam em lote próprio.
+
+## 0.1.105 — 2026-10-29
+
+- R26-M1: campos file separados dos checkboxes; controles próprios com foco/largura/toque adequados no CSS.
+- Melhorias de texto longo, espaçamento, safe areas e nota de sync; busca elemental com 48px/16px e metadados de formulário.
+- 22 direcionados + 504 globais, TypeScript/lint/build envDir:false (52,92s) e parse CSS aprovados. Sem QA visual real ou medições de layout.
+- Stores/auth/XP/protocolos/gates preservados; whitelist da versão atualizada sem aplicar migration. Sem dados pessoais, secrets, deploy/push.
+- Próximo R26-M2: Ciclos/mobile em Sol Médio; matriz visual continua pendente.
+
+## 0.1.104 — 2026-10-29
+
+- R25-1B6B: escolha explícita local/online com cópias salvas/readback, recebimento em novo dispositivo e escopo completo.
+- Nova revisão CAS cerca pedidos atrasados; journal antes de commit e recuperação após gravação parcial. Nenhum merge, soma de XP ou replay de domínio.
+- Guardas impedem restore/transfer/sync de passar por resolução pendente; reavaliação segura preserva local/intent. Painel único e consentimentos separados.
+- 504 globais + 42 direcionados finais, tipos/lint/build `envDir:false` (11,98s), diff-check/versões. Sem QA visual/hospedado, dados pessoais, secrets, deploy/push.
+- Gates false. Próxima revisão frontend/mobile em Sol Médio; aceite online/rollout/release com escopo próprio, contratos críticos em Alto.
+
+## 0.1.103 — 2026-10-29
+
+- R25-1B6A: sync integral durante sessão explícita, cliente transitório e lease exclusivo antes de App; mantém cliente/Auth legado isolados.
+- Intent antes de commit, CAS/recibo/readback, vínculo durável, preservação de edições durante envio e parada sem retry automático em erro/conflito.
+- Adapter dos stores existentes e estado acessível da sincronização; comparação/exportação de versões sem substituir/mesclar.
+- 486 globais + 5 direcionados finais aprovados; tipos/lint/build `envDir:false` (29,98s). Sem QA visual/hospedado, dados pessoais, secrets, deploy ou push.
+- Gates false. Próxima 1B6B: resolução explícita e recebimento em outro dispositivo, Sol Alto; Médio depois com aviso no QA mobile.
+
+## 0.1.102 — 2026-10-29
+
+- R25-1B5: vínculo explícito sem credenciais, próximos envios integrais por revisão/CAS e recibo recuperável.
+- Inicialização reconhece vínculo antes de App/cliente legado e mantém isolamento; guard de identidade/formato preparado no serviço legado sob release false.
+- Fingerprint rechecado depois da confirmação remota, preservando edições durante a espera. Sem mudar fórmulas/payloads/stores.
+- 467 testes globais + 27 direcionados finais aprovados; TypeScript/lint/build `envDir:false` (16,98s). Sem QA visual/remoto, dados pessoais, secrets, deploy ou push.
+- Gates continuam fechados. Próximo 1B6: sync integral/retomada online e conflitos em Sol Alto; QA mobile depois em Médio com aviso.
+
+## 0.1.101 — 2026-10-29
+
+- R25-1B4: workspace de conta pré-App, cópia salva/consentimentos e Auth transitório; envio/recibo preparados, com UI/Auth e servidor ainda fechados.
+- Tentativa durável anterior ao commit, consulta sem reenvio e retry explícito; pausa/fechamento preservam dados e continuam somente locais. Sem integração online ativa.
+- Restauração recusa tentativa pendente; leitura do metadado protegida pela exclusividade. Whitelist de arquivo atualizada sem aplicar migration remota.
+- 453 testes globais e 30 direcionados finais aprovados; TypeScript/lint/build (envDir:false, 10,74s) e diff-check. Sem QA visual, dados pessoais, secrets, deploy ou push. Stores/cálculos/auth/sync preexistentes preservados neste lote.
+- Próximo: 1B5/bootstrap online compatível em Sol Alto; QA mobile/tablet em Médio após aviso.
+
+## 0.1.100 — 29/10/2026
+
+- R25-1B3: backend integral opt-in e transporte de conta, assumidos após autorização explícita de Fábio. Migração local aditiva com revisão CAS, transação estado/recibo, idempotência, validação de arquivo, identidade esperada, privilégios restritos e gate de servidor fechado por padrão.
+- Um escritor integral por conta opt-in; legado preservado e bloqueado para novas escritas nesse modo. Domínio legado existente exige revisão, sem conversão automática. Nenhum cálculo/store/tipo/autenticação/serviço legado preexistente alterado.
+- Transporte explícito com preparo de arquivo/consentimento de todos os perfis, confirmação exata e recuperação de recibo após timeout. Sem cliente global nem associação/hidratação automática. Ainda falta chamador de confirmação/bootstrap compatível.
+- 19 testes novos, SQL real em PostgreSQL temporário/PGlite 0.5.13 (dev fixada); 435 testes globais aprovados. Após revisão final, 19 direcionados, TypeScript/lint/build sem .env (7,33s) aprovados. Sem migração remota, secrets, dados pessoais, navegador ou publicação.
+
+## 0.1.99 — 29/10/2026
+
+- R25-1B2: Grimório → Preparar conta pessoal permite conferir perfil, atividades, XP e sessões locais sem enviar/alterar registros. Relatório invalidado por mudanças; cancelamento e tentativas antigas protegidos.
+- Contrato/validador somente de leitura para futuro adaptador de conta, com guardas de identidade/perfil/origem/conteúdo/geração, cobertura completa e leitura vazia explícita. Nenhum adaptador/escritor online; resultado sempre associationAllowed false. Backend, stores, tipos e cálculos preservados.
+- 12 testes novos; 416 globais aprovados. Após revisão final, 15 direcionados, TypeScript/lint/build sem .env (14,64s) aprovados. Sem navegador/conta pessoal; restauração segue com gate fechado. Próxima integração Sol Alto; QA mobile/ajustes de UI Sol Médio, com aviso prévio.
+
+## 0.1.98 — 29/10/2026
+
+- R25-1A: confirmação pré-bootstrap de restauração/recuperação/continuação local, com readback da cópia anterior, consentimentos separados, cancelamento de conferência obsoleta e prevenção de clique duplo. Falha com diário retido encaminha à revisão após recarga.
+- Handoff local grava/confere metadado antes de remover o diário committed; startup valida origem e impede construção do cliente Supabase/auth/sync no documento local. Aviso global e acesso ao backup no Grimório. Diário v1, stores, tipos, backend e cálculos preservados.
+- 21 testes novos; 399 testes globais, TypeScript/lint e build sem .env (7,37s) aprovados. SDK/storage sintéticos, sem navegador ou dados pessoais. Trava estática de escrita na UI permanece fechada até QA real; conta online 1B separada.
+
+## 0.1.97 — 29/10/2026
+
+- R25-A2b11: diário confirmado permanece como barreira durável antes de App/auth/cliente; revisão, downloads e recuperação committed não liberam associação automática à nuvem.
+- Rollback prepared preserva devolução dos bytes anteriores. Conferência explica cópia confirmada/isolada; uso local completo, associação e gravação pela UI continuam pendentes.
+- Quatro testes novos; 378 testes globais, TypeScript/lint e build sem .env (19,50s) aprovados. Auth/serviço cloud/stores/tipos/main preservados; sem browser, dado pessoal ou publicação.
+
+## 0.1.96 — 29/10/2026
+
+- R25-A2b8: coordenador de recuperação exige consentimento explícito e baseline conferido, congelados antes de waits e revalidados antes de escrita; corrige duas regressões reproduzidas.
+- Cópias anterior/destino do diário podem ser exportadas na conferência isolada, preservando valores/IDs e detalhes visíveis durante download; cancelamento/obsolescência impedem o download. Gravação da recuperação/restauração continua desabilitada na UI.
+- Nove testes novos; 359 totais aprovados. Após ajuste final de UI, 110 de backup repetidos, TypeScript/lint e build sem .env (15,00s) passaram. Stores/auth/sync/tipos preservados; sem navegador, dados pessoais ou publicação.
+
+## 0.1.95 — 29/10/2026
+
+- R25-A2b7: conferência somente leitura de restauração pendente, com versões protegidas anterior/destino e indicação de retorno, confirmação ou conflito; nenhuma gravação habilitada.
+- Auditoria de identidade/fase de sessões, vínculo de check-ins e correlação de recibos, preservando snapshots após exclusão de planos/ciclos e ausência de campos históricos opcionais.
+- 12 testes novos; suíte completa com 350 aprovados. Após ajustes finais, 101 testes de backup, TypeScript/lint e build sem .env (8,29s) passaram. Stores/auth/sync/tipos preservados; sem navegador, dados pessoais, restore real ou publicação.
+
+## 0.1.94 — 28/10/2026
+
+- Amplia auditoria de backup para catálogos nativo/legado, avaliações, recordes e indicadores de força, incluindo perfis inativos.
+- Preserva referências históricas após exclusão e metadados opcionais; dados inválidos também bloqueiam aplicação/recuperação do diário antes de escrever.
+- 89 testes de backup aprovados (quatro novos), TypeScript/lint/build (7,77s). Stores e fórmulas preservados; restauração continua desabilitada e QA real pendente.
+
+## 0.1.93 — 28/10/2026
+
+- Adiciona conferência isolada de restauração no Grimório, antes de carregar App/stores/auth: seleção de cópia, comparação por perfil e download do estado atual.
+- Encaminha diário pendente para tela de proteção; invalida resultados em mudanças/cancelamento; substituição continua desabilitada.
+- 14 testes novos, 334 totais; após mensagem JSON ajustada, 85 de backup repetidos e TypeScript/lint/build (11,34s) aprovados. QA real de navegador/mobile e restauração permanecem pendentes.
+
+## 0.1.92 — 28/10/2026
+
+- Revalida os dois lados do diário antes de aplicação/recuperação; rejeita par parcial, estruturas incompatíveis e vínculos inválidos. Detecta experiência legado que seria convertida ao carregar.
+- Prepara coordenador exclusivo sem chamador de produção: bloqueia app já iniciado, exige locks/consentimento/cópia anterior e preserva diário em falha.
+- 12 testes novos, 320 totais; TypeScript/lint/build (19,99s) aprovados. Restore/UI, QA real e conta online permanecem pendentes. Stores/auth/sync/tipos preservados.
+
+## 0.1.91 — 28/10/2026
+
+- Auditoria de dados aninhados de Treinos nos backups: planos/séries/sessões, check-ins, recibos e medidas; preserva legado e snapshots históricos.
+- Seis testes novos com comandos reais em memória; 308 totais, TypeScript/lint/build (18,25s) aprovados.
+- Nenhuma fórmula, store ou dado pessoal alterado. Restauração e QA real de navegador continuam pendentes.
+
+## 0.1.90 — 28/10/2026
+
+- R25-A2b2c: auditoria somente leitura de personagens/XP/recibos/contadores/descendentes/perfis e coleções de Treinos; avisos na prévia e recusa de preparo incompatível.
+- Oito testes novos; 302 totais, TypeScript/lint/build (15,67s) aprovados. Não habilita restauração nem altera economia.
+- Servidor 5173 reiniciado; usuário confirmou abertura do Santuário. Validação visual do agente segue bloqueada.
+
+## 0.1.89 — 28/10/2026
+
+- R25-A2b2b: checagem de restauração pendente antes de importar stores/auth; tela de proteção com recarga e sem escrita.
+- Lease compartilhada Web Locks para sessões compatíveis, mantida durante import e vida do documento. Não implementa isolamento de abas antigas nem altera autosync.
+- Nove testes novos; 294 totais, TypeScript/lint/build (17,18s) aprovados. Recuperação automática, aplicação e QA real de browser seguem pendentes.
+
+## 0.1.88 — 28/10/2026
+
+- R25-A2b2a: protocolo isolado de diário, confirmação e recuperação dos dois envelopes de progresso; storage injetado, sem integração com UI/boot/auth.
+- 12 testes novos de interrupção/quota/conflito/rollback/recarga; suíte completa 285 aprovada, TypeScript e lint limpos. Build registrado no plano R25-A.
+- Restauração pessoal, concorrência real, sync e QA visual ainda pendentes. Nenhuma regra de XP/Prana alterada.
+
+## 0.1.87 — 27/10/2026 · prévia comparativa de backup
+
+- Arquivo conferido pode ser comparado ao progresso atual por perfil: entradas, alterações, saídas, XP e históricos de Treinos.
+- Identifica mudanças mesmo com totais iguais, avisa diferenças de versão/origem/perfil e invalida resultado obsoleto.
+- Suíte completa 273 testes; 24 de backup repetidos após cleanup; TypeScript, lint e build passaram. Core preservado; restauração/gravação permanecem desabilitadas. Ver R25-A2b1/A2b2.
+
+## 0.1.86 — 27/10/2026 · preservação entre contas e carregamento de Treinos
+
+- Criar conta preserva o estado atual da anterior; salvar/alternar mantém o ID do personagem.
+- Callback de Treinos conclui hidratação síncrona sem acessar store antes da inicialização. Backup exige ambos os stores carregados.
+- Seis regressões novas; 264 testes, TypeScript, lint e build passaram. Fórmulas, auth e sync remoto preservados; sem migração pessoal ou restauração habilitada. Ver R25-A2a.
+
+## 0.1.85 — 27/10/2026 · cópia do progresso no Grimório
+
+- Exportação conjunta das projeções persistidas de atividades/personagem e Treinos; conferência de JSON com SHA-256, sem aplicar dados.
+- Cancelamento, conta e concorrência protegidos; autenticação e estado transitório excluídos.
+- 258 testes, TypeScript, lint, build e diff-check passaram. Core preservado neste lote. Restauração, backup pessoal e QA mobile ainda pendentes; ver R25-A.
+
+## 0.1.84 — 27/10/2026 · contexto e cancelamento dos formulários
+
+- Invocar isola campos/consentimento por conta. Cancelar sugestão e Voltar preservam texto manual; respostas obsoletas não sobrescrevem nova tentativa.
+- Invocar e Forja bloqueiam comandos de callbacks ligados à conta anterior. Cancelar/reabrir diálogos e persistência somente após confirmação verificados por testes.
+- 249 testes, TypeScript, lint, build e diff-check passaram. Stores/cálculos/tipos preservados neste lote; QA mobile e I03 remoto pendentes. Sem publicação; ver R28-F5.
+
+## 0.1.83 — 27/10/2026 · recibos e animações de recompensa
+
+- Painel elemental compartilhado para XP, elementos e nível em Ciclos, Rituais, conquistas e resumo de Treinos; zero/ausência/reversão explícitos.
+- Lista de Rituais ganha aviso de conclusão real com agrupamento, Undo e proteção contra replay de histórico/hidratação/conta. Histórico de treino permanece sem celebração nova.
+- Movimento breve, redução de animação e fechamento acessível. Stores/cálculos preservados neste lote.
+- 243 testes, TypeScript, lint, build e diff-check passaram. QA mobile e sync pendentes; sem publicação. Detalhes em R29-D-RECOMPENSAS-VISUAIS.
+
+## 0.1.82 — 27/10/2026 · fechamento de Jornadas e Grandes Obras
+
+- Conclusão/reabertura explícita com bônus configurado, snapshot original, proteção contra duplicação e ciclos recorrentes preservados.
+- Painel compartilhado nas trilhas/detalhes com revisão, feedback e movimento reduzido. Barras de catálogo leem os rituais atuais; seleção da Jornada vinculada à conta e ao ID.
+- 238 testes, TypeScript, lint, build e diff-check passaram. QA mobile e sincronização pendentes. Sem publicação; ver R29-C-CONQUISTAS.
+
+## 0.1.81 — 27/10/2026 · recuperação de XP e Rituais
+
+- Recuperação de Ciclos com prévia por elemento, confirmação, cópia local anterior e proteção contra crédito duplicado. Valor baseado nos recibos válidos, sem estimar pelo planejamento atual.
+- Rituais/subitens recebem snapshot de XP por folha e Undo exato; pais não duplicam, native adapter preservado.
+- 231 testes, TypeScript, lint, build e diff-check passaram. XP pessoal não aplicado; QA mobile e sync pendentes. Sem publicação. Detalhes em R29-RECUPERACAO-E-RITUAIS.
+
+## 0.1.80 — 27/10/2026 · XP e confirmação elemental dos Ciclos
+
+- Corrigida ausência de crédito de XP nas novas conclusões válidas de Ciclos. Snapshot por recibo, elemento original e reversão simétrica, sem duplicação por pai/filho ou repetição.
+- Recibo visual com XP real, barra de nível, elementos e marco de subida; sem replay na hidratação ou troca de conta, com movimento reduzido.
+- Histórico anterior preservado sem retrocrédito; contagens extras continuam sem XP. Pedido global ainda parcial: ver R29-XP-E-RECOMPENSAS.
+- 221 testes, TypeScript, lint, build e diff-check passaram. Navegador/mobile e sync remota não verificados. Sem publicação.
+
+## 0.1.79 — 27/10/2026 · recuperação de falhas em Forja e Invocar
+
+- Mensagens de erro acessíveis preservam os formulários; confirmação depende do resultado no estado local. Falha após escrita orienta conferir o destino, sem nova tentativa automática.
+- Mantidos comandos, dados, regras e fluxo de IA. Proteção local contra repetição após sucesso.
+- 211 testes, TypeScript, lint e build passaram. Sem navegador/sincronização remota; QA mobile pendente. Detalhes no plano R28-F4. Sem publicação.
+
+## 0.1.78 — 26/10/2026 · confirmação e erro em séries de Treinos
+
+- UI confere resultado de concluir/pular, informa recusa ou exceção e preserva os campos. Impede novo envio antes de receber atualização confirmada.
+- Foco no recibo após confirmação, sem rolagem ou interferência ao abrir histórico. Stores, cálculos, cronômetro e páginas de execução/resumo preservados.
+- 206 testes, TypeScript, lint e build passaram; validação renderizada/sessão real pendentes. Ver R28-F3 no plano R28-F. Sem publicação.
+
+## 0.1.77 — 26/10/2026 · foco no contador diário
+
+- Salvar/desfazer retorna foco a Somar ao dia; cancelar volta ao controle de configuração. Erros preservam o formulário; renders comuns não movem foco.
+- Comandos, pontuação e registros preservados. 202 testes, TypeScript, lint e build passaram; validação renderizada pendente por escolha atual de revisão somente código. Ver R28-F2 no plano R28-F. Sem publicação.
+
+## 0.1.76 — 26/10/2026 · destino das seções do Grimório
+
+- Links para Histórico/Personagem/Elementos agora posicionam e focam a seção após montagem; hashes desconhecidos e navegação cancelada tratados.
+- Revisão transversal documentada; inspeção no navegador recusada por permissão salva. R28-F permanece parcial.
+- 198 testes, TypeScript, lint e build passaram; stores, tipos e histórico preservados. Detalhes em docs/plans/R28-F-REVISAO-MOBILE.md. Sem publicação.
+
+## 0.1.75 — 26/10/2026 · marcos nas trilhas
+
+- Resultado do ritual mostra progresso da trilha de origem, conclusão dos rituais pontuais e subida de nível quando confirmada pelo cálculo existente.
+- Próxima sugestão contextual, fechamento explícito e modal compacto com rolagem; movimento reduzido mantém informação. Sem prêmio adicional ou conclusão automática de ciclos/agregados.
+- 194 testes, TypeScript, lint e build passaram. QA mobile pendente; detalhes em docs/plans/R28-E-MARCOS.md. Sem alterações de domínio/publicação.
+
+## 0.1.74 — 26/10/2026 · confirmação e movimento em Treinos
+
+- Recibo compacto de série/bloco com valores registrados e animação somente em conclusão nova, sem repetir histórico ou celebrar itens pulados.
+- Exercícios com expansão acessível compartilhada; barras por transformação, botões e recibos respeitam movimento reduzido.
+- 189 testes, TypeScript, lint e build passaram. QA mobile/execução real pendentes; relatório em docs/plans/R28-D2-TREINOS.md. Stores, sessão, cronômetro e economia preservados. Sem publicação.
+
+## 0.1.73 — 26/10/2026 · correção da rolagem e controle do giro
+
+- Corrigido salto ao topo ao expandir grupos/editar filtros em Domínios; mesma proteção no Mapa. Navegação real continua com reset.
+- Roda do Destino permite pular a animação, preservando a escolha original; movimento reduzido dinâmico e cancelamento de apresentação ao sair.
+- 185 testes, TypeScript, lint e build passaram. QA visual/mobile pendente; relatório em docs/plans/R28-D1-ROLAGEM-E-RODA.md. Sem alteração de stores/economia ou publicação.
+
+## 0.1.72 — 26/10/2026 · expansão e navegação de exploração
+
+- Domínios/Pilares: painel compartilhado com estados acessíveis, expansão consistente e movimento reduzido.
+- Mapa/Explorar: resultados de busca revelados sem controle de recolher conflitante; navegação normal com botão e painel identificados.
+- Mapa preserva busca/categoria na URL para retorno pelo histórico; limpar devolve foco ao campo.
+- 181 testes, TypeScript, lint e build passaram. QA mobile pendente; evidências em docs/plans/R28-C-EXPLORACAO-LEITURA.md. Sem publicação ou alteração de stores/regras.
+
+## 0.1.71 — 26/10/2026 · movimento em criação e organização
+
+- Invocar: transições direcionais, bloqueio de controles em saída e confirmação persistente com destinos explícitos; removido redirecionamento de dois segundos.
+- Forja: resultado com nome da ideia e recuperação de foco após diálogo. Pressionamento compartilhado e preferência dinâmica de movimento.
+- Seleção de runas das trilhas mais breve; comandos, stores e recompensas preservados.
+- 177 testes, TypeScript, lint e build passaram; QA mobile pendente. Detalhes em docs/plans/R28-B-CRIACAO-ORGANIZACAO.md. Sem publicação.
+
+## 0.1.70 — 25/10/2026 · fundação de movimento e piloto de Ciclos
+
+- Tokens compartilhados, preferência dinâmica de movimento, navegação sem blur e feedback de pressionamento opt-in.
+- Diálogos/sheets com duração consistente e alternativa reduzida; barra do contador por transformação, feedback local sem reinício a cada toque.
+- Conclusões consecutivas agrupadas por recibo no mesmo aviso; reversões removidas, sem alterar comandos ou recompensas.
+- 174 testes, TypeScript, lint e build passaram. QA visual/mobile pendente; evidências em docs/plans/R28-A-FUNDACAO-PILOTO.md. Sem publicação.
+
+## 0.1.69 — 25/10/2026 · organização e quantidades diárias
+
+- Ciclo × sequência explicado no formulário e na rotina; subitens identificados como etapas fixas. Corrigido exemplo de sequência que sugeria reunir tarefas da manhã.
+- Contador genérico por atividade, sem presets Água/Aulas/Banhos; configuração progressiva, prévia e ação Somar ao dia. Contador opcional por hábito: meta/unidade/incremento configuráveis, registros por data, quantidades extras, histórico e desfazer individual. Sem pontuação ou conclusão automática, conforme escolha de Fábio.
+- Vista de hoje acompanha a virada do dia quando ociosa; datas históricas e execuções em andamento preservadas. Nenhuma limpeza de histórico.
+- Feedback de conclusão baseado em recibo novo inclui ciclo/subitem/treino vinculado nesta página, com runa de confirmação e movimento reduzido. Quantidades têm retorno visual próprio, sem fingir conclusão.
+- Campos opcionais no hábito/store existente; cópias não herdam consumo. Evidências e limites: docs/plans/R27-QUANTIDADES-DIARIAS.md.
+
 ## 0.1.70 — 01/11/2026 · simplificação dos cards em Ciclos
 
 - Removidos o selo/ranque de streak e o badge de atividade recente dos cards.

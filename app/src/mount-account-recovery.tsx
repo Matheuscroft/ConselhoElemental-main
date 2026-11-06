@@ -1,0 +1,9 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { AccountRecoveryWorkspace } from './components/backup/AccountRecoveryWorkspace';
+import type { RecoveryEntry } from './lib/backup/account-recovery-entry';
+import './components/backup/restore-workspace.css';
+/** No App, store hydration or legacy Auth in this document. */
+export function mountAccountRecovery(root: HTMLElement, entry: RecoveryEntry) {
+  createRoot(root).render(<StrictMode><AccountRecoveryWorkspace entry={entry} /></StrictMode>);
+}

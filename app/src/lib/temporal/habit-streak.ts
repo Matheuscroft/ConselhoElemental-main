@@ -6,7 +6,7 @@ export type HabitStreakRule = 'scheduled' | 'legacy-rotation' | 'legacy-yearly';
 
 export function habitStreakRule(schedule: Habit, rotates = false): HabitStreakRule {
   if (rotates || schedule.controlledBySequenceId) return 'legacy-rotation';
-  // YEARLY currently has no annual configuration in the calendar contract.
+  // Annual streaks keep their previous rule until historical schedules are versioned.
   return schedule.recurrenceType === 'YEARLY' ? 'legacy-yearly' : 'scheduled';
 }
 

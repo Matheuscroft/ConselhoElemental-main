@@ -1,0 +1,84 @@
+{
+  "lot": "T03",
+  "date": "2026-11-06",
+  "version": "0.1.126",
+  "catalogue": {
+    "total": 124,
+    "groups": {
+      "chest": 17,
+      "back": 19,
+      "shoulders": 13,
+      "arms": 35,
+      "core": 5,
+      "legs": 35
+    },
+    "duplicateIds": 0,
+    "sourceObjectsPreserved": true
+  },
+  "checks": {
+    "targetedTests": 12,
+    "fullSuite": {
+      "tests": 668,
+      "passed": 668,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 76373.944041
+    },
+    "typescript": "passed",
+    "eslint": "passed",
+    "build": {
+      "passed": true,
+      "envDir": false,
+      "seconds": 36.27,
+      "warnings": [
+        "existing large chunks",
+        "outdated Browserslist dataset"
+      ]
+    },
+    "diffCheck": "passed",
+    "browser": "not inspected; saved denial unchanged",
+    "mobileVisualAcceptance": "pending"
+  },
+  "protectedFilesCompared": 45,
+  "protectedFilesChanged": [],
+  "changedExistingFiles": {
+    "src/lib/backup/critical-progress.ts": {
+      "before": "16afd58afc490025a67d9130ad600d7c35e25d70103226eee2b16f7c21771f0a",
+      "after": "4569011e7978b1dd08ada7a660d4615ad9dcfd72c84c311d1020b6a8a2436a27"
+    },
+    "src/components/fitness-kit/fitness-elemental.css": {
+      "before": "3dc3ee67c725da3e19b9063b62d5ccf6f154cdf5684f33cd18fac9b755c67173",
+      "after": "0d3c417a206977da8a1540200584f6548f71836f50efa539edff8f8b04d0880d"
+    },
+    "src/components/workout/MuscleExerciseCatalog.tsx": {
+      "before": "dc147d6307d2624d2f260ccfad42ba0684358ddf161ef4f1b6a6698e1dbfd84c",
+      "after": "9b341d3ce6770f930727eb4beae6cb5557d2857c2de37bbc4009fab80887c5ed"
+    },
+    "tests/elemental/fitness-identity.test.mjs": {
+      "before": "27a87f2d01de6efdcf9cd37b016d6c8f15f5169ba3344680ae9524acc110bf93",
+      "after": "678a823ba953ea579706acb78d7d06babecb6c6fdea1a74f5aeee898e18c7d2c"
+    },
+    "tests/backup/account-version.test.mjs": {
+      "before": "1e8b6b83d6fe8df96162341432664eb58f913854d01271273a358806fe51ea18",
+      "after": "856f04e3ddca31ab5f613f968da03b90cb8a0cd20b10eef5ddfd8d49a262706f"
+    },
+    "tests/backup/load-account-db.mjs": {
+      "before": "7858927d8aa44cc62aeeb089ac48ee35831af92804065ab5714bd3c9aa9d39e3",
+      "after": "b885f80dd9a2a7bffa99fbcdb3c091297f64c9fb2b26785722765d4e31889f0f"
+    },
+    "package.json": {
+      "before": "3305ba65dae83acce1a533bf434ce53db30528206809277ba369069c7ee0a5f4",
+      "after": "916d5957e1e6795c4e75e512291210b07da5e3e273c70322379c0541f54e6ddb"
+    },
+    "package-lock.json": {
+      "before": "547f7481033834a423481f6ec6a9f13a9baed72d5c7805d4dc79f5b8455af15c",
+      "after": "c6c0791cce8b7d514222d8b1c8f2a7807a5b34f93292aa931873d140878f7e22"
+    }
+  },
+  "newCode": {
+    "src/lib/workout/catalog-navigation.ts": "9c226aa8fd1d677f3b9ae05e67aae4054a1c099a6fc10a2741a69554247f20db",
+    "supabase/migrations/20261106033906_account_archive_version_126.sql": "aaa8a098d1960f72bb50deffaa5434d9e4d44e25c24a1e006d0b41a00a458569"
+  },
+  "releaseGates": "unchanged false",
+  "remoteActions": []
+}

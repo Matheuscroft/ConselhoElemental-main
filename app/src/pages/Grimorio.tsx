@@ -1,3 +1,4 @@
+import { ProgressBackup } from '@/components/backup/ProgressBackup';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Edit2, Heart, Zap, Sparkles, ChevronDown, X, Check } from 'lucide-react';
@@ -5,6 +6,7 @@ import { AppLayout } from '@/components/layout';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ResourceMeter } from '@/components/grimorio/ResourceMeter';
 import { ElementMasteryCard } from '@/components/grimorio/ElementMasteryCard';
+import { useGrimoireAnchor } from '@/components/grimorio/useGrimoireAnchor';
 import { GrimoireHistory } from '@/components/grimorio/GrimoireHistory';
 import { buildGrimoireHistory } from '@/components/grimorio/history';
 import { useAppStore } from '@/stores/appStore';
@@ -22,6 +24,7 @@ export function Grimorio() {
 }
 
 function GrimorioContent() {
+  useGrimoireAnchor();
   const { user, updateUser, getElementScores, getLevelProgress, getMasteryProgress, getCompletedHabitsToday, getStreak, tasks, habits, actions, executionLogs } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
   const [editName, setEditName] = useState(false);
@@ -76,9 +79,9 @@ function GrimorioContent() {
   return <AppLayout showAura={false}>
     <div className="grimoire-workspace">
       <header className="grimoire-page-heading"><div><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></div><ArcaneIcon name="grimorio" size={32} /></header>
-      <nav className="grimoire-index" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a></nav>
+      <nav className="grimoire-index" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a><a href="#grimoire-backup">Cópia de segurança</a></nav>
 
-      <section id="grimoire-character" className="grimoire-sheet" aria-labelledby="grimoire-character-name">
+      <section id="grimoire-character" tabIndex={-1} className="grimoire-sheet" aria-labelledby="grimoire-character-name">
         <div className="grimoire-portrait" aria-hidden="true">
           <div className="grimoire-portrait-ring" />
           {portraitFailed ? <ArcaneIcon name="santuario" size={120} /> : <img src="/sanctuary/elemental-body-v1.png" alt="" width={913} height={1723} onError={() => setPortraitFailed(true)} />}
@@ -110,13 +113,14 @@ function GrimorioContent() {
         <a href="#grimoire-history"><ArcaneIcon name="calendario" size={22} /><span><strong>{format(totalHabitCompletions)}</strong><span>Conclusões de ciclos</span></span></a>
       </section>
 
-      <section id="grimoire-elements" className="grimoire-elements" aria-labelledby="grimoire-elements-title">
+      <section id="grimoire-elements" tabIndex={-1} className="grimoire-elements" aria-labelledby="grimoire-elements-title">
         <div className="grimoire-section-heading"><div><h2 id="grimoire-elements-title">Maestria elemental</h2><p>Abra um elemento para acompanhar sua evolução.</p></div><ArcaneIcon name="dominios" size={26} /></div>
         <div className="grimoire-elements-grid">{elementScores.map(score => <ElementMasteryCard key={score.elementId} element={ELEMENTS[score.elementId]} mastery={mastery[score.elementId]} score={score} hasScores={hasScores} />)}</div>
         {hasScores && <details className="grimoire-balance"><summary><span>Ver equilíbrio dos elementos</span><ChevronDown size={18} aria-hidden="true" /></summary><div role="img" aria-label={`Pontuação por elemento: ${elementScores.map(score => `${ELEMENTS[score.elementId].name}, ${format(score.score)} pontos`).join('; ')}`}><ResponsiveContainer width="100%" height={250}><RadarChart data={radarData}><PolarGrid stroke="rgba(215,184,109,0.2)" /><PolarAngleAxis dataKey="element" tick={{ fill: '#b5bdcc', fontSize: 12 }} /><PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={{ fill: '#b5bdcc', fontSize: 10 }} /><Radar name="Pontuação" dataKey="score" stroke="#d7b86d" fill="#d7b86d" fillOpacity={0.18} isAnimationActive={false} /></RadarChart></ResponsiveContainer></div></details>}
       </section>
 
       <GrimoireHistory entries={history} now={now} />
+      <ProgressBackup />
     </div>
 
     <Dialog open={editName} onOpenChange={setEditName}>

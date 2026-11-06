@@ -167,18 +167,18 @@
 .quest-rune { display: block; overflow: visible; flex-shrink: 0; }
 .quest-rune-core,.quest-rune-vortex,.quest-rune-orbit { transform-origin: 24px 24px; }
 .quest-rune-glint { transform-origin: 37px 11px; }
-.quest-step[aria-expanded=true] .quest-rune-glint { animation: quest-rune-light 480ms ease-out both; }
-.quest-step[aria-expanded=true] .quest-rune[data-element=terra] .quest-rune-core { animation: quest-earth-settle 300ms var(--quest-ease-out) both; }
-.quest-step[aria-expanded=true] .quest-rune[data-element=fogo] .quest-rune-core { animation: quest-flame-rise 420ms var(--quest-ease-out) both; }
-.quest-step[aria-expanded=true] .quest-rune[data-element=agua] .quest-rune-current { animation: quest-water-flow 480ms ease-out both; }
-.quest-step[aria-expanded=true] .quest-rune-vortex { animation: quest-air-turn 550ms var(--quest-ease-out) both; }
+.quest-step[aria-expanded=true] .quest-rune-glint { animation: quest-rune-light var(--ds-duration-feedback,160ms) ease-out both; }
+.quest-step[aria-expanded=true] .quest-rune[data-element=terra] .quest-rune-core { animation: quest-earth-settle var(--ds-duration-feedback,160ms) var(--quest-ease-out) both; }
+.quest-step[aria-expanded=true] .quest-rune[data-element=fogo] .quest-rune-core { animation: quest-flame-rise var(--ds-duration-feedback,160ms) var(--quest-ease-out) both; }
+.quest-step[aria-expanded=true] .quest-rune[data-element=agua] .quest-rune-current { animation: quest-water-flow var(--ds-duration-feedback,160ms) ease-out both; }
+.quest-step[aria-expanded=true] .quest-rune-vortex { animation: quest-air-turn var(--ds-duration-feedback,160ms) var(--quest-ease-out) both; }
 .quest-element-choice input:checked+span { border-color: var(--quest-gold); background: rgb(var(--el-gold) / .09); box-shadow: inset 0 -3px 0 rgb(var(--el-gold) / .4); }
 .quest-element-choice span { transition: border-color 160ms,background 160ms; }
 .quest-element-choice .quest-rune[data-element=terra] { color: var(--element-terra); }
 .quest-element-choice .quest-rune[data-element=fogo] { color: var(--element-fogo); }
 .quest-element-choice .quest-rune[data-element=agua] { color: var(--element-agua); }
 .quest-element-choice .quest-rune[data-element=ar] { color: var(--element-ar); }
-.quest-element-choice input:checked+span .quest-rune-glint { animation: quest-rune-light 480ms ease-out; }
+.quest-element-choice input:checked+span .quest-rune-glint { animation: quest-rune-light var(--ds-duration-feedback,160ms) ease-out; }
 .quest-progress { height: 12px; border-radius: 20px; overflow: hidden; background: rgb(var(--el-canvas)); border: 1px solid rgb(var(--el-muted) / .15); }
 .quest-progress>span { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(0deg,rgb(var(--el-gold)),#ebd399); transform-origin: left; transition: transform 300ms var(--quest-ease-out); }
 .quest-victory { width: 160px; max-width: 55vw; margin: -8px auto 0; color: var(--quest-gold); pointer-events: none; }
@@ -198,7 +198,7 @@
 @keyframes quest-earth-settle { from { transform: translateY(-2px); } to { transform: translateY(0); } }
 @keyframes quest-flame-rise { from { opacity: .65; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes quest-water-flow { from { opacity: .4; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes quest-air-turn { from { transform: rotate(-70deg); } to { transform: rotate(0); } }
+@keyframes quest-air-turn { from { transform: rotate(-18deg); } to { transform: rotate(0); } }
 @keyframes quest-medal-reveal { from { opacity: .4; transform: scale(.9) rotate(-8deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
 @keyframes quest-halo-reveal { from { opacity: 0; transform: scale(.7); } to { opacity: .35; transform: scale(1.05); } }
 @keyframes quest-orbit-settle { from { opacity: .1; transform: rotate(-25deg); } to { opacity: .6; transform: rotate(0); } }
@@ -310,3 +310,29 @@
 .quest-chapter-create { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .quest-chapter-create input { flex: 1 1 180px; min-width: 0; }
 @media(prefers-reduced-motion:reduce) { .quest-chapter summary>svg { transition: none; } }
+
+/* R28-E: confirmed milestones, with controls available throughout the reveal. */
+.quest-receipt { max-height: calc(100dvh - 2rem); overflow-y: auto; overscroll-behavior: contain; }
+.quest-receipt .quest-victory { width: 112px; margin: 0 auto; }
+.quest-level-milestone { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 12px; border: 1px solid rgb(var(--el-gold) / .35); border-radius: 16px; color: var(--quest-gold); background: rgb(var(--el-gold) / .08); animation: quest-metric 240ms var(--quest-ease-out) both; }
+.quest-level-milestone span { font-size: .8rem; }
+.quest-level-milestone strong { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1.2rem; }
+.quest-receipt-trail { text-align: left; padding: 14px; border-radius: 16px; background: rgb(var(--el-canvas) / .5); border: 1px solid rgb(var(--el-gold) / .16); }
+.quest-receipt-trail strong, .quest-receipt-next strong { overflow-wrap: anywhere; }
+.quest-receipt-trail p { color: var(--quest-muted); font-size: .8rem; margin: 8px 0; }
+.quest-receipt-trail .quest-progress { margin: 10px 0; }
+.quest-receipt-actions { display: grid; gap: 8px; }
+.quest-receipt-actions button { width: 100%; min-height: 48px; }
+@media (prefers-reduced-motion: reduce) { .quest-level-milestone { animation: none; } }
+
+/* A single, explicit closing action: bonus and recurring activities stay distinct. */
+.achievement-completion { margin-block: 20px; padding: 18px; border: 1px solid rgb(var(--el-gold) / .3); border-radius: 20px; background: linear-gradient(135deg, rgb(var(--el-gold) / .08), rgb(var(--el-surface) / .8)); }
+.achievement-heading { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.achievement-heading > svg { flex: 0 0 auto; color: rgb(var(--el-gold)); }
+.achievement-heading h3 { font-family: Cinzel, Georgia, serif; font-size: 1.05rem; margin-bottom: 6px; }
+.achievement-completion p { color: rgb(var(--el-muted)); line-height: 1.6; font-size: .9rem; }
+.achievement-completion a { color: rgb(var(--el-gold)); text-decoration: underline; }
+.achievement-completion button { min-height: 48px; white-space: normal; }
+.achievement-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.achievement-actions > button { flex: 1 1 140px; }
+.achievement-reward-result:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; border-radius: 12px; }

@@ -1,0 +1,219 @@
+{
+  "observed_on": "2026-10-30",
+  "target": "myvxvgeyseoyugskqlqr",
+  "approved_source_name": "20261029182304_progress_account_atomic.sql",
+  "installed_migration": {
+    "version": "20261030202517",
+    "name": "progress_account_atomic"
+  },
+  "local_file": "supabase/migrations/20261030202517_progress_account_atomic.sql",
+  "sha256": "9d0d074a51e62f4a98248ff699948546aab6a8203f586bd5d556b4b65bf85809",
+  "metadata": {
+    "gate": {
+      "rows": 1,
+      "all_writes_disabled": true
+    },
+    "guards": [
+      {
+        "table": "custom_areas",
+        "enabled": "O"
+      },
+      {
+        "table": "custom_subareas",
+        "enabled": "O"
+      },
+      {
+        "table": "cycle_sequences",
+        "enabled": "O"
+      },
+      {
+        "table": "drafts",
+        "enabled": "O"
+      },
+      {
+        "table": "habits",
+        "enabled": "O"
+      },
+      {
+        "table": "profiles",
+        "enabled": "O"
+      },
+      {
+        "table": "projects",
+        "enabled": "O"
+      },
+      {
+        "table": "quests",
+        "enabled": "O"
+      },
+      {
+        "table": "sequence_memberships",
+        "enabled": "O"
+      },
+      {
+        "table": "tasks",
+        "enabled": "O"
+      }
+    ],
+    "tables": [
+      {
+        "rls": true,
+        "name": "account_receipts",
+        "anon_select": false,
+        "authenticated_delete": false,
+        "authenticated_insert": false,
+        "authenticated_select": false,
+        "authenticated_update": false
+      },
+      {
+        "rls": true,
+        "name": "account_state",
+        "anon_select": false,
+        "authenticated_delete": false,
+        "authenticated_insert": false,
+        "authenticated_select": false,
+        "authenticated_update": false
+      },
+      {
+        "rls": true,
+        "name": "release_gate",
+        "anon_select": false,
+        "authenticated_delete": false,
+        "authenticated_insert": false,
+        "authenticated_select": false,
+        "authenticated_update": false
+      }
+    ],
+    "functions": [
+      {
+        "args": "expected_user_id uuid, expected_revision text, operation_id uuid, archive text, all_profiles_confirmed boolean",
+        "name": "commit_account",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "args": "v json, depth integer",
+        "name": "compact_json",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "args": "",
+        "name": "guard_legacy_write",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "authenticated_execute": false
+      },
+      {
+        "args": "owner_id uuid",
+        "name": "legacy_has_data",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "args": "expected_user_id uuid",
+        "name": "read_account",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "args": "expected_user_id uuid, op uuid",
+        "name": "receipt",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": true,
+        "authenticated_execute": true
+      },
+      {
+        "args": "raw text",
+        "name": "validate_archive",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "progress_private",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": false
+      },
+      {
+        "args": "p_expected_user_id uuid, p_expected_revision text, p_operation_id uuid, p_archive text, p_all_profiles_confirmed boolean",
+        "name": "progress_account_commit",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "args": "p_expected_user_id uuid",
+        "name": "progress_account_read",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": true
+      },
+      {
+        "args": "p_expected_user_id uuid, p_operation_id uuid",
+        "name": "progress_account_receipt",
+        "config": [
+          "search_path=\"\""
+        ],
+        "schema": "public",
+        "anon_execute": false,
+        "public_execute": false,
+        "security_definer": false,
+        "authenticated_execute": true
+      }
+    ],
+    "google_calendar_tables": 2,
+    "existing_touch_triggers": 12
+  },
+  "limits": "Catalog and release-gate verification only; no personal activity rows, real Auth sessions, JWT/PostgREST flow, gate activation or Vercel deployment.",
+  "additional_privilege_check": {
+    "anon_schema_usage": false,
+    "authenticated_schema_usage": true,
+    "anon_has_no_direct_table_privileges": true,
+    "authenticated_has_no_direct_table_privileges": true
+  }
+}

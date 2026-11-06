@@ -1,0 +1,61 @@
+.restore-workspace {
+  width: min(100%, 48rem); margin: 0 auto; padding: 1.25rem max(1rem, env(safe-area-inset-right)) max(2rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  box-sizing: border-box; color: #eceae3; overflow-wrap: anywhere;
+}
+.restore-workspace-back { display: inline-flex; align-items: center; gap: .5rem; min-height: 48px; color: #d5b66f; }
+.restore-workspace header { display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0; color: #d5b66f; }
+.restore-workspace header > div { min-width: 0; }
+.restore-workspace header > svg { flex-shrink: 0; }
+.restore-workspace header p { margin: 0 0 .4rem; font-family: 'Cinzel', Georgia, serif; }
+.restore-workspace h1 { font-size: clamp(1.6rem, 6vw, 2.3rem); line-height: 1.25; margin: 0; color: #eceae3; }
+.restore-workspace h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+.restore-workspace h3 { font-size: 1rem; margin: 1rem 0 .5rem; }
+.restore-workspace p, .restore-workspace li { line-height: 1.65; }
+.restore-workspace > p, .restore-workspace section > p, .restore-workspace small { color: #adb8c8; }
+.restore-workspace section { margin-top: 1.5rem; padding: 1.25rem; background: #101721; border: 1px solid #303b49; border-radius: 1.2rem; }
+.restore-workspace-actions { display: grid; gap: .75rem; }
+.restore-workspace button {
+  display: inline-flex; align-items: center; justify-content: center; gap: .6rem; width: 100%; min-height: 48px;
+  padding: .75rem 1rem; border: 1px solid #d5b66f; border-radius: .8rem; background: #d5b66f; color: #10141b; font: inherit; font-weight: 600; cursor: pointer; white-space: normal; overflow-wrap: anywhere; touch-action: manipulation;
+}
+.restore-workspace button svg { flex-shrink: 0; }
+.restore-workspace .restore-workspace-secondary { margin-top: .75rem; color: #eceae3; background: transparent; border-color: #596779; }
+.restore-workspace .account-access-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin-bottom: 1rem; }
+.restore-workspace .account-access-modes .restore-workspace-secondary { margin-top: 0; }
+.restore-workspace .account-access-modes [aria-pressed="true"] { color: #d5b66f; border-color: #d5b66f; background: #d5b66f18; }
+.restore-workspace button:disabled { opacity: .55; cursor: default; }
+.restore-workspace :is(button, a, summary, input):focus-visible { outline: 2px solid #eceae3; outline-offset: 4px; }
+.restore-workspace .restore-workspace-error { color: #ffb5ac; border-left: 2px solid currentColor; padding-left: .8rem; }
+.restore-workspace-profile { border-top: 1px solid #303b49; padding: .8rem 0; }
+.restore-workspace-profile summary { min-height: 48px; cursor: pointer; color: #d5b66f; }
+.restore-workspace-profile summary span { display: block; margin-top: .3rem; color: #adb8c8; font: .85rem 'Inter', sans-serif; }
+.restore-workspace-profile ul { list-style: none; padding: 0; }
+.restore-workspace-profile li { padding: .5rem 0; }
+.restore-workspace-profile li :is(strong, span, small) { display: block; }
+.restore-workspace dl > div { display: flex; justify-content: space-between; gap: 1rem; padding: .4rem 0; }
+.restore-workspace dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.restore-workspace dl > div { flex-wrap: wrap; align-items: baseline; }
+.restore-workspace dt { min-width: 0; }
+.restore-workspace section > button + button { margin-top: .75rem; }
+.restore-workspace details > summary { min-height: 48px; padding-block: .65rem; cursor: pointer; }
+.restore-workspace ol { padding-left: 1.25rem; }
+@media (min-width: 640px) { .restore-workspace-actions { grid-template-columns: 1fr 1fr; } .restore-workspace { padding-top: 2rem; } }
+.restore-workspace-consent { display: flex; align-items: flex-start; gap: .75rem; padding: .9rem 0; line-height: 1.6; min-height: 48px; cursor: pointer; }
+.restore-workspace-consent input[type="checkbox"] { width: 22px; height: 22px; margin-top: .2rem; flex-shrink: 0; accent-color: #d5b66f; }
+.account-workspace form { display: grid; gap: 1rem; }
+.account-workspace form label { display: grid; gap: .5rem; color: #adb8c8; }
+.account-workspace form input { min-height: 48px; width: 100%; box-sizing: border-box; padding: .75rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: 1rem; }
+.account-workspace form input:focus-visible { outline: 2px solid #d5b66f; outline-offset: 3px; }
+.account-workspace-release { padding: 1rem; border-inline-start: 2px solid #d5b66f; background: #101721; }
+
+/* Native file controls need their own row; never inherit checkbox dimensions. */
+.restore-workspace-file { display: grid; gap: .65rem; padding-block: .9rem; min-width: 0; color: #adb8c8; line-height: 1.6; }
+.restore-workspace-file input[type="file"] { display: block; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: .5rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: 1rem; }
+.restore-workspace-file input::file-selector-button { min-height: 36px; margin-inline-end: .65rem; padding: .35rem .65rem; border: 1px solid #596779; border-radius: .45rem; background: #202b3a; color: #eceae3; font: inherit; cursor: pointer; }
+.restore-workspace :is(button, a, summary, input, label) { scroll-margin-block: 1rem; }
+@media (max-width: 480px) {
+  .restore-workspace section { padding: 1rem; }
+  .restore-workspace dl > div { gap: .25rem .75rem; }
+  .restore-workspace dl > div > dt { flex: 1 1 10rem; }
+  .restore-workspace dl > div > dd { max-width: 100%; }
+}

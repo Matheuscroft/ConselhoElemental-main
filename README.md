@@ -2,6 +2,12 @@
 
 Aplicativo de gestão pessoal gamificada, React/Vite/TypeScript, com prioridade para celular e tablet. Fábio conduz frontend; Matheus conduz backend e documentação. Astro Boy coordena o trabalho pela fila, contratos e evidências do repositório.
 
+## Repasse atual — 0.1.127
+
+A atualização de frontend e integração está na branch `codex/fitness-ui-integration`, para revisão de Matheus. [Comece pelo repasse](app/docs/plans/REPASSE-BACKEND-0.1.127.md): mudanças, testes, recebimento e tarefas de backend. Fábio segue com frontend/mobile; Matheus com backend; Astro Boy coordena.
+
+Treinos agora tem ícones próprios e 124 exercícios agrupados/pesquisáveis. Conta integral/F6, migração pessoal e fragmentos continuam pendentes; gates experimentais permanecem fechados. Push de código não transporta o progresso do navegador nem autoriza deploy.
+
 ## Matheus: começar
 
 ```sh
@@ -25,7 +31,7 @@ Abra a URL exibida pelo Vite: `/treinos` para seleção e `/treinos/painel` para
 - [Índice de arquitetura e contratos](app/docs/README.md)
 - [Auditoria de publicação e pastas](app/docs/AUDITORIA-PUBLICACAO.md)
 
-Versão publicada por este lote: **0.1.21**. Fitness ganhou modalidades contextualizadas, registro de tempo/esforço/distância e UI móvel coerente. Assistente é protótipo local, ainda sem ativação remota validada. Percentuais musculares são estimativas editoriais ajustáveis; integração completa dos módulos com o core permanece em reconciliação. Consulte continuidade antes de escolher trabalho.
+Registro histórico da entrega de onboarding: **0.1.21**. Fitness ganhou modalidades contextualizadas, registro de tempo/esforço/distância e UI móvel coerente. Assistente é protótipo local, ainda sem ativação remota validada. Percentuais musculares são estimativas editoriais ajustáveis; integração completa dos módulos com o core permanece em reconciliação. Consulte continuidade antes de escolher trabalho.
 
 ## Comandos Astro Boy (dentro de app)
 

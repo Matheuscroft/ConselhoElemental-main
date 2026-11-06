@@ -1,3 +1,4 @@
+import { RevealPanel } from '@/components/motion/RevealPanel';
 import { useId, useRef, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Check, ChevronDown, Settings2 } from 'lucide-react';
@@ -36,14 +37,14 @@ export function DomainCatalogue({ areas, scores, activeAreas, selectedElement, e
       const title = <><ElementIcon element={group.element} size={25} /><span><strong>{ELEMENTS[group.element].name}</strong><small>{group.areas.length} {group.areas.length === 1 ? 'área' : 'áreas'}{!open && ` · ${group.areas.slice(0, 3).map(area => area.name).join(', ')}`}</small></span></>;
       return <section key={group.element} className="domain-catalogue-group" data-open={open} style={{ '--catalogue-accent': `var(--element-${group.element})` } as CSSProperties}>
         {revealResults ? <h3 className="domain-catalogue-heading">{title}</h3> : <h3><button type="button" className="domain-catalogue-heading" aria-expanded={open} aria-controls={panelId} onClick={() => onExpand(open ? null : group.element)}>{title}<ChevronDown size={19} aria-hidden="true" /></button></h3>}
-        <div id={panelId} hidden={!open} className="domain-catalogue-content"><ul>{group.areas.map(area => {
+        <RevealPanel id={panelId} open={open}><div className="domain-catalogue-content"><ul>{group.areas.map(area => {
           const score = scoreById.get(area.id);
           const active = activeAreas.has(area.id);
           return <li key={area.id} className="domain-catalogue-row">
             <Link to={`/dominios/${area.id}`} state={{ domainsReturnSearch: returnSearch }} className="domain-catalogue-link" aria-label={`Abrir ${area.name}`}><span><strong>{area.name}</strong><small>{format(score?.score || 0)} pts · {score?.taskCount || 0} rituais{area.isCustom ? ' · Personalizada' : ''}</small></span><ArrowUpRight size={18} aria-hidden="true" /></Link>
             {managing && <button type="button" className="domain-catalogue-toggle" aria-label={`${active ? 'Desvincular' : 'Vincular'} ${area.name}`} onClick={() => { onToggle(area.id); manageRef.current?.focus({ preventScroll: true }); }}>{active ? 'Desvincular' : 'Vincular'}</button>}
           </li>;
-        })}</ul></div>
+        })}</ul></div></RevealPanel>
       </section>;
     })}</div>
   </div>;

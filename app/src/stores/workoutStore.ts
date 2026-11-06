@@ -2255,8 +2255,10 @@ export const useWorkoutStore = create<WorkoutState>()(
         accountDataById: state.accountDataById,
         nativeDataById: state.nativeDataById,
       }),
-      onRehydrateStorage: () => () => {
-        useWorkoutStore.getState().syncAccountContext(useAppStore.getState().currentAccountId);
+      onRehydrateStorage: () => (state) => {
+        // Synchronous storage hydrates before useWorkoutStore is initialized.
+        // Zustand supplies the loaded state; on failure it supplies undefined.
+        state?.syncAccountContext(useAppStore.getState().currentAccountId);
       },
     }
   )

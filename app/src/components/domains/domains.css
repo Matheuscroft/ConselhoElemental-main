@@ -10,9 +10,9 @@
 .domains-section-heading > button[aria-pressed="true"] { color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / .08); }
 .domains-help { font-size: .83rem; margin-top: 10px; }
 .domain-rail { display: flex; gap: 8px; height: 300px; width: 100%; }
-.domain-rail-card { position: relative; min-width: 44px; flex: 1 1 0; overflow: hidden; border-radius: 24px; border: 1px solid rgb(var(--domain-tint) / .25); background: radial-gradient(ellipse at 50% 40%, rgb(var(--domain-tint) / .16), rgb(var(--el-canvas)) 80%); color: rgb(var(--domain-tint)); transition: flex-grow 450ms cubic-bezier(.2,.7,.2,1), border-color 180ms; text-align: left; }
+.domain-rail-card { position: relative; min-width: 44px; flex: 1 1 0; overflow: hidden; border-radius: 24px; border: 1px solid rgb(var(--domain-tint) / .25); background: radial-gradient(ellipse at 50% 40%, rgb(var(--domain-tint) / .16), rgb(var(--el-canvas)) 80%); color: rgb(var(--domain-tint)); transition: flex-grow var(--ds-duration-reveal) var(--ds-ease), border-color var(--ds-duration-feedback); text-align: left; }
 .domain-rail-card[data-open="true"] { flex-grow: 6; border-color: rgb(var(--domain-tint) / .75); }
-.domain-rail-art { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); display: grid; place-items: center; width: 210px; height: 190px; pointer-events: none; opacity: .32; transition: opacity 300ms; }
+.domain-rail-art { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); display: grid; place-items: center; width: 210px; height: 190px; pointer-events: none; opacity: .32; transition: opacity var(--ds-duration-feedback); }
 .domain-rail-art img { width: 100%; height: 100%; object-fit: contain; }
 .domain-rail-card[data-open="true"] .domain-rail-art { opacity: 1; }
 .domain-rail-name { position: absolute; inset: auto 0 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -54,11 +54,8 @@
 .domain-showcase-title p { display: flex; align-items: center; gap: 8px; color: rgb(var(--domain-tint)); font-size: .85rem; line-height: 1.5; }
 .domain-showcase-title h1 { font: 500 clamp(1.7rem, 4vw, 2.5rem)/1.3 var(--ds-font-heading); margin-top: 10px; overflow-wrap: anywhere; }
 .domain-showcase-toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 24px; min-height: 56px; color: rgb(var(--domain-tint)); font-size: .9rem; background: rgb(var(--domain-tint) / .04); }
-.domain-showcase-toggle svg { transition: transform 300ms; }
+.domain-showcase-toggle svg { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
 .domain-showcase-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
-.domain-reveal { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 350ms cubic-bezier(.2,.7,.2,1), opacity 220ms; }
-.domain-reveal[data-open="true"] { grid-template-rows: 1fr; opacity: 1; }
-.domain-reveal > div { overflow: hidden; min-height: 0; }
 .domain-showcase-detail { padding: 10px 24px 24px; }
 .domain-showcase-detail > p { color: rgb(var(--el-muted)); font-size: .9rem; line-height: 1.7; }
 .domain-showcase-detail dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; }
@@ -165,7 +162,7 @@
 .domain-catalogue-heading > span { flex: 1; min-width: 0; }
 .domain-catalogue-heading strong { font: 500 1.1rem/1.4 var(--ds-font-heading); color: var(--catalogue-accent); }
 .domain-catalogue-heading small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: rgb(var(--el-muted)); font-size: .78rem; font-weight: 400; margin-top: 5px; }
-.domain-catalogue-heading > svg:last-child { transition: transform 180ms ease; }
+.domain-catalogue-heading > svg:last-child { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
 .domain-catalogue-group[data-open="true"] button.domain-catalogue-heading > svg:last-child { transform: rotate(180deg); }
 .domain-catalogue-content > ul { padding: 0 12px 12px; margin: 0; list-style: none; }
 .domain-catalogue-row { display: flex; align-items: center; gap: 4px; border-top: 1px solid rgb(var(--el-muted) / .16); }

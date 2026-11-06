@@ -110,17 +110,17 @@ input:focus, textarea:focus { box-shadow: 0 0 0 2px rgb(var(--el-gold) / .4); }
 /* Discovery uses stable disclosures and real destinations, with no hover-only actions. */
 .elemental-atlas { display: grid; gap: 14px; margin-bottom: 28px; }
 .elemental-nav-group { min-width: 0; border: 1px solid rgb(var(--el-muted) / .2); border-radius: 18px; background: rgb(var(--el-surface)); color: rgb(var(--el-text)); overflow: clip; }
-.elemental-nav-group[open] { border-color: color-mix(in srgb, var(--group-accent) 65%, transparent); }
-.elemental-nav-group > summary { display: flex; align-items: center; gap: 14px; padding: 18px; min-height: 88px; cursor: pointer; list-style: none; }
-.elemental-nav-group > summary::-webkit-details-marker, .elemental-route-access > summary::-webkit-details-marker { display: none; }
+.elemental-nav-group[data-open="true"] { border-color: color-mix(in srgb, var(--group-accent) 65%, transparent); }
+.elemental-nav-group .elemental-nav-trigger { display: flex; align-items: center; gap: 14px; padding: 18px; min-height: 88px; cursor: pointer; list-style: none; }
+.elemental-nav-group .elemental-nav-trigger::-webkit-details-marker, .elemental-route-access > summary::-webkit-details-marker { display: none; }
 .elemental-nav-seal { display: grid; place-items: center; width: 48px; height: 56px; flex-shrink: 0; color: var(--group-accent); border: 1px solid color-mix(in srgb, var(--group-accent) 40%, transparent); border-radius: 50% 50% 12px 12px; }
 .elemental-nav-group-title { display: grid; gap: 5px; min-width: 0; flex: 1; }
 .elemental-nav-group-title strong { font: 500 18px/1.4 Cinzel, Georgia, serif; }
 .elemental-nav-group-title small { color: rgb(var(--el-muted)); font-size: 12px; line-height: 1.5; }
 .elemental-nav-count { color: var(--group-accent); font-size: 13px; font-variant-numeric: tabular-nums; }
-.elemental-nav-group > summary > svg { flex-shrink: 0; transition: transform 180ms ease; }
-.elemental-nav-group[open] > summary > svg { transform: rotate(180deg); }
-.elemental-nav-group-content { padding: 0 16px 16px; animation: elemental-reveal 180ms ease-out; }
+.elemental-nav-group .elemental-nav-trigger > svg { flex-shrink: 0; transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+.elemental-nav-group[data-open="true"] .elemental-nav-trigger > svg { transform: rotate(180deg); }
+.elemental-nav-group-content { padding: 0 16px 16px; }
 .elemental-route-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .elemental-route-showcase { display: flex; flex-direction: column; min-width: 0; padding: 18px; border: 1px solid rgb(var(--el-muted) / .18); border-radius: 14px; background: rgb(var(--el-canvas)); }
 .elemental-route-showcase-main { display: flex; gap: 14px; flex: 1; align-items: flex-start; }
@@ -137,14 +137,19 @@ input:focus, textarea:focus { box-shadow: 0 0 0 2px rgb(var(--el-gold) / .4); }
 .elemental-route-access > div { display: flex; flex-wrap: wrap; gap: 6px; padding-top: 6px; }
 .elemental-route-access code { width: 100%; font-size: 11px; overflow-wrap: anywhere; color: rgb(var(--el-muted)); }
 .elemental-internal-routes > summary { min-height: 48px; cursor: pointer; color: rgb(var(--el-muted)); padding: 12px 0; }
-.elemental-nav-group summary:focus-visible, .elemental-route-showcase a:focus-visible, .elemental-internal-routes summary:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: -3px; border-radius: 8px; }
+.elemental-nav-group button:focus-visible, .elemental-route-showcase a:focus-visible, .elemental-internal-routes summary:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: -3px; border-radius: 8px; }
 @media (max-width: 650px) {
   .elemental-route-grid { grid-template-columns: minmax(0, 1fr); }
-  .elemental-nav-group > summary { padding: 14px 12px; gap: 10px; }
+  .elemental-nav-group .elemental-nav-trigger { padding: 14px 12px; gap: 10px; }
   .elemental-nav-group-title strong { font-size: 16px; }
   .elemental-nav-group-content { padding-inline: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .elemental-nav-group-content { animation: none; }
-  .elemental-nav-group > summary > svg { transition: none; }
+  .elemental-nav-group .elemental-nav-trigger > svg { transition: none; }
 }
+
+.elemental-nav-group .elemental-nav-trigger { width: 100%; text-align: left; font-weight: inherit; }
+.elemental-nav-group h3.elemental-nav-trigger { cursor: default; }
+.elemental-nav-group > h3 { margin: 0; }
+.elemental-nav-group[data-revealed="true"] .elemental-reveal-panel { transition: none; }

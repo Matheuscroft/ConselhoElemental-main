@@ -1,6 +1,7 @@
+import { FITNESS_ICONS, FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarDays, Dumbbell, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
+import { CalendarDays, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
@@ -33,7 +34,7 @@ const modalities = [
   { id: 'martial_arts', label: 'Artes marciais', icon: MartialArtsReferenceIcon },
   { id: 'yoga', label: 'Yoga', icon: YogaReferenceIcon },
   { id: 'cycling', label: 'Ciclismo', icon: CyclingReferenceIcon },
-  { id: 'strength', label: 'Musculação', icon: Dumbbell },
+  { id: 'strength', label: 'Musculação', icon: FITNESS_ICONS.strength },
 ] satisfies (CategoryOption & { id: WorkoutExerciseCategory })[];
 
 function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalog: Exercise[] }) {
@@ -57,8 +58,8 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
   const series = template.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
   const focus = getWorkoutFocus(template, catalog);
   return <FitnessCard className="space-y-4 p-5">
-    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary">{focus ? <span role="img" aria-label={`Foco predominante: ${focus.label}`} className="text-2xl">{focus.emoji}</span> : <Dumbbell size={21} />}</span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
-    {reward && <div className="space-y-2"><span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-2 font-semibold text-emerald-800">{formatEarthXp(reward.earthXp)} XP <span aria-label="Terra">🌿</span></span><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
+    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary">{focus ? <FitnessGlyph name={focus.icon} size={28} label={`Foco predominante: ${focus.label}`} /> : <FitnessGlyph name="strength" size={21} />}</span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
+    {reward && <div className="space-y-2"><span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-4 py-2 font-semibold text-emerald-200">{formatEarthXp(reward.earthXp)} XP <FitnessGlyph name="earth" size={17} label="Terra" /></span><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
     {template.scheduledAt && <p className="text-sm text-fitness-muted">Planejado para {new Date(template.scheduledAt).toLocaleDateString('pt-BR')}</p>}
     <FitnessButton size="md" className="w-full" disabled={!!active || template.exercises.length === 0} onClick={() => {
       const session = startSession(template.id);
@@ -78,7 +79,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
           const varies = amounts.some((amount) => amount !== amounts[0]);
           return [`${sets.length} × ${varies ? '~' : ''}${average.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}${mode === 'reps' ? ' reps' : 's'}`];
         }).join(' + ');
-        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <span role="img" aria-label={`Foco: ${exerciseFocus.label}`} className="mr-2">{exerciseFocus.emoji}</span>}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
+        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <FitnessGlyph name={exerciseFocus.icon} size={24} label={`Foco: ${exerciseFocus.label}`} className="mr-2 inline-block align-middle text-[rgb(var(--el-gold))]" />}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
       })}
     </ol>
     <div className="grid grid-cols-2 gap-2">
@@ -161,8 +162,8 @@ function FitnessLibraryRoot() {
     <div className="mx-auto max-w-xl">
       <FitnessHeader title={tab === 'workouts' && modality ? modality.label : { workouts: 'Exercício Físico', history: 'Histórico', body: 'Meu corpo', health: 'Saúde' }[tab] ?? 'Treinos'} subtitle={tab === 'workouts' && modality ? 'Exercícios, treinos e sequências' : 'Seu movimento, sua evolução'} onBack={() => { if (tab === 'workouts' && modality) { const next = new URLSearchParams(params); next.delete('modalidade'); next.delete('source'); setParams(next); } else navigate('/pilares'); }} backLabel={tab === 'workouts' && modality ? 'Voltar às modalidades' : 'Voltar aos Pilares'} />
       <Tabs value={tab} onValueChange={selectTab} className="mt-6">
-        <TabsList aria-label="Seções de Exercício Físico" className="grid h-12 w-full grid-cols-4 rounded-2xl bg-fitness-surface p-1">
-          {([['workouts', 'Treinos'], ['history', 'Histórico'], ['body', 'Corpo'], ['health', 'Saúde']] as const).map(([value, label]) => <TabsTrigger key={value} value={value} onClick={() => { if (value === 'workouts' && tab === 'workouts') selectTab(value); }} className="h-10 rounded-xl px-1 text-xs sm:text-sm text-fitness-muted data-[state=active]:bg-fitness-primary data-[state=active]:text-white">{label}</TabsTrigger>)}
+        <TabsList aria-label="Seções de Exercício Físico" className="fitness-elemental-tabs grid h-12 w-full grid-cols-4 rounded-2xl bg-fitness-surface p-1">
+          {([['workouts', 'Treinos'], ['history', 'Histórico'], ['body', 'Corpo'], ['health', 'Saúde']] as const).map(([value, label]) => <TabsTrigger key={value} value={value} onClick={() => { if (value === 'workouts' && tab === 'workouts') selectTab(value); }} className="h-10 rounded-xl px-1 text-xs sm:text-sm text-fitness-muted data-[state=active]:bg-[rgb(var(--el-gold)/0.12)] data-[state=active]:text-[rgb(var(--el-gold))]">{label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="workouts" className="mt-6 space-y-8 pb-12">
             {active && <FitnessCard className="border border-fitness-primary/30 p-5"><div className="flex items-center gap-2 text-fitness-primary"><Play size={17} /><p className="font-medium">Sessão em andamento</p></div><p className="mt-2 break-words text-lg font-semibold">{active.nameSnapshot}</p><FitnessButton size="md" className="mt-4 w-full" onClick={() => navigate(`/fitness/ativo/${active.id}`)}>Retomar treino</FitnessButton></FitnessCard>}
@@ -193,7 +194,7 @@ function FitnessLibraryRoot() {
         </FitnessEmbeddedContext.Provider>
       </Tabs>
     </div>
-    {tab === 'workouts' && modality && !createVisible && !createOpen && <button type="button" aria-label="Criar treino" onClick={() => { setPresetId(undefined); setCreateOpen(true); }} className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-5 z-40 grid h-14 w-14 place-items-center rounded-full bg-fitness-primary text-white shadow-fitness-primary outline-none focus-visible:ring-2 focus-visible:ring-white md:right-8"><Plus className="h-7 w-7" /></button>}
+    {tab === 'workouts' && modality && !createVisible && !createOpen && <button type="button" aria-label="Criar treino" onClick={() => { setPresetId(undefined); setCreateOpen(true); }} className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-5 z-40 grid h-14 w-14 place-items-center rounded-2xl border border-[rgb(var(--el-gold)/0.5)] bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))] shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary md:right-8"><Plus className="h-7 w-7" aria-hidden="true" /></button>}
     {createOpen && modality && <NativeTemplateDialog catalog={selectedCatalog} modality={modality.id} presetId={presetId} onClose={closeCreator} />}
     <ExerciseDetailSheet variant="fitness" exercise={adaptedDetail} open={!!detail} onOpenChange={(open) => { if (!open) setDetail(null); }} onAddToWorkout={(exercise) => { setPresetId(exercise.id); setDetail(null); setCreateOpen(true); }} />
   </FitnessPageShell>;

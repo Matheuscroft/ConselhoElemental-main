@@ -20,8 +20,8 @@ export const FitnessListRow: React.FC<FitnessListRowProps> = ({ icon, leading, t
     <>
       {leading ?? <FitnessIconBadge icon={icon} size="sm" />}
       <span className="min-w-0 flex-1 text-left">
-        <span className="block truncate text-[17px] font-medium text-fitness-text">{title}</span>
-        {subtitle && <span className="block truncate text-sm text-fitness-muted">{subtitle}</span>}
+        <span title={title} className="fitness-row-title block text-[16px] font-medium leading-snug text-fitness-text">{title}</span>
+        {subtitle && <span title={subtitle} className="fitness-row-subtitle mt-1 block text-xs leading-relaxed text-fitness-muted">{subtitle}</span>}
       </span>
       {trailing ?? (onClick && <ChevronRight className="h-5 w-5 shrink-0 text-fitness-muted-dark" aria-hidden="true" />)}
     </>
@@ -29,7 +29,7 @@ export const FitnessListRow: React.FC<FitnessListRowProps> = ({ icon, leading, t
 
   if (!onClick) {
     return (
-      <FitnessCard radius="md" className="flex min-h-[76px] items-center gap-4 px-5 py-4">
+      <FitnessCard radius="md" className="fitness-elemental-row flex min-h-[80px] items-center gap-3 px-4 py-3">
         {content}
       </FitnessCard>
     );
@@ -42,7 +42,7 @@ export const FitnessListRow: React.FC<FitnessListRowProps> = ({ icon, leading, t
       aria-label={ariaLabel}
       className="block w-full rounded-fit text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
     >
-      <FitnessCard radius="md" interactive className="flex min-h-[76px] items-center gap-4 px-5 py-4">
+      <FitnessCard radius="md" interactive className="fitness-elemental-row flex min-h-[80px] items-center gap-3 px-4 py-3">
         {content}
       </FitnessCard>
     </button>

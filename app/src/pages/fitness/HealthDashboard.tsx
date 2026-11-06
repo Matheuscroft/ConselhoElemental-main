@@ -1,7 +1,8 @@
 import { useFitnessHistory } from '@/lib/fitness/use-fitness-history';
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, Dumbbell } from 'lucide-react';
+import { Activity } from 'lucide-react';
+import { FITNESS_ICONS } from '@/components/fitness-kit/FitnessGlyph';
 import {
   ChartWidget,
   FitnessTopTabs,
@@ -73,7 +74,7 @@ export const HealthDashboard: React.FC = () => {
       <FitnessTopTabs />
       <header className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="break-words font-sans text-[32px] font-semibold leading-[1.1] text-fitness-text">
+          <h2 className="break-words font-display text-[30px] font-medium leading-[1.1] text-fitness-text">
             Olá{userName ? `, ${userName}` : ''}
           </h2>
           <p className="mt-1 text-lg text-fitness-muted">{FITNESS_COPY.today}</p>
@@ -88,7 +89,7 @@ export const HealthDashboard: React.FC = () => {
       <div className="mt-4 grid grid-cols-2 gap-5">
         <ChartWidget
           title={measuredLoad ? 'Carga percebida' : 'Tempo ativo'}
-          icon={Dumbbell}
+          icon={FITNESS_ICONS.strength}
           iconClassName="text-fitness-primary"
           radius="sm"
           className="aspect-square p-4 sm:p-5"

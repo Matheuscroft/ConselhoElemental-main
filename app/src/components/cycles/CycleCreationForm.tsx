@@ -10,18 +10,18 @@ export function CycleWeekdays({ days, onToggle }: { days: number[]; onToggle: (d
 }
 
 /** Controlled composer. It never creates, persists, or calculates a cycle. */
-export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, onSubmit, onCancel, children }: {
+export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, onSubmit, onCancel, children, agenda }: {
   kind: 'cycle' | 'sequence'; name: string; onNameChange: (name: string) => void;
-  days: number[]; onToggleDay: (day: number) => void; startLabel: string;
-  onSubmit: () => void; onCancel: () => void; children?: ReactNode;
+  days?: number[]; onToggleDay?: (day: number) => void; startLabel: string;
+  onSubmit: () => void; onCancel: () => void; children?: ReactNode; agenda?: ReactNode;
 }) {
   const sequence = kind === 'sequence';
   return <form className="cycle-composer" onSubmit={event => { event.preventDefault(); if (name.trim()) onSubmit(); }}>
-    <div className="cycle-composer-preview"><span><ArcaneIcon name={sequence ? 'ciclo' : 'ritual'} size={34} /></span><div><small>{sequence ? 'Uma jornada de ciclos' : 'Um hábito, dia após dia'}</small><strong>{name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo')}</strong><p>A partir de {startLabel}</p></div></div>
-    <label className="cycle-composer-name">{sequence ? 'Nome da sequência' : 'O que você quer praticar?'}<input autoFocus required value={name} onChange={event => onNameChange(event.target.value)} placeholder={sequence ? 'Ex.: Rotina da manhã' : 'Ex.: Ler por 20 minutos'} /></label>
+    <div className="cycle-composer-preview"><span><ArcaneIcon name="ciclo" size={34} /></span><div><small>{sequence ? 'Um ciclo por vez' : 'Uma atividade que se repete'}</small><strong>{name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo')}</strong><p>A partir de {startLabel}</p></div></div>
+    <label className="cycle-composer-name">{sequence ? 'Nome da sequência' : 'O que você quer praticar?'}<input autoFocus required value={name} onChange={event => onNameChange(event.target.value)} placeholder={sequence ? 'Ex.: Alternar treino A e B' : 'Ex.: Ler por 20 minutos'} /></label>
     {children}
-    <CycleWeekdays days={days} onToggle={onToggleDay} />
-    <p className="cycle-composer-help">{sequence ? 'Depois de criar, abra os detalhes para adicionar ciclos e definir a ordem dos passos.' : 'Depois de criar, você pode ajustar os detalhes e adicionar subitens ao ciclo.'}</p>
+    {agenda ?? (days && onToggleDay ? <CycleWeekdays days={days} onToggle={onToggleDay} /> : null)}
+    <p className="cycle-composer-help">{sequence ? 'Alterna um ciclo por data programada. Concluir hoje deixa o próximo para o próximo dia da agenda. Para atividades que você quer fazer no mesmo dia, crie ciclos separados.' : 'Cada data programada tem sua própria conclusão. Use subitens para etapas fixas e o contador do cartão para somar repetições ou qualquer medida que você escolher.'}</p>
     <footer><button type="button" onClick={onCancel}>Cancelar</button><button type="submit" disabled={!name.trim()}>{sequence ? 'Criar sequência' : 'Criar ciclo'}</button></footer>
   </form>;
 }

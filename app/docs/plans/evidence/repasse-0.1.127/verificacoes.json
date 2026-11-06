@@ -1,0 +1,42 @@
+{
+  "lot": "H02",
+  "version": "0.1.127",
+  "date": "2026-11-06",
+  "tests": {
+    "total": 668,
+    "passed": 668,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 66397.905
+  },
+  "typescript": "passed",
+  "eslint": "passed",
+  "build": {
+    "passed": true,
+    "envDir": false,
+    "seconds": 30.09
+  },
+  "secretPatternScan": {
+    "candidateFiles": 390,
+    "findings": 0,
+    "excludedCache": "supabase/.temp/cli-latest",
+    "limitation": "pattern-based check, not exhaustive certification"
+  },
+  "visual": "own SVG inspected at 24/32/48/72px; app/mobile not inspected",
+  "githubPreflight": {
+    "main": "be78b1e",
+    "actionsWorkflows": 0,
+    "deploymentsReturned": 0
+  },
+  "vercel": "project metadata access refused 403; exact branch disabled via versioned deploymentEnabled configuration",
+  "backend": "no hosted SQL or personal data; all three gates false",
+  "publication": "pending next step",
+  "stagedReview": {
+    "addedOrModifiedPaths": 399,
+    "credentialPatternFindings": 0,
+    "privateOrEnvironmentPaths": 0,
+    "gatesChecked": "all false",
+    "branchDeployGuard": "exact current branch false",
+    "whitespace": "extra EOF blank removed; identical emitted JS; reminder tests passed"
+  }
+}

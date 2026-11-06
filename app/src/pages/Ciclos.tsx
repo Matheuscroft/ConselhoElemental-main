@@ -1,3 +1,11 @@
+import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/cycle-date-navigation';
+import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
+import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
+import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
+import { CycleXpRecovery } from '@/components/cycles/CycleXpRecovery';
+import { advanceDailyView } from '@/lib/cycles/daily-view';
+import { CycleCompletionFeedback } from '@/components/cycles/CycleCompletionFeedback';
+import { CycleDailyCounter } from '@/components/cycles/CycleDailyCounter';
 import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-semantics';
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
@@ -9,7 +17,7 @@ import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
 import { toast } from 'sonner';
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { parseDestinyDate } from '@/components/destiny/destiny-options';
 import { CycleSequenceShowcase } from '@/components/cycles/CycleSequenceShowcase';
 import { CycleRoutineToolbar } from '@/components/cycles/CycleRoutineToolbar';
@@ -19,9 +27,7 @@ import './ciclos.css';
 import '@/components/elemental/element-discovery.css';
 import { 
   Plus, SkipForward, Search,
-  Calendar,
   ChevronLeft, 
-  ChevronRight, 
   ChevronDown,
   Play, 
   Pause, 
@@ -58,8 +64,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as DatePickerCalendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Dialog,
   DialogContent,
@@ -116,6 +120,7 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 
 export const Ciclos: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [destinyParams] = useSearchParams();
   const destinyAccountId = useAppStore(state => state.currentAccountId);
   const [appliedDestinyIntent, setAppliedDestinyIntent] = useState<string | null>(null);
@@ -142,7 +147,7 @@ export const Ciclos: React.FC = () => {
     deleteCycleSequence,
     addHabitToSequence,
     removeHabitFromSequence,
-    updateHabit,
+    updateHabit, configureHabitDailyTracking, recordHabitQuantity, removeHabitQuantity,
     updateHabitChild,
     addHabitChild,
     deleteHabitChild,
@@ -171,8 +176,6 @@ export const Ciclos: React.FC = () => {
   const [showTimer, setShowTimer] = useState(false);
   const [showExecutionMode, setShowExecutionMode] = useState(false);
   const [executionCurrentIndex, setExecutionCurrentIndex] = useState(0);
-  const [completedHabitId, setCompletedHabitId] = useState<string | null>(null);
-  const [earnedPoints, setEarnedPoints] = useState(0);
   const [newChildHabitName, setNewChildHabitName] = useState('');
   const [newChildHabitPoints, setNewChildHabitPoints] = useState(1);
   const [newChildHabitMinutes, setNewChildHabitMinutes] = useState('');
@@ -190,7 +193,8 @@ export const Ciclos: React.FC = () => {
   const [hasTime, setHasTime] = useState(false);
   const [showQuickCreateCycle, setShowQuickCreateCycle] = useState(false);
   const [quickCreateCycleName, setQuickCreateCycleName] = useState('');
-  const [quickCreateCycleDaysOfWeek, setQuickCreateCycleDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [quickCreateCycleSchedule, setQuickCreateCycleSchedule] = useState<RecurrenceEditorValue>({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
+  const [quickCreateCycleError, setQuickCreateCycleError] = useState('');
   const [showQuickCreateSequence, setShowQuickCreateSequence] = useState(false);
   const [quickCreateSequenceName, setQuickCreateSequenceName] = useState('');
   const [quickSequenceRestriction, setQuickSequenceRestriction] = useState<'ANY' | 'WORKOUT'>('ANY');
@@ -206,7 +210,9 @@ export const Ciclos: React.FC = () => {
   const [sequenceDraftDaysOfWeek, setSequenceDraftDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [sequenceDraftMemberIds, setSequenceDraftMemberIds] = useState<string[]>([]);
   const [sequenceHabitToAdd, setSequenceHabitToAdd] = useState<string>('none');
-  const [editDaysOfWeek, setEditDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
+  const [editSchedule, setEditSchedule] = useState<RecurrenceEditorValue>({ type: 'DAILY', config: {} });
+  const [editScheduleChanged, setEditScheduleChanged] = useState(false);
+  const [editScheduleError, setEditScheduleError] = useState('');
   const [draggedSequenceHabitId, setDraggedSequenceHabitId] = useState<string | null>(null);
   const [dragOverSequenceHabitId, setDragOverSequenceHabitId] = useState<string | null>(null);
   const [draggedChildHabit, setDraggedChildHabit] = useState<{ habitId: string; parentId: string } | null>(null);
@@ -231,17 +237,20 @@ export const Ciclos: React.FC = () => {
 
   const destinyHabitId = destinyParams.get('atividade');
   const destinyDate = destinyParams.get('data');
-  const destinyIntent = destinyHabitId ? `${destinyAccountId}:${destinyHabitId}:${destinyDate}` : null;
+  const destinyIntent = destinyHabitId ? `${destinyAccountId}:${destinyHabitId}:${destinyDate}` : destinyDate ? `${destinyAccountId}:day:${destinyDate}` : null;
   if (destinyIntent !== appliedDestinyIntent) {
     const habit = destinyHabitId ? findHabitById(habits, destinyHabitId) : null;
     const date = parseDestinyDate(destinyDate);
-    if (!destinyIntent || (habit && date)) {
+    if (!destinyIntent || (date && (!destinyHabitId || habit))) {
       setAppliedDestinyIntent(destinyIntent);
-      if (habit && date) {
+      if (date) {
         setSelectedDate(date);
-        setVisibleDaysCenterDate(date);
-        setWorkspaceView('routine');
-        setCycleFilters({ query: habit.name || habit.title, element: 'all', status: 'all' });
+        const internalSelection = isCycleDateSelection(location.state, destinyIntent);
+        if (!internalSelection || appliedDestinyIntent === null) setVisibleDaysCenterDate(date);
+        if (!internalSelection) {
+          setWorkspaceView('routine');
+          setCycleFilters({ query: habit ? habit.name || habit.title : '', element: 'all', status: 'all' });
+        }
       }
     }
   }
@@ -297,25 +306,20 @@ export const Ciclos: React.FC = () => {
   }, []);
 
   const handleQuickCreateCycle = () => {
-    if (!quickCreateCycleName.trim()) return;
-
-    const creationDate = new Date(selectedDate);
-
-    addHabit({
-      name: quickCreateCycleName.trim(),
-      title: quickCreateCycleName.trim(),
-      areaId: 'sem-categoria',
-      elementId: 'terra',
-      startDate: creationDate,
-      recurrenceType: 'DAILY',
-      recurrenceConfig: { daysOfWeek: quickCreateCycleDaysOfWeek },
-      plannedPoints: 1,
-      plannedTimeMinutes: 0,
-    });
-
+    if (!quickCreateCycleName.trim()) return false;
+    try {
+      validateRecurrence(quickCreateCycleSchedule.type, quickCreateCycleSchedule.config, selectedDate);
+      addHabit({
+        name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: 'sem-categoria', elementId: 'terra',
+        startDate: new Date(selectedDate), recurrenceType: quickCreateCycleSchedule.type,
+        recurrenceConfig: quickCreateCycleSchedule.config, plannedPoints: 1, plannedTimeMinutes: 0,
+      });
+    } catch (error) { setQuickCreateCycleError(error instanceof Error ? error.message : 'Não foi possível criar o ciclo. Seu preenchimento foi mantido.'); return false; }
     setQuickCreateCycleName('');
-    setQuickCreateCycleDaysOfWeek([0, 1, 2, 3, 4, 5, 6]);
+    setQuickCreateCycleSchedule({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
+    setQuickCreateCycleError('');
     setShowQuickCreateCycle(false);
+    return true;
   };
 
   const handleQuickCreateSequence = () => {
@@ -576,6 +580,14 @@ export const Ciclos: React.FC = () => {
     );
   }, [selectedDate]);
 
+  const selectCalendarDate = useCallback((date: Date, recenter = true, keepActivity = false) => {
+    const day = normalizeDate(date);
+    setSelectedDate(day);
+    if (recenter) setVisibleDaysCenterDate(day);
+    const destination = cycleDateNavigation(destinyParams.toString(), day, destinyAccountId, location.state, keepActivity);
+    navigate(destination.href, destination.options);
+  }, [destinyParams, destinyAccountId, location.state, navigate]);
+
   // Navigate days
   const goToPreviousDay = () => {
     const nextCenterDate = new Date(visibleDaysCenterDate);
@@ -591,16 +603,14 @@ export const Ciclos: React.FC = () => {
 
   const goToToday = () => {
     const today = normalizeDate(new Date());
-    setSelectedDate(today);
-    setVisibleDaysCenterDate(today);
+    selectCalendarDate(today);
   };
 
   const selectRelativeVisibleDay = (offset: number) => {
     const nextDate = new Date(visibleDaysCenterDate);
     nextDate.setDate(nextDate.getDate() + offset);
     const normalized = normalizeDate(nextDate);
-    setSelectedDate(normalized);
-
+    selectCalendarDate(normalized, false);
   };
 
   const isSameDay = (a: Date, b: Date) => {
@@ -703,7 +713,7 @@ export const Ciclos: React.FC = () => {
     closeExecutionMode();
   };
 
-  const finalizeExecutionCycle = useCallback((pointsOverride?: number) => {
+  const finalizeExecutionCycle = useCallback(() => {
     if (!activeHabit) return;
 
     const elapsedSeconds = stopTimer();
@@ -711,19 +721,7 @@ export const Ciclos: React.FC = () => {
 
     const latestHabit = findHabitById(useAppStore.getState().habits, activeHabit);
     const alreadyCompleted = latestHabit ? isHabitCompleted(latestHabit) : false;
-    const completionPoints = alreadyCompleted
-      ? 0
-      : completeHabit(activeHabit, timeSpentMinutes, selectedDate);
-    const accumulatedPoints = pointsOverride ?? executionEarnedPointsRef.current;
-    const pointsToShow = accumulatedPoints > 0 ? accumulatedPoints : completionPoints;
-
-    setCompletedHabitId(activeHabit);
-    setEarnedPoints(pointsToShow);
-
-    setTimeout(() => {
-      setCompletedHabitId(null);
-      setEarnedPoints(0);
-    }, 3000);
+    if (!alreadyCompleted) completeHabit(activeHabit, timeSpentMinutes, selectedDate);
 
     closeExecutionMode();
   }, [activeHabit, stopTimer, isHabitCompleted, completeHabit, selectedDate, closeExecutionMode]);
@@ -792,7 +790,7 @@ export const Ciclos: React.FC = () => {
 
     // Ultima pendencia concluida: encerra o ciclo no mesmo clique.
     if (nextPendingIndex < 0) {
-      finalizeExecutionCycle(nextExecutionEarnedPoints);
+      finalizeExecutionCycle();
       return;
     }
 
@@ -836,6 +834,25 @@ export const Ciclos: React.FC = () => {
     setShowTimer(open);
   };
 
+  const observedDay = useRef(new Date().toDateString());
+  useEffect(() => {
+    const refreshDay = () => {
+      if (activeHabit || document.hidden) return;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const previousDay = observedDay.current;
+      if (today.toDateString() === previousDay) return;
+      observedDay.current = today.toDateString();
+      const nextDate = advanceDailyView(selectedDate, previousDay, today);
+      if (nextDate !== selectedDate) selectCalendarDate(nextDate, false, true);
+      setVisibleDaysCenterDate(current => advanceDailyView(current, previousDay, today));
+    };
+    const timeout = window.setTimeout(refreshDay, 0);
+    const interval = window.setInterval(refreshDay, 30_000);
+    window.addEventListener('focus', refreshDay);
+    document.addEventListener('visibilitychange', refreshDay);
+    return () => { window.clearTimeout(timeout); window.clearInterval(interval); window.removeEventListener('focus', refreshDay); document.removeEventListener('visibilitychange', refreshDay); };
+  }, [activeHabit, selectedDate, selectCalendarDate]);
+
   // Complete habit directly without opening timer.
   const withCompletionLock = (habitId: string, action: () => void) => {
     const lockKey = `${habitId}-${normalizeDate(selectedDate).toDateString()}`;
@@ -862,16 +879,9 @@ export const Ciclos: React.FC = () => {
       setActiveHabit(null);
     }
 
-    const points = habit.childHabits.length > 0
-      ? completeHabitChild(habit.id, habit.plannedTimeMinutes, selectedDate)
-      : completeHabit(habit.id, habit.plannedTimeMinutes, selectedDate);
-    setEarnedPoints(points);
-    setCompletedHabitId(habit.id);
+    if (habit.childHabits.length > 0) completeHabitChild(habit.id, habit.plannedTimeMinutes, selectedDate);
+    else completeHabit(habit.id, habit.plannedTimeMinutes, selectedDate);
 
-    setTimeout(() => {
-      setCompletedHabitId(null);
-      setEarnedPoints(0);
-    }, 3000);
     });
   };
 
@@ -900,16 +910,10 @@ export const Ciclos: React.FC = () => {
     const elapsedSeconds = stopTimer();
     const timeSpentMinutes = Math.max(1, Math.ceil(elapsedSeconds / 60));
 
-    const points = completeHabit(activeHabit, timeSpentMinutes, selectedDate);
-    setEarnedPoints(points);
-    setCompletedHabitId(activeHabit);
+    completeHabit(activeHabit, timeSpentMinutes, selectedDate);
     setShowTimer(false);
     setActiveHabit(null);
 
-    setTimeout(() => {
-      setCompletedHabitId(null);
-      setEarnedPoints(0);
-    }, 3000);
   };
 
   const handleAddChildHabit = (parentHabitId: string) => {
@@ -930,8 +934,6 @@ export const Ciclos: React.FC = () => {
     setNewChildHabitMinutes('');
     setActiveAddHabitTarget(null);
   };
-
-
 
   const getChildExecutionType = (child: Habit): ChildExecutionType => {
     return subitemKind(child as HabitSemanticMetadata);
@@ -1207,9 +1209,9 @@ export const Ciclos: React.FC = () => {
     setEditSubarea(habit.subareaId || 'none');
     setEditPoints(habit.plannedPoints || 1);
     setEditChildType(isChild ? getChildExecutionType(habit) : 'valuable');
-    if (!isChild) {
-      setEditDaysOfWeek(habit.recurrenceConfig.daysOfWeek || [0, 1, 2, 3, 4, 5, 6]);
-    }
+    setEditSchedule({ type: habit.recurrenceType, config: { ...habit.recurrenceConfig } });
+    setEditScheduleChanged(false);
+    setEditScheduleError('');
     const totalMinutes = habit.plannedTimeMinutes || 0;
     setEditTimeMinutes(Math.floor(totalMinutes));
     setEditTimeSeconds(Math.round((totalMinutes % 1) * 60));
@@ -1222,6 +1224,11 @@ export const Ciclos: React.FC = () => {
 
     const habit = findHabitById(habits, editingHabitId);
     if (!habit) return;
+
+    if (editScheduleChanged && !editingHabitIsChild) {
+      try { validateRecurrence(editSchedule.type, editSchedule.config, habit.startDate ?? habit.createdAt); }
+      catch (error) { setEditScheduleError(error instanceof Error ? error.message : 'Confira a agenda.'); return; }
+    }
 
     const isAggregatorLocked = habit.childHabits.length > 0;
     const targetChildType = editingHabitIsChild ? editChildType : getChildExecutionType(habit);
@@ -1255,17 +1262,13 @@ export const Ciclos: React.FC = () => {
       subareaPrimaryId: nextSubareaId,
       plannedPoints: isEditingNonValuable ? 0 : isAggregatorLocked ? habit.plannedPoints : Math.max(1, editPoints),
       baseValue: isEditingNonValuable ? 0 : habit.baseValue,
+      ...(!editingHabitIsChild ? {
+        recurrenceType: editScheduleChanged ? editSchedule.type : habit.recurrenceType,
+        recurrenceConfig: editScheduleChanged ? editSchedule.config : habit.recurrenceConfig,
+      } : {}),
       plannedTimeMinutes: nextPlannedTimeMinutes,
       elementId: (allAreasForEdit.find((area) => area.id === nextAreaId)?.elementId || habit.elementId),
     };
-
-    if (!editingHabitIsChild) {
-      payload.recurrenceType = 'DAILY';
-      payload.recurrenceConfig = {
-        ...habit.recurrenceConfig,
-        daysOfWeek: editDaysOfWeek,
-      };
-    }
 
     if (editingHabitIsChild) {
       updateHabitChild(editingHabitId, payload);
@@ -1280,7 +1283,8 @@ export const Ciclos: React.FC = () => {
     setEditName('');
     setEditArea('none');
     setEditSubarea('none');
-    setEditDaysOfWeek([0, 1, 2, 3, 4, 5, 6]);
+    setEditScheduleChanged(false);
+    setEditScheduleError('');
     setEditPoints(1);
     setEditTimeMinutes(0);
     setEditTimeSeconds(0);
@@ -1319,8 +1323,8 @@ export const Ciclos: React.FC = () => {
 
     const hasPending = executionActionableChildren.some((task) => !isHabitCompleted(task));
     if (!hasPending) {
-      finalizeExecutionCycle(executionEarnedPointsRef.current);
-      return;
+      const frame = window.requestAnimationFrame(() => finalizeExecutionCycle());
+      return () => window.cancelAnimationFrame(frame);
     }
 
     const currentTask = executionActionableChildren[executionCurrentIndex];
@@ -1336,9 +1340,12 @@ export const Ciclos: React.FC = () => {
 
     const nextIndex = nextPendingAfterCurrent >= 0 ? nextPendingAfterCurrent : firstPending;
     if (nextIndex >= 0 && nextIndex !== executionCurrentIndex) {
-      setExecutionCurrentIndex(nextIndex);
-      const nextTask = executionActionableChildren[nextIndex] ?? null;
-      beginExecutionTaskTracking(nextTask, timer.elapsedSeconds);
+      const frame = window.requestAnimationFrame(() => {
+        setExecutionCurrentIndex(nextIndex);
+        const nextTask = executionActionableChildren[nextIndex] ?? null;
+        beginExecutionTaskTracking(nextTask, timer.elapsedSeconds);
+      });
+      return () => window.cancelAnimationFrame(frame);
     }
   }, [
     showExecutionMode,
@@ -1637,6 +1644,11 @@ export const Ciclos: React.FC = () => {
         section.querySelector('summary')?.focus({ preventScroll: true });
         section.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
       }}><ArcaneIcon name="conquista" size={19} />Ver pontuação elemental<ChevronDown size={18} aria-hidden="true" /></button>
+      <details className="cycle-routine-guide"><summary>Ciclo, sequência ou subitem?<ChevronDown size={18} /></summary>
+        <dl><div><dt>Ciclo: um hábito da rotina</dt><dd>Cada atividade da sua rotina pode ter seu próprio ciclo, disponível junto às demais no mesmo dia. Marque todos os dias da semana para uma rotina diária. As conclusões anteriores ficam no histórico. Depois de concluir, abra Feitos para acrescentar mais registros naquele dia.</dd></div>
+        <div><dt>Sequência: um ciclo por vez</dt><dd>Alterna os ciclos nos dias programados, como treino A e B. Não reúne todas as tarefas do dia em uma lista.</dd></div>
+        <div><dt>Subitens: etapas fixas</dt><dd>Organizam o que você repete na execução. Para somar ações repetidas ou medir quantidades de qualquer atividade, use “Adicionar contador” no cartão.</dd></div></dl>
+      </details>
       {/* Day Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1647,37 +1659,8 @@ export const Ciclos: React.FC = () => {
         <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 bg-mystic-gold/10 rounded-full blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 left-0 w-24 h-24 bg-mystic-arcane/10 rounded-full blur-2xl" />
         
-        {/* Navigation */}
-        <div className="flex items-center justify-between mb-2">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Mostrar sete dias anteriores" onClick={goToPreviousDay}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </motion.button>
-          
-          <button 
-            onClick={goToToday}
-            aria-label={`Data selecionada: ${selectedDate.toLocaleDateString('pt-BR')}. Voltar para hoje`}
-            className="text-center hover:opacity-80 transition-opacity"
-          >
-            <p className="text-xs text-white/50 uppercase tracking-wider">{WEEKDAYS[selectedDate.getDay()]}</p>
-            <p className="font-mystic text-lg text-mystic-gold">
-              {selectedDate.getDate()} {selectedDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}
-            </p><small className="text-xs text-white/60">Voltar para hoje</small>
-          </button>
-          
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Mostrar próximos sete dias" onClick={goToNextDay}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </motion.button>
-        </div>
+        <CycleCalendarNavigation selectedDate={selectedDate} onPrevious={goToPreviousDay} onNext={goToNextDay} onToday={goToToday}
+          onSelect={date => selectCalendarDate(date)} />
 
         {/* Day shortcuts + full date picker */}
         <div ref={dayShortcutsContainerRef} className="cycle-calendar-rail" role="group" aria-label="Dias do calendário: selecione para expandir">
@@ -1692,35 +1675,6 @@ export const Ciclos: React.FC = () => {
               buttonRef={active ? selectedDayButtonRef : null} />;
           })}
         </div>
-        <div className="cycle-calendar-tools">
-          <span>Escolha um dia para abrir sua rotina</span>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="cycle-calendar-picker"
-                aria-label="Selecionar qualquer data"
-              >
-                <Calendar className="w-3.5 h-3.5" />
-                Escolher data
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-white/10 bg-void/95" align="end">
-              <DatePickerCalendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
-                  if (!date) return;
-                  const normalized = normalizeDate(date);
-                  setSelectedDate(normalized);
-                  setVisibleDaysCenterDate(normalized);
-                }}
-                captionLayout="dropdown"
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-
         {/* Moon Phase & Season */}
         <div className="flex items-center justify-center gap-6 mb-4">
           <button
@@ -1767,6 +1721,8 @@ export const Ciclos: React.FC = () => {
         </div>
       </motion.div>
 
+      <CycleXpRecovery />
+
       <div className="cycles-view-switch" role="group" aria-label="Visão de Ciclos">
         <button type="button" aria-pressed={workspaceView === 'routine'} aria-controls="cycle-routine-panel" onClick={() => setWorkspaceView('routine')}><ArcaneIcon name="ritual" size={20} />Rotina<span>{displayedMixedCards.length}</span></button>
         <button type="button" aria-pressed={workspaceView === 'sequences'} aria-controls="cycle-library-panel" onClick={() => setWorkspaceView('sequences')}><ArcaneIcon name="ciclo" size={20} />Sequências<span>{sequenceSummaries.length}</span></button>
@@ -1811,6 +1767,7 @@ export const Ciclos: React.FC = () => {
       >
         {displayedMixedCards.length > 0 && <CycleRoutineToolbar
           title={selectedDate.toDateString() === new Date().toDateString() ? 'Ciclos de hoje' : `Ciclos de ${selectedDate.toLocaleDateString('pt-BR')}`}
+          agendaHref={`/temporal/semana?${new URLSearchParams({ data: dateToInput(selectedDate) })}`}
           filters={cycleFilters} onChange={setCycleFilters}
           total={displayedMixedCards.length} completed={displayedMixedCards.filter(isMixedCardCompleted).length}
           shown={visibleCycleCards.length} order={cyclesViewMode} onOrder={setCyclesViewMode}
@@ -2017,6 +1974,8 @@ export const Ciclos: React.FC = () => {
                             )}
                           </div>
 
+                          <CycleDailyCounter key={`${destinyAccountId}:${sequenceHabit.id}:${selectedDate.toDateString()}`} habit={sequenceHabit} date={selectedDate}
+                            onConfigure={config => configureHabitDailyTracking(sequenceHabit.id, config)} onRecord={() => { recordHabitQuantity(sequenceHabit.id, selectedDate); }} onRemove={id => removeHabitQuantity(sequenceHabit.id, id)} />
                           <CycleExecutionActions name={sequenceHabit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
                             onStart={() => handleStartHabit(sequenceHabit.id)} />
 
@@ -2306,6 +2265,8 @@ export const Ciclos: React.FC = () => {
                             )}
                           </div>
 
+                          <CycleDailyCounter key={`${destinyAccountId}:${habit.id}:${selectedDate.toDateString()}`} habit={habit} date={selectedDate}
+                            onConfigure={config => configureHabitDailyTracking(habit.id, config)} onRecord={() => { recordHabitQuantity(habit.id, selectedDate); }} onRemove={id => removeHabitQuantity(habit.id, id)} />
                           <CycleExecutionActions name={habit.name} completed={completed} startLabel={subitemSummary.actionableCount ? "Executar etapas" : "Iniciar"}
                             onStart={() => handleStartHabit(habit.id)} />
                         </div>
@@ -2704,29 +2665,10 @@ export const Ciclos: React.FC = () => {
               </div>
             </div>}
 
-            {!editingHabitIsChild && <div>
-              <label className="text-sm text-white/70 mb-2 block">Dias da semana</label>
-              <div className="flex flex-wrap gap-1.5">
-                {WEEKDAYS_SHORT.map((label, dayIndex) => {
-                  const active = editDaysOfWeek.includes(dayIndex);
-                  return (
-                    <button
-                      key={`edit-habit-day-${dayIndex}`}
-                      type="button"
-                      onClick={() => toggleWeekday(dayIndex, setEditDaysOfWeek)}
-                      className={`px-2.5 py-1 rounded-md text-xs border transition-colors ${
-                        active
-                          ? 'bg-mystic-gold/20 border-mystic-gold/50 text-mystic-gold'
-                          : 'bg-white/5 border-white/15 text-white/60 hover:bg-white/10'
-                      }`}
-                      aria-pressed={active} aria-label={WEEKDAYS[dayIndex]} title={WEEKDAYS[dayIndex]}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>}
+            <RecurrenceEditor value={editSchedule} disabled={editingHabitIsChild}
+              referenceDate={new Date(findHabitById(habits, editingHabitId || '')?.startDate ?? findHabitById(habits, editingHabitId || '')?.createdAt ?? Date.now())}
+              onChange={value => { setEditSchedule(value); setEditScheduleChanged(true); setEditScheduleError(''); }} />
+            {editScheduleError && <p role="alert" className="text-sm text-red-300">{editScheduleError}</p>}
 
             {!isEditingNonValuable && <div>
               <label className="text-sm text-white/70 mb-2 block">Pontuação Base</label>
@@ -3016,27 +2958,19 @@ export const Ciclos: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Completion Feedback */}
-      <AnimatePresence>
-        {completedHabitId && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50"
-          >
-            <div className="min-w-[180px] rounded-xl border border-mystic-gold/30 bg-black/70 px-3 py-2 text-center shadow-md shadow-black/30 backdrop-blur-sm">
-              <p className="text-xs font-medium text-mystic-gold">Ciclo concluído {earnedPoints > 0 ? `+${earnedPoints}` : ''}</p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <CycleCompletionFeedback key={`${destinyAccountId}:${selectedDate.toDateString()}`} date={selectedDate} />
 
       {/* Quick Create Cycle Modal */}
       <Dialog open={showQuickCreateCycle} onOpenChange={setShowQuickCreateCycle}>
         <DialogContent onCloseAutoFocus={(event) => { event.preventDefault(); newCycleTriggerRef.current?.focus(); }} aria-labelledby="cycles-create-title" aria-describedby="cycles-create-description" className="cycle-dialog cycle-composer-dialog">
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
-          <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName} days={quickCreateCycleDaysOfWeek} onToggleDay={day => toggleWeekday(day, setQuickCreateCycleDaysOfWeek)} startLabel={selectedDate.toLocaleDateString('pt-BR')} onSubmit={() => { handleQuickCreateCycle(); setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); }} onCancel={() => setShowQuickCreateCycle(false)} />
+          <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
+            agenda={<RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} />}
+            startLabel={selectedDate.toLocaleDateString('pt-BR')}
+            onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}
+            onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}>
+            {quickCreateCycleError && <p role="alert">{quickCreateCycleError}</p>}
+          </CycleCreationForm>
         </DialogContent>
       </Dialog>
       </div>

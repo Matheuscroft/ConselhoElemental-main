@@ -18,8 +18,8 @@ export function ForgeDraftCard({ draft, onClassify, onEdit, onDelete }: {
       <div className="forge-draft-notes">{draft.notes || 'Você pode acrescentar detalhes em Editar ideia.'}</div>
     </details>
     <div className="forge-draft-actions">
-      <button type="button" onClick={() => onClassify(draft.id)} aria-label={`Classificar ${draft.title}`}><ArcaneIcon name="forja" size={20} />Classificar ideia</button>
-      <DropdownMenu><DropdownMenuTrigger asChild><button type="button" aria-label={`Opções de ${draft.title}`}><MoreVertical size={20} aria-hidden="true" /></button></DropdownMenuTrigger>
+      <button className="elemental-press" type="button" onClick={() => onClassify(draft.id)} aria-label={`Classificar ${draft.title}`}><ArcaneIcon name="forja" size={20} />Classificar ideia</button>
+      <DropdownMenu><DropdownMenuTrigger asChild><button className="elemental-press" type="button" id={`forge-options-${draft.id}`} aria-label={`Opções de ${draft.title}`}><MoreVertical size={20} aria-hidden="true" /></button></DropdownMenuTrigger>
         <DropdownMenuContent className="forge-menu" align="end">
           <DropdownMenuItem onSelect={() => onEdit(draft.id)}><Pencil size={16} aria-hidden="true" />Editar ideia</DropdownMenuItem>
           <DropdownMenuItem onSelect={() => onDelete(draft.id)} className="forge-delete-option"><Trash2 size={16} aria-hidden="true" />Excluir rascunho</DropdownMenuItem>

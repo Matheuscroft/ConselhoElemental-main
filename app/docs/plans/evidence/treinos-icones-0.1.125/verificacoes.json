@@ -1,0 +1,85 @@
+{
+  "lot": "T02",
+  "version": "0.1.125",
+  "date": "2026-11-06",
+  "reason": "User rejected the T01 icon family as unclear",
+  "checks": {
+    "targetedTests": 9,
+    "failed": 0,
+    "skipped": 0,
+    "typescript": "passed",
+    "eslint": "passed",
+    "build": {
+      "envDir": false,
+      "passed": true,
+      "seconds": 14.3
+    },
+    "diffCheck": "passed",
+    "vectorAtlas": "45 icons, rendered with Sharp and inspected at 48/32/24px",
+    "appBrowser": "not inspected; saved denial unchanged",
+    "mobileAcceptance": "pending",
+    "fullSuite": "not repeated; 665 tests are historical T01 evidence"
+  },
+  "protectedFilesCompared": 44,
+  "protectedFilesChanged": [],
+  "changedExistingFiles": {
+    "src/pages/fitness/FitnessRoot.tsx": {
+      "before": "2726e12a41a7f574cdf2d1b415f6d4c778b2df8e46b9a5af214f0c3075486b24",
+      "after": "f8c4860f5cdd863e54c11163f1a104313fd51e3e558b2623c52d07df2c65d05a"
+    },
+    "src/lib/backup/critical-progress.ts": {
+      "before": "59e539fc7f191a672ab9e649cead5df73b8074db223cf8850135bc77c4b20db5",
+      "after": "16afd58afc490025a67d9130ad600d7c35e25d70103226eee2b16f7c21771f0a"
+    },
+    "src/components/fitness-kit/FitnessGlyph.tsx": {
+      "before": "997e289f461783652bbfb4d55708a5f8f81e22b39ddd3b353d12e1425632dd38",
+      "after": "363691b1bd0ce33af41e6fc96281fd18c09140c60c0c92226c6a85338431f436"
+    },
+    "src/components/fitness-kit/fitness-elemental.css": {
+      "before": "bc0a4f4dab096f831ef92d8a124f0fc83bb2fc90d4b2d745800b758cb94fdb41",
+      "after": "3dc3ee67c725da3e19b9063b62d5ccf6f154cdf5684f33cd18fac9b755c67173"
+    },
+    "src/components/fitness-kit/FitnessIconBadge.tsx": {
+      "before": "5a3dcc6a8619fbfee8822228b1f35d30bdda87b9ce7b50be4f5570876598d8d5",
+      "after": "c456b3d4139cbc8b768c53cd02a390ade2d188e629e45a798413d25b3f95bf09"
+    },
+    "src/components/workout/FitnessHabitWidget.tsx": {
+      "before": "f80f207d1273da8006417057cbb688e49a38b330d07ba0533d08248595a17709",
+      "after": "4119925d353abf0b0e0c11dfe920302a1ff40f43b9f28b15d400fe60d05124c0"
+    },
+    "src/components/workout/NativeTemplateDialog.tsx": {
+      "before": "3e9f1bce0602689dd54e26121c5de310fc9c9044a286e46547a8946853e55596",
+      "after": "d8fb6aa3735ae11b53a4d3b921baf7ab9415a870782c63c4c69592c93ed873ed"
+    },
+    "src/components/workout/MuscleExerciseCatalog.tsx": {
+      "before": "02cfaab2f46451fc5e856f3a96a55c18e775836eb45ae59f29d5fe1d7f75f9a7",
+      "after": "dc147d6307d2624d2f260ccfad42ba0684358ddf161ef4f1b6a6698e1dbfd84c"
+    },
+    "tests/elemental/fitness-identity.test.mjs": {
+      "before": "0640425675554dab801622e008aee9a51c9670748ccabc5a9b1d8c9cffdde152",
+      "after": "27a87f2d01de6efdcf9cd37b016d6c8f15f5169ba3344680ae9524acc110bf93"
+    },
+    "tests/backup/account-version.test.mjs": {
+      "before": "c545a31b0fdc57244b0ddad3da0465ff2675ae7d0291e3f1abe832871319e8ee",
+      "after": "1e8b6b83d6fe8df96162341432664eb58f913854d01271273a358806fe51ea18"
+    },
+    "tests/backup/load-account-db.mjs": {
+      "before": "d5fa87f126c88445b437879f92afbf43926d7a908dade30211b616df53865f56",
+      "after": "7858927d8aa44cc62aeeb089ac48ee35831af92804065ab5714bd3c9aa9d39e3"
+    },
+    "package.json": {
+      "before": "3e7f38f82bfaecabf80950e39ae1ab95c59347c5e5501c9cd623a1d3a55d82ac",
+      "after": "3305ba65dae83acce1a533bf434ce53db30528206809277ba369069c7ee0a5f4"
+    },
+    "package-lock.json": {
+      "before": "bb8f800a4b8893b5703825512b8983e814a1c332715d0190067fb6f1c4775261",
+      "after": "547f7481033834a423481f6ec6a9f13a9baed72d5c7805d4dc79f5b8455af15c"
+    }
+  },
+  "newCode": {
+    "src/components/fitness-kit/fitness-glyph-data.ts": "034d5383094c1b8fde0b9ee8fc4a321f9232af7bf80e43e31ea2b13299400f4d",
+    "supabase/migrations/20261106033034_account_archive_version_125.sql": "36ddab09eeff04cc2e28c9b3ab1c9226771b51fdb1cfea0cc0b40e2b09859136"
+  },
+  "releaseGates": "unchanged false",
+  "remoteActions": []
+}

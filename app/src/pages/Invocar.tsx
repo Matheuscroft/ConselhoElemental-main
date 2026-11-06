@@ -1,9 +1,13 @@
+import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
+import { dateFromInput, defaultRecurrenceConfig, validateRecurrence } from '@/lib/temporal/recurrence';
 import { InvocationChoices, InvocationProgress, InvocationStepTitle, INVOCATION_TYPES } from '@/components/invocation/InvocationChoices';
 import '@/styles/elemental-design-system.css';
 import '@/components/invocation/invocation.css';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
+import { CreationStep } from '@/components/motion/CreationStep';
+import { CreationResult } from '@/components/invocation/CreationResult';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -31,11 +35,21 @@ import type { ElementId } from '@/types';
 import { isSupabaseAuthEnabled, supabase } from '@/lib/supabase';
 
 export const Invocar: React.FC = () => {
+  const accountId = useAppStore(state => state.currentAccountId);
+  return <InvocationWorkspace key={accountId === null ? 'local' : `account:${accountId}`} accountId={accountId} />;
+};
+
+function InvocationWorkspace({ accountId }: { accountId: string | null }) {
   const navigate = useNavigate();
-  const reduceMotion = useReducedMotion();
   const { addTask, addHabit, addQuest, addProject, addDraft } = useAppStore();
   
-  const [step, setStep] = useState(1);
+  const [{ step, direction }, setStepState] = useState({ step: 1, direction: 1 });
+  const setStep = (next: number) => {
+    cancelSuggestion();
+    setCreationError('');
+    setStepState(current => ({ step: next, direction: next > current.step ? 1 : -1 }));
+  };
+  const submitted = useRef(false);
   const [entityType, setEntityType] = useState<'ACTION' | 'HABIT' | 'QUEST' | 'PROJECT' | 'DRAFT'>('ACTION');
   
   // Common fields
@@ -49,13 +63,14 @@ export const Invocar: React.FC = () => {
   const [plannedTime, setPlannedTime] = useState(30);
   
   // Habit specific
-  const [recurrence, setRecurrence] = useState<'DAILY' | 'WEEKLY' | 'MONTHLY'>('DAILY');
+  const [schedule, setSchedule] = useState<RecurrenceEditorValue>(() => ({ type: 'DAILY', config: defaultRecurrenceConfig('DAILY', new Date()) }));
   
   // Quest/Project specific
   const [dueDate, setDueDate] = useState('');
   const [reward, setReward] = useState('');
   
   const [showSuccess, setShowSuccess] = useState(false);
+  const [creationError, setCreationError] = useState('');
   const [createdEntity, setCreatedEntity] = useState<{ type: string; title: string } | null>(null);
   const [aiMessage, setAiMessage] = useState('');
   const [aiConsent, setAiConsent] = useState(false);
@@ -63,21 +78,33 @@ export const Invocar: React.FC = () => {
   const [aiStatus, setAiStatus] = useState('');
   const aiRequest = useRef<AbortController | null>(null);
 
-  useEffect(() => () => aiRequest.current?.abort(), []);
+  useEffect(() => () => {
+    aiRequest.current?.abort();
+    aiRequest.current = null;
+  }, []);
+
+  function cancelSuggestion() {
+    if (!aiRequest.current) return;
+    aiRequest.current.abort();
+    aiRequest.current = null;
+    setAiBusy(false);
+    setAiStatus('Sugestão cancelada. Seu preenchimento foi mantido.');
+  }
 
   const requestSuggestion = async () => {
-    if (aiRequest.current || !aiConsent || !aiMessage.trim() || aiMessage.length > 2000) return;
+    if (useAppStore.getState().currentAccountId !== accountId || aiRequest.current || !aiConsent || !aiMessage.trim() || aiMessage.length > 2000) return;
     if (!supabase || !isSupabaseAuthEnabled) {
       setAiStatus('A IA precisa de uma conta conectada. Você pode preencher o rascunho manualmente.');
       return;
     }
     const controller = new AbortController();
     aiRequest.current = controller;
+    const isCurrent = () => aiRequest.current === controller && !controller.signal.aborted && useAppStore.getState().currentAccountId === accountId;
     setAiBusy(true);
     setAiStatus('');
     try {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (controller.signal.aborted) return;
+      if (!isCurrent()) return;
       if (sessionError || !session || session.user.is_anonymous) {
         setAiStatus('Entre na sua conta para pedir uma sugestão. O preenchimento manual continua disponível.');
         return;
@@ -87,7 +114,7 @@ export const Invocar: React.FC = () => {
         headers: { Authorization: `Bearer ${session.access_token}` },
         signal: controller.signal, timeout: 30_000,
       });
-      if (controller.signal.aborted) return;
+      if (!isCurrent()) return;
       if (error) {
         const response = 'context' in error && error.context instanceof Response ? error.context : null;
         const status = response?.status;
@@ -107,7 +134,7 @@ export const Invocar: React.FC = () => {
       setDescription(suggestion.description.trim());
       setAiStatus('Sugestão preenchida abaixo. Revise e edite antes de continuar; nada foi salvo.');
     } catch {
-      if (!controller.signal.aborted) setAiStatus('Não foi possível obter uma sugestão. O preenchimento manual continua disponível.');
+      if (isCurrent()) setAiStatus('Não foi possível obter uma sugestão. O preenchimento manual continua disponível.');
     } finally {
       if (aiRequest.current === controller) {
         aiRequest.current = null;
@@ -121,80 +148,92 @@ export const Invocar: React.FC = () => {
   const filteredAreas = AREAS.filter(area => area.elementId === selectedElement);
 
   const handleSubmit = () => {
+    if (useAppStore.getState().currentAccountId !== accountId || submitted.current) return;
     if (!title.trim()) return;
 
-    let entity: { type: string; title: string } | null = null;
-
-    switch (entityType) {
-      case 'ACTION':
-        const task = addTask({
-          title: title.trim(),
-          description: description.trim(),
-          baseValue: 1,
-          effortLevel,
-          plannedTimeMinutes: plannedTime,
-          areaPrimaryId: selectedArea === 'none' ? null : selectedArea,
-          elementId: selectedElement,
-        });
-        entity = { type: 'Ritual', title: task.title };
-        break;
-        
-      case 'HABIT':
-        const habit = addHabit({
-          name: title.trim(),
-          description: description.trim(),
-          areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
-          elementId: selectedElement,
-          plannedTimeMinutes: plannedTime,
-          plannedPoints: effortLevel * 5,
-          recurrenceType: recurrence,
-          recurrenceConfig: {},
-        });
-        entity = { type: 'Ciclo', title: habit.name };
-        break;
-        
-      case 'QUEST':
-        const quest = addQuest({
-          title: title.trim(),
-          description: description.trim(),
-          areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
-          elementId: selectedElement,
-          status: 'active',
-          dueDate: dueDate ? new Date(dueDate) : null,
-          reward: reward || undefined,
-          xpBonus: 50,
-        });
-        entity = { type: 'Jornada', title: quest.title };
-        break;
-        
-      case 'PROJECT':
-        const project = addProject({
-          title: title.trim(),
-          description: description.trim(),
-          areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
-          elementId: selectedElement,
-          status: 'active',
-          dueDate: dueDate ? new Date(dueDate) : null,
-          reward: reward || undefined,
-          xpBonus: 100,
-        });
-        entity = { type: 'Grande Obra', title: project.title };
-        break;
-        
-      case 'DRAFT':
-        const draft = addDraft(title.trim(), description.trim());
-        entity = { type: 'Rascunho', title: draft.title };
-        break;
+    try {
+      if (entityType === 'HABIT') validateRecurrence(schedule.type, schedule.config, new Date());
+      if (dueDate && (entityType === 'ACTION' || entityType === 'QUEST' || entityType === 'PROJECT')) dateFromInput(dueDate);
+    } catch (error) {
+      setCreationError(error instanceof Error ? error.message : 'Confira a agenda.');
+      return;
     }
+    submitted.current = true;
+    setCreationError('');
+    try {
+      let entity: { id: string; type: string; title: string } | null = null;
 
-    if (entity) {
+      switch (entityType) {
+        case 'ACTION':
+          const task = addTask({
+            title: title.trim(),
+            dueDate: dueDate || null,
+            description: description.trim(),
+            baseValue: 1,
+            effortLevel,
+            plannedTimeMinutes: plannedTime,
+            areaPrimaryId: selectedArea === 'none' ? null : selectedArea,
+            elementId: selectedElement,
+          });
+          entity = { id: task.id, type: 'Ritual', title: task.title };
+          break;
+
+        case 'HABIT':
+          const habit = addHabit({
+            name: title.trim(),
+            description: description.trim(),
+            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            elementId: selectedElement,
+            plannedTimeMinutes: plannedTime,
+            plannedPoints: effortLevel * 5,
+            recurrenceType: schedule.type,
+            recurrenceConfig: schedule.config,
+          });
+          entity = { id: habit.id, type: 'Ciclo', title: habit.name };
+          break;
+
+        case 'QUEST':
+          const quest = addQuest({
+            title: title.trim(),
+            description: description.trim(),
+            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            elementId: selectedElement,
+            status: 'active',
+            dueDate: dateFromInput(dueDate),
+            reward: reward || undefined,
+            xpBonus: 50,
+          });
+          entity = { id: quest.id, type: 'Jornada', title: quest.title };
+          break;
+
+        case 'PROJECT':
+          const project = addProject({
+            title: title.trim(),
+            description: description.trim(),
+            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            elementId: selectedElement,
+            status: 'active',
+            dueDate: dateFromInput(dueDate),
+            reward: reward || undefined,
+            xpBonus: 100,
+          });
+          entity = { id: project.id, type: 'Grande Obra', title: project.title };
+          break;
+
+        case 'DRAFT':
+          const draft = addDraft(title.trim(), description.trim());
+          entity = { id: draft.id, type: 'Rascunho', title: draft.title };
+          break;
+      }
+
+      const state = useAppStore.getState();
+      const items = { ACTION: state.tasks, HABIT: state.habits, QUEST: state.quests, PROJECT: state.projects, DRAFT: state.drafts }[entityType];
+      if (!entity?.id || !items.some(item => item.id === entity.id)) throw new Error('Creation not confirmed');
       setCreatedEntity(entity);
       setShowSuccess(true);
-      
-      setTimeout(() => {
-        setShowSuccess(false);
-        navigate('/santuario');
-      }, 2000);
+    } catch {
+      submitted.current = false;
+      setCreationError('Não foi possível confirmar a criação. Seus dados continuam preenchidos. Confira a lista de destino antes de tentar novamente.');
     }
   };
 
@@ -212,34 +251,20 @@ export const Invocar: React.FC = () => {
       <InvocationProgress step={step} />
 
       {/* Step 1: Type Selection */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false} custom={direction}>
         {step === 1 && (
-          <motion.div
-            key="step1"
-            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            className="invocation-step"
-          >
+          <CreationStep key="step1" direction={direction}>
             <InvocationStepTitle description="Escolha o formato que combina com sua intenção.">O que deseja invocar?</InvocationStepTitle>
             <InvocationChoices value={entityType} onChange={setEntityType} />
-            <div className="invocation-actions"><Button onClick={() => setStep(2)} className="elemental-action">
+            <div className="invocation-actions"><Button onClick={() => setStep(2)} className="elemental-press elemental-action">
               Continuar com {selectedType.name}<ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
             </Button></div>
-          </motion.div>
+          </CreationStep>
         )}
 
         {/* Step 2: Basic Info */}
         {step === 2 && (
-          <motion.div
-            key="step2"
-            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            className="invocation-step"
-          >
+          <CreationStep key="step2" direction={direction}>
             <InvocationStepTitle focus={false} description={`${selectedType.name}: comece pelo nome e acrescente o que fizer sentido.`}>Dê forma à sua intenção</InvocationStepTitle>
 
             {entityType === 'DRAFT' && (
@@ -261,6 +286,7 @@ export const Invocar: React.FC = () => {
                   className="w-full bg-mystic-arcane">
                   {aiBusy ? 'Gerando sugestão…' : 'Sugerir título e descrição'}
                 </Button>
+                {aiBusy && <Button type="button" variant="outline" onClick={cancelSuggestion} className="elemental-action elemental-action-secondary">Cancelar sugestão</Button>}
                 <p role="status" aria-live="polite" className="text-sm text-white/70">{aiStatus}</p>
               </section>
             )}
@@ -305,7 +331,7 @@ export const Invocar: React.FC = () => {
                           setSelectedElement(id);
                           setSelectedArea('none');
                         }}
-                        className={`p-3 rounded-xl border transition-all ${
+                        className={`p-3 rounded-xl border transition-colors ${
                           selectedElement === id
                             ? 'border-mystic-gold bg-mystic-gold/10'
                             : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -341,32 +367,24 @@ export const Invocar: React.FC = () => {
               <Button 
                 variant="outline" 
                 onClick={() => setStep(1)}
-                disabled={aiBusy}
-                className="elemental-action elemental-action-secondary"
+                className="elemental-press elemental-action elemental-action-secondary"
               >
                 Voltar
               </Button>
               <Button 
                 onClick={() => setStep(3)}
                 disabled={aiBusy || !canProceed()}
-                className="elemental-action"
+                className="elemental-press elemental-action"
               >
                 Continuar
               </Button>
             </div>
-          </motion.div>
+          </CreationStep>
         )}
 
         {/* Step 3: Details */}
         {step === 3 && (
-          <motion.div
-            key="step3"
-            initial={{ opacity: 0, x: reduceMotion ? 0 : 12 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: reduceMotion ? 0 : -12 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
-            className="invocation-step"
-          >
+          <CreationStep key="step3" direction={direction}>
             <InvocationStepTitle description="Ajuste os detalhes. O item será salvo ao confirmar.">Revise sua invocação</InvocationStepTitle>
             
             {/* Effort Level (for tasks and habits) */}
@@ -381,7 +399,7 @@ export const Invocar: React.FC = () => {
                       aria-pressed={effortLevel === level}
                       aria-label={`Esforço ${level}: ${EFFORT_LABELS[level].label}`}
                       onClick={() => setEffortLevel(level)}
-                      className={`flex-1 p-2 rounded-lg border transition-all ${
+                      className={`flex-1 p-2 rounded-lg border transition-colors ${
                         effortLevel === level
                           ? 'border-mystic-gold bg-mystic-gold/10'
                           : 'border-white/10 bg-white/5 hover:bg-white/10'
@@ -424,33 +442,12 @@ export const Invocar: React.FC = () => {
             )}
             
             {/* Recurrence for Habits */}
-            {entityType === 'HABIT' && (
-              <div className="space-y-2">
-                <Label id="invocar-recurrence-label">Recorrência</Label>
-                <div className="flex gap-2" role="group" aria-labelledby="invocar-recurrence-label">
-                  {(['DAILY', 'WEEKLY', 'MONTHLY'] as const).map((rec) => (
-                    <button
-                      key={rec}
-                      type="button"
-                      aria-pressed={recurrence === rec}
-                      onClick={() => setRecurrence(rec)}
-                      className={`flex-1 p-2 rounded-lg border transition-all ${
-                        recurrence === rec
-                          ? 'border-mystic-gold bg-mystic-gold/10'
-                          : 'border-white/10 bg-white/5 hover:bg-white/10'
-                      }`}
-                    >
-                      {rec === 'DAILY' ? 'Diário' : rec === 'WEEKLY' ? 'Semanal' : 'Mensal'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
+            {entityType === 'HABIT' && <RecurrenceEditor value={schedule} onChange={setSchedule} />}
+
             {/* Due date for Quests and Projects */}
-            {(entityType === 'QUEST' || entityType === 'PROJECT') && (
+            {(entityType === 'ACTION' || entityType === 'QUEST' || entityType === 'PROJECT') && (
               <div className="space-y-2">
-                <Label htmlFor="invocar-due">Data limite (opcional)</Label>
+                <Label htmlFor="invocar-due">{entityType === 'ACTION' ? 'Data planejada (opcional)' : 'Data limite (opcional)'}</Label>
                 <Input
                   id="invocar-due"
                   type="date"
@@ -518,48 +515,38 @@ export const Invocar: React.FC = () => {
               )}
             </section>
             
+            {creationError && <p role="alert">{creationError}</p>}
             <div className="invocation-actions">
               <Button 
                 variant="outline" 
                 onClick={() => setStep(2)}
-                className="elemental-action elemental-action-secondary"
+                className="elemental-press elemental-action elemental-action-secondary"
               >
                 Voltar
               </Button>
               <Button 
                 onClick={handleSubmit}
                 disabled={!title.trim()}
-                className="elemental-action"
+                className="elemental-press elemental-action"
               >
                 <Sparkles className="w-4 h-4 mr-2" />
                 Invocar
               </Button>
             </div>
-          </motion.div>
+          </CreationStep>
         )}
       </AnimatePresence>
       </div>
 
       {/* Success Dialog */}
-      <Dialog open={showSuccess}>
-        <DialogContent className="invocation-success" aria-describedby="invocation-success-description">
+      <Dialog open={showSuccess} onOpenChange={open => { if (!open) navigate('/santuario'); }}>
+        <DialogContent className="elemental-system invocation-success" aria-describedby="invocation-success-description">
           <DialogHeader>
             <DialogTitle className="font-mystic text-xl">
               Invocação criada
             </DialogTitle>
           </DialogHeader>
-          <motion.div
-            initial={{ scale: reduceMotion ? 1 : .95 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: reduceMotion ? 0 : .24 }}
-            className="py-4"
-          >
-            <div className="invocation-success-icon"><ArcaneIcon name={selectedType.icon} size={40} /></div>
-            <p className="text-lg font-medium">{createdEntity?.title}</p>
-            <p id="invocation-success-description" className="text-white/70">
-              {createdEntity?.type} invocado com sucesso!
-            </p>
-          </motion.div>
+          {createdEntity && <CreationResult type={entityType} title={createdEntity.title} />}
         </DialogContent>
       </Dialog>
     </AppLayout>

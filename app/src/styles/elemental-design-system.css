@@ -3,9 +3,6 @@
   --ds-radius-control: 12px;
   --ds-radius-panel: 24px;
   --ds-space-unit: 4px;
-  --ds-duration-feedback: 160ms;
-  --ds-duration-reveal: 240ms;
-  --ds-ease: cubic-bezier(.2,.7,.2,1);
   --ds-font-heading: Cinzel, Georgia, serif;
   --ds-font-body: Inter, system-ui, sans-serif;
   color: rgb(var(--el-text));

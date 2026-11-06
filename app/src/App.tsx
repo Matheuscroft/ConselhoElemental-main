@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'rea
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from '@/components/ui/sonner';
 import { useAuthStore } from '@/stores/authStore';
+import { RestoredLocalNotice } from '@/components/backup/RestoredLocalNotice';
 import { useAppStore } from '@/stores/appStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { Onboarding } from '@/pages/Onboarding';
@@ -117,6 +118,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <RestoredLocalNotice />
       <AnimatePresence mode="wait">
         <Routes>
           {/* Redirect root to Santuário */}

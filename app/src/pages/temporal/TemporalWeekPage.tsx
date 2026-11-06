@@ -1,189 +1,55 @@
-import React, { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo } from 'react';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
-import {
-  addDays,
-  buildTemporalCommitments,
-  buildTemporalEvents,
-  endOfWeek,
-  getWeekMetrics,
-  startOfWeek,
-  useWeekStartsOnPreference,
-} from '@/lib/temporal';
-import { WEEKDAYS_SHORT } from '@/constants';
+import { addDays, buildTemporalCommitments, buildTemporalEvents, endOfWeek, getWeekMetrics, startOfWeek, toDayStamp, useWeekStartsOnPreference } from '@/lib/temporal';
 import { TemporalLayout } from '@/pages/temporal/TemporalLayout';
-import { DayDetailsDialog } from '@/components/temporal/DayDetailsDialog';
+import { TemporalDayAgenda } from '@/components/temporal/TemporalDayAgenda';
+import { useTemporalView } from '@/components/temporal/useTemporalView';
 
-const formatDate = (date: Date): string => {
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-};
+const formatDate = (date: Date) => date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 
-const summaryCardClass = 'rounded-2xl border border-white/10 bg-white/[0.03] p-4';
-
-export const TemporalWeekPage: React.FC = () => {
-  const [anchorDate, setAnchorDate] = useState(new Date());
+export const TemporalWeekPage = () => {
+  const { anchorDate, selectedDayStamp, setAnchorDate, setSelectedDayStamp, returnTo } = useTemporalView('week', true);
   const { weekStartsOn, setWeekStartsOn } = useWeekStartsOnPreference();
-  const [selectedDayStamp, setSelectedDayStamp] = useState<number | null>(null);
-
   const tasks = useAppStore((state) => state.tasks);
+  const commitments = useAppStore((state) => state.commitments);
   const habits = useAppStore((state) => state.habits);
   const cycleSequences = useAppStore((state) => state.cycleSequences);
   const projects = useAppStore((state) => state.projects);
   const quests = useAppStore((state) => state.quests);
   const streak = useAppStore((state) => state.user.streak);
-
-  const snapshot = useMemo(
-    () => ({ tasks, habits, cycleSequences, projects, quests }),
-    [tasks, habits, cycleSequences, projects, quests]
-  );
-
+  const snapshot = useMemo(() => ({ tasks, habits, cycleSequences, projects, quests, commitments }), [tasks, habits, cycleSequences, projects, quests, commitments]);
   const events = useMemo(() => buildTemporalEvents(snapshot), [snapshot]);
+  const weekCommitments = useMemo(() => buildTemporalCommitments(snapshot, startOfWeek(anchorDate, weekStartsOn), endOfWeek(anchorDate, weekStartsOn)), [anchorDate, snapshot, weekStartsOn]);
+  const interval = useMemo(() => getWeekMetrics(events, weekCommitments, anchorDate, weekStartsOn), [anchorDate, events, weekCommitments, weekStartsOn]);
+  const selected = interval.days.find(day => day.dayStamp === selectedDayStamp) ?? interval.days.find(day => day.dayStamp === toDayStamp(anchorDate)) ?? interval.days[0];
+  const today = toDayStamp(new Date());
+  const dayEvents = events.filter(event => event.dayStamp === selected?.dayStamp);
+  const dayCommitments = weekCommitments.filter(item => item.dayStamp === selected?.dayStamp);
 
-  const weekCommitments = useMemo(() => {
-    const start = startOfWeek(anchorDate, weekStartsOn);
-    const end = endOfWeek(anchorDate, weekStartsOn);
-    return buildTemporalCommitments(snapshot, start, end);
-  }, [anchorDate, snapshot, weekStartsOn]);
-
-  const interval = useMemo(() => {
-    return getWeekMetrics(events, weekCommitments, anchorDate, weekStartsOn);
-  }, [anchorDate, events, weekCommitments, weekStartsOn]);
-
-  const selectedDayAggregate = useMemo(
-    () => interval.days.find((day) => day.dayStamp === selectedDayStamp) ?? null,
-    [interval.days, selectedDayStamp]
-  );
-
-  const selectedDayEvents = useMemo(
-    () => events.filter((event) => event.dayStamp === selectedDayStamp),
-    [events, selectedDayStamp]
-  );
-
-  const selectedDayCommitments = useMemo(
-    () => weekCommitments.filter((item) => item.dayStamp === selectedDayStamp),
-    [selectedDayStamp, weekCommitments]
-  );
-
-  return (
-    <TemporalLayout
-      title="Temporal - Semana"
-      subtitle="Operacional semanal com progresso diário e compromissos"
-      actions={
-        <div className="inline-flex rounded-lg border border-white/20 bg-white/5 p-1 text-xs">
-          <button
-            type="button"
-            onClick={() => setWeekStartsOn(0)}
-            className={`rounded-md px-2 py-1 ${weekStartsOn === 0 ? 'bg-mystic-gold/20 text-mystic-gold' : 'text-white/70'}`}
-          >
-            Dom
-          </button>
-          <button
-            type="button"
-            onClick={() => setWeekStartsOn(1)}
-            className={`rounded-md px-2 py-1 ${weekStartsOn === 1 ? 'bg-mystic-gold/20 text-mystic-gold' : 'text-white/70'}`}
-          >
-            Seg
-          </button>
-        </div>
-      }
-    >
-      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-3">
-        <button
-          type="button"
-          onClick={() => setAnchorDate((current) => addDays(current, -7))}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-
-        <div className="text-center">
-          <p className="text-xs uppercase tracking-[0.2em] text-white/50">Semana atual</p>
-          <p className="text-sm text-white">
-            {formatDate(interval.start)} ate {formatDate(interval.end)}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setAnchorDate((current) => addDays(current, 7))}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <article className={summaryCardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Tarefas</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{interval.totals.completedTasks}</p>
-        </article>
-        <article className={summaryCardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Hábitos</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{interval.totals.completedHabits}</p>
-        </article>
-        <article className={summaryCardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Pontuação</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{interval.totals.score}</p>
-        </article>
-        <article className={summaryCardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Streak</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{streak}</p>
-        </article>
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {interval.days.map((day) => {
-          const intensity = Math.min(day.totalCompleted, 6);
-          const intensityClass = ['bg-white/10', 'bg-emerald-500/25', 'bg-emerald-500/35', 'bg-emerald-500/50', 'bg-emerald-500/65', 'bg-emerald-500/75', 'bg-emerald-500/90'][intensity] || 'bg-white/10';
-
-          return (
-            <button
-              type="button"
-              key={day.dayStamp}
-              onClick={() => setSelectedDayStamp(day.dayStamp)}
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-left transition-colors hover:border-mystic-gold/40"
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.16em] text-white/55">{WEEKDAYS_SHORT[new Date(day.dayStamp).getDay()]}</p>
-                  <p className="text-lg font-semibold text-white">{formatDate(new Date(day.dayStamp))}</p>
-                </div>
-                <span className={`h-3 w-3 rounded-full ${intensityClass}`} />
-              </div>
-
-              <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
-                <div className="rounded-lg border border-white/10 bg-black/20 px-2 py-1.5">
-                  <dt className="text-white/55">Concluído</dt>
-                  <dd className="font-medium text-white">{day.totalCompleted}</dd>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-black/20 px-2 py-1.5">
-                  <dt className="text-white/55">Compromissos</dt>
-                  <dd className="font-medium text-white">{day.commitmentsCount}</dd>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-black/20 px-2 py-1.5">
-                  <dt className="text-white/55">Tarefas</dt>
-                  <dd className="font-medium text-white">{day.completedTasks}</dd>
-                </div>
-                <div className="rounded-lg border border-white/10 bg-black/20 px-2 py-1.5">
-                  <dt className="text-white/55">Pontos</dt>
-                  <dd className="font-medium text-white">{day.score}</dd>
-                </div>
-              </dl>
-            </button>
-          );
-        })}
-      </div>
-
-      <DayDetailsDialog
-        open={selectedDayStamp != null}
-        onOpenChange={(open) => {
-          if (!open) setSelectedDayStamp(null);
-        }}
-        date={selectedDayAggregate?.date ?? null}
-        aggregate={selectedDayAggregate}
-        events={selectedDayEvents}
-        commitments={selectedDayCommitments}
-      />
-    </TemporalLayout>
-  );
+  return <TemporalLayout className="temporal-week-view" title="Temporal - Semana" subtitle="Escolha um dia e encontre seu próximo passo.">
+    <div className="temporal-period-controls" aria-label="Escolher semana">
+      <button type="button" aria-label="Semana anterior" onClick={() => setAnchorDate(addDays(anchorDate, -7))}><ChevronLeft size={20} aria-hidden="true" /></button>
+      <div><strong>{formatDate(interval.start)} a {formatDate(interval.end)}</strong><span>{interval.start.getFullYear() === interval.end.getFullYear() ? interval.start.getFullYear() : `${interval.start.getFullYear()} / ${interval.end.getFullYear()}`}</span></div>
+      <button type="button" aria-label="Próxima semana" onClick={() => setAnchorDate(addDays(anchorDate, 7))}><ChevronRight size={20} aria-hidden="true" /></button>
+    </div>
+    <div className="temporal-week-options">
+      <button type="button" className="temporal-action" onClick={() => setSelectedDayStamp(Date.now())}>Ir para hoje</button>
+      <label>Semana começa em<select value={weekStartsOn} onChange={event => setWeekStartsOn(Number(event.target.value) as 0 | 1)}><option value={0}>Domingo</option><option value={1}>Segunda</option></select></label>
+    </div>
+    <div className="temporal-week-days" role="group" aria-label="Dias da semana">
+      {interval.days.map(day => <button key={day.dayStamp} type="button" aria-pressed={selected?.dayStamp === day.dayStamp} aria-current={day.dayStamp === today ? 'date' : undefined}
+        aria-controls="temporal-selected-day" aria-label={`${day.date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}, ${day.commitmentsCount} na agenda, ${day.totalCompleted} registros de conclusão`}
+        onClick={() => setSelectedDayStamp(day.dayStamp)}>
+        <span>{day.date.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span><strong>{day.date.getDate()}</strong><small>{day.commitmentsCount} {day.commitmentsCount === 1 ? 'item' : 'itens'}</small>
+      </button>)}
+    </div>
+    {selected && <section id="temporal-selected-day" className="temporal-selected-day" aria-labelledby="temporal-selected-heading">
+      <header><p>{selected.dayStamp === today ? 'Hoje' : 'Seu dia em foco'}</p><h3 id="temporal-selected-heading" aria-live="polite">{selected.date.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}</h3></header>
+      <TemporalDayAgenda date={selected.date} events={dayEvents} commitments={dayCommitments} returnTo={returnTo} />
+    </section>}
+    <details className="temporal-week-summary"><summary>Resumo da semana<ChevronDown size={18} aria-hidden="true" /></summary>
+      <dl><div><dt>Rituais concluídos</dt><dd>{interval.totals.completedTasks}</dd></div><div><dt>Ciclos concluídos</dt><dd>{interval.totals.completedHabits}</dd></div><div><dt>Pontos registrados</dt><dd>{interval.totals.score.toLocaleString('pt-BR')}</dd></div><div><dt>Constância do personagem</dt><dd>{streak}</dd></div></dl>
+    </details>
+  </TemporalLayout>;
 };

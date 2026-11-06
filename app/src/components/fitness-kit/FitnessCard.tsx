@@ -18,16 +18,16 @@ interface FitnessCardProps extends React.HTMLAttributes<HTMLDivElement> {
   muted?: boolean;
 }
 
-/** Superfície azul-acinzentada sólida, sem borda, com sombra larga e suave. */
+/** Vidro escuro com contorno sutil, integrado à identidade elemental. */
 export const FitnessCard = React.forwardRef<HTMLDivElement, FitnessCardProps>(
   ({ radius = 'md', interactive = false, muted = false, className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'shadow-fitness-card',
+        'fitness-elemental-card',
         muted ? 'bg-fitness-canvas' : 'bg-fitness-surface',
         RADIUS_CLASSES[radius],
-        interactive && 'transition-[filter,transform] duration-200 hover:brightness-110 active:scale-[0.99]',
+        interactive && 'transition-[border-color,transform] duration-200 motion-safe:active:scale-[0.99] motion-reduce:transition-none',
         className
       )}
       {...props}

@@ -106,7 +106,7 @@ export const WorkoutHistory: React.FC = () => {
               key={item.id}
               name={item.name}
               dateLabel={item.dateLabel}
-              metricValue={item.reward == null ? 'XP indisponível' : `+${formatEarthXp(item.reward)} XP 🌿`}
+              metricValue={item.reward == null ? 'XP indisponível' : `+${formatEarthXp(item.reward)} XP`}
               metricUnit=""
               icon={CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.mixed}
               onClick={() => navigate(`/treinos/resumo/${item.id}`)}

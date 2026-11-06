@@ -89,12 +89,9 @@
 
 /* Button hover effects */
 button {
-  transition: all 0.2s ease;
+  transition: background-color var(--ds-duration-feedback, 160ms) ease, border-color var(--ds-duration-feedback, 160ms) ease, color var(--ds-duration-feedback, 160ms) ease, opacity var(--ds-duration-feedback, 160ms) ease;
 }
 
-button:active {
-  transform: scale(0.98);
-}
 
 /* Input focus states */
 input:focus,

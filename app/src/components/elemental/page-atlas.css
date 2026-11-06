@@ -17,9 +17,9 @@
 .page-atlas-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; margin-top: 8px; font-size: 12px; color: rgb(var(--el-muted)); }
 .page-atlas-count button { min-height: 48px; color: rgb(var(--el-gold)); }
 .page-atlas .elemental-nav-group { border-radius: 24px; background: rgb(var(--el-surface) / .7); }
-.page-atlas .elemental-nav-group > summary { position: relative; isolation: isolate; min-height: 138px; padding: 20px 16px; overflow: hidden; }
-.page-atlas .elemental-nav-illustration { position: absolute; z-index: -1; right: -20px; top: -4px; width: 150px; height: 150px; object-fit: contain; opacity: .2; pointer-events: none; transition: opacity 200ms ease, transform 240ms ease; }
-.page-atlas .elemental-nav-group[open] .elemental-nav-illustration { opacity: .35; transform: scale(1.08); }
+.page-atlas .elemental-nav-group .elemental-nav-trigger { position: relative; isolation: isolate; min-height: 138px; padding: 20px 16px; overflow: hidden; }
+.page-atlas .elemental-nav-illustration { position: absolute; z-index: -1; right: -20px; top: -4px; width: 150px; height: 150px; object-fit: contain; opacity: .2; pointer-events: none; transition: opacity var(--ds-duration-feedback) ease, transform var(--ds-duration-reveal) var(--ds-ease); }
+.page-atlas .elemental-nav-group[data-open="true"] .elemental-nav-illustration { opacity: .35; transform: scale(1.08); }
 .page-atlas .elemental-nav-group-title strong { font-size: 19px; }
 .page-atlas .elemental-nav-group-title small { color: rgb(var(--el-text) / .8); font-size: 13px; }
 .page-atlas .elemental-nav-seal { background: rgb(var(--el-canvas) / .8); width: 42px; height: 52px; }

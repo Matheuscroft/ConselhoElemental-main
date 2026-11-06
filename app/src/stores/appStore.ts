@@ -1,3 +1,10 @@
+import { mutateProfileReminders, type ProfileReminders, type ReminderMutation } from '@/lib/reminders/profile-reminders';
+import { recurrenceMatchesDate, defaultRecurrenceConfig, operationalDateKey } from '@/lib/temporal/recurrence';
+import { achievementPlan, achievementXpKeys, type AchievementKind } from '@/lib/achievement-completion';
+import { withTaskXpUpdate } from '@/lib/task-rewards';
+import { planCycleXpRecovery, recoverCycleReceipts, type CycleXpRecoveryPlan } from '@/lib/cycles/xp-recovery';
+import { applyCycleXpDelta } from '@/lib/cycles/reward-ledger';
+import { dailyDateKey, validateDailyTracking } from '@/lib/cycles/daily-tracking';
 import { habitMatchesDate } from '@/lib/temporal/habit-schedule';
 import { calculateHabitStreak, findHabitScheduleRoot } from '@/lib/temporal/habit-streak';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
@@ -25,6 +32,7 @@ import type {
   ElementId,
   OnboardingState,
   HabitCompletion,
+  HabitDailyTracking,
   Action,
   ExecutionLog,
   TaskItem,
@@ -303,8 +311,8 @@ const calculateUserProgressFromState = (state: Pick<AppState, 'tasks' | 'habits'
   const taskScore = state.tasks.reduce((sum, task) => { if (!task.isCompleted) return sum; if (task.sourceModule === 'modulo_treino') return sum + (task.completedScore ?? 0); return sum + Math.round((task.baseValue || 1) * EFFORT_MULTIPLIERS[task.effortLevel || 1]); }, 0);
   const { totalHabitScore, completionDays } = collectHabitScoresAndCompletionDays(state.habits);
   state.tasks.forEach((task) => { if (task.isCompleted) { const day = toDayStamp(task.updatedAt); if (day != null) completionDays.add(day); } });
-  const projectScore = state.projects.reduce((sum, project) => sum + (project.isCompleted ? project.xpBonus || 0 : 0), 0);
-  const questScore = state.quests.reduce((sum, quest) => sum + (quest.isCompleted ? quest.xpBonus || 0 : 0), 0);
+  const projectScore = state.projects.reduce((sum, project) => sum + (project.isCompleted ? project.completionBonus?.amount ?? project.xpBonus ?? 0 : 0), 0);
+  const questScore = state.quests.reduce((sum, quest) => sum + (quest.isCompleted ? quest.completionBonus?.amount ?? quest.xpBonus ?? 0 : 0), 0);
   const { streak, longestStreak } = calculateStreakFromCompletionDays(completionDays);
   return { totalScore: taskScore + totalHabitScore + projectScore + questScore, streak, longestStreak };
 };
@@ -326,26 +334,8 @@ const habitHasStartedByDate = (habit: Habit, date: Date | string | number): bool
   return targetDay >= startDay;
 };
 
-const sequenceMatchesDate = (sequence: CycleSequence, date: Date | string | number): boolean => {
-  const targetDate = toValidDate(date);
-  if (!targetDate) return false;
-
-  const targetDay = toDayStamp(targetDate);
-  const sequenceStartDay = toDayStamp(sequence.createdAt);
-  if (targetDay == null || sequenceStartDay == null) return false;
-  if (targetDay < sequenceStartDay) return false;
-
-  const dayOfWeek = targetDate.getDay();
-  const dayOfMonth = targetDate.getDate();
-
-  if (sequence.recurrenceType === 'DAILY' || sequence.recurrenceType === 'WEEKLY') {
-    return sequence.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-  }
-  if (sequence.recurrenceType === 'MONTHLY') {
-    return sequence.recurrenceConfig.daysOfMonth?.includes(dayOfMonth) ?? true;
-  }
-  return true;
-};
+const sequenceMatchesDate = (sequence: CycleSequence, date: Date | string | number): boolean =>
+  recurrenceMatchesDate(sequence, date);
 
 const findHabitByIdDeep = (habits: Habit[], habitId: string): Habit | null => {
   for (const habit of habits) {
@@ -437,6 +427,8 @@ interface AppState {
   // ========== USUÁRIO ==========
   user: User;
   updateUser: (updates: Partial<User>) => void;
+  mutateOccurrenceReminder: (accountId: string | null, userId: string, revision: number, mutation: ReminderMutation) => ProfileReminders;
+  recoverCycleXp: (accountId: string | null, signature: string) => { plan: CycleXpRecoveryPlan; backupKey: string | null };
   addExperience: (amount: number, elementId?: ElementId) => void;
   addElementExperience: (elementId: ElementId, amount: number) => void;
   getLevelProgress: () => ReturnType<typeof LevelingCalculatorService.calculateAvatar>;
@@ -497,6 +489,9 @@ interface AppState {
   habits: Habit[];
   addHabit: (habit: Partial<Habit>) => Habit;
   updateHabit: (habitId: string, updates: Partial<Habit>) => void;
+  configureHabitDailyTracking: (habitId: string, config: HabitDailyTracking) => void;
+  recordHabitQuantity: (habitId: string, date: Date) => string;
+  removeHabitQuantity: (habitId: string, entryId: string) => void;
   deleteHabit: (habitId: string) => void;
   completeHabit: (
     habitId: string,
@@ -533,7 +528,7 @@ interface AppState {
   cycleSequences: CycleSequence[];
   sequenceMemberships: SequenceMembership[];
   commitments: Commitment[];
-  addCommitment: (input: { title: string; date: Date; recurrence?: Commitment['recurrence'] }) => Commitment;
+  addCommitment: (input: { title: string; date: Date; recurrence?: Commitment['recurrence']; untilDate?: string; description?: string }) => Commitment;
   updateCommitment: (commitmentId: string, updates: Partial<Omit<Commitment, 'id' | 'createdAt'>>) => void;
   deleteCommitment: (commitmentId: string) => void;
   createCycleSequence: (input: {
@@ -558,6 +553,7 @@ interface AppState {
   // ========== PROJETOS (GRANDES OBRAS) ==========
   projects: Project[];
   addProject: (project: Partial<Project>) => Project;
+  setAchievementCompleted: (kind: AchievementKind, id: string, completed: boolean, accountId: string | null, signature: string) => { changed: boolean; amount: number };
   updateProject: (projectId: string, updates: Partial<Project>) => void;
   deleteProject: (projectId: string) => void;
   addMissionToProject: (projectId: string, mission: Partial<Mission>) => void;
@@ -664,7 +660,9 @@ const captureAccountData = (state: AppState, profile: AccountProfile): AccountSc
   executionLogs: state.executionLogs,
   user: {
     ...state.user,
-    id: crypto.randomUUID(),
+    // Saving the active account must retain its character identity. Only an
+    // explicit import into a new profile creates a new character ID.
+    id: profile.id === state.currentAccountId ? state.user.id : crypto.randomUUID(),
     name: profile.name,
     avatar: profile.avatar,
   },
@@ -713,6 +711,11 @@ export const useAppStore = create<AppState>()(
         };
 
         set((state) => {
+          const accountDataById = { ...state.accountDataById };
+          const currentProfile = state.accounts.find((account) => account.id === state.currentAccountId);
+          if (currentProfile) {
+            accountDataById[currentProfile.id] = captureAccountData(state, currentProfile);
+          }
           const accountData = importCurrentData
             ? captureAccountData(state, profile)
             : createEmptyAccountData(profile);
@@ -721,7 +724,7 @@ export const useAppStore = create<AppState>()(
             accounts: [...state.accounts, profile],
             currentAccountId: profile.id,
             accountDataById: {
-              ...state.accountDataById,
+              ...accountDataById,
               [profile.id]: accountData,
             },
             ...accountData,
@@ -857,12 +860,39 @@ export const useAppStore = create<AppState>()(
       },
       user: initialUser,
       
+      mutateOccurrenceReminder: (accountId, userId, revision, mutation) => {
+        let result!: ProfileReminders;
+        set((state) => {
+          if (state.currentAccountId !== accountId || state.user.id !== userId) throw new Error('O perfil mudou. Abra o aviso novamente.');
+          result = mutateProfileReminders(state, state.user.reminderState, revision, mutation);
+          return result === state.user.reminderState ? state : { user: { ...state.user, reminderState: result } };
+        });
+        return result;
+      },
+
       updateUser: (updates) => {
         set((state) => ({
           user: { ...state.user, ...updates },
         }));
       },
       
+      recoverCycleXp: (accountId, signature) => {
+        const state = get();
+        if (state.currentAccountId !== accountId) throw new Error('A conta mudou. Confira a prévia novamente.');
+        const plan = planCycleXpRecovery(state.habits);
+        if (plan.signature !== signature) throw new Error('Os registros mudaram. Confira a prévia novamente.');
+        if (!plan.entries.length) return { plan, backupKey: null };
+        if (!Number.isFinite(plan.total) || plan.total > Number.MAX_SAFE_INTEGER) throw new Error('Total fora do limite seguro de precisão.');
+        const backupKey = `conselho-cycle-xp-backup:${accountId ?? 'local'}:${crypto.randomUUID()}`;
+        const snapshot = JSON.stringify({ schema: 1, purpose: 'cycle-xp-recovery', savedAt: new Date().toISOString(), accountId, user: state.user, habits: state.habits });
+        // The explicit recovery is blocked if its pre-change backup cannot be stored and read back.
+        window.localStorage.setItem(backupKey, snapshot);
+        if (window.localStorage.getItem(backupKey) !== snapshot) throw new Error('Não foi possível verificar a cópia anterior.');
+        const habits = recoverCycleReceipts(state.habits, plan);
+        set({ habits, user: applyCycleXpDelta(state.user, state.habits, habits) });
+        return { plan, backupKey };
+      },
+
       addExperience: (amount, elementId = 'terra') => {
         const xpKey = ELEMENT_XP_KEY[elementId];
         set((state) => ({ user: { ...state.user, [xpKey]: Math.max(0, state.user[xpKey] + amount) } }));
@@ -1074,6 +1104,7 @@ export const useAppStore = create<AppState>()(
       tasks: [],
       
       addTask: (taskData) => {
+        const dueDate = operationalDateKey(taskData.dueDate);
         const state = get();
         // Calcular o próximo displayOrder (maior existente + 1)
         const maxOrder = state.tasks.reduce((max, task) => Math.max(max, task.displayOrder || 0), 0);
@@ -1081,6 +1112,7 @@ export const useAppStore = create<AppState>()(
         const newTask: Task = {
           id: crypto.randomUUID(),
           title: taskData.title || 'Novo Ritual',
+          dueDate,
           description: taskData.description || '',
           lifecycleType: 'ACTION',
           type: 'TASK',
@@ -1118,6 +1150,7 @@ export const useAppStore = create<AppState>()(
       },
       
       updateTask: (taskId, updates) => {
+        if ('dueDate' in updates) updates = { ...updates, dueDate: operationalDateKey(updates.dueDate) };
         set((state) => ({
           actions: state.actions.map((action) => action.id === taskId ? { ...action, ...updates, updatedAt: new Date() } : action),
           tasks: state.tasks.map((task) => task.id === taskId ? { ...task, ...updates, updatedAt: new Date() } : task),
@@ -1223,7 +1256,7 @@ export const useAppStore = create<AppState>()(
           
           const roundedScore = Math.round(score);
 
-          set((s) => ({
+          set((s) => withTaskXpUpdate(s, ({
             tasks: s.tasks.map((t) =>
               t.id === taskId 
                 ? { 
@@ -1242,9 +1275,8 @@ export const useAppStore = create<AppState>()(
               ...s.user,
               totalScore: s.user.totalScore + roundedScore,
             },
-          }));
+          })));
           
-          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         }
         
@@ -1264,7 +1296,7 @@ export const useAppStore = create<AppState>()(
           
           const roundedScore = Math.round(totalScore);
 
-          set((s) => ({
+          set((s) => withTaskXpUpdate(s, ({
             tasks: s.tasks.map((t) =>
               t.id === taskId 
                 ? { 
@@ -1281,9 +1313,8 @@ export const useAppStore = create<AppState>()(
               ...s.user,
               totalScore: s.user.totalScore + roundedScore,
             },
-          }));
+          })));
           
-          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         } else {
           // **CASE B**: Alguns filhos completos → completar apenas o pai, somar apenas os completos
@@ -1291,7 +1322,7 @@ export const useAppStore = create<AppState>()(
           
           const roundedScore = Math.round(partialScore);
 
-          set((s) => ({
+          set((s) => withTaskXpUpdate(s, ({
             tasks: s.tasks.map((t) =>
               t.id === taskId 
                 ? { 
@@ -1307,9 +1338,8 @@ export const useAppStore = create<AppState>()(
               ...s.user,
               totalScore: s.user.totalScore + roundedScore,
             },
-          }));
+          })));
           
-          get().addExperience(Math.round(roundedScore / 2), task.elementId);
           return roundedScore;
         }
       },
@@ -1321,14 +1351,14 @@ export const useAppStore = create<AppState>()(
         if (task.sourceModule === 'modulo_treino') {
           const log = state.executionLogs.find((item) => item.subjectId === taskId);
           if (!log) return;
-          set((current) => ({
+          set((current) => withTaskXpUpdate(current, ({
             actions: current.actions.map((item) => item.id === taskId ? { ...item, isCompleted: false, completedAt: null, completedScore: null } : item),
             tasks: current.tasks.map((item) => item.id === taskId ? { ...item, isCompleted: false, completedAt: null, completedScore: null } : item),
             executionLogs: current.executionLogs.filter((item) => item.id !== log.id),
             user: { ...current.user, totalScore: Math.max(0, current.user.totalScore - log.executedValue),
               xp_earth: Math.max(0, current.user.xp_earth - log.executedValue),
               pranaLevel: Math.max(0, Math.min(100, (current.user.pranaLevel ?? 100) - (log.pranaDeltaApplied ?? 0))) },
-          }));
+          })));
           return;
         }
 
@@ -1422,7 +1452,7 @@ export const useAppStore = create<AppState>()(
           // **Case B**: Nem todos completos → desmarcar apenas o pai (updatedChildItems permanece inalterado)
         }
 
-        set((state) => ({
+        set((state) => withTaskXpUpdate(state, ({
           tasks: state.tasks.map((t) =>
             t.id === taskId
               ? {
@@ -1440,7 +1470,7 @@ export const useAppStore = create<AppState>()(
             ...state.user,
             totalScore: Math.max(0, state.user.totalScore - removedScore),
           },
-        }));
+        })));
       },
       
       toggleTaskExpansion: (taskId) => {
@@ -2064,7 +2094,7 @@ export const useAppStore = create<AppState>()(
           });
         };
 
-        set((s) => ({
+        set((s) => withTaskXpUpdate(s, ({
           tasks: s.tasks.map((t) =>
             t.id === taskId
               ? {
@@ -2074,7 +2104,7 @@ export const useAppStore = create<AppState>()(
                 }
               : t
           ),
-        }));
+        })));
 
         // Adicionar pontuação ao usuário
         get().addScore(Math.round(scoreToAdd));
@@ -2104,13 +2134,13 @@ export const useAppStore = create<AppState>()(
 
           if (allChildrenComplete && !parent.isCompleted) {
             // Marcar o pai
-            set((s) => ({
+            set((s) => withTaskXpUpdate(s, ({
               tasks: s.tasks.map((t) =>
                 t.id === taskId
                   ? { ...t, childItems: autoCompleteParentIfNeeded(t.childItems, parent.id) }
                   : t
               ),
-            }));
+            })));
             // Continuar para verificar o avô
             currentItemId = parent.id;
           } else {
@@ -2247,7 +2277,7 @@ export const useAppStore = create<AppState>()(
           }
         }
 
-        set((s) => ({
+        set((s) => withTaskXpUpdate(s, ({
           tasks: s.tasks.map((t) =>
             t.id === taskId
               ? {
@@ -2257,7 +2287,7 @@ export const useAppStore = create<AppState>()(
                 }
               : t
           ),
-        }));
+        })));
 
         // Remover pontuação do usuário
         get().addScore(-Math.round(scoreToRemove));
@@ -2302,13 +2332,13 @@ export const useAppStore = create<AppState>()(
 
           if (parent.isCompleted) {
             // Desmarcar o pai
-            set((s) => ({
+            set((s) => withTaskXpUpdate(s, ({
               tasks: s.tasks.map((t) =>
                 t.id === taskId
                   ? { ...t, childItems: unmarkParentIfNeeded(t.childItems, parent.id) }
                   : t
               ),
-            }));
+            })));
             // Continuar para verificar o avô
             currentItemId = parent.id;
           } else {
@@ -2529,7 +2559,9 @@ export const useAppStore = create<AppState>()(
           plannedTimeMinutes: habitData.plannedTimeMinutes ?? 0,
           plannedPoints: habitData.plannedPoints ?? DEFAULT_SCORES.CICLO.plannedPoints,
           recurrenceType: habitData.recurrenceType || 'DAILY',
-          recurrenceConfig: habitData.recurrenceConfig || {},
+          recurrenceConfig: habitData.recurrenceConfig && Object.keys(habitData.recurrenceConfig).length
+            ? habitData.recurrenceConfig
+            : defaultRecurrenceConfig(habitData.recurrenceType ?? 'DAILY', habitData.startDate ? new Date(habitData.startDate) : new Date()),
           startDate: habitData.startDate ? new Date(habitData.startDate) : new Date(),
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -2554,6 +2586,27 @@ export const useAppStore = create<AppState>()(
         return newHabit;
       },
       
+      configureHabitDailyTracking: (habitId, config) => {
+        const habit = get().habits.find(item => item.id === habitId);
+        if (!habit || habit.sourceModule === 'modulo_treino') throw new Error('Este ciclo não aceita contador manual.');
+        const validated = validateDailyTracking(config);
+        if (habit.dailyEntries?.some(entry => entry.unit !== validated.unit)) throw new Error('Mantenha a unidade dos registros existentes. Para outra unidade, use outro ciclo.');
+        get().updateHabit(habitId, { dailyTracking: validated });
+      },
+      recordHabitQuantity: (habitId, date) => {
+        const habit = get().habits.find(item => item.id === habitId);
+        if (!habit?.dailyTracking || habit.sourceModule === 'modulo_treino') throw new Error('Configure o contador deste ciclo primeiro.');
+        const config = validateDailyTracking(habit.dailyTracking);
+        const entry = { id: crypto.randomUUID(), dateKey: dailyDateKey(date), quantity: config.step, unit: config.unit, recordedAt: new Date().toISOString() };
+        get().updateHabit(habitId, { dailyEntries: [...(habit.dailyEntries ?? []), entry] });
+        return entry.id;
+      },
+      removeHabitQuantity: (habitId, entryId) => {
+        const habit = get().habits.find(item => item.id === habitId);
+        if (!habit || habit.sourceModule === 'modulo_treino') return;
+        get().updateHabit(habitId, { dailyEntries: (habit.dailyEntries ?? []).filter(entry => entry.id !== entryId) });
+      },
+
       updateHabit: (habitId, updates) => {
         set((state) => ({
           actions: state.actions.map((action) => action.id === habitId ? { ...action, ...updates, updatedAt: new Date() } : action),
@@ -2607,6 +2660,7 @@ export const useAppStore = create<AppState>()(
             createdAt: new Date(),
             updatedAt: new Date(),
             completions: [],
+            dailyEntries: [],
             lastCompletedAt: null,
             streak: 0,
             longestStreak: 0,
@@ -2628,6 +2682,7 @@ export const useAppStore = create<AppState>()(
           createdAt: new Date(),
           updatedAt: new Date(),
           completions: [],
+          dailyEntries: [],
           lastCompletedAt: null,
           streak: 0,
           longestStreak: 0,
@@ -3017,6 +3072,9 @@ export const useAppStore = create<AppState>()(
           executedScore: targetExecutedScore,
           actualEffortLevel: 1,
           formulaVersion: 'habit-v1',
+          xpAwarded: Number.isFinite(targetExecutedScore) ? targetExecutedScore : 0,
+          xpElementId: targetHabit.elementId,
+          xpRuleset: 'cycle-xp-v1',
           startedAtCycleSeconds: metadata?.startedAtCycleSeconds,
           endedAtCycleSeconds: metadata?.endedAtCycleSeconds,
         };
@@ -3038,7 +3096,7 @@ export const useAppStore = create<AppState>()(
               parentIdsToComplete.has(habit.id) && !isHabitCompletedOnDate(baseHabit, completionAt);
 
             if (shouldAddTargetCompletion || shouldAutoCompleteDescendant || shouldAutoCompleteParent) {
-              const completionToApply = shouldAddTargetCompletion
+              const completionToApply: HabitCompletion = shouldAddTargetCompletion
                 ? completion
                 : {
                     id: crypto.randomUUID(),
@@ -3046,6 +3104,10 @@ export const useAppStore = create<AppState>()(
                     completionDate: completionAt,
                     timeSpentMinutes: 0,
                     scoreEarned: 0,
+                    // Cascaded leaves receive their existing zero-minute score; parents only aggregate.
+                    xpAwarded: shouldAutoCompleteDescendant ? calculateHabitExecutedScore(habit, 0) : 0,
+                    xpElementId: habit.elementId,
+                    xpRuleset: 'cycle-xp-v1',
                   };
               const updatedCompletions = [...baseHabit.completions, completionToApply];
               const streakData = getScheduledStreak(state, baseHabit, updatedCompletions);
@@ -3064,9 +3126,10 @@ export const useAppStore = create<AppState>()(
           });
         };
 
-        set((current) => ({
-          habits: completeRecursively(current.habits),
-        }));
+        set((current) => {
+          const habits = completeRecursively(current.habits);
+          return { habits, user: applyCycleXpDelta(current.user, current.habits, habits) };
+        });
 
         // Sequencia: marca o item do dia como concluido e so avanca visualmente no proximo dia disponivel.
         const latestState = get();
@@ -3225,6 +3288,7 @@ export const useAppStore = create<AppState>()(
           return {
             ...current,
             habits: result.habits,
+            user: applyCycleXpDelta(current.user, current.habits, result.habits),
           };
         });
 
@@ -3641,6 +3705,8 @@ export const useAppStore = create<AppState>()(
           title: input.title.trim() || 'Novo compromisso',
           date: new Date(input.date),
           recurrence: input.recurrence ?? 'ONCE',
+          ...(input.untilDate ? { untilDate: input.untilDate } : {}),
+          ...(input.description ? { description: input.description } : {}),
           createdAt: now,
           updatedAt: now,
         };
@@ -4103,6 +4169,35 @@ export const useAppStore = create<AppState>()(
         return newProject;
       },
       
+      setAchievementCompleted: (kind, id, completed, accountId, signature) => {
+        const state = get();
+        if (state.currentAccountId !== accountId) throw new Error('A conta mudou. Abra a conquista novamente.');
+        if (kind !== 'quest' && kind !== 'project') throw new Error('Conquista inválida.');
+        const plan = achievementPlan(state, kind, id);
+        if (!plan) throw new Error('Esta conquista não está mais disponível.');
+        if (plan.trail.completed === completed) return { changed: false, amount: 0 };
+        if (plan.signature !== signature) throw new Error('A conquista mudou. Confira os detalhes novamente.');
+        if (completed && !plan.canComplete) throw new Error('Conclua os rituais pendentes e confira o bônus antes de encerrar.');
+        if (!plan.validAmount) throw new Error('O bônus registrado precisa de revisão.');
+        const amount = plan.amount;
+        const completionBonus = completed ? { id: crypto.randomUUID(), amount, elementId: plan.element,
+          completedAt: new Date().toISOString(), ruleset: 'achievement-bonus-v1' as const } : undefined;
+        const updated = { ...plan.entity, isCompleted: completed, status: completed ? 'completed' as const : 'active' as const,
+          completionBonus, updatedAt: new Date() };
+        const key = achievementXpKeys[plan.element];
+        const delta = completed ? amount : -amount;
+        const previousPoints = plan.entity.completionBonus?.amount ?? plan.entity.xpBonus;
+        const pointDelta = completed ? amount : -(Number.isFinite(previousPoints) ? Math.max(0, previousPoints) : 0);
+        if (!Number.isFinite(state.user[key] + delta) || state.user[key] + delta > Number.MAX_SAFE_INTEGER) throw new Error('Saldo fora do limite seguro.');
+        set({
+          ...(kind === 'quest' ? { quests: state.quests.map(q => q.id === id ? updated as Quest : q) }
+            : { projects: state.projects.map(p => p.id === id ? updated as Project : p) }),
+          user: { ...state.user, [key]: Math.max(0, state.user[key] + delta),
+            totalScore: Math.max(0, state.user.totalScore + pointDelta) },
+        });
+        return { changed: true, amount: delta };
+      },
+
       updateProject: (projectId, updates) => {
         set((state) => ({
           projects: state.projects.map((project) =>
@@ -4541,14 +4636,14 @@ export const useAppStore = create<AppState>()(
         // Somar pontos de projetos
         projects.forEach((project) => {
           if (project.isCompleted) {
-            scores[project.elementId].score += project.xpBonus;
+            scores[project.completionBonus?.elementId ?? project.elementId].score += project.completionBonus?.amount ?? project.xpBonus;
           }
         });
         
         // Somar pontos de quests
         quests.forEach((quest) => {
           if (quest.isCompleted) {
-            scores[quest.elementId].score += quest.xpBonus;
+            scores[quest.completionBonus?.elementId ?? quest.elementId].score += quest.completionBonus?.amount ?? quest.xpBonus;
           }
         });
         

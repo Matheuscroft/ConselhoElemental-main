@@ -13,7 +13,7 @@ interface TrendAreaChartProps {
   unit?: string;
 }
 
-const TICK_STYLE = { fill: '#9A9AA4', fontSize: 12 };
+const TICK_STYLE = { fill: '#aab4c4', fontSize: 12 };
 
 const TrendTooltip: React.FC<TooltipProps<number, string> & { unit?: string }> = ({ active, payload, label, unit }) => {
   if (!active || !payload?.length) return null;
@@ -25,8 +25,8 @@ const TrendTooltip: React.FC<TooltipProps<number, string> & { unit?: string }> =
   );
 };
 
-/** Curva suave violeta com preenchimento em gradiente (opaco no topo → transparente no fundo). */
-export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({ data, height = 220, color = '#8582F2', unit }) => {
+/** Curva suave dourada com preenchimento em gradiente (opaco no topo → transparente no fundo). */
+export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({ data, height = 220, color = '#d5b66f', unit }) => {
   const gradientId = `fitness-trend-${useId().replace(/:/g, '')}`;
 
   return (

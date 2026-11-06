@@ -1,0 +1,63 @@
+/* Shared response tokens. Ambient elemental scenes keep their own timing. */
+:root {
+  --ds-duration-feedback: 160ms;
+  --ds-duration-reveal: 240ms;
+  --ds-ease: cubic-bezier(.23,1,.32,1);
+}
+.elemental-press {
+  transition: transform var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) ease, border-color var(--ds-duration-feedback) ease;
+}
+.elemental-press:active:not(:disabled) { transform: scale(.97); transition-duration: 100ms; }
+[data-slot="dialog-content"][data-state], [data-slot="dialog-overlay"][data-state], [data-slot="sheet-content"][data-state], [data-slot="sheet-overlay"][data-state] {
+  animation-duration: var(--ds-duration-reveal);
+  animation-timing-function: var(--ds-ease);
+}
+@keyframes elemental-feedback-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes elemental-feedback-out { from { opacity: 1; } to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .elemental-press, .elemental-press:active:not(:disabled) { transform: none; transition-property: background-color, border-color, opacity; }
+  [data-slot="dialog-content"][data-state], [data-slot="dialog-overlay"][data-state], [data-slot="sheet-content"][data-state], [data-slot="sheet-overlay"][data-state] {
+    animation-duration: 120ms !important;
+    animation-name: elemental-feedback-in !important;
+    transition-property: opacity;
+  }
+  [data-state="closed"]:is([data-slot="dialog-content"], [data-slot="dialog-overlay"], [data-slot="sheet-content"], [data-slot="sheet-overlay"]) { animation-name: elemental-feedback-out !important; }
+  .quest-primary:active { transform: none; }
+}
+
+/* Shared disclosures: no delayed interaction, height measurements or animation callbacks. */
+.elemental-reveal-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows var(--ds-duration-reveal) var(--ds-ease), opacity var(--ds-duration-feedback) ease, visibility 0s linear var(--ds-duration-reveal);
+}
+.elemental-reveal-panel[data-open="true"] { grid-template-rows: 1fr; opacity: 1; visibility: visible; transition-delay: 0s; }
+.elemental-reveal-inner { min-height: 0; overflow: hidden; }
+@media (prefers-reduced-motion: reduce) { .elemental-reveal-panel { transition: none; } }
+
+/* Recorded workout sets: compact receipts remain readable after motion ends. */
+.fitness-set-receipt {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .875rem 1rem;
+  border: 1px solid rgb(var(--el-gold) / .25);
+  border-radius: 1rem;
+  background: linear-gradient(120deg, rgb(var(--el-gold) / .09), transparent);
+}
+.fitness-set-receipt-seal {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  color: rgb(var(--el-gold));
+  border: 1px solid currentColor;
+  border-radius: 35%;
+}
+.fitness-set-receipt[data-skipped="true"] { background: transparent; border-color: rgb(148 163 184 / .2); }
+.fitness-set-receipt[data-skipped="true"] .fitness-set-receipt-seal { color: #94a3b8; border-color: transparent; }
+.fitness-motion-bar { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+@media (prefers-reduced-motion: reduce) { .fitness-motion-bar { transition: none; } }

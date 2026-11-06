@@ -48,7 +48,7 @@
 .pillar-element-trigger > span { flex: 1; min-width: 0; }
 .pillar-element-trigger strong { display: flex; gap: 8px; align-items: center; color: var(--pillar-accent); font: 500 21px/1.4 Cinzel, Georgia, serif; }
 .pillar-element-trigger small { display: block; color: #aab4c4; font-size: 12px; line-height: 1.6; margin-top: 6px; }
-.pillar-element-trigger > svg { flex-shrink: 0; color: var(--pillar-accent); transition: transform 200ms ease; }
+.pillar-element-trigger > svg { flex-shrink: 0; color: var(--pillar-accent); transition: transform var(--ds-duration-reveal) var(--ds-ease); }
 .pillar-element-card[data-open="true"] .pillar-element-trigger > svg { transform: rotate(180deg); }
 .pillar-element-content { padding: 0 18px 18px; }
 .pillar-element-content p { font-size: 14px; line-height: 1.7; color: #aab4c4; }
@@ -66,3 +66,7 @@
 .pillars-footer { border: 1px solid #d5b66f40; border-radius: 20px; padding: 20px; background: linear-gradient(120deg, #d5b66f0a, #141b2780); }
 @container (min-width: 620px) { .pillar-element-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .pillar-element-trigger > svg { transition: none; } }
+
+.pillar-element-card { transition: border-color var(--ds-duration-feedback) ease; }
+.pillars-balance > summary svg { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+@media (prefers-reduced-motion: reduce) { .pillar-element-card, .pillars-balance > summary svg { transition: none; } }

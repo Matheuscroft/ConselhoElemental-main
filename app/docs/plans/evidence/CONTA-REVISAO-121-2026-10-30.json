@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-30",
+  "project_ref": "myvxvgeyseoyugskqlqr",
+  "migration": {
+    "version": "20261030204257",
+    "name": "account_archive_version_121",
+    "original_cli_version": "20261030203429",
+    "sha256": "4329eaf485d78d5542c12b8314173a1d14128508b3ce71f19b0c55fb70c9f09b"
+  },
+  "before_validator_source_sha256": "baf8b385218df86e324fb6f9138ed4b3d2d4ff26aa9218507f8c79b747622d8c",
+  "post_verification": {
+    "synthetic_archive_sha256": "da311be79bf3964c1e2fd55998b6d6c169764e15b29701ef9bd089c0e967eab6",
+    "release_still_closed": true,
+    "validator_source_sha256": "25abb9a4660a380cc09d76f5859804c2335997f70dcc841b53e4b424ffb67275",
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  "fixture": "Minimal synthetic structural envelope, supplied to pure validator by SELECT. Not personal data, not an Auth session, not an archive saved to account_state.",
+  "limits": "Does not validate signup, email redirect delivery, password recovery with a real mailbox, complete application sync, personal transfer or mobile rendering."
+}

@@ -1,3 +1,4 @@
+import { AchievementCompletion } from '@/components/quests/AchievementCompletion';
 import { ProjectChapters } from '@/components/quests/ProjectChapters';
 import { QuestComposer } from '@/components/quests/QuestComposer';
 import { QuestRune } from '@/components/quests/QuestRune';
@@ -33,7 +34,15 @@ import {
 import type { Project, ElementId } from '@/types';
 
 export const GrandesObras: React.FC = () => {
-  const { currentAccountId, projects, tasks, habits, quests, addProject, addMissionToProject } = useAppStore();
+  const { currentAccountId, projects: storedProjects, tasks, habits, quests, addProject, addMissionToProject } = useAppStore();
+  const projects = useMemo(() => {
+    const trails = buildQuestTrails({ projects: storedProjects, tasks, habits, quests });
+    return storedProjects.map(p => {
+      const trail = trails.find(t => t.kind === 'project' && t.id === p.id)!;
+      return { ...p, status: trail.completed ? 'completed' as const : p.status,
+        progress: trail.completed ? 100 : trail.total ? Math.round(100 * trail.done / trail.total) : 0 };
+    });
+  }, [storedProjects, tasks, habits, quests]);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('active');
   const [selection, setSelection] = useState<{ id: string; accountId: string | null } | null>(null);
@@ -110,7 +119,7 @@ export const GrandesObras: React.FC = () => {
         </div>
         <div className="glass-card p-3 text-center">
           <div className="text-2xl font-bold text-mystic-arcane">
-            {projects.reduce((acc, p) => acc + p.progress, 0) / (projects.length || 1)}%
+            {Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / (projects.length || 1))}%
           </div>
           <div className="text-[10px] text-white/50">Média</div>
         </div>
@@ -281,14 +290,7 @@ export const GrandesObras: React.FC = () => {
                   </div>
                 )}
                 
-                {/* XP Bonus */}
-                {selectedProject.xpBonus > 0 && (
-                  <div className="text-center">
-                    <Badge className="bg-mystic-arcane/20 text-mystic-arcane">
-                      +{selectedProject.xpBonus} XP ao completar
-                    </Badge>
-                  </div>
-                )}
+                <AchievementCompletion kind="project" id={selectedProject.id} />
               </div>
             </>
           )}

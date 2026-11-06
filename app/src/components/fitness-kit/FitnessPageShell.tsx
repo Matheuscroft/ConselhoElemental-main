@@ -1,3 +1,4 @@
+import './fitness-elemental.css';
 import { LayoutGrid } from 'lucide-react';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import React, { useContext, useEffect, useState } from 'react';
@@ -65,7 +66,7 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
       : 'pb-[calc(2.5rem+env(safe-area-inset-bottom))]';
 
   return (
-    <div className={cn('min-h-dvh font-sans text-fitness-text antialiased overflow-x-hidden', focused ? 'bg-fitness-canvas' : 'bg-transparent')}>
+    <div className={cn('fitness-elemental min-h-dvh font-sans text-fitness-text antialiased overflow-x-hidden', focused ? 'bg-fitness-canvas' : 'bg-transparent')}>
       {!fullscreen && <Sidebar />}
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main

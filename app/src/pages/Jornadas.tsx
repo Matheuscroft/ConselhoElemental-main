@@ -1,11 +1,12 @@
+import { AchievementCompletion } from '@/components/quests/AchievementCompletion';
 import { QuestComposer } from '@/components/quests/QuestComposer';
 import { QuestRune } from '@/components/quests/QuestRune';
 import { Link, useNavigate } from 'react-router-dom';
-import { trailHref } from '@/components/quests/quest-path';
+import { buildQuestTrails, trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { 
   Plus, 
@@ -33,10 +34,19 @@ import {
 import type { Quest, ElementId } from '@/types';
 
 export const Jornadas: React.FC = () => {
-  const { currentAccountId, quests, addQuest } = useAppStore();
+  const { currentAccountId, quests: storedQuests, projects, tasks, habits, addQuest } = useAppStore();
+  const quests = useMemo(() => {
+    const trails = buildQuestTrails({ quests: storedQuests, projects, tasks, habits });
+    return storedQuests.map(q => {
+      const trail = trails.find(t => t.kind === 'quest' && t.id === q.id)!;
+      return { ...q, isCompleted: trail.completed, progress: trail.completed ? 100 : trail.total ? Math.round(100 * trail.done / trail.total) : 0,
+        tasks: trail.steps.filter(s => s.kind === 'task').map(s => tasks.find(t => t.id === s.id) ?? q.tasks.find(t => t.id === s.id)).filter((t): t is NonNullable<typeof t> => !!t) };
+    });
+  }, [storedQuests, projects, tasks, habits]);
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('active');
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+  const [selection, setSelection] = useState<{ id: string; accountId: string | null } | null>(null);
+  const selectedQuest = selection?.accountId === currentAccountId ? quests.find(q => q.id === selection.id) ?? null : null;
   const [showDetail, setShowDetail] = useState(false);
   const [showCreateQuest, setShowCreateQuest] = useState(false);
   const [newQuestTitle, setNewQuestTitle] = useState('');
@@ -50,7 +60,7 @@ export const Jornadas: React.FC = () => {
 
   // Open quest detail
   const openQuestDetail = (quest: Quest) => {
-    setSelectedQuest(quest);
+    setSelection({ id: quest.id, accountId: currentAccountId });
     setShowDetail(true);
   };
 
@@ -236,14 +246,7 @@ export const Jornadas: React.FC = () => {
                   </div>
                 )}
                 
-                {/* XP Bonus */}
-                {selectedQuest.xpBonus > 0 && (
-                  <div className="text-center">
-                    <Badge className="bg-mystic-arcane/20 text-mystic-arcane">
-                      +{selectedQuest.xpBonus} XP ao completar
-                    </Badge>
-                  </div>
-                )}
+                <AchievementCompletion kind="quest" id={selectedQuest.id} />
               </div>
             </>
           )}

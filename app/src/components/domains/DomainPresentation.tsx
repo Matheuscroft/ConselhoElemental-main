@@ -1,3 +1,4 @@
+import { RevealPanel } from '@/components/motion/RevealPanel';
 import { useId, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Check, ChevronDown } from 'lucide-react';
@@ -46,10 +47,10 @@ export function DomainShowcase({ area, taskCount, habitCount, subareaCount }: { 
       <div className="domain-showcase-title"><p><ElementIcon element={area.elementId} size={20} />{ELEMENTS[area.elementId].name}{area.isCustom ? ' · Área personalizada' : ''}</p><h1>{area.name}</h1></div>
     </div>
     <button type="button" className="domain-showcase-toggle" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>{open ? 'Recolher resumo' : 'Conhecer esta área'}<ChevronDown size={20} aria-hidden="true" /></button>
-    <div id={id} className="domain-reveal" data-open={open} inert={!open} aria-hidden={!open}><div><div className="domain-showcase-detail">
+    <RevealPanel id={id} open={open}><div className="domain-showcase-detail">
       <p>{area.description || `Um espaço de ${ELEMENTS[area.elementId].name} para organizar suas atividades e subáreas.`}</p>
       <dl><div><dt>Rituais na área</dt><dd>{taskCount}</dd></div><div><dt>Ciclos na área</dt><dd>{habitCount}</dd></div><div><dt>Subáreas</dt><dd>{subareaCount}</dd></div></dl>
-    </div></div></div>
+    </div></RevealPanel>
   </section>;
 }
 

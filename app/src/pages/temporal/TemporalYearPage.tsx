@@ -1,4 +1,11 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { createAnnualEntry } from '@/lib/temporal/annual-entry';
+import { operationalDate } from '@/lib/temporal/recurrence';
+import React, { useMemo, useState } from 'react';
+import { AnnualEntryForm, type AnnualFormInput } from '@/components/temporal/TemporalEntryForms';
+import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useTemporalView } from '@/components/temporal/useTemporalView';
+import { temporalActivityHref } from '@/components/temporal/TemporalDayAgenda';
 import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
 import { MonthShowcase } from '@/components/temporal/MonthShowcase';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -20,11 +27,7 @@ const ANNUAL_CATEGORY_PREFIX = '[ANUAL_CATEGORY:';
 const ANNUAL_REPEAT_PREFIX = '[ANUAL_REPEAT:';
 const ANNUAL_END_PREFIX = '[ANUAL_END:';
 
-const toValidDate = (value: Date | string | number | null | undefined): Date | null => {
-  if (value == null) return null;
-  const parsed = value instanceof Date ? value : new Date(value);
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-};
+const toValidDate = operationalDate;
 
 type AnnualEntryCategory = 'task' | 'birthday';
 type AnnualEntryRepeat = 'infinite' | 'until';
@@ -89,72 +92,30 @@ const parseAnnualEntry = (description: string | undefined): ParsedAnnualEntry =>
   };
 };
 
-const buildAnnualTaskDescription = (input: {
-  category: AnnualEntryCategory;
-  repeat: AnnualEntryRepeat;
-  endDate: Date | null;
-  notes: string;
-}): string => {
-  const lines = [
-    ANNUAL_ENTRY_MARKER,
-    `${ANNUAL_CATEGORY_PREFIX}${input.category}]`,
-    `${ANNUAL_REPEAT_PREFIX}${input.repeat}]`,
-  ];
-
-  if (input.repeat === 'until' && input.endDate) {
-    const isoDate = input.endDate.toISOString().slice(0, 10);
-    lines.push(`${ANNUAL_END_PREFIX}${isoDate}]`);
-  }
-
-  if (input.notes.trim()) {
-    lines.push(input.notes.trim());
-  }
-
-  return lines.join('\n');
-};
 
 export const TemporalYearPage: React.FC = () => {
   const { now } = useLiveDate();
-  const [year, setYear] = useState(() => new Date().getFullYear());
-  const today = useMemo(() => new Date(), []);
+  const { anchorDate, setAnchorDate, returnTo } = useTemporalView('year');
+  const year = anchorDate.getFullYear();
+  const setYear = (next: number) => setAnchorDate(new Date(next, 0, 1));
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isDraggingCloseHandle, setIsDraggingCloseHandle] = useState(false);
-  const [dragStartY, setDragStartY] = useState<number | null>(null);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [annualCategory, setAnnualCategory] = useState<AnnualEntryCategory>('task');
-  const [annualTaskTitle, setAnnualTaskTitle] = useState('');
-  const [annualTaskNotes, setAnnualTaskNotes] = useState('');
-  const [annualTaskMonth, setAnnualTaskMonth] = useState<number>(today.getMonth());
-  const [annualTaskDay, setAnnualTaskDay] = useState<number>(today.getDate());
-  const [showDescriptionField, setShowDescriptionField] = useState(false);
-  const [isInfiniteRepeat, setIsInfiniteRepeat] = useState(true);
-  const [repeatUntilYear, setRepeatUntilYear] = useState(year);
-  const [repeatUntilMonth, setRepeatUntilMonth] = useState<number>(today.getMonth());
-  const [repeatUntilDay, setRepeatUntilDay] = useState<number>(today.getDate());
-  const [isRepeatUntilModalOpen, setIsRepeatUntilModalOpen] = useState(false);
-  const [draftRepeatUntilMonth, setDraftRepeatUntilMonth] = useState<number>(today.getMonth());
-  const [draftRepeatUntilDay, setDraftRepeatUntilDay] = useState<number>(today.getDate());
-  const monthWheelDragRef = useRef<{ isActive: boolean; startY: number }>({ isActive: false, startY: 0 });
-  const dayWheelDragRef = useRef<{ isActive: boolean; startY: number }>({ isActive: false, startY: 0 });
-  const dragCloseThreshold = 120;
-  const wheelStepPx = 24;
-
-  const addTask = useAppStore((state) => state.addTask);
-  const updateTask = useAppStore((state) => state.updateTask);
+  const [annualMessage, setAnnualMessage] = useState('');
+  const addHabit = useAppStore((state) => state.addHabit);
+  const addCommitment = useAppStore((state) => state.addCommitment);
   const completeTask = useAppStore((state) => state.completeTask);
   const uncompleteTask = useAppStore((state) => state.uncompleteTask);
   const tasks = useAppStore((state) => state.tasks);
+  const commitments = useAppStore((state) => state.commitments);
   const habits = useAppStore((state) => state.habits);
   const cycleSequences = useAppStore((state) => state.cycleSequences);
   const projects = useAppStore((state) => state.projects);
   const quests = useAppStore((state) => state.quests);
 
   const snapshot = useMemo(
-    () => ({ tasks, habits, cycleSequences, projects, quests }),
-    [tasks, habits, cycleSequences, projects, quests]
+    () => ({ tasks, habits, cycleSequences, projects, quests, commitments }),
+    [tasks, habits, cycleSequences, projects, quests, commitments]
   );
 
-  const anchorDate = useMemo(() => new Date(year, 0, 1), [year]);
   const events = useMemo(() => buildTemporalEvents(snapshot), [snapshot]);
 
   const yearMetrics = useMemo(() => {
@@ -202,228 +163,38 @@ export const TemporalYearPage: React.FC = () => {
     };
   }, [snapshot]);
 
-  useEffect(() => {
-    setRepeatUntilYear(year);
-  }, [year]);
-
-  useEffect(() => {
-    if (!isCreateModalOpen) return;
-
-    const previousBodyOverflow = document.body.style.overflow;
-    const previousBodyTouchAction = document.body.style.touchAction;
-    const previousHtmlOverflow = document.documentElement.style.overflow;
-
-    document.body.style.overflow = 'hidden';
-    document.body.style.touchAction = 'none';
-    document.documentElement.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousBodyOverflow;
-      document.body.style.touchAction = previousBodyTouchAction;
-      document.documentElement.style.overflow = previousHtmlOverflow;
-    };
-  }, [isCreateModalOpen]);
-
-  const annualTaskMaxDay = useMemo(() => new Date(year, annualTaskMonth + 1, 0).getDate(), [annualTaskMonth, year]);
-  const repeatUntilMaxDay = useMemo(
-    () => new Date(repeatUntilYear, repeatUntilMonth + 1, 0).getDate(),
-    [repeatUntilMonth, repeatUntilYear]
-  );
-  const draftRepeatUntilMaxDay = useMemo(
-    () => new Date(repeatUntilYear, draftRepeatUntilMonth + 1, 0).getDate(),
-    [draftRepeatUntilMonth, repeatUntilYear]
-  );
-
-  useEffect(() => {
-    if (annualTaskDay > annualTaskMaxDay) {
-      setAnnualTaskDay(annualTaskMaxDay);
-    }
-  }, [annualTaskDay, annualTaskMaxDay]);
-
-  useEffect(() => {
-    if (repeatUntilDay > repeatUntilMaxDay) {
-      setRepeatUntilDay(repeatUntilMaxDay);
-    }
-  }, [repeatUntilDay, repeatUntilMaxDay]);
-
-  useEffect(() => {
-    if (draftRepeatUntilDay > draftRepeatUntilMaxDay) {
-      setDraftRepeatUntilDay(draftRepeatUntilMaxDay);
-    }
-  }, [draftRepeatUntilDay, draftRepeatUntilMaxDay]);
-
   const annualTasks = useMemo(() => {
     return tasks
       .filter((task) => {
         if (!isAnnualTask(task.description)) return false;
-        const createdAt = toValidDate(task.createdAt);
+        const createdAt = toValidDate(task.dueDate ?? task.createdAt);
         if (!createdAt) return false;
         return createdAt.getFullYear() === year;
       })
       .sort((left, right) => {
-        const leftDate = toValidDate(left.createdAt)?.getTime() ?? 0;
-        const rightDate = toValidDate(right.createdAt)?.getTime() ?? 0;
+        const leftDate = toValidDate(left.dueDate ?? left.createdAt)?.getTime() ?? 0;
+        const rightDate = toValidDate(right.dueDate ?? right.createdAt)?.getTime() ?? 0;
         return leftDate - rightDate;
       });
   }, [tasks, year]);
 
-  const closeCreateModal = () => {
+  const annualAgenda = useMemo(() => {
+    const annualHabitIds = new Set(habits.filter(habit => habit.recurrenceType === 'YEARLY').map(habit => habit.id));
+    const annualCommitmentIds = new Set(commitments.filter(item => item.recurrence === 'YEARLY').map(item => item.id));
+    return buildTemporalCommitments(snapshot, startOfYear(anchorDate), endOfYear(anchorDate)).filter(item =>
+      (item.sourceType === 'habit' && annualHabitIds.has(item.sourceId))
+      || (item.sourceType === 'commitment' && annualCommitmentIds.has(item.sourceId)));
+  }, [snapshot, anchorDate, habits, commitments]);
+
+  const openCreateModal = () => setIsCreateModalOpen(true);
+  const handleCreateAnnualTask = (input: AnnualFormInput) => {
+    createAnnualEntry({ addHabit, addCommitment }, input);
+    setAnnualMessage(input.category === 'birthday' ? 'Aniversário adicionado à agenda.' : 'Ciclo anual criado. Abra Ciclos para registrar sua execução.');
     setIsCreateModalOpen(false);
-    setIsDraggingCloseHandle(false);
-    setDragStartY(null);
-    setDragOffsetY(0);
   };
-
-  const openCreateModal = () => {
-    setIsCreateModalOpen(true);
-    setIsDraggingCloseHandle(false);
-    setDragStartY(null);
-    setDragOffsetY(0);
-  };
-
-  const startCloseHandleDrag = (clientY: number) => {
-    setIsDraggingCloseHandle(true);
-    setDragStartY(clientY);
-    setDragOffsetY(0);
-  };
-
-  const moveCloseHandleDrag = (clientY: number) => {
-    if (!isDraggingCloseHandle || dragStartY == null) return;
-    const delta = Math.max(0, clientY - dragStartY);
-    setDragOffsetY(delta);
-  };
-
-  const endCloseHandleDrag = () => {
-    if (!isDraggingCloseHandle) return;
-
-    const shouldClose = dragOffsetY >= dragCloseThreshold;
-    setIsDraggingCloseHandle(false);
-    setDragStartY(null);
-
-    if (shouldClose) {
-      closeCreateModal();
-      return;
-    }
-
-    setDragOffsetY(0);
-  };
-
-  const handleCreateAnnualTask = () => {
-    const normalizedTitle = annualTaskTitle.trim();
-    if (!normalizedTitle) return;
-
-    const plannedDate = new Date(year, annualTaskMonth, Math.min(annualTaskDay, annualTaskMaxDay));
-
-    const repeat: AnnualEntryRepeat = isInfiniteRepeat ? 'infinite' : 'until';
-    let endDate: Date | null = null;
-
-    if (repeat === 'until') {
-      const rawEndDate = new Date(
-        repeatUntilYear,
-        repeatUntilMonth,
-        Math.min(repeatUntilDay, repeatUntilMaxDay)
-      );
-      endDate = rawEndDate < plannedDate ? plannedDate : rawEndDate;
-    }
-
-    const descriptionWithMarker = buildAnnualTaskDescription({
-      category: annualCategory,
-      repeat,
-      endDate,
-      notes: showDescriptionField ? annualTaskNotes : '',
-    });
-
-    const created = addTask({
-      title: normalizedTitle,
-      description: descriptionWithMarker,
-      baseValue: 1,
-      effortLevel: 2,
-      plannedTimeMinutes: 30,
-    });
-
-    updateTask(created.id, { createdAt: plannedDate });
-
-    setAnnualTaskTitle('');
-    setAnnualTaskNotes('');
-    setShowDescriptionField(false);
-    setIsInfiniteRepeat(true);
-    closeCreateModal();
-  };
-
-  const openRepeatUntilModal = () => {
-    setDraftRepeatUntilMonth(repeatUntilMonth);
-    setDraftRepeatUntilDay(repeatUntilDay);
-    setIsRepeatUntilModalOpen(true);
-  };
-
-  const confirmRepeatUntilModal = () => {
-    setRepeatUntilMonth(draftRepeatUntilMonth);
-    setRepeatUntilDay(Math.min(draftRepeatUntilDay, draftRepeatUntilMaxDay));
-    setRepeatUntilYear(year);
-    setIsRepeatUntilModalOpen(false);
-  };
-
-  const repeatUntilPreviewDate = useMemo(
-    () => new Date(repeatUntilYear, repeatUntilMonth, Math.min(repeatUntilDay, repeatUntilMaxDay)),
-    [repeatUntilDay, repeatUntilMaxDay, repeatUntilMonth, repeatUntilYear]
-  );
-  const repeatUntilPreviewAbbr = useMemo(() => {
-    return repeatUntilPreviewDate
-      .toLocaleDateString('pt-BR', { month: 'short' })
-      .replace('.', '')
-      .toUpperCase();
-  }, [repeatUntilPreviewDate]);
-
-  const shiftDraftMonth = (direction: 1 | -1) => {
-    setDraftRepeatUntilMonth((currentMonth) => {
-      const nextMonth = (currentMonth + direction + 12) % 12;
-      const maxDayInNextMonth = new Date(repeatUntilYear, nextMonth + 1, 0).getDate();
-      setDraftRepeatUntilDay((currentDay) => Math.min(currentDay, maxDayInNextMonth));
-      return nextMonth;
-    });
-  };
-
-  const shiftDraftDay = (direction: 1 | -1) => {
-    setDraftRepeatUntilDay((currentDay) => {
-      const max = new Date(repeatUntilYear, draftRepeatUntilMonth + 1, 0).getDate();
-      if (direction > 0) {
-        return currentDay >= max ? 1 : currentDay + 1;
-      }
-      return currentDay <= 1 ? max : currentDay - 1;
-    });
-  };
-
-  const applyWheelDragStep = (
-    dragRef: React.MutableRefObject<{ isActive: boolean; startY: number }>,
-    clientY: number,
-    onStep: (direction: 1 | -1) => void
-  ) => {
-    if (!dragRef.current.isActive) return;
-    const delta = clientY - dragRef.current.startY;
-    if (Math.abs(delta) < wheelStepPx) return;
-
-    const stepCount = Math.trunc(delta / wheelStepPx);
-    const direction = stepCount > 0 ? -1 : 1;
-    for (let index = 0; index < Math.abs(stepCount); index += 1) {
-      onStep(direction);
-    }
-
-    dragRef.current.startY += stepCount * wheelStepPx;
-  };
-
-  const monthLabel = (monthIndex: number) => {
-    return new Date(repeatUntilYear, monthIndex, 1)
-      .toLocaleDateString('pt-BR', { month: 'short' })
-      .replace('.', '')
-      .toUpperCase();
-  };
-
-  const prevDraftMonth = (draftRepeatUntilMonth + 11) % 12;
-  const nextDraftMonth = (draftRepeatUntilMonth + 1) % 12;
-  const prevDraftDay = draftRepeatUntilDay <= 1 ? draftRepeatUntilMaxDay : draftRepeatUntilDay - 1;
-  const nextDraftDay = draftRepeatUntilDay >= draftRepeatUntilMaxDay ? 1 : draftRepeatUntilDay + 1;
 
   return (
+    <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
     <TemporalLayout
       title="Temporal - Ano"
       subtitle="Acompanhe seus meses e guarde as datas que importam."
@@ -433,7 +204,7 @@ export const TemporalYearPage: React.FC = () => {
         <button
           type="button"
           aria-label="Ano anterior"
-          onClick={() => setYear((current) => current - 1)}
+          onClick={() => setYear(year - 1)}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -442,13 +213,14 @@ export const TemporalYearPage: React.FC = () => {
         <button
           type="button"
           aria-label="Próximo ano"
-          onClick={() => setYear((current) => current + 1)}
+          onClick={() => setYear(year + 1)}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
+      <p role="status" className="temporal-entry-status">{annualMessage}</p>
       <div className="temporal-year-stats">
         <article className={cardClass}>
           <p className="text-xs uppercase tracking-[0.16em] text-white/55">Concluído</p>
@@ -476,22 +248,37 @@ export const TemporalYearPage: React.FC = () => {
         <h3 className="temporal-section-title">Tarefas anuais e aniversários</h3>
 
         <div className="mt-3 flex justify-end">
-          <button
+          <DialogTrigger asChild><button
             type="button"
             onClick={openCreateModal}
             aria-label="Adicionar entrada anual"
             className="temporal-action"
           >
             Criar entrada anual
-          </button>
+          </button></DialogTrigger>
         </div>
 
+        {annualAgenda.length > 0 && <ul className="mt-3 space-y-2" aria-label={`Agenda anual de ${year}`}>
+          {annualAgenda.map(item => {
+            const habit = item.sourceType === 'habit' ? habits.find(habit => habit.id === item.sourceId) : undefined;
+            const commitment = item.sourceType === 'commitment' ? commitments.find(commitment => commitment.id === item.sourceId) : undefined;
+            const notes = habit?.description || commitment?.description;
+            const until = operationalDate(habit?.recurrenceConfig.until || commitment?.untilDate);
+            return <li key={item.id} className="rounded-xl border border-white/15 bg-black/15 p-3">
+              <p className="text-sm text-white">{item.title}</p>
+              <p className="mt-1 text-sm text-white/65">{item.date.toLocaleDateString('pt-BR')} · {habit ? 'Ciclo anual' : 'Lembrete anual'}</p>
+              {until && <p className="mt-1 text-sm text-white/65">Repete até {until.toLocaleDateString('pt-BR')}</p>}
+              {notes && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-white/70">{notes}</p>}
+              {habit && <Link className="inline-flex min-h-12 items-center text-sm text-mystic-gold underline" to={temporalActivityHref(item)!} state={{ temporalReturn: returnTo }}>Abrir ciclo nesta data</Link>}
+            </li>;
+          })}
+        </ul>}
         <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
-          {annualTasks.length === 0 ? (
+          {annualTasks.length === 0 && annualAgenda.length === 0 ? (
             <div className="md:col-span-2">
               <div className="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/20 bg-black/20 px-6 py-8 text-center">
                 <p className="text-lg font-semibold text-white">Nenhuma entrada anual cadastrada para {year}</p>
-                <p className="mt-2 text-sm text-white/65">Crie tarefas recorrentes e aniversários para organizar o ano.</p>
+                <p className="mt-2 text-sm text-white/65">Crie ciclos anuais e lembretes de aniversário para organizar o ano.</p>
                 <button
                   type="button"
                   onClick={openCreateModal}
@@ -503,7 +290,7 @@ export const TemporalYearPage: React.FC = () => {
             </div>
           ) : (
             annualTasks.map((task) => {
-              const plannedDate = toValidDate(task.createdAt);
+              const plannedDate = toValidDate(task.dueDate ?? task.createdAt);
               const parsed = parseAnnualEntry(task.description);
 
               return (
@@ -529,9 +316,7 @@ export const TemporalYearPage: React.FC = () => {
                   </p>
 
                   <p className="mt-1 text-xs text-white/60">
-                    {parsed.repeat === 'until' && parsed.endDate
-                      ? `Repete até ${parsed.endDate.toLocaleDateString('pt-BR')}`
-                      : 'Repetição infinita'}
+                    Registro anterior: a repetição ainda não está configurada como Ciclo. Histórico preservado.
                   </p>
 
                   {parsed.notes ? (
@@ -544,285 +329,11 @@ export const TemporalYearPage: React.FC = () => {
         </div>
       </section>
 
-      {isCreateModalOpen ? (
-        <div
-          className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm"
-          onWheel={(event) => {
-            // Prevent wheel scroll from reaching the page behind the modal.
-            event.stopPropagation();
-          }}
-        >
-          <div
-            className={`h-full w-full overflow-hidden bg-[#080b12] ${isDraggingCloseHandle ? '' : 'transition-transform duration-200'}`}
-            style={{ transform: `translateY(${dragOffsetY}px)` }}
-          >
-            <div
-              className="flex cursor-grab items-center justify-center border-b border-white/10 px-4 py-4 active:cursor-grabbing"
-              style={{ touchAction: 'none' }}
-              onPointerDown={(event) => {
-                event.preventDefault();
-                event.currentTarget.setPointerCapture(event.pointerId);
-                startCloseHandleDrag(event.clientY);
-              }}
-              onPointerMove={(event) => {
-                event.preventDefault();
-                moveCloseHandleDrag(event.clientY);
-              }}
-              onPointerUp={(event) => {
-                event.preventDefault();
-                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                  event.currentTarget.releasePointerCapture(event.pointerId);
-                }
-                endCloseHandleDrag();
-              }}
-              onPointerCancel={(event) => {
-                event.preventDefault();
-                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                  event.currentTarget.releasePointerCapture(event.pointerId);
-                }
-                endCloseHandleDrag();
-              }}
-            >
-              <span className="h-1.5 w-16 rounded-full bg-white/40" />
-            </div>
-
-            <div className="mx-auto flex h-[calc(100%-60px)] w-full max-w-3xl flex-col px-4 py-5">
-              <div className="flex items-center justify-between gap-3">
-                <h4 className="text-lg font-semibold text-white">Nova entrada anual</h4>
-                <button
-                  type="button"
-                  onClick={closeCreateModal}
-                  className="rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white/85 hover:bg-white/10"
-                >
-                  Fechar
-                </button>
-              </div>
-
-              <div className="mt-4 overflow-y-auto pb-8">
-                <div className="grid grid-cols-1 gap-2 md:grid-cols-4">
-                  <select
-                    value={annualCategory}
-                    onChange={(event) => setAnnualCategory(event.target.value as AnnualEntryCategory)}
-                    className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-white"
-                  >
-                    <option value="task" className="bg-zinc-900 text-white">Tarefa anual</option>
-                    <option value="birthday" className="bg-zinc-900 text-white">Aniversário</option>
-                  </select>
-
-                  <input
-                    type="text"
-                    value={annualTaskTitle}
-                    onChange={(event) => setAnnualTaskTitle(event.target.value)}
-                    placeholder={annualCategory === 'birthday' ? 'Nome da pessoa' : 'Nome da tarefa'}
-                    className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-white placeholder:text-white/40 md:col-span-3"
-                  />
-                </div>
-
-                <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-3">
-                  <select
-                    value={annualTaskDay}
-                    onChange={(event) => setAnnualTaskDay(Number(event.target.value))}
-                    className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-white"
-                  >
-                    {Array.from({ length: annualTaskMaxDay }, (_, index) => index + 1).map((day) => (
-                      <option key={day} value={day} className="bg-zinc-900 text-white">
-                        Dia {day}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={annualTaskMonth}
-                    onChange={(event) => setAnnualTaskMonth(Number(event.target.value))}
-                    className="rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-white"
-                  >
-                    {Array.from({ length: 12 }, (_, index) => {
-                      const monthDate = new Date(year, index, 1);
-                      return (
-                        <option key={index} value={index} className="bg-zinc-900 text-white">
-                          {monthDate.toLocaleDateString('pt-BR', { month: 'long' })}
-                        </option>
-                      );
-                    })}
-                  </select>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowDescriptionField((current) => !current)}
-                    className="rounded-lg border border-white/20 bg-white/5 px-3 py-2 text-sm text-white/90 hover:bg-white/10"
-                  >
-                    {showDescriptionField ? 'Remover descrição' : 'Adicionar descrição'}
-                  </button>
-                </div>
-
-                {showDescriptionField ? (
-                  <textarea
-                    value={annualTaskNotes}
-                    onChange={(event) => setAnnualTaskNotes(event.target.value)}
-                    placeholder="Descreva sua tarefa..."
-                    className="mt-2 min-h-[140px] w-full rounded-lg border border-white/15 bg-black/25 px-3 py-2 text-sm text-white placeholder:text-white/40"
-                  />
-                ) : null}
-
-                <div className="mt-3 rounded-xl border border-white/10 bg-black/15 p-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsInfiniteRepeat((current) => {
-                        const next = !current;
-                        if (next) setIsRepeatUntilModalOpen(false);
-                        return next;
-                      });
-                    }}
-                    className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-white/90 hover:bg-white/10"
-                  >
-                    {isInfiniteRepeat ? 'Repetição infinita: ativada' : 'Repetição infinita: desativada'}
-                  </button>
-                  <p className="mt-1 text-xs text-white/60">Permite repetir esta tarefa sem limite.</p>
-
-                  {!isInfiniteRepeat ? (
-                    <div className="mt-2">
-                      <button
-                        type="button"
-                        onClick={openRepeatUntilModal}
-                        className="w-full rounded-xl border border-mystic-gold/45 bg-mystic-gold/10 px-3 py-3 text-left hover:bg-mystic-gold/20"
-                      >
-                        <p className="text-xs uppercase tracking-[0.14em] text-mystic-gold/80">Repetir em</p>
-                        <p className="mt-1 text-base font-semibold text-mystic-gold">
-                          {repeatUntilPreviewAbbr} {repeatUntilPreviewDate.getDate()}
-                        </p>
-                        <p className="text-xs text-mystic-gold/85">
-                          {repeatUntilPreviewDate.toLocaleDateString('pt-BR', { month: 'long' })} {repeatUntilPreviewDate.getDate()}
-                        </p>
-                      </button>
-                    </div>
-                  ) : null}
-                </div>
-
-                {isRepeatUntilModalOpen ? (
-                  <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm">
-                    <div className="mx-auto flex h-full w-full max-w-2xl flex-col bg-[#0f0b1d]">
-                      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-                        <button
-                          type="button"
-                          onClick={() => setIsRepeatUntilModalOpen(false)}
-                          className="rounded-md border border-white/20 px-3 py-1.5 text-xs text-white/85 hover:bg-white/10"
-                        >
-                          Cancelar
-                        </button>
-                        <p className="text-sm font-medium text-white">Repetir em</p>
-                        <button
-                          type="button"
-                          onClick={confirmRepeatUntilModal}
-                          className="rounded-md border border-mystic-gold/45 bg-mystic-gold/20 px-3 py-1.5 text-xs font-medium text-mystic-gold hover:bg-mystic-gold/30"
-                        >
-                          Repetir em
-                        </button>
-                      </div>
-
-                      <div className="grid flex-1 grid-cols-2 gap-3 px-4 py-4">
-                        <div
-                          className="rounded-xl border border-white/10 bg-black/20 p-2"
-                          style={{ touchAction: 'none' }}
-                          onWheel={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            shiftDraftMonth(event.deltaY > 0 ? 1 : -1);
-                          }}
-                          onPointerDown={(event) => {
-                            event.preventDefault();
-                            event.currentTarget.setPointerCapture(event.pointerId);
-                            monthWheelDragRef.current = { isActive: true, startY: event.clientY };
-                          }}
-                          onPointerMove={(event) => {
-                            event.preventDefault();
-                            applyWheelDragStep(monthWheelDragRef, event.clientY, shiftDraftMonth);
-                          }}
-                          onPointerUp={(event) => {
-                            event.preventDefault();
-                            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                              event.currentTarget.releasePointerCapture(event.pointerId);
-                            }
-                            monthWheelDragRef.current.isActive = false;
-                          }}
-                          onPointerCancel={(event) => {
-                            event.preventDefault();
-                            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                              event.currentTarget.releasePointerCapture(event.pointerId);
-                            }
-                            monthWheelDragRef.current.isActive = false;
-                          }}
-                        >
-                          <p className="px-2 pb-2 text-xs uppercase tracking-[0.14em] text-white/55">Mês</p>
-                          <div className="flex h-28 flex-col items-center justify-center rounded-lg border border-white/10 bg-black/25">
-                            <p className="text-xs text-white/45">{monthLabel(prevDraftMonth)}</p>
-                            <p className="my-1 rounded-md border border-mystic-gold/45 bg-mystic-gold/20 px-4 py-1 text-lg font-semibold text-mystic-gold">
-                              {monthLabel(draftRepeatUntilMonth)}
-                            </p>
-                            <p className="text-xs text-white/45">{monthLabel(nextDraftMonth)}</p>
-                          </div>
-                        </div>
-
-                        <div
-                          className="rounded-xl border border-white/10 bg-black/20 p-2"
-                          style={{ touchAction: 'none' }}
-                          onWheel={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                            shiftDraftDay(event.deltaY > 0 ? 1 : -1);
-                          }}
-                          onPointerDown={(event) => {
-                            event.preventDefault();
-                            event.currentTarget.setPointerCapture(event.pointerId);
-                            dayWheelDragRef.current = { isActive: true, startY: event.clientY };
-                          }}
-                          onPointerMove={(event) => {
-                            event.preventDefault();
-                            applyWheelDragStep(dayWheelDragRef, event.clientY, shiftDraftDay);
-                          }}
-                          onPointerUp={(event) => {
-                            event.preventDefault();
-                            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                              event.currentTarget.releasePointerCapture(event.pointerId);
-                            }
-                            dayWheelDragRef.current.isActive = false;
-                          }}
-                          onPointerCancel={(event) => {
-                            event.preventDefault();
-                            if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                              event.currentTarget.releasePointerCapture(event.pointerId);
-                            }
-                            dayWheelDragRef.current.isActive = false;
-                          }}
-                        >
-                          <p className="px-2 pb-2 text-xs uppercase tracking-[0.14em] text-white/55">Dia</p>
-                          <div className="flex h-28 flex-col items-center justify-center rounded-lg border border-white/10 bg-black/25">
-                            <p className="text-xs text-white/45">{prevDraftDay}</p>
-                            <p className="my-1 rounded-md border border-mystic-gold/45 bg-mystic-gold/20 px-6 py-1 text-lg font-semibold text-mystic-gold">
-                              {draftRepeatUntilDay}
-                            </p>
-                            <p className="text-xs text-white/45">{nextDraftDay}</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="mt-4">
-                  <button
-                    type="button"
-                    onClick={handleCreateAnnualTask}
-                    className="rounded-lg border border-mystic-gold/45 bg-mystic-gold/20 px-4 py-2 text-sm font-medium text-mystic-gold hover:bg-mystic-gold/30"
-                  >
-                    Criar entrada anual
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
+        <DialogContent className="temporal-entry-dialog" aria-labelledby="annual-form-title" aria-describedby="annual-form-description">
+          <DialogTitle id="annual-form-title">Nova entrada anual</DialogTitle>
+          <DialogDescription id="annual-form-description">Guarde uma data importante ou planeje um ciclo que se repete a cada ano.</DialogDescription>
+          <AnnualEntryForm initialDate={new Date(year, now.getMonth(), Math.min(now.getDate(), new Date(year, now.getMonth() + 1, 0).getDate()))} onSave={handleCreateAnnualTask} onCancel={() => setIsCreateModalOpen(false)} />
+        </DialogContent>
 
       <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
         <h3 className="temporal-section-title">O ritmo dos seus hábitos</h3>
@@ -845,9 +356,10 @@ export const TemporalYearPage: React.FC = () => {
       <section className="temporal-section" aria-labelledby="year-months-title">
         <div className="temporal-section-heading"><h3 id="year-months-title">Seus doze capítulos</h3><span>Abra um mês para explorar seus registros</span></div>
         <div className="temporal-month-grid">
-          {months.map(({ monthDate, metrics }) => <MonthShowcase key={`${year}-${monthDate.getMonth()}`} date={monthDate} completed={metrics.totals.totalCompleted} commitments={metrics.totals.commitments} score={metrics.totals.score} current={year === now.getFullYear() && monthDate.getMonth() === now.getMonth()} />)}
+          {months.map(({ monthDate, metrics }) => <MonthShowcase returnTo={returnTo} key={`${year}-${monthDate.getMonth()}`} date={monthDate} completed={metrics.totals.totalCompleted} commitments={metrics.totals.commitments} score={metrics.totals.score} current={year === now.getFullYear() && monthDate.getMonth() === now.getMonth()} />)}
         </div>
       </section>
     </TemporalLayout>
+    </Dialog>
   );
 };

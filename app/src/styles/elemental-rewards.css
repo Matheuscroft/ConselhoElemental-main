@@ -1,0 +1,37 @@
+/* Shared receipts: motion presents stored results, never awards or delays them. */
+.elemental-reward-summary { position: relative; padding: 14px; margin-block: 12px; border: 1px solid rgb(var(--el-gold) / .25); border-radius: 18px; background: linear-gradient(130deg,rgb(var(--el-gold) / .07),rgb(var(--el-surface) / .86)); color: rgb(var(--el-text)); overflow: hidden; }
+.elemental-reward-value { display: flex; align-items: center; gap: 12px; }
+.elemental-reward-sigil { display: grid; place-items: center; flex: 0 0 44px; height: 44px; color: rgb(var(--el-gold)); border: 1px solid rgb(var(--el-gold) / .35); border-radius: 14px; }
+.elemental-reward-value > div { min-width: 0; }
+.elemental-reward-label,.elemental-reward-value small { display: block; font-size: .8rem; color: rgb(var(--el-muted)); }
+.elemental-reward-value strong { display: block; font-size: clamp(1.15rem,5vw,1.65rem); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: rgb(var(--el-gold)); }
+.elemental-reward-elements { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.elemental-reward-elements > span { display: inline-flex; align-items: center; gap: 5px; font-size: .8rem; border-radius: 16px; padding: 4px 8px; background: #ffffff08; }
+.elemental-reward-elements [data-element=terra] { color: var(--element-terra); }
+.elemental-reward-elements [data-element=fogo] { color: var(--element-fogo); }
+.elemental-reward-elements [data-element=agua] { color: var(--element-agua); }
+.elemental-reward-elements [data-element=ar] { color: var(--element-ar); }
+.elemental-reward-progress { margin-top: 14px; font-size: .8rem; color: rgb(var(--el-muted)); }
+.elemental-reward-progress > div:first-child { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin-bottom: 7px; }
+.elemental-reward-track { height: 7px; overflow: hidden; background: #0005; border-radius: 99px; }
+.elemental-reward-track > span { display: block; width: 100%; height: 100%; transform-origin: left; border-radius: inherit; background: linear-gradient(90deg,var(--element-ar),rgb(var(--el-gold))); transition: transform 280ms ease-out; }
+.elemental-reward-level { display: grid; gap: 3px; margin-top: 12px; color: rgb(var(--el-gold)); }
+.elemental-reward-level > span { font-size: .8rem; }
+.elemental-reward-summary.is-level-up { border-color: rgb(var(--el-gold) / .7); }
+.elemental-reward-summary.is-fresh { animation: elemental-reward-arrive 240ms ease-out both; }
+.elemental-reward-summary.is-fresh:not(.is-reversal) .elemental-reward-sigil { animation: elemental-reward-seal 380ms ease-out both; }
+.elemental-reward-summary.is-reversal .elemental-reward-value strong { color: rgb(var(--el-text)); }
+.elemental-reward-region { position: fixed; left: 1rem; right: 1rem; bottom: calc(6rem + env(safe-area-inset-bottom)); z-index: 100; display: flex; justify-content: center; pointer-events: none; }
+.elemental-reward-notice { width: min(100%,390px); max-height: 55dvh; overflow-y: auto; padding: 12px; border-radius: 20px; background: rgb(var(--el-surface) / .97); border: 1px solid rgb(var(--el-gold) / .5); box-shadow: 0 8px 30px #0005; pointer-events: auto; }
+.elemental-reward-notice .elemental-reward-summary { margin-bottom: 0; }
+.elemental-reward-heading { display: flex; align-items: flex-start; gap: 8px; }
+.elemental-reward-heading > div { flex: 1; min-width: 0; }
+.elemental-reward-heading strong,.elemental-reward-heading small { display: block; overflow-wrap: anywhere; }
+.elemental-reward-heading strong { font-size: .9rem; color: rgb(var(--el-gold)); }
+.elemental-reward-heading small { color: rgb(var(--el-muted)); margin-top: 4px; }
+.elemental-reward-heading button { display: grid; place-items: center; flex: 0 0 44px; min-height: 44px; border-radius: 12px; }
+.elemental-reward-heading button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; }
+.quest-receipt-stats.quest-receipt-secondary-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+@keyframes elemental-reward-arrive { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes elemental-reward-seal { from { opacity: .4; transform: scale(.9) rotate(-6deg); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .elemental-reward-summary.is-fresh,.elemental-reward-summary.is-fresh .elemental-reward-sigil { animation: none; } .elemental-reward-track > span { transition: none; } }

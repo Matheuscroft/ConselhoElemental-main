@@ -1,3 +1,4 @@
+import { AchievementCompletion } from './AchievementCompletion';
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,11 +13,12 @@ import { buildQuestTrails, type QuestStep } from './quest-path';
 import { appendQuestStep, finishQuestStep } from './quest-commands';
 import { ActivityGuide } from './ActivityGuide';
 import { QuestTrailMap } from './QuestTrailMap';
-import { QuestRune, QuestVictorySeal } from './QuestRune';
-import { QuestProgress, QuestResultStats } from './QuestResultStats';
+import { QuestRune } from './QuestRune';
+import { QuestProgress } from './QuestResultStats';
+import { QuestCompletionBody, type QuestReceipt } from './QuestCompletionBody';
+import { describeQuestMilestone } from './quest-milestone';
 import './quests.css';
 
-type Receipt = NonNullable<ReturnType<typeof finishQuestStep>>;
 export function QuestHub({ onManageTask }: { onManageTask: (id: string) => void }) {
   const state = useAppStore(useShallow(s => ({
     tasks: s.tasks, habits: s.habits, quests: s.quests, projects: s.projects,
@@ -31,7 +33,7 @@ export function QuestHub({ onManageTask }: { onManageTask: (id: string) => void 
   const trail = trails.find(t => t.key === params.get('trilha')) ?? trails.find(t => !t.completed && !t.archived) ?? trails[0];
   const selected = trail?.steps.find(s => s.key === params.get('etapa')) ?? trail?.next ?? trail?.steps[0];
   const [timerId, setTimerId] = useState<string | null>(null);
-  const [receipt, setReceipt] = useState<Receipt | null>(null);
+  const [receipt, setReceipt] = useState<QuestReceipt | null>(null);
   const [message, setMessage] = useState('');
   const returnFocus = useRef<HTMLElement | null>(null);
   const hubTitle = useRef<HTMLHeadingElement>(null);
@@ -59,9 +61,18 @@ export function QuestHub({ onManageTask }: { onManageTask: (id: string) => void 
   };
   const finish = () => {
     if (!timerId) return;
+    const before = useAppStore.getState();
+    const beforeTrails = buildQuestTrails(before);
+    const belongs = (item: ReturnType<typeof buildQuestTrails>[number]) => item.steps.some(step => step.kind === 'task' && step.id === timerId);
+    const sourceTrail = beforeTrails.find(item => item.key === trail?.key && belongs(item)) ?? beforeTrails.find(belongs);
+    const levelBefore = before.getLevelProgress().level;
     const result = finishQuestStep(useAppStore.getState, currentAccountId, timerId);
     setTimerId(null);
-    if (result) setReceipt(result);
+    if (result) {
+      const after = useAppStore.getState();
+      const updatedTrail = buildQuestTrails(after).find(item => item.key === sourceTrail?.key);
+      setReceipt({ ...result, milestone: describeQuestMilestone(sourceTrail, updatedTrail, timerId, levelBefore, after.getLevelProgress().level) });
+    }
     else setMessage('A conclusão não foi registrada. Confira a atividade na lista de Rituais.');
   };
   const restoreFocus = (event: Event) => {
@@ -95,13 +106,26 @@ export function QuestHub({ onManageTask }: { onManageTask: (id: string) => void 
         <div className="quest-board-body"><p className="quest-freedom">{trail.archived ? 'Trilha arquivada. Seu percurso continua disponível para consulta.' : trail.completed ? 'Trilha concluída. Explore o percurso e seus resultados.' : 'A próxima etapa é uma sugestão. Você pode escolher qualquer ritual.'}</p>
           {trail.steps.length ? <QuestTrailMap trail={trail} selectedKey={selected?.key} onSelect={key => select(trail.key, key)} detail={detail} /> : <div className="quest-empty"><ArcaneIcon name="jornada" size={42} /><h3>O primeiro passo é seu</h3><p>Adicione um ritual para começar a desenhar esta trilha.</p></div>}
           {!trail.archived && !trail.completed && <AppendStep key={trail.key} trail={trail} accountId={currentAccountId} />}
+          <AchievementCompletion kind={trail.kind} id={trail.id} />
           <Link className="quest-origin" to={trail.kind === 'project' ? '/grandes-obras' : '/jornadas'}>Gerenciar {trail.kind === 'project' ? 'Grandes Obras e capítulos' : 'Jornadas'}<ArrowRight size={16} /></Link>
         </div>
       </div>
     </> : <div className="quest-empty quest-board"><span className="quest-empty-seal"><ArcaneIcon name="jornada" size={64} /></span><h2>Uma grande conquista começa com um ritual</h2><p>Crie uma Jornada ou Grande Obra e organize seus rituais em etapas. Sua próxima ação também aparecerá no Santuário.</p><p>Jornadas organizam conquistas. Grandes Obras reúnem projetos com capítulos.</p></div>}
     <nav className="quest-related" aria-label="Organização das conquistas"><Link to="/jornadas"><ArcaneIcon name="jornada" />Jornadas</Link><Link to="/grandes-obras"><ArcaneIcon name="obra" />Grandes Obras</Link><Link to="/grimorio#grimoire-history"><ArcaneIcon name="grimorio" />Meu histórico</Link></nav>
     <Dialog open={ownsTimer && !!timerTask} onOpenChange={open => { if (!open) setTimerId(null); }}><DialogContent className="elemental-timer-dialog quest-timer-dialog max-w-sm" onCloseAutoFocus={event => { if (receipt) event.preventDefault(); else restoreFocus(event); }} aria-labelledby="quest-timer-title" aria-describedby="quest-timer-description"><DialogHeader><DialogTitle id="quest-timer-title">Ritual em andamento</DialogTitle><DialogDescription id="quest-timer-description">Seu tempo continua registrado ao fechar esta janela.</DialogDescription></DialogHeader>{timerTask && <ElementalTimer title={timerTask.title} element={timerTask.elementId} time={formatTime(timer.elapsedSeconds)} running={timer.isRunning} onToggle={() => toggleRitualTimer(useAppStore.getState, { accountId: currentAccountId, taskId: timerTask.id })} onComplete={finish} />}</DialogContent></Dialog>
-    <Dialog open={!!receipt} onOpenChange={open => { if (!open) setReceipt(null); }}><DialogContent className="quest-dialog quest-receipt" onCloseAutoFocus={restoreFocus} aria-labelledby="quest-receipt-title" aria-describedby="quest-receipt-description"><DialogHeader><QuestVictorySeal /><DialogTitle id="quest-receipt-title">Mais um passo realizado</DialogTitle><DialogDescription id="quest-receipt-description">{receipt?.title}</DialogDescription></DialogHeader>{receipt && <><QuestResultStats xp={receipt.xp} points={receipt.points} minutes={receipt.minutes} /><p>Resultado já registrado no seu Grimório.</p><button className="quest-primary" onClick={() => { focusNext.current = true; setReceipt(null); if (trail) select(trail.key, trail.next?.key); }}>{trail?.next ? 'Ver próxima etapa' : 'Voltar à trilha'}<ArrowRight size={17} /></button></>}</DialogContent></Dialog>
+    <Dialog open={!!receipt} onOpenChange={open => { if (!open) setReceipt(null); }}>
+      <DialogContent className="quest-dialog quest-receipt" onCloseAutoFocus={restoreFocus} aria-labelledby="quest-receipt-title" aria-describedby="quest-receipt-description">
+        {receipt && <QuestCompletionBody receipt={receipt}
+          nextTitle={trails.find(item => item.key === receipt.milestone.trail?.key)?.next?.title}
+          onDismiss={() => setReceipt(null)}
+          onContinue={() => {
+            const destination = trails.find(item => item.key === receipt.milestone.trail?.key);
+            focusNext.current = Boolean(destination);
+            setReceipt(null);
+            if (destination) select(destination.key, destination.next?.key);
+          }} />}
+      </DialogContent>
+    </Dialog>
   </section>;
 }
 

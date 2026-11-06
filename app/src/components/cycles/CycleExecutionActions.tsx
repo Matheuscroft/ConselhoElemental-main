@@ -12,7 +12,7 @@ export function CycleExecutionActions({ name, completed, startLabel = 'Iniciar',
   return (
     <div className="cycle-execution-actions" data-completed={completed}>
       {!completed && (
-        <button type="button" className="cycle-start-action" aria-label={`${startLabel} ${name}`} onClick={event => { event.stopPropagation(); onStart(); }}>
+        <button type="button" className="cycle-start-action elemental-press" aria-label={`${startLabel} ${name}`} onClick={event => { event.stopPropagation(); onStart(); }}>
           <Play size={17} aria-hidden="true" />{startLabel}
         </button>
       )}

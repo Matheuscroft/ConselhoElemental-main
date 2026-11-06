@@ -14,7 +14,7 @@
 .grimoire-page-heading h1 { font-size: clamp(26px, 4.2cqi, 36px); }
 .grimoire-page-heading p, .grimoire-section-heading p { color: rgb(var(--el-muted)); font-size: 14px; line-height: 1.6; margin-top: 5px; max-width: 60ch; }
 .grimoire-page-heading > svg, .grimoire-section-heading > svg { color: rgb(var(--el-gold)); flex-shrink: 0; }
-.grimoire-index { display: flex; gap: 6px; margin: 22px 0 18px; border-bottom: 1px solid var(--grimoire-line); }
+.grimoire-index { display: flex; flex-wrap: wrap; gap: 6px; margin: 22px 0 18px; border-bottom: 1px solid var(--grimoire-line); }
 .grimoire-index a { padding: 12px 10px; min-height: 44px; color: rgb(var(--el-muted)); font-size: 13px; border-bottom: 2px solid transparent; }
 .grimoire-index a:hover { border-color: rgb(var(--el-gold)); color: rgb(var(--el-gold)); }
 .grimoire-sheet {

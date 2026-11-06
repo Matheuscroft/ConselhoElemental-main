@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Check } from 'lucide-react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
+import { WorkoutSetReceipt } from './WorkoutSetReceipt';
+import { wasSetRecorded } from './set-command-result';
 import { cn } from '@/lib/utils';
 import { FitnessButton } from './FitnessButton';
-import type { ExerciseLoadMode, ExerciseMeasureMode, PerformedSet } from '@/types/workout';
+import type { ExerciseLoadMode, ExerciseMeasureMode, PerformedSet, WorkoutSession } from '@/types/workout';
 
 export interface SetCompletionValues {
   loadKg: number;
@@ -20,8 +21,8 @@ interface ExerciseSetRowProps {
   restSeconds: number;
   activity?: boolean;
   distanceUnit?: 'm' | 'km';
-  onComplete: (values: SetCompletionValues) => void;
-  onSkip: () => void;
+  onComplete: (values: SetCompletionValues) => WorkoutSession | undefined;
+  onSkip: () => WorkoutSession | undefined;
 }
 
 interface FieldProps {
@@ -63,53 +64,75 @@ export const ExerciseSetRow: React.FC<ExerciseSetRowProps> = ({ set, measureMode
   const [distance, setDistance] = useState(set.distanceMeters ?? 0);
   const [notes, setNotes] = useState(set.activityNotes ?? '');
   const isDone = set.completed || Boolean(set.skipped);
-
-  if (isDone) return <div className="rounded-xl bg-fitness-canvas/50 px-4 py-3 text-sm text-fitness-muted">{activity ? 'Bloco' : 'Série'} {set.setNumber} · {set.skipped ? 'Pulado' : 'Concluído'}{set.completed && (set.durationSeconds ?? 0) > 0 ? ` · ${((set.durationSeconds ?? 0)/60).toFixed(1)} min` : ''}{set.perceivedExertion ? ` · esforço ${set.perceivedExertion}/10` : ''}</div>;
+  const [error, setError] = useState('');
+  const row = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<string | null>(null);
+  const commandPending = useRef(false);
+  useLayoutEffect(() => {
+    if (isDone && pendingFocus.current === set.id) row.current?.focus({ preventScroll: true });
+    pendingFocus.current = null;
+    if (!isDone) commandPending.current = false;
+  }, [isDone, set.id]);
+  const submit = (action: 'complete' | 'skip') => {
+    if (isDone || commandPending.current) return;
+    commandPending.current = true;
+    try {
+      const result = action === 'complete'
+        ? onComplete({ loadKg, reps, durationSeconds, perceivedExertion: effort || undefined, distanceMeters: distance, activityNotes: notes })
+        : onSkip();
+      if (!wasSetRecorded(result, set.id, action)) throw new Error('Set not recorded');
+      pendingFocus.current = set.id;
+      setError('');
+    } catch {
+      commandPending.current = false;
+      pendingFocus.current = null;
+      setError(action === 'complete' ? 'Não foi possível registrar. Confira os valores e tente novamente.' : 'Não foi possível pular. Confira se o treino continua em andamento e tente novamente.');
+    }
+  };
 
   return (
-    <div className={cn('rounded-2xl p-4', set.completed ? 'bg-fitness-green/10' : 'bg-fitness-surface-muted', set.skipped && 'opacity-60')}>
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-base font-medium text-fitness-text">{activity ? 'Bloco' : 'Série'} {set.setNumber}</span>
-        {set.completed && (
-          <span className="flex items-center gap-1 text-sm text-fitness-green">
-            <Check className="h-4 w-4" aria-hidden="true" /> Concluída
-          </span>
-        )}
-        {set.skipped && <span className="text-sm text-fitness-muted">Pulada</span>}
-      </div>
-
-      <div className={cn("mb-3 grid gap-3", loadMode === 'weighted' ? 'grid-cols-3' : 'grid-cols-2')}>
-        {loadMode === 'weighted' && (
-          <NumberField label="Carga (kg)" ariaLabel={`Carga da série ${set.setNumber}`} value={loadKg} disabled={isDone} onChange={setLoadKg} />
-        )}
-        {measureMode === 'reps' ? (
-          <NumberField label="Repetições" ariaLabel={`Repetições da série ${set.setNumber}`} value={reps} disabled={isDone} onChange={setReps} />
-        ) : (
-          <NumberField label={activity ? "Tempo ativo (min)" : "Segundos"} ariaLabel={`Duração da série ${set.setNumber}`} value={durationSeconds / (activity ? 60 : 1)} disabled={isDone} onChange={(value)=>setDurationSeconds(value*(activity ? 60 : 1))} />
-        )}
-        <div>
-          <span className="mb-1 block text-xs text-fitness-muted">Descanso</span>
-          <p className="flex h-11 items-center text-base text-fitness-text-soft">{restSeconds}s</p>
+    <div ref={row} tabIndex={isDone ? -1 : undefined} role={isDone ? 'group' : undefined}
+      aria-label={isDone ? `Resultado ${activity ? 'do bloco' : 'da série'} ${set.setNumber}` : undefined}>
+      <WorkoutSetReceipt set={set} activity={activity} />
+      {!isDone && <div className="rounded-2xl bg-fitness-surface-muted p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-base font-medium text-fitness-text">{activity ? 'Bloco' : 'Série'} {set.setNumber}</span>
         </div>
-      </div>
 
-      <div className="mb-3 space-y-3">
-        {measureMode === 'reps' && <NumberField label="Tempo ativo (s, opcional)" ariaLabel={`Tempo ativo da série ${set.setNumber}`} value={durationSeconds} disabled={isDone} onChange={setDurationSeconds} />}
-        <label className="block text-xs text-fitness-muted">Esforço percebido (1–10){!activity && ' · opcional'}<select aria-label={`Esforço do bloco ${set.setNumber}`} value={effort} disabled={isDone} onChange={(event)=>setEffort(Number(event.target.value))} className="mt-1 h-11 w-full rounded-xl bg-fitness-canvas px-3 text-base text-fitness-text"><option value={0}>Selecione o esforço</option>{Array.from({length:10},(_,index)=><option key={index+1} value={index+1}>{index+1}{index===0?' · muito leve':index===4?' · moderado':index===9?' · máximo':''}</option>)}</select></label>
-        {distanceUnit && <NumberField label={`Distância (${distanceUnit}, opcional)`} ariaLabel={`Distância do bloco ${set.setNumber}`} value={distance/(distanceUnit==='km'?1000:1)} disabled={isDone} onChange={(value)=>setDistance(value*(distanceUnit==='km'?1000:1))} />}
-        <label className="block text-xs text-fitness-muted">O que você fez? (opcional)<textarea aria-label={`Descrição do bloco ${set.setNumber}`} value={notes} maxLength={2000} disabled={isDone} onChange={(event)=>setNotes(event.target.value)} placeholder="Técnica, terreno, ritmo, estilo de nado…" className="mt-1 min-h-20 w-full rounded-xl bg-fitness-canvas p-3 text-sm text-fitness-text focus-visible:outline-fitness-primary" /></label>
-        {activity && !isDone && !effort && <p className="text-xs text-fitness-muted">Informe o esforço e o tempo realmente praticado para registrar este bloco.</p>}
-      </div>
-      {!isDone && (
-        <div className="flex gap-3">
-          <FitnessButton size="md" className="flex-1 !h-12 !px-3 !text-sm !shadow-none" disabled={activity && (!effort || durationSeconds <= 0)} onClick={() => onComplete({ loadKg, reps, durationSeconds, perceivedExertion: effort || undefined, distanceMeters: distance, activityNotes: notes })}>
-            {activity ? 'Concluir bloco' : 'Concluir série'}
-          </FitnessButton>
-          <FitnessButton size="md" variant="secondary" className="bg-fitness-canvas !h-12 !px-4 !text-sm" onClick={onSkip}>
-            Pular
-          </FitnessButton>
+        <div className={cn("mb-3 grid gap-3", loadMode === 'weighted' ? 'grid-cols-3' : 'grid-cols-2')}>
+          {loadMode === 'weighted' && (
+            <NumberField label="Carga (kg)" ariaLabel={`Carga da série ${set.setNumber}`} value={loadKg} disabled={isDone} onChange={setLoadKg} />
+          )}
+          {measureMode === 'reps' ? (
+            <NumberField label="Repetições" ariaLabel={`Repetições da série ${set.setNumber}`} value={reps} disabled={isDone} onChange={setReps} />
+          ) : (
+            <NumberField label={activity ? "Tempo ativo (min)" : "Segundos"} ariaLabel={`Duração da série ${set.setNumber}`} value={durationSeconds / (activity ? 60 : 1)} disabled={isDone} onChange={(value)=>setDurationSeconds(value*(activity ? 60 : 1))} />
+          )}
+          <div>
+            <span className="mb-1 block text-xs text-fitness-muted">Descanso</span>
+            <p className="flex h-11 items-center text-base text-fitness-text-soft">{restSeconds}s</p>
+          </div>
         </div>
-      )}
+
+        <div className="mb-3 space-y-3">
+          {measureMode === 'reps' && <NumberField label="Tempo ativo (s, opcional)" ariaLabel={`Tempo ativo da série ${set.setNumber}`} value={durationSeconds} disabled={isDone} onChange={setDurationSeconds} />}
+          <label className="block text-xs text-fitness-muted">Esforço percebido (1–10){!activity && ' · opcional'}<select aria-label={`Esforço do bloco ${set.setNumber}`} value={effort} disabled={isDone} onChange={(event)=>setEffort(Number(event.target.value))} className="mt-1 h-11 w-full rounded-xl bg-fitness-canvas px-3 text-base text-fitness-text"><option value={0}>Selecione o esforço</option>{Array.from({length:10},(_,index)=><option key={index+1} value={index+1}>{index+1}{index===0?' · muito leve':index===4?' · moderado':index===9?' · máximo':''}</option>)}</select></label>
+          {distanceUnit && <NumberField label={`Distância (${distanceUnit}, opcional)`} ariaLabel={`Distância do bloco ${set.setNumber}`} value={distance/(distanceUnit==='km'?1000:1)} disabled={isDone} onChange={(value)=>setDistance(value*(distanceUnit==='km'?1000:1))} />}
+          <label className="block text-xs text-fitness-muted">O que você fez? (opcional)<textarea aria-label={`Descrição do bloco ${set.setNumber}`} value={notes} maxLength={2000} disabled={isDone} onChange={(event)=>setNotes(event.target.value)} placeholder="Técnica, terreno, ritmo, estilo de nado…" className="mt-1 min-h-20 w-full rounded-xl bg-fitness-canvas p-3 text-sm text-fitness-text focus-visible:outline-fitness-primary" /></label>
+          {activity && !isDone && !effort && <p className="text-xs text-fitness-muted">Informe o esforço e o tempo realmente praticado para registrar este bloco.</p>}
+        </div>
+        {error && <p role="alert" className="mb-3 text-sm text-fitness-text">{error}</p>}
+        {!isDone && (
+          <div className="flex gap-3">
+            <FitnessButton size="md" className="flex-1 !h-12 !px-3 !text-sm !shadow-none" disabled={activity && (!effort || durationSeconds <= 0)} onClick={() => submit('complete')}>
+              {activity ? 'Concluir bloco' : 'Concluir série'}
+            </FitnessButton>
+            <FitnessButton size="md" variant="secondary" className="bg-fitness-canvas !h-12 !px-4 !text-sm" onClick={() => submit('skip')}>
+              Pular
+            </FitnessButton>
+          </div>
+        )}
+      </div>}
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import { hasCycleFilters, type CycleFilters as Filters } from './cycle-discovery';
 import { CycleFilters } from './CycleFilters';
+import { Link } from 'react-router-dom';
+import { CalendarDays } from 'lucide-react';
 
 interface Props {
   title: string;
@@ -10,12 +12,14 @@ interface Props {
   shown: number;
   order: 'ordered' | 'pending-first';
   onOrder: (order: 'ordered' | 'pending-first') => void;
+  agendaHref?: string;
 }
 /** Counts describe visible routine cards, not points or completed leaf activities. */
-export function CycleRoutineToolbar({ title, filters, onChange, total, completed, shown, order, onOrder }: Props) {
+export function CycleRoutineToolbar({ title, filters, onChange, total, completed, shown, order, onOrder, agendaHref }: Props) {
   const counts = { all: total, pending: total - completed, completed };
   return <div className="cycle-routine-toolbar" id="cycles-today-routine">
     <header><div><h3>{title}</h3><p>{completed} de {total} itens concluídos</p></div><span className="cycle-day-fraction" aria-hidden="true">{completed}<small>/{total}</small></span></header>
+    {agendaHref && <Link className="inline-flex min-h-12 items-center gap-2 text-sm text-mystic-gold" to={agendaHref}><CalendarDays size={18} aria-hidden="true" />Planejar esta semana</Link>}
     <div className="cycle-day-progress" role="progressbar" aria-label="Itens da rotina concluídos" aria-valuemin={0} aria-valuemax={total || 1} aria-valuenow={completed}><span style={{ width: `${total ? completed / total * 100 : 0}%` }} /></div>
     <div className="cycle-quick-status" role="group" aria-label="Mostrar ciclos por estado">
       {(['all', 'pending', 'completed'] as const).map(status => <button key={status} type="button" aria-pressed={filters.status === status} onClick={() => onChange({ ...filters, status })}>{status === 'all' ? 'Todos' : status === 'pending' ? 'Pendentes' : 'Feitos'}<span>{counts[status]}</span></button>)}

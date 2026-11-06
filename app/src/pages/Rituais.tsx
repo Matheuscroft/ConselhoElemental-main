@@ -1,3 +1,5 @@
+import { operationalDateKey, dateToInput } from '@/lib/temporal/recurrence';
+import { TaskCompletionFeedback } from '@/components/rewards/TaskCompletionFeedback';
 import { RitualShowcase } from '@/components/rituals/RitualShowcase';
 import '@/components/rituals/rituals.css';
 import { ritualView } from '@/components/quests/quest-navigation';
@@ -117,6 +119,8 @@ export const Rituais: React.FC = () => {
   const [editingItemId, setEditingItemId] = useState<string | null>(null); // 🎯 ID do TaskItem sendo editado
   const [editingItemTaskId, setEditingItemTaskId] = useState<string | null>(null); // 🎯 TaskId do pai do item
   const [editName, setEditName] = useState('');
+  const [editDueDate, setEditDueDate] = useState('');
+  const [editDateError, setEditDateError] = useState('');
   const [editArea, setEditArea] = useState<string>('none');
   const [editSubarea, setEditSubarea] = useState<string>('none');
   const [editAreaSecondary, setEditAreaSecondary] = useState<string>('none');
@@ -328,8 +332,12 @@ export const Rituais: React.FC = () => {
             ? editTimeMinutes + (editTimeSeconds / 60) 
             : null);
       
+      let plannedDate: string | null;
+      try { plannedDate = operationalDateKey(editDueDate); }
+      catch { setEditDateError('Escolha uma data válida.'); return; }
       updateTask(editingTaskId, {
         title: editName.trim(),
+        dueDate: plannedDate,
         areaPrimaryId: nextAreaPrimaryId,
         subareaPrimaryId: nextSubareaPrimaryId,
         areaSecondaryId1: nextAreaSecondaryId1,
@@ -425,6 +433,8 @@ export const Rituais: React.FC = () => {
     setEditingItemId(null);
     setEditingItemTaskId(null);
     setEditName(task.title);
+    setEditDueDate(dateToInput(task.dueDate));
+    setEditDateError('');
     setEditArea(task.areaPrimaryId || 'none');
     setEditSubarea(task.subareaPrimaryId || 'none');
     const hasSecondary = Boolean(task.areaSecondaryId1);
@@ -580,6 +590,7 @@ export const Rituais: React.FC = () => {
         <Link to="/rituais" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} />Rituais</Link>
         <Link to="/rituais?view=trilhas" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} />Trilhas</Link>
       </nav>
+      {showQuestList && <TaskCompletionFeedback key={questAccountId} />}
       {!showQuestList && <QuestHub key={questAccountId} onManageTask={id => {
         const task = tasks.find(item => item.id === id);
         setQuestParams({ view: 'lista' });
@@ -901,6 +912,15 @@ export const Rituais: React.FC = () => {
                 className="bg-white/5 border-white/10"
               />
             </div>
+
+            {editingTaskId && <div className="space-y-2">
+              <label htmlFor="ritual-planned-date" className="text-sm text-white/70">Data planejada (opcional)</label>
+              <Input id="ritual-planned-date" type="date" value={editDueDate}
+                onChange={event => { setEditDueDate(event.target.value); setEditDateError(''); }}
+                className="min-h-12 bg-white/5 border-white/10 text-base" />
+              <p className="text-sm text-white/60">Aparece no Temporal nesta data. A data de cadastro e o histórico são preservados.</p>
+              {editDateError && <p role="alert" className="text-sm text-red-300">{editDateError}</p>}
+            </div>}
 
             {/* Área Primária e Subárea Primária */}
             <div className="grid grid-cols-2 gap-3 pb-4 border-b border-white/10">

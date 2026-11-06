@@ -1,3 +1,5 @@
+import { operationalDate, dateToInput } from '@/lib/temporal/recurrence';
+import { assertLegacyAccountAccess } from '@/lib/backup/legacy-account-guard';
 import { supabase, isSupabaseAuthEnabled } from '@/lib/supabase';
 import { useAppStore } from '@/stores/appStore';
 import { AREAS } from '@/constants';
@@ -363,7 +365,7 @@ const fetchPayloadRows = async (table: string, userId: string): Promise<AnyRecor
   const selectColumns =
     table === 'sequence_memberships'
       ? '*'
-      : `local_id, ${dataColumn}`;
+      : `local_id, ${dataColumn}${table === 'tasks' ? ', due_date' : ''}`;
   const { data, error } = await supabase
     .from(table)
     .select(selectColumns)
@@ -384,6 +386,10 @@ const fetchPayloadRows = async (table: string, userId: string): Promise<AnyRecor
       local_id: localId,
       id: localId,
     };
+
+    if (table === 'tasks' && !('dueDate' in payload) && typeof record.due_date === 'string') {
+      normalized.dueDate = dateToInput(record.due_date) || null;
+    }
 
     if (table === 'sequence_memberships') {
       const sequenceLocalId =
@@ -656,7 +662,7 @@ const buildRowsFromStore = (userId: string) => {
     status: task.isCompleted ? 'completed' : 'active',
     element_id: task.elementId ? String(task.elementId) : null,
     area_primary_id: task.areaPrimaryId ? String(task.areaPrimaryId) : null,
-    due_date: null,
+    due_date: operationalDate(task.dueDate as Date | string | null | undefined)?.toISOString() ?? null,
     payload: task,
   }));
 
@@ -757,9 +763,11 @@ export const getCloudSyncFingerprint = (): string => {
 
 export const hydrateAppStoreFromCloud = async (userId: string, expectedFingerprint?: string): Promise<{ hadCloudData: boolean; hasProfile: boolean }> => {
   if (!isSupabaseAuthEnabled || !supabase) return { hadCloudData: false, hasProfile: false };
+  await assertLegacyAccountAccess(supabase,userId);
   if (!(await ensureSchemaReady())) return { hadCloudData: false, hasProfile: false };
 
   const snapshot = await fetchCloudSnapshot(userId);
+  await assertLegacyAccountAccess(supabase,userId);
   if (expectedFingerprint !== undefined && getCloudSyncFingerprint() !== expectedFingerprint) {
     throw new Error('Atualização da nuvem adiada: existem alterações locais feitas durante a leitura.');
   }
@@ -795,6 +803,7 @@ export const hydrateAppStoreFromCloud = async (userId: string, expectedFingerpri
 
 export const persistAppStoreToCloud = async (userId: string): Promise<void> => {
   if (!isSupabaseAuthEnabled || !supabase) return;
+  await assertLegacyAccountAccess(supabase,userId);
   if (!(await ensureSchemaReady())) return;
 
   const preSyncCloudSnapshot = await fetchCloudSnapshot(userId);

@@ -23,13 +23,11 @@ test('notes never count as unfinished actions, while groups/checklists keep thei
   assert.deepEqual(summarizeSubitems([], () => { throw Error('unexpected'); }), { actionableCount: 0, completedCount: 0, noteCount: 0 });
 });
 
-test('identities distinguish action, checklist, group and note, retaining meaningful hierarchy', () => {
-  const render = props => renderToStaticMarkup(React.createElement(CycleSubitemIdentity, { name: 'Garrafa 1 L', childCount: 0, completed: false, ...props }));
-  assert.doesNotMatch(render({ kind: 'valuable' }), /Ação|Conclua quando realizar/);
-  assert.match(render({ kind: 'valuable', childCount: 2 }), /2 subitens nesta etapa/);
-  assert.match(render({ kind: 'structural' }), /Checklist/);
-  assert.match(render({ kind: 'text', completed: true }), /Nota/);
-  assert.doesNotMatch(render({ kind: 'text', completed: true }), /Referência para a execução/);
+test('simplified identities retain accessible child disclosure and completion without redundant type labels', () => {
+  const render = props => renderToStaticMarkup(React.createElement(CycleSubitemIdentity, { name: 'Garrafa 1 L', completed: false, ...props }));
+  for (const kind of ['valuable','structural','text']) assert.doesNotMatch(render({ kind }), /Ação|Checklist|Nota|Etapa|Conclua quando realizar|Posição/);
+  assert.match(render({ kind: 'valuable', onToggle() {}, expanded: true }), /aria-expanded="true"/);
+  assert.match(render({ kind: 'valuable', onToggle() {} }), /Mostrar subitens de Garrafa 1 L/);
+  assert.match(render({ kind: 'valuable', completed: true }), /is-completed|>Feito</);
   assert.doesNotMatch(render({ kind: 'text', completed: true }), /is-completed|>Feito</);
-  assert.doesNotMatch(render({ kind: 'valuable' }), /Posição|1\.2/);
 });

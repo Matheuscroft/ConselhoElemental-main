@@ -22,9 +22,9 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   <div className={cn('flex items-start justify-between gap-4', className)}>
     <div className="min-w-0">
       {level === 'page' ? (
-        <h1 className="font-sans text-[32px] font-semibold leading-[1.1] text-fitness-text">{title}</h1>
+        <h1 className="font-display text-[30px] font-medium leading-[1.1] text-fitness-text">{title}</h1>
       ) : (
-        <h2 className="font-sans text-2xl font-semibold leading-tight text-fitness-text">{title}</h2>
+        <h2 className="font-display text-2xl font-medium leading-tight text-fitness-text">{title}</h2>
       )}
       {subtitle && <p className="mt-1 text-base text-fitness-muted">{subtitle}</p>}
     </div>

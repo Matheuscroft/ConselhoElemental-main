@@ -67,7 +67,7 @@ test('selecting a visible date keeps the window fixed so expansion can occur in 
   assert.ok(initializer);
   const js = ts.transpileModule(`const select = ${initializer};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   const center = new Date(2026, 11, 31); let selected; let recentered = false;
-  const select = new Function('visibleDaysCenterDate', 'normalizeDate', 'setSelectedDate', 'setVisibleDaysCenterDate', `${js}; return select;`)(center, d => new Date(d.getFullYear(), d.getMonth(), d.getDate()), d => { selected = d; }, () => { recentered = true; });
+  const select = new Function('visibleDaysCenterDate', 'normalizeDate', 'selectCalendarDate', `${js}; return select;`)(center, d => new Date(d.getFullYear(), d.getMonth(), d.getDate()), (d, recenter) => { selected = d; if (recenter) recentered = true; });
   select(1);
   assert.equal(selected.getFullYear(), 2027); assert.equal(selected.getMonth(), 0); assert.equal(selected.getDate(), 1);
   assert.equal(recentered, false); assert.equal(center.getDate(), 31);

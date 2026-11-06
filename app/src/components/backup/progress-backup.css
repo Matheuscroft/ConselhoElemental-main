@@ -1,0 +1,48 @@
+.progress-backup { padding: 22px; border: 1px solid var(--grimoire-line); border-radius: 24px; background: rgb(var(--el-surface) / .8); margin-top: 28px; }
+.progress-backup-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.progress-backup-heading > svg { flex-shrink: 0; color: rgb(var(--el-gold)); }
+.progress-backup h2 { font-size: clamp(21px,3.6cqi,28px); }
+.progress-backup p { color: rgb(var(--el-muted)); font-size: 14px; line-height: 1.6; margin-block: 8px; overflow-wrap: anywhere; }
+.progress-backup-actions { display: grid; gap: 10px; margin-block: 18px; }
+.progress-backup button,.progress-backup summary { min-height: 44px; padding: 12px; border-radius: 12px; }
+.progress-backup button { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgb(var(--el-gold) / .35); color: rgb(var(--el-gold)); }
+.progress-backup-actions > button:first-child { background: rgb(var(--el-gold)); color: #10141d; font-weight: 600; }
+.progress-backup button:disabled { opacity: .5; cursor: wait; }
+.progress-backup :is(button,summary):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+.progress-backup summary { cursor: pointer; color: rgb(var(--el-gold)); }
+.progress-backup-preview { padding-block: 16px; border-block: 1px solid var(--grimoire-line); margin-block: 14px; }
+.progress-backup-preview dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-block: 16px; }
+.progress-backup-preview dt { font-size: 12px; color: rgb(var(--el-muted)); }
+.progress-backup-preview dd { font-size: 24px; color: rgb(var(--el-gold)); font-variant-numeric: tabular-nums; }
+.progress-backup .progress-backup-error { color: #ffb4ae; }
+.progress-backup-pending { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.progress-backup-details { margin-top: 14px; }
+@media (min-width: 600px) { .progress-backup-actions { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+.restore-comparison { margin-block: 20px; padding-top: 20px; border-top: 1px solid var(--grimoire-line); }
+.restore-comparison-account { border-block-end: 1px solid var(--grimoire-line); }
+.restore-comparison-account summary { overflow-wrap: anywhere; }
+.restore-comparison-account summary span { display: block; font: 12px/1.5 var(--font-body, sans-serif); color: rgb(var(--el-muted)); }
+.restore-comparison-rows { list-style: none; padding: 0; margin-block: 12px; }
+.restore-comparison-rows li { display: grid; gap: 4px; padding-block: 12px; border-bottom: 1px solid var(--grimoire-line); font-size: 13px; overflow-wrap: anywhere; }
+.restore-comparison-rows span { color: rgb(var(--el-muted)); font-variant-numeric: tabular-nums; }
+.restore-comparison-notices { padding-left: 20px; color: rgb(var(--el-muted)); font-size: 14px; line-height: 1.6; }
+.restore-comparison-xp { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin-block: 12px; font-size: 13px; }
+.restore-comparison-xp dd { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+.progress-backup-restore-link { display: inline-flex; align-items: center; min-height: 44px; color: #d5b66f; text-decoration: underline; text-underline-offset: .2em; }
+.progress-backup-restore-link:focus-visible { outline: 2px solid #eceae3; outline-offset: 4px; border-radius: .25rem; }
+
+/* Account preparation reuses the grimoire palette and remains quiet until opened. */
+.account-preparation { margin-block: 18px; border-block: 1px solid var(--grimoire-line); padding-block: 8px; }
+.account-preparation > summary { display: flex; align-items: center; gap: 10px; min-height: 48px; }
+.account-preparation > summary svg { flex-shrink: 0; }
+.account-preparation-chevron { margin-inline-start: auto; }
+.account-preparation[open] > summary .account-preparation-chevron { transform: rotate(180deg); }
+.account-preparation > button { width: 100%; min-height: 48px; margin-block: 12px; }
+.account-preparation-review { padding-block: 12px; overflow-wrap: anywhere; }
+.account-preparation-review :is(h3,h4) { margin-block: 12px; }
+.account-preparation-review dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin-block: 16px; }
+.account-preparation-review dt { font-size: 12px; color: rgb(var(--el-muted)); }
+.account-preparation-review dd { margin: 4px 0 0; font-size: 20px; color: rgb(var(--el-gold)); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.account-preparation .account-preparation-close { border-color: var(--grimoire-line); color: rgb(var(--el-text)); }
+@media (min-width: 600px) { .account-preparation-review .account-preparation-xp { grid-template-columns: repeat(4,minmax(0,1fr)); } }

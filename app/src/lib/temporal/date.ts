@@ -1,7 +1,5 @@
 export type WeekStartsOn = 0 | 1;
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-
 export const toValidDate = (value: Date | string | number | null | undefined): Date | null => {
   if (value == null) return null;
   const parsed = value instanceof Date ? value : new Date(value);
@@ -62,13 +60,9 @@ export const endOfYear = (date: Date): Date => {
 export const eachDayOfInterval = (start: Date, end: Date): Date[] => {
   const normalizedStart = startOfDay(start);
   const normalizedEnd = startOfDay(end);
-  const totalDays = Math.floor((normalizedEnd.getTime() - normalizedStart.getTime()) / ONE_DAY_MS);
-
-  if (totalDays < 0) return [];
-
   const days: Date[] = [];
-  for (let index = 0; index <= totalDays; index += 1) {
-    days.push(addDays(normalizedStart, index));
+  for (let cursor = normalizedStart; cursor <= normalizedEnd; cursor = addDays(cursor, 1)) {
+    days.push(cursor);
   }
 
   return days;

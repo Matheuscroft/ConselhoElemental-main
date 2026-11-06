@@ -11,22 +11,22 @@ interface WorkoutCategoryCardProps {
   onSelect: () => void;
 }
 
-/** Card de categoria: ícone + rótulo centralizados; selecionado ganha contorno violeta de 3px. */
+/** Modalidade com selo SVG e contorno dourado ao selecionar. */
 export const WorkoutCategoryCard: React.FC<WorkoutCategoryCardProps> = ({ label, icon: Icon, selected, description, tall = false, onSelect }) => (
   <button
     type="button"
     onClick={onSelect}
     aria-pressed={selected}
     className={cn(
-      'flex w-full flex-col items-center justify-center gap-3 rounded-fit border-[3px] bg-fitness-surface px-3 text-center shadow-fitness-card outline-none',
+      'fitness-elemental-category flex w-full flex-col items-center justify-center gap-3 rounded-fit border bg-fitness-surface px-3 text-center outline-none',
       'transition-[filter,transform,border-color] duration-200 hover:brightness-110 active:scale-[0.98] motion-reduce:transition-none motion-reduce:transform-none',
       'focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas',
       tall ? 'aspect-[0.78] min-h-[190px]' : 'aspect-[1.12] min-h-[145px]',
-      selected ? 'border-fitness-primary' : 'border-transparent'
+      selected ? 'border-fitness-primary' : 'border-white/10'
     )}
   >
-    <Icon className="h-12 w-12 text-fitness-primary" strokeWidth={1.75} aria-hidden="true" />
-    <span className={cn('max-w-full break-words text-[17px] font-medium leading-tight', selected ? 'text-fitness-primary' : 'text-fitness-text')}>{label}</span>
+    <span className="fitness-elemental-badge grid h-16 w-16 place-items-center rounded-2xl text-[rgb(var(--el-gold))]"><Icon className="h-10 w-10" strokeWidth={1.55} aria-hidden="true" /></span>
+    <span className={cn('max-w-full break-words font-display text-[19px] font-medium leading-tight', selected ? 'text-fitness-primary' : 'text-fitness-text')}>{label}</span>
     {description && <span className="text-xs text-fitness-muted">{description}</span>}
   </button>
 );

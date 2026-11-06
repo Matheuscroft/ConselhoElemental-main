@@ -21,7 +21,7 @@ test('atlas search combines category and accent-insensitive words without losing
   for (const route of APP_ROUTES) assert.ok(html.includes(`href="${route.path}"`), route.id);
   assert.match(html, /3 hábitos hoje/);
   assert.match(html, /type="search"/);
-  assert.equal((html.match(/<details/g) ?? []).length, 4);
+  assert.equal((html.match(/aria-expanded="false"/g) ?? []).length, 4);
 });
 
 test('every route has its own symbol; More is distinct from the Grimoire', () => {

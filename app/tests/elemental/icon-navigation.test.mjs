@@ -44,10 +44,10 @@ test('search reveals every group, while normal browsing can start with one open 
   const groups = ['Núcleo', 'Tempo e ciclos', 'Treino', 'Domínios'];
   for (const group of groups) {
     const props = { group, count: APP_ROUTES.filter((route) => route.group === group).length, children: 'Destinos reais' };
-    assert.match(html(NavigationGroup, { ...props, reveal: true }), /<details[^>]* open=""/);
+    assert.match(html(NavigationGroup, { ...props, reveal: true }), /data-open="true"/);
     const collapsed = html(NavigationGroup, props);
     assert.doesNotMatch(collapsed, / open=""/);
-    assert.match(collapsed, /<summary>/);
+    assert.match(collapsed, /<button[^>]*aria-expanded="false"/);
     assert.match(collapsed, /Destinos reais/);
   }
 });

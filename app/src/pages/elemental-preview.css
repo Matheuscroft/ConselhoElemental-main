@@ -139,7 +139,7 @@
 .ep-area-toolbar h2 { font-size: 25px; }
 .ep-area-toolbar p { margin-top: 6px; color: var(--ep-muted); font-size: 13px; }
 .ep-search { display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid var(--ep-line); border-radius: 8px; color: var(--ep-muted); background: var(--ep-surface); }
-.ep-search input { width: 180px; min-height: 44px; background: transparent; color: var(--ep-text); font-size: 13px; min-width: 0; }
+.ep-search input { width: 180px; min-height: 48px; background: transparent; color: var(--ep-text); font-size: 16px; min-width: 0; }
 .ep-search input::placeholder { color: var(--ep-muted); }
 .ep-count { color: var(--ep-muted); font-size: 12px; margin: 20px 0 10px !important; }
 .ep-area-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: start; }
@@ -291,4 +291,15 @@
   .ep-resources small { font-size: 10px; margin-left: 3px; }
   .ep-resources span { font-size: 11px; }
   .ep-identity .ep-resource-note { margin-top: 6px !important; font-size: 10px; }
+}
+
+/* Keep the native search control legible and its focus visible on touch screens. */
+.ep-search { min-width: 0; }
+.ep-search > svg { flex-shrink: 0; }
+.ep-search:focus-within { outline: 2px solid var(--ep-gold); outline-offset: 3px; }
+.ep-element-hero > div:first-child { min-width: 0; overflow-wrap: anywhere; }
+.ep-element-switcher a { min-width: 0; touch-action: manipulation; }
+.ep-areas h2 { scroll-margin-top: calc(6rem + env(safe-area-inset-top)); }
+@media (max-width: 640px) {
+  .ep-main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
 }

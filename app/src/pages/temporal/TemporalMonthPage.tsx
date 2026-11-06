@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { monthFromSearch, monthHref } from '@/components/temporal/celestial/month-navigation';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { TemporalMonthPicker } from '@/components/temporal/TemporalMonthPicker';
+import { useMemo } from 'react';
+import { useTemporalView } from '@/components/temporal/useTemporalView';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import {
   buildTemporalCommitments,
@@ -15,7 +15,7 @@ import {
 import { TemporalLayout } from '@/pages/temporal/TemporalLayout';
 import { DayDetailsDialog } from '@/components/temporal/DayDetailsDialog';
 
-const summaryCardClass = 'rounded-2xl border border-white/10 bg-white/[0.03] p-4';
+const summaryCardClass = 'rounded-xl border border-white/10 bg-white/[0.03] p-3';
 
 const formatMonthLabel = (date: Date): string => {
   return date.toLocaleDateString('pt-BR', {
@@ -25,25 +25,19 @@ const formatMonthLabel = (date: Date): string => {
 };
 
 export const TemporalMonthPage = () => {
-  const { search } = useLocation();
-  return <TemporalMonthContent key={search} search={search} />;
-};
-
-const TemporalMonthContent = ({ search }: { search: string }) => {
-  const navigate = useNavigate();
-  const [anchorDate] = useState(() => monthFromSearch(search, new Date()));
+  const { anchorDate, selectedDayStamp, setAnchorDate, setSelectedDayStamp, returnTo } = useTemporalView('month');
   const { weekStartsOn } = useWeekStartsOnPreference();
-  const [selectedDayStamp, setSelectedDayStamp] = useState<number | null>(null);
 
   const tasks = useAppStore((state) => state.tasks);
+  const commitments = useAppStore((state) => state.commitments);
   const habits = useAppStore((state) => state.habits);
   const cycleSequences = useAppStore((state) => state.cycleSequences);
   const projects = useAppStore((state) => state.projects);
   const quests = useAppStore((state) => state.quests);
 
   const snapshot = useMemo(
-    () => ({ tasks, habits, cycleSequences, projects, quests }),
-    [tasks, habits, cycleSequences, projects, quests]
+    () => ({ tasks, habits, cycleSequences, projects, quests, commitments }),
+    [tasks, habits, cycleSequences, projects, quests, commitments]
   );
 
   const events = useMemo(() => buildTemporalEvents(snapshot), [snapshot]);
@@ -62,7 +56,7 @@ const TemporalMonthContent = ({ search }: { search: string }) => {
   }, [anchorDate, snapshot]);
 
   const bestDay = useMemo(() => {
-    return interval.days.reduce((best, current) => {
+    return interval.days.filter(day => day.totalCompleted > 0).reduce((best, current) => {
       if (!best) return current;
       if (current.score > best.score) return current;
       return best;
@@ -89,11 +83,11 @@ const TemporalMonthContent = ({ search }: { search: string }) => {
       title="Temporal - Mês"
       subtitle={`Visão operacional mensal (semana inicia em ${weekStartsOn === 0 ? 'domingo' : 'segunda'})`}
     >
-      <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] p-3">
+      <div className="temporal-period-controls">
         <button
           type="button"
           aria-label="Mês anterior"
-          onClick={() => navigate(monthHref(new Date(anchorDate.getFullYear(), anchorDate.getMonth() - 1, 1)))}
+          onClick={() => setAnchorDate(new Date(anchorDate.getFullYear(), anchorDate.getMonth() - 1, 1))}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronLeft className="h-4 w-4" />
@@ -102,13 +96,14 @@ const TemporalMonthContent = ({ search }: { search: string }) => {
         <button
           type="button"
           aria-label="Próximo mês"
-          onClick={() => navigate(monthHref(new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 1)))}
+          onClick={() => setAnchorDate(new Date(anchorDate.getFullYear(), anchorDate.getMonth() + 1, 1))}
           className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
         >
           <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
+      <details className="temporal-week-summary"><summary>Resumo do mês<ChevronDown size={18} aria-hidden="true" /></summary>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <article className={summaryCardClass}>
           <p className="text-xs uppercase tracking-[0.16em] text-white/55">Concluído</p>
@@ -128,27 +123,8 @@ const TemporalMonthContent = ({ search }: { search: string }) => {
         </article>
       </div>
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <h3 className="text-sm uppercase tracking-[0.2em] text-white/60">Resumo diário do mês</h3>
-        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-3">
-          {interval.days.map((day) => {
-            const date = new Date(day.dayStamp);
-            const intensity = day.totalCompleted > 0 ? 'border-emerald-400/40 bg-emerald-500/10' : 'border-white/10 bg-black/10';
-            return (
-              <button
-                type="button"
-                key={day.dayStamp}
-                onClick={() => setSelectedDayStamp(day.dayStamp)}
-                className={`rounded-xl border p-3 text-left transition-colors hover:border-mystic-gold/40 ${intensity}`}
-              >
-                <p className="text-xs text-white/55">{date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</p>
-                <p className="mt-1 text-sm text-white">{day.totalCompleted} concluídos</p>
-                <p className="text-xs text-white/70">{day.commitmentsCount} compromissos</p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      </details>
+      <TemporalMonthPicker days={interval.days} weekStartsOn={weekStartsOn} selectedDayStamp={selectedDayStamp} onSelect={setSelectedDayStamp} />
 
       {bestDay && toDayStamp(bestDay.date) != null ? (
         <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -160,7 +136,8 @@ const TemporalMonthContent = ({ search }: { search: string }) => {
       ) : null}
 
       <DayDetailsDialog
-        open={selectedDayStamp != null}
+        returnTo={returnTo}
+        open={selectedDayAggregate != null}
         onOpenChange={(open) => {
           if (!open) setSelectedDayStamp(null);
         }}

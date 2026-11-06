@@ -36,7 +36,7 @@ export const ChartWidget: React.FC<ChartWidgetProps> = ({
   <FitnessCard radius={radius} className={cn('p-5 sm:p-6', className)}>
     <div className="mb-3 flex items-center gap-2">
       {Icon && <Icon className={cn('h-5 w-5 shrink-0', iconClassName)} aria-hidden="true" />}
-      <h3 className="min-w-0 break-words font-sans text-[19px] font-semibold leading-tight text-fitness-text">{title}</h3>
+      <h3 className="min-w-0 break-words font-display text-[21px] font-medium leading-tight text-fitness-text">{title}</h3>
     </div>
     {subtitle && <div className="mb-2 text-lg text-fitness-text-soft">{subtitle}</div>}
     {emptyMessage ? (

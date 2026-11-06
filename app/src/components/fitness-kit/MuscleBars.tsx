@@ -23,8 +23,8 @@ export const MuscleBars: React.FC<MuscleBarsProps> = ({ distribution, emptyMessa
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-fitness-surface-muted">
             <div
-              className="h-full rounded-full bg-fitness-primary motion-safe:transition-[width] motion-safe:duration-500"
-              style={{ width: `${Math.min(100, entry.percentage)}%` }}
+              className="fitness-motion-bar h-full w-full origin-left rounded-full bg-fitness-primary"
+              style={{ transform: `scaleX(${Math.max(0, Math.min(100, entry.percentage)) / 100})` }}
             />
           </div>
         </li>

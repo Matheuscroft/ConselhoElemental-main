@@ -1,3 +1,749 @@
+## H02 — repasse 0.1.127 pronto para publicação (06/11/2026)
+
+[Começar pelo repasse para Matheus](plans/REPASSE-BACKEND-0.1.127.md): frontend entregue, contratos a revisar, F6/conta, compatibilidade, associação pessoal, fragmentos e GymMane. Kimono/faixa substitui o ícone de artes marciais. Branch de revisão codex/fitness-ui-integration, base/main be78b1e conferidas; publicar sem force/merge direto. README raiz/app apontam o repasse.
+
+668 testes completos (66,40s), TypeScript, lint e build envDir:false (30,09s) passaram. Inventário integral e busca por padrões de credenciais revisados; cache Supabase retirado do índice/ignorado e preservado localmente. Branch desativada para auto-deploy Vercel em configuração versionada; leitura de configuração hospedada recusada 403, sem contorno. Três gates seguem false; candidato SQL 127 somente local, sem alteração em migrações anteriores, dados pessoais ou banco remoto. Sem aceite visual do app/mobile por bloqueio salvo. Registrar hash/PR após push; estado abaixo histórico.
+
+## T03 — catálogo agrupado e pesquisável — 0.1.126 (06/11/2026)
+
+[Implementação, testes e retomada](plans/TREINOS-CATALOGO-AGRUPADO-0.1.126.md). 124 exercícios em seis grupos inicialmente recolhidos: Peito 17, Costas 19, Ombros 13, Braços 35, Abdômen 5, Pernas 35. Cada exercício aparece uma vez, com mesmo ID/objeto. Grupo abre oito itens por vez; busca direta por nome/músculo/equipamento, filtros combinados e lista opcional em lotes de 12. Ícones T02 preservados; sem mudança de dados/cálculos.
+
+668 testes completos, 12 direcionados, TypeScript, lint e build passaram; sem aceite visual do app/mobile por permissão salva, sem contorno. Compatibilidade de produtor 126 e candidato 20261106033906 somente locais; candidatos 123–126 ainda sem aplicação hospedada. Gates false, sem dados pessoais, SQL remoto ou publicação. Reservas encerradas. Próximo: avaliar navegação em Sol Médio quando houver inspeção; GymMane/F6 seguem separados, inventário H01 precisa atualização antes de publicar. Registros abaixo históricos.
+
+## T02 — ícones intuitivos de Treinos — 0.1.125 (06/11/2026)
+
+Fábio reprovou a família T01 por baixa identificação. [Revisão e evidências](plans/TREINOS-ICONES-INTUITIVOS-0.1.125.md): os 45 ícones foram redesenhados com corpo contextual/região dourada, silhuetas de movimento e equipamentos reconhecíveis. Selos/filtros ampliados e nomes visíveis no editor. APIs/IDs/stores/catálogos/cálculos preservados. Nova proposta implementada, aceite visual do usuário pendente.
+
+9 testes direcionados, TypeScript, lint e build passaram; prancha própria em 24/32/48px inspecionada. Não repetir como atual a suíte completa de 665 testes de T01. Sem inspeção do app/mobile por bloqueio salvo, sem contorno. Backup/versão 125 e candidato SQL 20261106033034 somente local; candidatos 123/124/125 ainda exigem escopo hospedado. Gates false; sem dados pessoais, SQL remoto ou publicação. Custódia sequencial/reservas encerradas. Próximo: avaliar nova família e conferir UI em Sol Médio quando disponível; GymMane/F6 permanecem separados. Registros abaixo históricos.
+
+## T01 — Treinos: ícones e identidade — 0.1.124 (06/11/2026)
+
+[Entrega, evidências e retomada](plans/TREINOS-IDENTIDADE-0.1.124.md). 45 SVGs originais; emojis/recortes antigos substituídos em modalidades, foco muscular, editor, catálogo, widget e XP. Casca/cartões/abas/botões/hero alinhados ao ouro e vidro escuro elemental. Filtros principais acessíveis, refinamentos agrupados, limpeza explícita e nomes com mais espaço. Stores/tipos/catálogos/cálculos preservados.
+
+665 testes completos passaram; TypeScript, lint e build locais aprovados. Prancha vetorial inspecionada; sem aceite visual do app/mobile, pois a inspeção local permanece bloqueada. Versão/backup 124 e candidato SQL 20261106031901 somente local; candidatos 123/124 ainda não aplicados. Gates false, sem dados pessoais, push/deploy/SQL remoto. Reservas encerradas após custódia sequencial. Próximo: aceite visual em Sol Médio; GymMane continua plano G01, F6/conta permanece pendente. Atualizar inventário H01 antes de publicar. Registros abaixo históricos.
+
+## G01 — GymMane analisado; implementação não iniciada (06/11/2026)
+
+Astro Boy sequencial. Análise iniciada em 05/11 e encerrada em 06/11. [Relatório e plano de portabilidade](plans/GYMMANE-AVALIACAO-INTEGRACAO-2026-11-05.md). Recomendação: experiência funcional GymMane em React/TypeScript sobre WorkoutStore/adapters/recibos atuais. Flutter/Dart nativo não é biblioteca React; não importar segundo store/XP/Auth. Nova fase depende de licença/escopo e piloto aprovado; produto permanece 0.1.123, HEAD be78b1e.
+
+Snapshot inspecionado: main 129349d; referência estável v2.0.0/7579501. Metadados, fonte, licenças, testes, CI externo e três screenshots do repo examinados. CI da release observada passou Analyze/Test/APK; não comprova a main posterior nem a adaptação React. 96 arquivos de teste na main; suites com fixtures privadas podem pular. Flutter/Dart ausentes no PATH; sem execução própria de SDK/APK/testes GymMane. Nenhuma inspeção do navegador local bloqueado.
+
+Matriz: núcleo de treino/descanso/catálogo/rotinas → portar e integrar; séries avançadas/progressão/métricas/importação/mídia → contratos compatíveis; widgets/sensores/alarmes fechados/Wear/nutrição beta → lotes de plataforma/expansão. Código GPL-3.0-only + atribuição, arte CC BY-SA 4.0; revisar condições antes de incorporar. Link público suficiente, sem exigir credenciais/ZIP/APK do usuário.
+
+Modelo recomendado para próxima rodada: Astra Médio no fechamento do mapa/arquitetura (alternativa Sol Alto); Sol Alto em adapters/contratos, Sol Médio na UI/polimento/validação funcional delimitada. Preservar cálculos/IDs/conta/perfis/histórico; alterações de economia não estão implícitas no pedido de UI. Primeiro piloto: Hoje → plano → série → descanso → concluir → resumo → histórico/recarga.
+
+Custódia: relatório, painel analítico original e índices/repasse atualizados; links/diff-check/preservação de código conferidos. Canvas passou TypeScript contra SDK local; não é UI implementada no app. Sem código de produto/versão alterado, dependências/Flutter instalados, dados pessoais, SQL remoto, commit/push/deploy ou subagentes. F6 continua parcial e H01 ainda sem publicação; o inventário H01 é snapshot anterior e deve ser atualizado antes de um futuro commit que inclua G01. Reservas documentais encerradas. Registros abaixo históricos.
+
+## H01 — repasse preparado para Matheus (05/11/2026)
+
+Astro Boy sequencial; lote documental concluído, produto mantido 0.1.123/HEAD be78b1e. [Plano de entrega, prioridades e critérios](plans/REPASSE-BACKEND-0.1.123.md), [repasse principal](REPASSE-FRONTEND-PARA-BACKEND.md) e inventário `docs/plans/evidence/REPASSE-0.1.123-INVENTARIO.json` para seleção/revisão do commit. Entrada inicial tinha 86 modificados + 257 novos, sem commit. A branch remota ainda está em 03f0588; push de HEAD sozinho não leva as alterações.
+
+Servidor Vite reiniciado em 127.0.0.1:5173 com envDir:false, HTTP 200. Abertura solicitada ao painel direito retornou queued; inspeção do Santuário negada por permissão salva. Não alegar app visualmente conferido, celular testado ou corrigir via driver alternativo. Limite registrado sem nova rodada de perguntas ao usuário.
+
+Próximas frentes, nesta ordem: Matheus fecha F6/conta nova e compatibilidade/aceite hospedado (Sol Alto), depois associação pessoal integral; Fábio faz aceite mobile/polimento/movimento (Sol Médio); contrato de fragmentos/inventário após persistência estabilizada (Alto nos contratos, Médio na UI). Detalhes no repasse; não é fila paralela. Gates false, SQL 123 candidato local e progresso pessoal sem transferência.
+
+Verificação deste lote: inventário Git/nome de arquivos, vínculos documentais, diff-check e preservação SHA de 584 arquivos de código/testes/scripts/migrações. Sem edição de código/versão ou nova suíte; 661 testes/checks continuam evidência da integração anterior, não deste lote. Sem commit/push/deploy, banco, secrets/.env, dados reais de browser ou subagentes. Reservas documentais encerradas após custódia sequencial. Antes de publicar: selecionar/rever todos os paths novos necessários, excluir arquivos privados/ambiente, registrar commit e verificar destino remoto/autodeploys no escopo de publicação.
+
+## Integração da main — concluída localmente — 0.1.123 (05/11/2026)
+
+Astro Boy sequencial. Pull ff-only incorporou 3026e75/be78b1e ao checkout codex/fitness-ui-integration, após preservar o trabalho local no stash c41b2bdcf6035566a0ca259f777a770c39d55f39 (mantido). Dez caminhos com conflito reconciliados, sem deixar entradas unmerged/staged. [Escopo, decisões, evidências e custódia](plans/INTEGRACAO-MAIN-2026-11-05.md).
+
+Catálogos/editor de treino e checkbox/árvore simplificados de Ciclos remotos coexistem com contador genérico diário, recorrência/URL, recibos de XP e feedback locais. Corrigidos reset indevido de recorrência na edição e incompatibilidade do auditor de backup com novos grupos musculares/opcionais. Sem nova fórmula, alteração de histórico pessoal ou reprocessamento de recompensas.
+
+**Executado nesta integração:** 35 verificações direcionadas de compatibilidade, 10 de preparação de lembretes após fix de fixture e **661 testes finais (45,46s; concorrência 4)**, TypeScript, ESLint, build Vite envDir:false (54,32s), diff-check, ancestralidade e preservação SHA. Logs `/tmp/conselho-merge-*`; relatório registra limites e etapas diagnósticas. Build conserva avisos de tamanho de chunk/Browserslist, não falhas. Sem aceite visual/mobile/conta hospedada, dados pessoais, secrets/.env, push, deploy, SQL remoto ou subagentes.
+
+Versão/lock/auditor 0.1.123. Migrações instaladas 120/121/122 preservadas; 20261106022901_account_archive_version_123.sql é apenas candidato local e precisa de revisão/aplicação no escopo de ativação. Gates continuam false. Reservas de integração encerradas após revisão sequencial; não reaplicar o stash sobre a mescla.
+
+**Retomada:** F6 foi interrompida e preservada (helpers/consentimento/retomada após reload); ainda requer fechamento e aceite hospedado essencial, nova conta vazia e associação pessoal com cópia/readback. Sol Alto nos contratos/Auth; avisar antes de passar para Médio na UX delimitada. Matheus backend, Fábio frontend; repasse atualizado. Registros abaixo históricos.
+
+## F6 — retomada de acesso após recarga — em execução (30/10/2026)
+
+Astro Boy sequencial, Sol Alto. Consentimento separado para guardar acesso em sessionStorage, máximo 12h, sem dados de domínio ou inclusão no backup. Validar identidade/vínculo sob lease exclusivo antes de App; pending intents/journals continuam conferência manual. Parar/esquecer separado de descarte por pagehide. Gates permanecem false; nenhuma sessão pessoal será acessada nos testes.
+
+Reserva: main, mount-account-app, AccountWorkspace, AccountSyncStatus, account-live-sync e novos helpers resume/control/entry/tela; testes correspondentes; manifests/whitelist/revisão versionada CLI/loader e docs F6/custódia/ADR. Nenhum store, serviço legado ou fórmula. Baseline `/tmp/account-f6-before.json`.
+
+## F5 — acesso/cadastro e confirmação sem adoção de progresso — 0.1.122 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, codex/fitness-ui-integration/base b11ed9d. [Decisões, evidências e limites](plans/FECHAMENTO-F5-CADASTRO-CONFIRMACAO.md). Acesso separado da cópia: login/cadastro explícitos não exigem arquivo; enviar/receber mantém todas as proteções de cópia/readback/escopo/CAS. Modos separados, confirmação da senha, resend signup e feedback local, campos sensíveis limpos ao mudar modo/acesso. Inspeção inicial de vínculo/intent/journal e mudanças de storage precisam terminar antes das ações; toque rápido não cancela essa conferência.
+
+Signup usa retorno fixo de mesma origem e não adota sessão nem envia dados, mesmo com autoconfirm. Login verifica getUser e consistência do ID, mais os vínculos/tentativas existentes. Retorno Auth inclusive na raiz padrão é limpo e isolado antes de importar App; aviso não autentica, falha não cai no legado. Callback distinto Google Calendar e navegação normal preservados. Nenhuma conta/e-mail real, senha pessoal, storage do usuário ou arquivo pessoal acessado; gates seguem false.
+
+Compatibilidade 122 instalada por revisão separada **20261030211424_account_archive_version_122**, gerada inicialmente pela CLI como 20261030211040. Só estende produtor do schema 1, condicionada ao corpo 121 revisado e gate fechado; migrações aplicadas anteriores intactas. SELECT puro PG17 com envelope estrutural sintético confirmou hash, ACL invoker/search_path e escrita fechada; não é Auth ou commit. Advisors mantém avisos anteriores, sem correção automática.
+
+**Executado:** 33 direcionados e **654 globais finais (36,28s)**, TypeScript/lint/build envDir:false **36,81s**. Logs `/tmp/account-f5-release-*`, `/tmp/account-f5-final-targeted.log`; prova reduzida e revisão no relatório. SDK/HTTP/hooks/PGlite sintéticos, sem inspeção visual/mobile, Auth real, deploy/push ou subagentes. Produto/lock/auditor 0.1.122, schema e economia preservados. Documentação/custódia sequenciais encerradas; registros abaixo históricos.
+
+**Próximo F6 em Sol Alto:** retomada após reload com consentimento próprio e bootstrap integral, renovação/expiração/saída, nova conta vazia e aceite hospedado essencial antes de abrir gates/associar progresso pessoal. Não persistir tokens por conveniência ou voltar ao sync legado. Conferir redirect/template público no aceite; nenhuma configuração Auth foi alterada aqui. Fábio mantém seu progresso local; migração pessoal continua pendente. Avisar antes de mudar para Médio no UX delimitado.
+
+## F4 — recuperação de acesso e descarte real de sessão — 0.1.121 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, codex/fitness-ui-integration/base b11ed9d. [Fluxo, decisões e limites](plans/FECHAMENTO-F4-RECUPERACAO-ACESSO.md). Recuperação pré-bootstrap PKCE, prova própria com origem/projeto/expiração, código removido da URL, usuário validado antes da senha, logout só da sessão temporária, bloqueio de duplo toque/abas e sem App/stores/Auth legado. Gate cliente continua false; nenhum pedido de e-mail ou usuário real nesta rodada. Interface reutiliza workspace/ícones existentes.
+
+Corrigido account-session: SDK ignora adapter com persistSession:false. Agora true seleciona Map exclusivo (sem persistir tokens no browser), chave única e dispose nega writes tardios. Testes do SDK instalado comprovam sessão null após dispose e resposta tardia. Histórico F1 permanece, garantia ampliada/corrigida nesta revisão.
+
+Compatibilidade 0.1.121 adicionada por **migração separada** 20261030204257_account_archive_version_121, sem reescrever base instalada. CLI gerou inicialmente 20261030203429; ID/loader alinhados ao registro remoto. Patch aplicado como ajuste necessário da integração atual, condicionado ao hash do validador anterior e gate fechado. Só valida versão adicional do mesmo formato; não muda esquema/saldos/dados armazenados ou abre escrita. SELECT hospedado com envelope estrutural sintético confirmou hash esperado e gate false; não é Auth/commit/conta completa. Advisors permanece com dois WARN e três INFO anteriores, registrados com links.
+
+**Executado:** 640 testes finais (23,78s), TypeScript/lint/build envDir:false (21,66s), SDK/HTTP/hooks/PGlite sintéticos; validação pura adicional em PG17.11 hospedado. Logs `/tmp/account-f4-*`; evidência reduzida e revisões no relatório. Nenhum dado pessoal, secret/.env, deploy/push, inspeção visual/contorno ou subagente. Produto/lock/auditor sincronizados em 0.1.121, formato de progresso preservado. Revisão e custódia documentais sequenciais; reservas encerradas.
+
+**Próximo em Sol Alto:** entrada/cadastro/confirmação e retomada após reload integrados ao coordenador integral, depois aceite hospedado essencial e associação pessoal com cópia/readback. Conferir redirect/configuração pública antes de liberação; não recorrer ao sync legado nem abrir gates por testes sintéticos. Troca para Médio só depois, na UX delimitada, com aviso prévio. Progresso pessoal permanece sem transferência. Registros abaixo históricos.
+
+## F3-R — migração integral instalada com escrita desativada — 0.1.120 (30/10/2026)
+
+Fábio autorizou explicitamente “Sim, aplicar somente essa migração com escrita desativada”. Astro Boy sequencial, Sol Alto; codex/fitness-ui-integration, base b11ed9d. [Pacote, autorização e evidência hospedada](plans/FECHAMENTO-F3-INSTALACAO-INTEGRAL.md). `apply_migration` aceitou o SQL revisado; histórico remoto 20261030202517_progress_account_atomic. Arquivo local alinhado a esse ID, loader atualizado, hash aprovado 9d0d074a51e62f4a98248ff699948546aab6a8203f586bd5d556b4b65bf85809 idêntico ao nome original 20261029182304. Não manter duplicata ou reaplicar init/align antigos.
+
+**Hospedado conferido:** três tabelas privadas com RLS, privilégios diretos bloqueados, dez funções com search_path fixo/PUBLIC e anon revogados, wrappers invoker, dez guards ativos, 12 triggers de updated_at anteriores e duas tabelas Google Calendar presentes. Gate com writes_enabled=false; cliente permanece false. Advisors: dois WARN antigos preservados, três INFO novos de RLS sem policy são esperados para tabelas privadas sem acesso direto; não criar policies permissivas. Nenhuma linha de progresso/Auth pessoal foi lida ou transferida; sem mudança de fórmula/colunas legadas, Auth/config/secrets ou deploy/push.
+
+**Local executado:** 625 testes aprovados após alinhar arquivo (19,40s); 23 direcionados, TypeScript/lint/build envDir:false anteriores desta rodada e lint final do loader/teste aprovados. Logs `/tmp/account-f3-*`; evidência de permissões reduzida versionável no relatório. Não é aceite JWT/PostgREST/sync/concorrência por conta real.
+
+**Próximo em Sol Alto:** acesso integral cotidiano (cadastro/confirmação, recuperação, reload, logout e feedback de salvamento) e aceite hospedado essencial; só depois avaliar ativação e associação pessoal com cópia integral. Não pedir de novo autorização da instalação concluída; escopo aprovado mantém gates fechados. Documentação/custódia sequenciais encerradas; versão 0.1.120. Registros F3/F2 abaixo são históricos.
+
+## F3 — banco ativo e instalação integral preparada — 0.1.120 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto; codex/fitness-ui-integration, base b11ed9d. [Pacote exato, impacto e evidências](plans/FECHAMENTO-F3-INSTALACAO-INTEGRAL.md). DominioDoMagoDB ACTIVE_HEALTHY, PG17.11; catálogo confirma ausência de progress_private/RPCs integrais. Tabelas legadas/RLS/políticas/triggers existentes inspecionados, sem selecionar linhas pessoais; histórico vazio não é banco vazio. Diferenças reais de Sequências/Rascunhos preservadas.
+
+Migração local ganhou preflight de instalação/identidade/colisões/RLS, com teste da variante hospedada e preservação de linhas sintéticas/schema/políticas/triggers. **23 direcionados e 625 globais aprovados**, tipos/lint/build envDir:false (35,47s). Logs `/tmp/account-f3-*`; hash e metadados reduzidos no relatório. Whitelists/manifests/changelog sincronizados em 0.1.120. Não aplicado SQL remoto, aberto gate, acessado secret/.env/progresso ou feito deploy/push/browser/subagente. Dois WARN existentes do Advisors registrados com remediação, sem ajuste automático.
+
+**Próximo em Sol Alto:** aguardar resposta à confirmação específica do pacote remoto revisável, já solicitada conforme ADR-004, aplicar só essa migração com escrita false e conferir segurança/contrato; depois fechar acesso integral cotidiano e aceite hospedado essencial. Nenhuma associação pessoal feita. Reserva encerrada após revisão sequencial de escopo/versões/links; não retomar microtestes de lembretes. Usuário não precisa executar testes deste lote.
+
+## F2 — retomada do banco solicitada; inicialização em andamento (30/10/2026)
+
+Astro Boy sequencial, Sol Alto; codex/fitness-ui-integration, base b11ed9d, produto **0.1.119 mantido**. [Resultado, evidências e próximo passo](plans/FECHAMENTO-F2-BANCO-HOSPEDADO.md). DominioDoMagoDB confirmado pelo usuário: restore_project retornou success:true e status passou INACTIVE → COMING_UP. Ainda sem disponibilidade/contrato hospedado comprovados. Consultas de migrações/tabelas/catálogos falharam durante inicialização; não inferir schema ausente.
+
+**Executado:** 11 testes SQL locais aprovados (`/tmp/account-f2-database.log`), PostgreSQL PGlite/Auth sintéticos; não Auth/RLS hospedados. Sem código de produto, build/lint/global repetidos ou bump. Nenhuma migração, gate, secret/.env, usuário/progresso pessoal, browser/contorno ou deploy/push. Não retomar microtestes de lembretes.
+
+**Próximo em Sol Alto:** confirmar fim da retomada; conferir histórico/schema/privilégios por metadados; preparar a aplicação aditiva em escopo específico conforme ADR-004. Depois fechar acesso integral/cadastro/recuperação/reload e aceite remoto essencial. Progresso pessoal ainda local, sem associação feita. Reserva documental encerrada; custódia sequencial. Arquivos de produto conferidos contra `/tmp/account-f2-before.json`.
+
+## F1 — renovação da sessão online implementada — 0.1.119 (30/10/2026)
+
+Sol Alto, Astro Boy sequencial, codex/fitness-ui-integration, base b11ed9d. [Entrega/limites](plans/FECHAMENTO-F1-SESSAO-ONLINE.md). Conferência de conta continua sem refresh e sem persistir tokens. Handoff online fornece início explícito de refresh; mount protegido gerencia visibilidade/cleanup/falha. Início assíncrono não sobrevive ao descarte; sessão encerrada não recebe tokens por writes tardios. Sem store/core ou gate novo.
+
+**Executado:** 17 direcionados e **621 globais aprovados**, TypeScript/lint/build envDir:false (43,06s). Quatro casos novos, Auth/HTTP/eventos sintéticos; não conta hospedada. Logs `/tmp/account-f1-focused.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`. Baseline `...-before.json`: 557/566 entradas anteriores idênticas; nove diferenças no escopo e versões. Novo helper/teste, SQL NÃO aplicado só whitelist. Reserva encerrada, custódia sequencial/versões/links/diff conferidos.
+
+**Remoto:** conexão Supabase list_projects retornou DominioDoMagoDB INACTIVE; usuário confirmou ser destino correto. Não retomado, sem query de dados, secrets, usuários reais, migração ou deploy/push. Status não comprova configuração ausente, só impede aceite hospedado agora. Progresso pessoal e gates preservados; cópia pessoal/associação continuam pendentes. Sem browser/contorno/subagentes.
+
+**Próximo em Sol Alto:** disponibilidade/contrato do projeto confirmado e lacunas de acesso único, cadastro/recuperação de senha/sessão após reload e transferência integral. Não promover legacy sync a garantia de preservação integral ou prometer conta pronta por testes sintéticos. Não retomar microtestes de layout. Modelo Médio depois na UX delimitada, com aviso prévio.
+
+## Prioridade vigente — fechar conta e preservação do progresso (30/10/2026)
+
+Usuário pediu acelerar, interromper a sequência demorada de testes e priorizar app acessível por contas com progresso salvo, sem perder seu progresso ao publicar na Vercel. [Plano de fechamento](plans/FECHAMENTO-CONTA-E-PUBLICACAO.md). QA manual adicional de lembretes/microajustes suspensa por diretriz do usuário; aceites já relatados preservados. Não é abertura dos gates nem comprovação remota. Produto 0.1.118 mantido, só planejamento/inspeção nesta rodada.
+
+Inspecionados Auth/AuthStore e workspace/account-session/live-sync/attach, gate cliente e migração integral local: cadastro/login e infraestrutura integral existem, mas gate de transferência false, SQL hospedado/configuração real não conferidos. Vercel não transfere localStorage; preservar cópia integral e associação explícita à conta, com readback/isolamento e recuperação. Não usar fixture como backup pessoal ou somar XP na importação.
+
+**Próximo: Sol Alto para conta/migração/sync e aceite integrado essencial**, antes de editar contratos. Depois Sol Médio na interface de acesso/feedback e polimento delimitado. Os testes indispensáveis de preservação/isolamento/retry continuam; não repetir microtestes de layout. Sem secrets/.env, dados pessoais, acesso remoto, deploy/push ou alteração de src/gates nesta rodada. Custódia sequencial; documentação de fechamento reservada e concluída.
+
+## R27-D2 — recuperação controlada confirmada manualmente (30/10/2026)
+
+Sol Médio, Astro Boy sequencial; produto 0.1.118 mantido. Usuário confirmou: falha sintética de uma vez após o write de core da fixture → recarga → recuperação oferecida → Recuperar progresso anterior → descartar plano → formulário inicial sem aviso atual, com Ritual QA preservado. **Aceite manual desse ponto específico de falha na QA no computador**, sem inspeção independente do agente ou prova de igualdade byte a byte de todos os dados.
+
+O erro foi lançado por JavaScript na fixture; não é fechamento real do processo/browser, falta física de disco, todos os limites de write, cliente antigo ou concorrência compartilhada entre abas. Projeção live e armazenamento do harness continuam simulados/isolados. O gate do produto segue false; não promover escrita com base somente nesse resultado. Sem nova alteração de código, dados pessoais, secrets, browser/contorno ou publicação. Registro completo no [roteiro D1/D2](plans/R27-D1-ACEITE-MOBILE-LEMBRETES.md).
+
+**Próximo em Sol Médio:** aceite mobile/tablet dos fluxos já implementados, com evidências de largura/aparelho, teclado/foco/overflow. Integração com stores/hidratação reais e critérios de ativação precisam de lote próprio em Sol Alto com aviso prévio. Não repetir testes locais como substituto de aceite pendente. Servidor QA mantido para continuidade manual. Custódia documental sequencial encerrada.
+
+## R27-D2 — falha controlada da fixture preparada (30/10/2026)
+
+Sol Médio, Astro Boy sequencial; versão de produto 0.1.118 mantida. Ferramentas QA: qa-storage.mjs extraído da fixture, teste qa-storage.test.mjs e controles de reiniciar/armar interrupção em reminder-qa.tsx. Falha uma única vez após persistir core no envelope QA; mantém journal e desarma antes de lançar para permitir recuperação. Reset apaga exclusivamente a chave QA; nenhuma leitura/escrita do localStorage real. Três testes direcionados, lint dos arquivos e compilação do harness passaram (`/tmp/qa-interruption-tests.log`, `/tmp/qa-interruption-lint.log`, `/tmp/reminder-qa-manual-build.json`). Nenhuma nova global do app executada.
+
+Artefato `/var/folders/t5/3qr37hs14vv_6k_7yd4_92kr0000gn/T/conselho-reminder-qa-AnsqOa`; servidor da fixture reiniciado em http://127.0.0.1:50845/ (PID 25666, exec 93694). Sem inspeção/HTTP/screenshot pelo agente. Gate do produto false; somente release do bundle sintético substituído. Sem src/stores/contratos/dados pessoais/secrets/remoto/deploy/push alterados. Não é simulação de fechamento real do processo nem prova de disco/concorrência compartilhada: erro JS controlado depois de um write da fixture.
+
+Solicitado ao usuário: Reiniciar dados QA → armar interrupção → preparar 09:00 → salvar → erro simulado → recarregar → Atualizar conferência → conferir Recuperar progresso anterior. **Resposta pendente**; não declarar recovery aprovada. Não reiniciar dados durante recuperação. Próximo em Sol Médio: validar revisão/rollback manual depois do relato. Reserva encerrada após revisão documental/diff-check.
+
+**Aceite manual D2 parcial (30/10/2026):** usuário confirmou interrupção simulada e exibição da recuperação após recarga/conferência. Próximo solicitado: confirmar Recuperar progresso anterior → descartar plano → retornar → abrir controle e verificar formulário inicial sem aviso atual, mantendo Ritual QA. Rollback ainda não aprovado; resultado aguardando relato. Não reiniciar fixture durante esse percurso. Sem alteração de produto/gates/dados pessoais ou nova execução de testes.
+
+## R27-D1 — percurso manual da fixture confirmado no computador (30/10/2026)
+
+Astro Boy sequencial, Sol Médio; versão do produto 0.1.118 mantida. Usuário confirmou: abertura da QA após correção do JSX; preparar/conferir/descartar/retornar; salvar/continuar local/retornar; estado adiado carregado após recarga (captura + confirmação de adiamento); dispensar/recarregar com Ritual QA preservado. **Aceite manual deste percurso na fixture sintética no computador**, sem inspeção independente do agente, largura ou aparelho mobile confirmados. Não comprova entrega de notificação ou a data inicial em ensaio controlado.
+
+[Registro completo e limites](plans/R27-D1-ACEITE-MOBILE-LEMBRETES.md). Harness tem somente um Ritual, projeção live simulada e estado exclusivo da aba em chave QA de sessionStorage. Não comprova hidratação dos stores reais, troca de conta, interrupção entre writes, concorrência de progresso entre abas, quota física, BFCache ou mobile/tablet. Não abrir gate com base neste aceite parcial. Produto, dados pessoais, backend/economia e gates permanecem inalterados; nenhuma nova execução de testes globais, deploy/push ou tentativa de browser.
+
+**Próximo:** Sol Médio no aceite mobile/tablet e organização dos casos de recuperação ainda pendentes, usando apenas fixture descartável. Nova alteração de contrato/isolamento/ativação exige avaliação em Sol Alto com aviso prévio. Servidor QA permanece no loopback 50845 para continuidade manual; não encerrar enquanto houver teste autorizado em uso. Registros anteriores abaixo são históricos. Custódia documental sequencial, reserva encerrada.
+
+## R27-D1 — runtime JSX do harness corrigido (30/10/2026)
+
+Usuário relatou que a página QA não abriu. Listener anterior confirmado, mas inspeção do JS compilado encontrou React.createElement na entrada sem binding React: falha de compilação do harness, potencial causa de tela branca; erro real da página ainda não observado. Script passou a usar jsx automatic e exigir react/jsx-runtime.js no metafile, mantendo proteção contra stores/Auth e gate do produto false. Build e eslint direcionado passaram; servidor reiniciado no mesmo endereço http://127.0.0.1:50845/ com PID 24630 (exec 34530). Artefato atual `/var/folders/t5/3qr37hs14vv_6k_7yd4_92kr0000gn/T/conselho-reminder-qa-Qgb3vM`. Sem HTTP/screenshot/inspeção de página pelo agente.
+
+Solicitado recarregar e informar tela ou mensagem exata. Resultado pendente; não declarar renderização validada. Produto continua 0.1.118, sem alteração de src/dados/gates ou novo servidor do app. Mudança apenas da ferramenta de QA. Sem secrets, deploy/push ou contorno da recusa de inspeção. Sol Médio adequado.
+
+**Aceite manual parcial do harness (30/10/2026):** após correção do JSX, usuário confirmou que a página “Ensaio descartável de avisos” apareceu. É confirmação manual de abertura no computador, sem observação independente do agente. Próximo caso solicitado: horário 09:00 → consentimento → Continuar → Atualizar conferência → verificar Ritual QA → Descartar → retornar ao ensaio. Resultado pendente, sem gravação de aviso solicitada. Produto/gates/progresso pessoal preservados.
+
+**Aceite manual parcial — descarte (30/10/2026):** usuário confirmou preparação → conferência → descarte → retorno ao ensaio sem erro. Só fixture sintética e relato manual no computador; sem inspeção do agente. Próximo solicitado: configurar 09:00 novamente, conferir, confirmar Salvar aviso, confirmar separadamente Continuar somente local e Voltar ao app. Fechar somente outras abas QA se existentes, sem fechar app pessoal (origem/progresso distintos). Resultado da gravação aguardando resposta. Produto 0.1.118/gates false, sem alteração de código ou dados pessoais.
+
+**Aceite manual parcial — gravação (30/10/2026):** usuário confirmou Salvar aviso → Continuar somente local → Voltar ao app sem erro, exclusivamente na fixture QA. Confirma percurso relatado, sem observação independente de payload, invariantes ou disco. Próximo solicitado: recarregar QA e abrir Aviso da atividade para conferir “Aviso atual” 09:00 e opções de adiar/dispensar. Resultado de persistência após recarga pendente. Não habilitar release do produto por esse relato; mobile, interrupção/recuperação e concorrência real seguem pendentes. Sem novo código/bump; produto 0.1.118 preservado.
+
+**Captura fornecida pelo usuário — persistência parcial (30/10/2026):** imagem Captura de Tela 2026-10-30 às 16.21.17 mostra a QA, Ritual QA/atividade em 30/10/2026, “Aviso atual: 31/10/2026, 09:00:00” e quatro opções de adiar/dispensar. Confirma visualmente que existe aviso carregado, mas não confirma a data originalmente esperada 30/10 às 09:00. Perguntado se houve adiamento antes da captura; resposta pendente. Não inferir bug/timezone nem aprovar igualdade da data. Captura fornecida voluntariamente é evidência visual, não inspeção de página pela ferramenta; sem acesso ao storage, alteração de dados/código/gates ou novo teste executado.
+
+**Esclarecimento do adiamento (30/10/2026):** usuário confirmou que aplicou um adiamento antes da captura. Aviso carregado em 31/10 às 09:00 é coerente com essa ação; não tratar a diferença da data da atividade (30/10) como bug de timezone. Evidência combinada: relato de recarga, captura mostrando aviso existente/ações e confirmação do adiamento. Aceite parcial de persistência do estado adiado no harness, não teste controlado da data inicial nem entrega de notificação. Próximo caso solicitado: dispensar aviso na QA, confirmar fluxo, recarregar e conferir mensagem de dispensado com Ritual QA preservado. Resultado pendente; sem alteração de produto/dados pessoais/gates.
+
+## R27-D1 — fixture disponível para aceite manual (30/10/2026)
+
+Sol Médio; produto 0.1.118 mantido. Harness recompilado com dados sintéticos em `/var/folders/t5/3qr37hs14vv_6k_7yd4_92kr0000gn/T/conselho-reminder-qa-0BjJZF` e servidor temporário loopback iniciado para abertura manual pelo usuário: `http://127.0.0.1:50845/` (PID 24453; sessão exec 30738). Build `/tmp/reminder-qa-manual-build.json`; servidor `/tmp/serve-conselho-reminder-qa.mjs`, estado `/tmp/reminder-qa-manual-server.json`. Não serve checkout/progresso real; só HTML/JS/CSS explicitamente permitidos e fallback das rotas da fixture. CSP bloqueia connect-src e framing, sem I/O remoto. Sem request HTTP, screenshot ou inspeção da página pelo agente; não é nova instância do app bloqueado nem contorno da recusa de inspeção. Alternativa é observação manual pelo usuário de fixture sintética independente.
+
+Solicitado ao usuário confirmar abertura de “Ensaio descartável de avisos” e percurso Aviso da atividade → horário/consentimento → Continuar para conferência. **Resposta pendente**, sem renderização ou fluxo aprovados. Progresso QA só Map e chave QA de sessionStorage, sem localStorage real; gates do produto preservados. Limites do harness continuam: projeção live simulada, um Ritual, sem prova de tabs compartilhadas/hidratação real/fidelidade total. Próximo em Sol Médio: analisar resposta e depois testar aplicação/continuação local somente nessa fixture. Sem alteração de código de produto, secrets, deploy/push ou subagentes.
+
+## Ciclos — data sincronizada com URL — 0.1.118 (30/10/2026)
+
+Sol Alto, Astro Boy sequencial, codex/fitness-ui-integration, base b11ed9d. [Correção e evidências](plans/CICLOS-DATA-URL-2026-10-30.md). Seleção explícita de dia/calendário/Hoje atualiza query por replace, sem scroll. Marcador vinculado à conta/intenção preserva filtros e aba da seleção interna; links externos/conta continuam usando tratamento anterior. Reload restaura a data escolhida. Virada automática mantém advanceDailyView e atividade quando já existentes; histórico e execução/ocultação mantêm regra anterior.
+
+**Executado:** quatro testes novos, 19 direcionados finais e **614 globais aprovados**, TypeScript/lint/build envDir:false (37,80s). Primeira global apontou dois harnesses sem dependências novas; corrigidos mantendo asserções e repetida global. Logs `/tmp/cycle-date-focused-reviewed.log`, `...-all-reviewed.log`, `...-types.log`, `...-lint.log`, `...-build.log`. Baseline `...-before.json`: 554 de 562 entradas anteriores idênticas; oito diferenças restritas ao escopo, mais helper/teste novos. Whitelists/manifestos somente versão; SQL não aplicado. Custódia sequencial/reserva encerradas; versões/links/diff conferidos.
+
+Sem stores/serviços/economia/recorrência/gates/dados pessoais alterados. Sem secrets/.env, browser/contorno, remoto/migração/deploy/commit/push ou subagentes. Reload/foco/scroll reais não comprovados por testes sintéticos. **Próximo: Sol Médio** para escolher outro dia, recarregar, Hoje e retorno à agenda no app; mobile/tablet e harness de lembretes ainda pendentes. Não abrir gates por passar Node.
+
+**Aceite manual confirmado pelo usuário em Sol Médio (30/10/2026):** cartão 31/10 atualizou query data=2026-10-31; recarga manteve 31; Voltar para hoje alinhou tela/query. Usuário respondeu que os três passos funcionaram. Ambiente de continuidade: navegador lateral do Codex no computador, sem nova largura informada. Não é inspeção independente nem aceite mobile/tablet. Sem alteração de produto/dados/gates ou nova tentativa de browser. Correção de seleção/recarga/Hoje aceita neste percurso manual; demais pendências preservadas.
+
+## Ciclos — sincronização de data com URL pendente (30/10/2026)
+
+Astro Boy sequencial, Sol Médio; produto 0.1.117 mantido, sem edição de código. Inspeção encontrou seleção de cartão/Hoje/calendário alterando selectedDate sem atualizar query data. Callback selectRelativeVisibleDay executado isoladamente com dia 30 + offset 1: selectedDay=31, navigationCalls=0; evidência `/tmp/cycle-calendar-url-review.json`. Não é teste de recarga/browser; o risco de retorno à data antiga é inferido do leitor de query existente. Sem dados pessoais/stores ou nova tentativa de inspeção.
+
+Próximo lote: alinhar seleção explícita, links atividade/data, estado de retorno e virada automática do dia sem mudança de regras. Coordenador pediu **Sol Alto antes da edição integrada**; Médio permanece adequado para aceite visual depois. Não adicionar sincronização ingênua por effect que reverta deep links, limpe filtros ou force scroll. Critérios: escolher dia e recarregar; Hoje; entrada por atividade; troca de conta; retorno Temporal; descanso/histórico e virada do dia preservados. Harness de lembretes/aceite mobile seguem pendentes. Registro diagnóstico somente; nenhuma nova aprovação de teste global ou bump.
+
+## Ciclos — seletor de datas refinado — 0.1.117 (30/10/2026)
+
+Sol Médio, Astro Boy sequencial, base b11ed9d, checkout codex/fitness-ui-integration. [Entrega e limites](plans/CICLOS-CALENDARIO-UX-2026-10-30.md). Cabeçalho da data abre escolha; Hoje separado; setas mantêm handlers por sete dias. Popover substituído por Dialog/sheet existente, mês pt-BR, salto direto por campo de data, seleção fecha, Cancelar não aplica e foco retorna sem scroll. Expanded Cards preservados. Usuário confirmou Novo ciclo/Cancelar acessível no computador estreito antes deste pedido; calendário novo ainda sem aceite visual.
+
+**Executado:** cinco testes novos e **610 globais**, TypeScript/lint/build envDir:false (44,01s), PostCSS 403 nós, versões/diff conferidos. Logs `/tmp/cycle-calendar-focused-final.log`, `...-all-reviewed.log`, `...-types-reviewed.log`, `...-lint-reviewed.log`, `...-build-reviewed.log`. Baseline `...-before.json`: 554 de 560 entradas anteriores idênticas; diferenças só Ciclos.tsx/CSS e versão/whitelists. Correções intermediárias de imports registradas. Novo componente e teste separados. Custódia sequencial; reserva encerrada.
+
+Sem alteração de stores/serviços/XP/Prana/recorrência/dados, SQL NÃO aplicado só versão. Sem secrets/.env, browser/contorno, remoto/deploy/commit/push ou subagentes. Gates de lembretes/conta/restore mantidos fechados. **Próximo em Sol Médio:** usuário conferir seletor, Hoje, salto direto e Cancelar; aceite mobile/tablet real e harness de lembretes continuam pendentes. Não inferir fidelidade visual ou foco/picker reais dos testes sintéticos.
+
+## R27-D1 — harness descartável compilado, aceite browser pendente (30/10/2026)
+
+Sol Médio, Astro Boy sequencial. Versão de produto 0.1.116 mantida; somente ferramentas de QA novas: `scripts/build-reminder-qa.mjs`, `tests/fixtures/reminder-qa.tsx`. Help/build do harness, lint e diff-check passaram. Artefato temporário em `/tmp/r27-d1-qa-build-final.log`; detalhes no [roteiro D1](plans/R27-D1-ACEITE-MOBILE-LEMBRETES.md). Nenhum servidor/browser novo, acesso à origem bloqueada, dado pessoal, secret, remoto/deploy/push ou subagente.
+
+Fixture com um Ritual sintético e UI/coordenadores existentes; adapter e estado live simulados. Release habilitado só no bundle de QA; gate do produto false. Metafile impede stores/Auth/sync; permite somente calculador puro de nível. Progresso do harness usa Map e uma chave de sessionStorage exclusiva de QA; nunca localStorage real. Outra aba não compartilha a fixture, e tema global/hidratação real não foram validados. Não importar fixture em src ou servir na origem principal. Reserva documental/ferramentas encerrada.
+
+**Aceite manual em andamento:** aguardando relato de Novo ciclo → foco no nome → Cancelar em painel estreito do computador, sem criar dados. Não é teste de celular real.
+
+**Pendência real:** servir e executar o artefato em contexto descartável com acesso de inspeção permitido, sem contornar a recusa da origem principal. Sem browser iniciado ou observado neste lote; matriz 360/390/768px e recarga/recuperação ainda pendentes. Os dois casos manuais anteriores (retorno e recarga no computador) continuam relatos do usuário, não provas do harness. Próximo permanece em Sol Médio, com honestidade sobre acesso e limites.
+
+## R27-D1 — retorno e recarga confirmados no computador (30/10/2026)
+
+Sol Médio; versão 0.1.116 mantida, sem alteração de produto. Inspeção do navegador continua recusada; não retentada. Código de retorno e CLI/status conferidos, diff-check passou. Solicitado ao usuário o primeiro caso não destrutivo: abrir Mês em outubro/2026, dia 30, ir à rotina e usar “Voltar à agenda selecionada”. **Usuário confirmou que mês e dia foram preservados.** Usuário também confirmou mês/dia após recarga e informou navegador lateral do Codex no computador. Dois casos manuais relatados, sem inspeção independente ou largura informada; não é aceite mobile/tablet. Nenhuma conclusão/exclusão ou dado de teste solicitado no perfil pessoal. Isso valida apenas navegação existente; controles de lembretes continuam ocultos pelo gate e dependem de harness isolado. Próxima ação: aceite mobile/tablet de navegação/toque/teclado e harness descartável para escrita, ainda pendentes; não repetir testes globais ou fazer bump por pendência visual. Custódia documental sequencial.
+
+## R27-D1 — nova tentativa recusada pela ferramenta (30/10/2026)
+
+Após usuário informar que alterou a configuração, uma tentativa regular de `cua.getTab` no navegador interno para `http://127.0.0.1:5173/ciclos` foi recusada: “A saved user permission setting blocks this action”; o gate de origem não concedeu acesso, citando permissão salva ou política gerenciada. Não houve observação de página ou nova tentativa por outra ferramenta/endereço. Não é evidência de defeito do app. Aceite visual/mobile e harness real continuam pendentes; versão 0.1.116 e gates preservados. Sol Médio permanece adequado. Próximo: resolver o acesso da ferramenta ou realizar aceite manual guiado pelo roteiro, sem usar progresso pessoal para testes destrutivos. Custódia documental sequencial; sem alteração de produto.
+
+## R27-D1 — roteiro de aceite preparado; inspeção pendente (30/10/2026)
+
+Astro Boy sequencial, Sol Médio confirmado; `codex/fitness-ui-integration`, base `b11ed9d`. Versão **0.1.116 mantida**, sem mudança de produto. [Roteiro e matriz mobile](plans/R27-D1-ACEITE-MOBILE-LEMBRETES.md) para 360/390/768px, dados descartáveis, navegação/recarga/recuperação e quatro comandos. Harness real ainda não construído; não dizer que está pronto ou validado.
+
+**Conferido nesta rodada:** status CLI, listener 127.0.0.1:5173 (PID 11208), inspeção de código/gate e diff-check. Sem HTTP/browser/capturas, dados pessoais, escrita, testes globais repetidos, secrets, remoto/deploy/push ou subagentes. Gate false. Os 605 testes anteriores continuam evidência histórica da C2, não aceite D1. Reserva documental encerrada após conferência de links.
+
+**Retomada:** aguardar resposta sobre mudança da permissão salva de inspeção. Não houve nova tentativa ou nova recusa neste lote. Se a configuração tiver mudado, tentar acesso regular pela ferramenta e respeitar o resultado; não contornar. Com acesso permitido, montar harness descartável e executar matriz real em **Sol Médio**. Sem acesso, manter aceite pendente, sem bump ou ativação por inferência. Mudança de contrato/isolamento exige Sol Alto com aviso prévio.
+
+## R27-C2 — controles da agenda conectados — 0.1.116 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, `codex/fitness-ui-integration`, base `b11ed9d`. [Implementação e limites](plans/R27-C2-CONTROLES-E-PREPARACAO-LEMBRETES.md). Agenda compartilhada de Semana/Mês/Calendário integra controles de avisos para ocorrências pendentes task/habit/commitment. UI lazy e adapter por interação; horário ou quatro comandos existentes, consentimento antes de sair, preenchimento preservado em erro e bloqueio de toque duplo. Compara projeção live/persistida e plano revisado, valida modo/perfil/ocorrência antes/depois de stage/readback. Só escreve transporte da aba; a gravação de domínio segue no workspace isolado anterior.
+
+Retorno da conferência preserva dia/período Temporal por URL interna validada (somente data/dia/mes/ano); sem destino externo ou switch de workspace. Sem marcador local prévio ou com vínculo/intenção/resolução de conta, recusa preparar sem alterar sincronização. Falha durante stage limpa só plano próprio quando comprovadamente seguro; journal/erro ambíguo conserva transporte para revisão. Não restaura automaticamente formulário de atividade não salvo, scroll ou cadeia de state anterior.
+
+**Executado:** 69 direcionados antes do último caso adicional; **605 globais finais aprovados**, TypeScript/lint/build `envDir:false` (**40,74s**), PostCSS (17 regras). Dezesseis testes novos. Logs `/tmp/r27-c2-targeted.log`, `...-all.log`, `...-types-final.log`, `...-lint.log`, `...-build.log`, `...-css.json`; baseline `...-before.json`, revisão `...-final-review.json`. Versões/links/diff conferidos; revisão React e custódia sequenciais; reserva encerrada.
+
+`REMINDER_WRITES_RELEASED=false`: controles conectados no código, mas ocultos/inativos no produto; nenhuma gravação real de avisos ou notificação entregue. Hooks/storage/DOM sintéticos não comprovam UI, quotas, BFCache, recarga/abas reais ou sync online. Dados/stores/serviços/regras preservados; SQL NÃO aplicado somente versão. Sem dados pessoais, secrets/.env, conta/banco remoto, migração/deploy/commit/push ou subagentes. Inspeção bloqueada anteriormente não retentada nem contornada.
+
+**Próximo: aceite mobile/tablet e percurso isolado — avisar troca para Sol Médio antes da próxima rodada.** Conferir 360/390/768px, horário, consentimento, erros/retorno, recarga/interrupção e outras abas em dados temporários, com release substituído apenas no harness. Não substituir por repetir Node ou abrir gate por inferência. Acesso de inspeção continua pendente. Uso online, reativação de aviso dispensado, outras fontes e entrega app fechado/push separados; contratos novos desses itens pedem Sol Alto após aviso. Não declarar lembretes prontos para uso cotidiano.
+
+## R27-C1 — workspace de lembretes integrado — 0.1.115 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega e limites](plans/R27-C1-WORKSPACE-PROTEGIDO-LEMBRETES.md). Bootstrap seleciona conferência isolada por rota explícita ou plano pendente na aba, sem App/stores/Auth. Conta/restauração explícitas conservam prioridade. Conferência manual mostra alterações, invalida consentimento ao mudar progresso e oferece somente ações do estado revisado. Recuperação vinculada às duas versões exatas do plano; descarte limpa apenas transporte. Novas aplicações recusam progresso sem modo local prévio ou com qualquer vínculo/intenção/resolução de conta; não alteram sync silenciosamente.
+
+**Executado:** 50 direcionados (44 lembretes + seis entrada); **589 globais aprovados**, TypeScript/lint/build `envDir:false` (**32,32s**). Dezesseis testes novos, inclusive eventos/concorrência/interrupção/recuperação estrangeira. Logs `/tmp/r27-c-reminders-final.log`, `...-all.log`, `...-types-final.log`, `...-lint.log`, `...-build.log`. Baseline `...-before.json`, revisão `...-final-review.json`; sete entradas anteriores mudaram no escopo, demais preservadas. Correção intermediária de tipagem registrada no relatório. Versões/links/diff conferidos; revisão React/custódia sequenciais, reserva encerrada.
+
+`REMINDER_WRITES_RELEASED=false`; UI de conferência integrada, mas escrita/recuperação real de lembretes, botões nas atividades, timer/push não liberados. Tests substituem release apenas no harness; dados/locks/hooks sintéticos não comprovam navegador/mobile, quotas, BFCache, cliente antigo ou sync online. Nenhum dado pessoal, .env/secrets, conta/banco real, migração aplicada, deploy/commit/push ou subagentes. Sem nova tentativa/contorno da permissão do navegador.
+
+**Próximo R27-C2 — manter Sol Alto:** ligar preparação dos avisos aos controles das atividades e tratar entrada/retorno/disponibilidade local sem perder formulário. QA real ainda obrigatório antes de abrir gate. Depois avisar para Sol Médio no aceite e refinamento visual mobile/tablet. Uso online de lembretes/conta hospedada e entrega app fechado permanecem separados; não declarar lembretes prontos para uso cotidiano.
+
+## R27-B2B — transporte e retorno testados — 0.1.114 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega e limites](plans/R27-B2B-TRANSPORTE-E-RETORNO.md). Transporte temporário da própria aba, plano copiado/validado por origem/perfil/revisão/checksum, readback antes de sair e ligação ao coordenador existente. Cancelamento limpa só transporte antes de recuperação; retorno exige alvo exato, ausência de journal, modo local válido e nova confirmação. Não é store de progresso ou fila de notificações.
+
+**Executado:** oito testes novos, **29 lembretes / 573 globais aprovados**, TypeScript/lint/build `envDir:false` (**25,83s**). Falhas iniciais do harness JSON e de narrowing TypeScript corrigidas, sem afrouxar validação. Logs `/tmp/r27-b2b-reminders-final.log`, `...-all-reviewed.log`, `...-types-reviewed.log`, `...-lint-reviewed.log`, `...-build-reviewed.log`. Baseline `...-before.json`, revisão `...-final-review.json`. Das 542 entradas preexistentes, só whitelists, teste de coordenação e manifests mudaram; novo código separado. Versões/links/diff conferidos; custódia sequencial, reserva encerrada.
+
+Servidor estava sem listener: Vite reiniciado em 127.0.0.1:5173 com `envDir:false`; mantido para recarga pelo usuário. `open_in_codex` retornou **queued**; renderização/HTTP/inspeção não confirmados. Sem contorno da permissão salva, dados pessoais, secrets, conta/banco remoto, migração/deploy/commit/push ou subagentes. Testes são sintéticos, não recarga/abas/quota reais.
+
+**Próximo R27-C — manter Sol Alto:** integrar workspace/bootstrap protegido com confirmações e retorno; resolver ergonomia e compatibilidade com sync online antes da entrega cotidiana. Gate `REMINDER_WRITES_RELEASED=false`; interface/timer/push continuam desativados. Confirmação de uso local não deve ser silenciosa nem imposta como snooze instantâneo. Avisar para Sol Médio somente no polimento visual posterior; QA mobile/tablet/conta hospedada continuam pendentes.
+
+## R27-B2A — escrita isolada de avisos testada — 0.1.113 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Contrato e limites](plans/R27-B2A-ESCRITA-ISOLADA-LEMBRETES.md). Planner confirma perfil/revisão pela projeção atual; coordenador pré-bootstrap sem stores/services constrói alvo alterando somente metadados do aviso. Reutiliza trava global e diário/readback/recuperação existentes. `REMINDER_WRITES_RELEASED=false`; UI/timer/push não ativados. Não fecha toda a B2.
+
+**Executado:** 21 testes lembretes, sete novos do coordenador; **565 globais aprovados**, TypeScript/lint/build `envDir:false` (**27,78s**). Sete testes de coordenação repetidos após ampliar fixture de formatação JSON. Logs `/tmp/r27-b2-reminders-final.log`, `...-coordinator-final.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`; baseline `...-before.json`, revisão `...-final-review.json`. Versões/links/diff-check conferidos. Avisos existentes de build mantidos; reserva encerrada após custódia sequencial.
+
+Recusa aba ativa/concorrente cooperativa, ausência de lock/consentimento, origem/revisão alteradas e intenção de conta. Interrupções antes/depois das quatro gravações ficam recuperáveis no diário. Sucesso conserva dados de domínio/Fitness, mas pode normalizar formatação JSON; não alegar byte-identidade total. Startup permanece bloqueado enquanto diário exige conferência. Sem testes de abas/disco/navegador reais.
+
+**Próximo R27-B2B — manter Sol Alto:** handoff do plano entre app e workspace isolado, cancelamento/retomada e ergonomia antes de ativar escrita ou interface. Não inserir botão chamando gravação B1 nem abrir gate por inferência. Fontes preexistentes preservadas salvo whitelists da versão; sem dados pessoais, secrets, conta/banco remoto, migração, deploy, commit/push, subagentes ou contorno de navegador. QA visual continua pendente; cliente antigo sem lease não é protegido automaticamente.
+
+## R27-B1 — persistência local de avisos implementada — 0.1.112 (30/10/2026)
+
+Astro Boy sequencial, Sol Alto, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Contrato e evidências](plans/R27-B1-PERSISTENCIA-LEMBRETES.md). Metadados opcionais `User.reminderState` seguem o perfil/progresso/backup integral existentes, sem raiz/chave/store novo. Comando exige conta/usuário/revisão; projeção real de Ritual agendado/Ciclo raiz/compromisso suprime fontes concluídas/excluídas/alteradas. Arquivos antigos sem campo continuam válidos. Metadados inválidos são apontados na auditoria de todos os perfis, sem remoção silenciosa.
+
+**Executado:** 14 testes de lembretes e 35 direcionados com startup/recuperação, **558 globais finais aprovados**, TypeScript/lint/build `envDir:false` (**30,32s**), versões/links/diff-check conferidos. Logs `/tmp/r27-b1-reminders-final.log`, `...-reviewed.log`, `...-all-reviewed.log`, `...-types-reviewed.log`, `...-lint-reviewed.log`, `...-build-reviewed.log`. A primeira global detectou import indireto de serviços no startup; corrigido separando codec da agenda, sem relaxar testes. Falhas de preparação de fixture também registradas no relatório.
+
+Baseline `/tmp/r27-b1-before.json`, revisão `...-final-review.json`: de 92 fontes preexistentes protegidas, 89 idênticas; alterações aprovadas só appStore/User/auditor de backup. SQL NÃO aplicado recebe somente versão; sem mudança de economia/recorrência/serviços/gates. Custódia sequencial, reserva encerrada. Sem navegador/contorno, dados pessoais, secrets, conta/banco real, migração, deploy, commit/push ou subagentes.
+
+**Próximo R27-B2 — manter Sol Alto:** lease/journal/readback/falhas e concorrência entre abas antes de ativar UI. CAS atual é só por instância do store; não é garantia durável/distribuída e falha de storage após mudar memória ainda exige coordenação. Sync legado não envia esses metadados; não alegar conta hospedada completa. UI/timer/push continuam não ativados. Origens de projeto/quest/missão/sequência permanecem pendentes de contrato de conclusão específico nesta integração. QA visual mobile/tablet segue pendente, sem transformar teste local em aceite visual. Interface depois em Médio, com aviso.
+
+## R27-A — base de lembretes implementada — 0.1.111 (30/10/2026)
+
+Astro Boy sequencial, **Sol Alto confirmado**, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Contrato e limites](plans/R27-A-CONTRATO-LEMBRETES.md). Novo módulo puro aponta para ocorrência Temporal por origem/ID/data, exige horário, calcula +1h/amanhã 9h/amanhã mesmo horário e dispensa somente aviso. Revisão/comando recusam repetição alterada ou antiga; disponibilidade/conclusão são dados fornecidos pelo chamador. Datas locais resolvem para instante UTC; DST testado. Não cria atividade, recorrência ou recompensa.
+
+**Executado:** oito testes novos e **552 globais aprovados**, TypeScript/lint/build `envDir:false` (**29,09s**), versões/links/diff-check conferidos. Logs `/tmp/r27-a-reminders.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`; baseline `...-before.json` e revisão `...-final-review.json` confirmam 90 fontes preexistentes protegidas idênticas. Whitelists frontend/SQL NÃO aplicado apenas versão. Avisos existentes de bundle/Browserslist preservados. Revisão/custódia sequencial; reserva encerrada.
+
+**Limite:** módulo ainda não conectado a UI, persistência, backup, timer ou entrega de notificações. Não alegar idempotência distribuída/multitab; apenas transição em memória. Nenhuma preferência pessoal gravada ou atividade notificada. Conta/gates/dados/economia preservados, sem secrets, banco remoto, migração, deploy, commit/push ou subagentes.
+
+Pedido de abrir Grandes Obras no painel interno retornou **queued** por `open_in_codex`; exibição/servidor/inspeção não confirmados. Não leu nem contornou origem bloqueada. QA mobile/tablet permanece pendente. **Próximo R27-B: persistência/backup/isolamento e ligação com ocorrências reais — manter Sol Alto.** Definir fuso/atraso/concorrência antes de ativar; depois interface em Médio, com aviso prévio. Push/app fechado e publicação têm escopo separado.
+
+## R26-M2E — retorno seguro corrigido — 0.1.110 (30/10/2026)
+
+Astro Boy sequencial, Sol Médio confirmado, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega e evidências](plans/R26-M2E-RETORNO-SEGURO.md). O hook Temporal conserva a origem local validada ao selecionar/fechar um dia e trocar de período, mantendo Ano → Mês → voltar. Não propaga estado arbitrário ou origem externa. Testes também conferem cancelamento sem gravação e retry após falha anterior à gravação com um único compromisso.
+
+**Executado:** regressão falhou antes da mudança (`/tmp/r26-m2e-reproduction.log`, 9/10); **44 testes Temporal e 544 globais finais aprovados**, TypeScript/lint/build `envDir:false` (**31,29s**), versões/links/diff-check conferidos. Logs `/tmp/r26-m2e-temporal.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`. Baseline `...-before.json` e revisão `...-final-review.json` confirmam **90 fontes protegidas idênticas**. Whitelists frontend/SQL não aplicado somente versão. Avisos de bundle/Browserslist existentes mantidos. Custódia sequencial, reserva encerrada.
+
+**Retomada:** revisão funcional local de Temporal encerrada neste recorte; **QA visual mobile/tablet ainda pendente** pela permissão salva do navegador, sem nova tentativa/contorno. Médio permanece adequado para esse aceite; não substituir por testes locais repetidos. Próximo lote de código proposto: **contratos de lembretes com horário/adiamento, trocar para Sol Alto antes de iniciar**; interface depois em Médio. Não iniciado neste lote. Conta real/push, fragmentos/inventário e ecossistema separados. Sem dados pessoais/secrets, economia/recorrência/backend novos, abertura de gates, migração, deploy, commit/push ou subagentes. Não declarar todo o app concluído.
+
+## R26-M2D — revisão local de navegação concluída — 0.1.109 (30/10/2026)
+
+Astro Boy sequencial, Sol Médio confirmado, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Reprodução e evidências](plans/R26-M2D-REVISAO-NAVEGACAO.md). Corrigido dia perdido ao trocar de Mês/Calendário para Semana: abas passam o dia local selecionado, inclusive na virada do ano; Ano mantém só o ano. Sem seleção válida, permanece o período escolhido. Compromisso recorrente mostra “A partir de” com a data inicial do cadastro, em vez da última ocorrência mensal. Quantidades/ocorrências não mudaram.
+
+**Executado:** dois casos falharam antes da correção (`/tmp/r26-m2d-reproduction.log`); **42 testes Temporal e 542 globais finais aprovados**, TypeScript/lint/build `envDir:false` (30,54s), versões/links/diff-check conferidos. Logs `/tmp/r26-m2d-temporal.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`; baseline `...-before.json` e revisão `...-final-review.json`. SHA-256 confirma 90 fontes protegidas idênticas; whitelists frontend/SQL não aplicado recebem apenas versão. Avisos existentes de bundle/Browserslist preservados. Custódia documental sequencial, reserva encerrada.
+
+**Limite e próximo:** inspeção do navegador recusada na tentativa anterior por permissão salva; não repetida nem contornada neste lote. **QA real mobile/tablet continua pendente — manter Sol Médio**, sem alegar foco/toque/fluidez/overflow por testes locais. Sem dados pessoais, secrets, backend/economia novos, abertura de gates, conta/banco real, migração, deploy, commit/push ou subagentes. Lembretes com horário/adiamento/push, fragmentos e ecossistema ainda não iniciados; contratos novos em Sol Alto após aviso. Não declarar escopo concluído.
+
+## R26-M2C — Calendário/Ano implementados — 0.1.108 (30/10/2026)
+
+Astro Boy sequencial, **Sol Médio confirmado por Fábio**, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega e limites](plans/R26-M2C-FORMULARIOS-TEMPORAL.md). Formulários anual/compromisso em Dialog existente, datas completas, limite anual em outro ano, rótulos e validação sem perda de campos em falha. Removidos seletores sobrepostos/arraste e trava global de toque do formulário anual. Anuais continuam criando um Habit ou Commitment pelo helper existente; nenhuma recompensa automática.
+
+Calendário agrupa os controles por cadastro recorrente, mostra quantidade de ocorrências, pede confirmação para excluir e conserva todas as ocorrências no dia. Cabeçalhos seguem início de semana; removida semana extra após o mês. Contexto celeste/outros prazos recolhíveis; sem repetir compromissos próprios nem cortar lista em 16 itens. Ano na URL, abas conservam período e links carregam retorno seguro do ciclo/mês para a visão anual.
+
+**Executado:** **540 testes globais aprovados**, nove novos; nove direcionados finais; TypeScript/lint aprovados; Vite `envDir:false` em **23,96s**, CSS parseado. Logs `/tmp/r26-m2c-all-final.log`, `...-forms-final.log`, `...-types-final.log`, `...-lint-final.log`, `...-build-final.log`, `...-css.json`. Avisos existentes de bundle/Browserslist mantidos. Revisão React/validação/custódia documental feitas sequencialmente. Correções intermediárias e limites descritos no relatório.
+
+**Preservação:** 90 fontes protegidas idênticas por SHA-256; baseline `/tmp/r26-m2c-before.json`, conferência `/tmp/r26-m2c-preservation.json`. Whitelist frontend/SQL NÃO aplicado apenas aceita 0.1.108. Stores/services/tipos/recorrência/XP/gates intactos; sem dados pessoais, .env/secrets, navegador/contorno, conta/banco real, migração, deploy, commit/push ou subagentes. Versão/changelog/índices sincronizados; reserva encerrada ao revisar links/diff.
+
+**Próximo: validação mobile/tablet dos fluxos existentes — manter Sol Médio.** QA visual/toque/teclado/rolagem/fluidez em 360/390px/tablet continua pendente, não comprovado por SSR/harness/CSS. Respeitar bloqueio do navegador, sem contorno/perfil pessoal. Lembretes com horário/adiamento/push, fragmentos/inventário, ecossistema e conta hospedada não iniciados. Novos contratos/legado anual/constância histórica exigem Sol Alto com aviso; publicação tem escopo próprio. Não declarar escopo global concluído.
+
+## R26-M2B — Hoje/Temporal mobile implementado — 0.1.107 (29/10/2026)
+
+Astro Boy sequencial, **Sol Médio confirmado por Fábio**, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega, evidências e limites](plans/R26-M2B-HOJE-TEMPORAL-MOBILE.md). Identidade elemental preservada; sem backend ou economia novos.
+
+**Implementado:** Semana com dias compactos e agenda inline; Mês com grade alinhada ao início da semana e resumo recolhível; agenda compartilhada nos diálogos de Mês/Calendário. Links por ID levam às atividades com retorno ao período/dia via URL, validado apenas para páginas temporais locais. Mudanças internas preservam rolagem; entrada externa continua iniciando no topo. Identidade da data estabilizada para não invalidar o calendário ao trocar o dia no mesmo mês. Ciclos aceita link só com data, oferece planejamento semanal e reutiliza o editor mensal/anual na criação rápida, preservando preenchimento em falha. Nenhuma atividade é concluída pela navegação.
+
+**Executado:** **531 testes globais aprovados**, dez testes novos de frontend, TypeScript/lint e Vite `envDir:false` em **8,43s**. Logs `/tmp/r26-m2b-all.log`, `...-mobile-final.log`, `...-types-complete.log`, `...-lint-complete.log`, `...-build.log`; CSS PostCSS com 173 regras/5 media queries em `/tmp/r26-m2b-css.json`. Revisão de React: cache local de apresentação substituiu memoização manual rejeitada pelo lint; teste de aria-hidden ajustado à string do JSX. Aceite usa só as execuções finais, sem ocultar as intermediárias.
+
+**Preservação:** SHA-256 confirma **87 fontes protegidas** (stores, services, helpers/tipos/App/main/bootstrap) idênticas. Em src/lib, apenas whitelist de versão mudou; migration não aplicada também só aceita 0.1.107. Dados, fórmulas, histórico, recibos e gates preservados. Baseline `/tmp/r26-m2b-before.json`, diff `/tmp/r26-m2b-scoped.diff`, revisão `/tmp/r26-m2b-preservation.json`. Sem browser/contorno, dados pessoais, .env/secrets, conta pessoal, banco remoto, migração, deploy, commit/push ou subagentes. Gates false. Revisão/custódia documental sequencial; reserva encerrada após links/versões/diff-check.
+
+**Próximo R26-M2C — manter Sol Médio:** formulários e organização restantes de Calendário/Ano, gestão dos lembretes e matriz de navegação/retorno. QA real em 360/390px/tablet continua pendente enquanto o navegador não estiver disponível; SSR/handlers/CSS não comprovam fluidez, teclado, foco ou hitboxes. Ano/Lua/Estações não receberam estado de URL neste lote. Legado/constância anual, novos contratos e release hospedado permanecem separados em Sol Alto. Não considerar o escopo inteiro finalizado.
+
+## R26-M2A — agenda compartilhada implementada — 0.1.106 (29/10/2026)
+
+Astro Boy, sequencial, checkout `codex/fitness-ui-integration`, base `b11ed9d`. Fábio autorizou iniciar após A30; nenhuma troca automática de modelo foi feita. [Contrato, compatibilidade e evidências](plans/R26-M2A-AGENDA-COMPATIVEL.md).
+
+**Implementado:** predicado compartilhado de recorrência para Ciclos/rotações/Temporal; edição não força mais DAILY; Invocar/editor com dias mensais, mês/dia anual e limite opcional. Semana/Mês/Ano/Calendário recebem os mesmos compromissos próprios e Rituais agendados. Subitens e membros controlados não duplicam compromissos da raiz/rotação. Rituais recebem data operacional local `YYYY-MM-DD`, independente de createdAt/fuso, com criação/edição e links por ID. Adapter usa a coluna due_date existente e mantém a chave no payload; nenhum schema novo. Iteração de dias inclui a borda em mudança de horário de verão.
+
+**Ano:** novas atividades anuais criam um único Habit YEARLY; aniversários são Commitments YEARLY. Ocorrências futuras, limite inclusivo e notas usam os comandos existentes. Tasks antigos com marcadores anuais não foram convertidos; a UI informa a limitação da repetição antiga. Mensais antigos sem dias continuam na leitura anterior até edição explícita. Anuais antigos sem mês/dia seguem a data inicial, alinhando Ciclos ao Temporal anterior; recibos preservados. Constância anual/rotações mantém a regra legada; não há recálculo de XP ou nova economia.
+
+**Executado:** **521 testes globais aprovados**, zero falhas; **28 direcionados finais**; TypeScript e lint aprovados; Vite `envDir:false` em **9,40s**. Logs `/tmp/r26-m2-all-final.log`, `...-reviewed-final.log`, `...-types-verified.log`, `...-lint-verified.log`, `...-build.log`. Testes de agenda, recarga e adapters com dados sintéticos; SQL de conta no PGlite local dentro da suíte, sem chamadas ao projeto real. Primeira global 518/519 por harness antigo de criação; corrigida a inicialização lazy/helpers e o passo dos dois novos casos. Só a execução final acima é aceite.
+
+**Custódia:** baseline `/tmp/r26-m2-before.json`, revisão `/tmp/r26-m2-preservation.json`; 11 fontes protegidas de auth/Fitness/App/bootstrap/gates/recompensas idênticas por SHA-256. Versão/manifests/changelog e whitelist da migration NÃO aplicada atualizados. Diff-check/links/versões conferidos no encerramento. Sem subagentes, dados pessoais, .env/secrets, navegador/contorno, login pessoal, banco remoto, migração, deploy, commit/push. Gates de conta/restauração false. Avisos de chunks/Browserslist permanecem. Revisão React e custódia documental em sequência; reserva encerrada.
+
+**Próximo R26-M2B — pode usar Sol Médio:** melhorar Hoje/Temporal e consistência de criação/edição no celular, com resumo da agenda e retorno preservado. Aceite visual real 360/390px/tablet continua pendente; testes locais não o substituem. Conversão explícita de anuais legados, constância anual/rotações/histórico de agenda e novas mudanças de contrato ficam para lote próprio em Sol Alto; inventário/fragmentos e release hospedado continuam separados. Não considerar o app inteiro concluído.
+
+## A30 — análise integral do áudio e diagnóstico da agenda concluídos (29/10/2026)
+
+Astro Boy, sequencial, checkout `codex/fitness-ui-integration`, base `b11ed9d`, versão **0.1.105 preservada**. [Análise de diretrizes, confronto com código e plano](03-Project-Management/reports/A30-DIRETRIZES-AUDIO-2026-10-29.md). Áudio de **317,952s** transcrito integralmente em português por reconhecimento local (`small` multilíngue); artefatos privados em `/tmp/conselho-audio-diretrizes`, sem transcrição/conversa pessoal no repositório. Download de ferramentas/modelo ocorreu; não houve upload do áudio para transcrição. Falas gravadas foram analisadas, sem aplicação automática de alterações de regra.
+
+**Confirmado nesta rodada:** estrutura de Ritual/Ciclo/Jornada/Grande Obra/Missão já representada; contadores genéricos por data, conclusão/Undo/XP e trilhas têm **75 testes direcionados aprovados**. Cinco cenários sintéticos executados confirmaram divergência anual entre Ciclos/Temporal, mensal vazio correspondendo a todos os dias, edição rápida alterando mensal para diária e compromissos próprios fora do seletor de semana/mês/ano. A quinta sondagem aponta lacuna de contrato: `dueDate` em Task sintético é ignorado, mas o campo ainda não existe no tipo/formulário de Ritual; não é reprodução de campo disponível na UI. Fluxo anual por marcadores/createdAt e inconsistência Missão/capítulo são achados estáticos, sem aceite de navegador.
+
+**Evidências:** `/tmp/conselho-audio-diretrizes/testes-direcionados.log`, `reproduzir-agenda.mjs`, `reproducao-agenda.json`, `transcricao-result.json` e `transcript.json`. Não foram repetidos build/lint/tipos/suíte global por ser análise sem alteração de código. Custódia final: **523 arquivos de fontes/testes/scripts/SQL/manifests idênticos por SHA-256**, nenhum arquivo acrescentado nesses diretórios, três posições de versão 0.1.105 coerentes, links locais conferidos e `git diff --check` aprovado. Resultado em `/tmp/conselho-audio-diretrizes/verificacao-final.json`. Sem browser/contorno de bloqueio, dados pessoais do app, secrets, migração, deploy, commit/push ou ativação de conta/restauração. Gates false. Revisão documental sequencial; reserva de relatório/continuidade/fila/índice/plano mobile encerrada ao conferir o diff.
+
+**Próxima implementação continua R26-M2, agora com prioridade funcional da agenda.** Recomendar **Sol Alto antes de iniciar contratos/compatibilidade de recorrência e data pontual**; a execução desta análise não trocou modelo nem iniciou esse código. Depois, **Sol Médio** para formulários/Hoje/Temporal mobile e movimento por recibos. Decidir explicitamente datas inexistentes e preservar históricos antigos; não criar motor/persistência paralelo. Conta hospedada, inventário e aceite real de celular/tablet continuam separados. O áudio não redefine XP/Prana nem aprova migração de Missões ou financeiro completo.
+
+## R26-M1 — revisão mobile de formulários e áreas — 0.1.105 (29/10/2026)
+
+Astro Boy em **Sol Médio**, sequencial, checkout `codex/fitness-ui-integration`, base `b11ed9d`. Revisão frontend após a implementação local de 1B6B. [Relatório e matriz de aceite](plans/R26-M-REVISAO-MOBILE-ATUAL.md). Navegador continua fora do aceite; não houve contorno do bloqueio nem inspeção de dados pessoais.
+
+Corrigida colisão comprovada nos seletores: campos file de AccountResolutionPanel usavam a classe de consentimento e recebiam largura/altura de checkbox de 22px. Agora têm linha própria, largura limitada ao contêiner, controle >=48px e foco visível; apenas checkbox recebe 22px. Consentimentos/validações de escolha preservados. Ajustados quebra de texto/valores, espaço entre botões, detalhes tocáveis, safe areas laterais e campos de Auth com name/autocomplete adequados. Nota de sync centralizada e botões empilhados em telas estreitas. Busca de áreas no Santuário tem 48px/16px, rótulo preservado, name/autocomplete/spellcheck, foco no grupo e suporte a conteúdo longo, sem mudar filtros/rotas.
+
+**Executado:** 22 testes direcionados e **504 globais aprovados**, TypeScript/lint/build `envDir:false` aprovados; build **52,92s**. CSS/seletores analisados por PostCSS/selector-parser (49/15/273 regras nos três arquivos). Diff-check/versões/links conferidos. SHA-256 confirma fontes protegidas de stores/auth/sync/transportes/cliente/App/main preservadas. Nenhum teste novo para simples estilo; testes funcionais existentes repetidos. A whitelist de backup e a migration não aplicada somente aceitam a versão corrente 0.1.105. Sem mudança de schema, domínio ou gate.
+
+Logs `/tmp/r26-mobile-targeted.log`, `...-all.log`, `...-types.log`, `...-lint.log`, `...-build.log`; snapshot `...-before.json`. Avisos existentes de bundle/Browserslist permanecem. **Não há medição real de overflow, hitboxes, teclado/zoom nem capturas em 360/390/768/1440px**; parse CSS/harness não substituem navegador. Sem dados reais, .env/secrets, banco remoto, deploy, commit/push ou comunicação externa. Conta/restauração continuam com gates false.
+
+**Próximo: R26-M2, Ciclos de hoje/formulários e navegação de execução, manter Sol Médio.** Depois completar demais abas e aceite real da matriz mobile/tablet quando o acesso funcionar. Defeito de auth/contrato/persistência exige aviso e retorno a Alto antes de mudar essa camada; release remoto continua escopo separado. Reserva encerrada; revisão/custódia em sequência pelo Astro Boy.
+
+## R25-1B6B — resolução e recebimento implementados localmente — 0.1.104 (29/10/2026)
+
+Astro Boy em **Sol Alto**, sequencial, checkout `codex/fitness-ui-integration`, base `b11ed9d`. [Plano e limites](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md#1b6b--escolha-explícita-e-recebimento-integral--01104-29102026). Conta pessoal real não ativada; sem publicação/migração remota.
+
+**Implementado:** escolha integral local ou online após comparação válida, cópias salvas/readback de local/online/tentativa quando existirem e duas confirmações de escopo/substituição. Dispositivo sem dados pode entrar em modo explícito de recebimento antes de Auth, comparar e receber arquivo de outra origem após validar identidade. Vínculo local mantém origem do dispositivo; hash/recibo autenticados validam o arquivo original sem exigir que a origem do arquivo seja a mesma. Não há merge, soma de XP, replay de conclusões ou novo store.
+
+Cada escolha usa novo commit CAS e recibo do protocolo existente, inclusive ao escolher o arquivo online sem alterá-lo. Essa revisão nova cerca envios antigos: depois da confirmação, um pedido atrasado não substitui a escolha; repetição idempotente de recibo antigo não regrava estado. Journal de resolução guarda versões anterior/destino e metadados antes do commit. Domínio local só muda após recibo/readback; gravação parcial continua bloqueada no startup e pode retomar a mesma escolha. Nenhum reenvio automático na recuperação: consulta e retry têm ações/consentimentos separados.
+
+Conflito após comparação conserva o journal. Reavaliar mantendo local exige leitura atual que prove revisão diferente da esperada e nenhum início/alteração local; não faz escrita remota, não apaga intent anterior e retorna ao workspace. Sem prova de revisão, sem rede, com dados locais externos ou recebimento parcial não é cancelamento offline: permanece protegido para revisão/retomada. Restauração, transferência e sync observam o novo journal e não passam por cima dele. Painel único, cópias/escopo claros, opção de fechar comparação e consentimento de abas antes dos botões de escolha.
+
+**Executado:** **504 testes globais aprovados** (`node --test tests/**/*.test.mjs scripts/astro-boy.test.mjs`); após o ajuste final de organização da UI, **42 direcionados repetidos e aprovados**. Tipos/lint/build finais aprovados, Vite `envDir:false` **11,98s**. Logs `/tmp/r25-1b6b-all.log`, `...-reviewed2.log`, `...-types-final2.log`, `...-lint-final2.log`, `...-build-final2.log`. Diff-check/links/versões conferidos. SHA-256 confirma dez fontes protegidas de stores/auth/sync/tipos/cliente/App/main/bootstrap idênticas ao início. SQL só aceita versão corrente na migration ainda não aplicada; nenhuma dependência nova.
+
+Primeira execução direcionada identificou duas expectativas antigas de leitura de metadados e import não usado; corrigidos. O rearranjo final de JSX revelou erro de sintaxe no TypeScript/build; corrigido e conferido novamente. Harness de UI agora também recusa diagnósticos de parse e painel duplicado. Apenas logs finais acima são aceite do lote.
+
+SQL real em PGlite temporário, identidade/cliente/locks/DOM/files sintéticos; não são Auth/JWT/PostgREST hospedado, concorrência real multissessão ou QA visual/mobile. Sem navegador/contorno de bloqueio, dados pessoais, .env/secrets, sessão pessoal, Advisors remoto, deploy, commit/push ou comunicação externa. Gates de conta/Auth/restauração/servidor **false**; avisos de bundle/Browserslist existentes permanecem. Testes verificam valores/IDs preservados, não alteram seus dados pessoais.
+
+**Próxima frente: revisão e validação mobile/tablet do frontend — pode trocar para Sol Médio na próxima rodada.** Não iniciar migração/release nesse modelo por inferência. Aceite hospedado da conta/restauração, plano de rollout para clientes antigos e abertura de gates continuam separados, sem autorização nova de deploy. Contratos/auth/concorrência que apareçam nessa frente voltam a Sol Alto com aviso. Navegador real precisa funcionar para aceite visual; até lá, somente código/testes locais, sem contornar bloqueio. Reserva encerrada; revisão/custódia em sequência pelo Astro Boy.
+
+## R25-1B6A — sync de sessão e conferência de conflitos preparados — 0.1.103 (29/10/2026)
+
+Astro Boy em **Sol Alto**, sequencial, checkout `codex/fitness-ui-integration`, base `b11ed9d`. Implementação local sob gates fechados; **não houve ativação da conta pessoal**. [Plano e evidências](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md#1b6a--sync-durante-a-sessão-e-conferência-de-versões--01103-29102026).
+
+**Entregue:** consentimento adicional para sincronizar durante o uso, com sessão transitória cedida pelo workspace e lease exclusivo pré-App. `account-live-sync` usa o arquivo integral e protocolo/recibo existentes, persiste intent antes do envio, CAS por revisão e vínculo após readback; nunca hidrata/recalcula domínio. Debounce de core/Fitness, conferência manual/foco/retorno visível, sinalização acessível do estado e parada antes de sair. Edições durante commit ficam locais e seguem em outro envio. Timeout/erro/recarga não reenviam automaticamente; outra identidade, perda de lease, conflito remoto ou metadado estrangeiro bloqueiam/param. Global Auth/cliente legado continuam desativados no documento online isolado. Recarga exige nova entrada explícita; não há sessão persistida nem flush de rede presumido no pagehide.
+
+**Conflitos:** workspace compara local/online e exporta as versões, inclusive arquivo da tentativa pendente; mostra quantidades/diferenças e XP por perfil sem somar recompensas. Mudança durante leitura invalida comparação. Nenhum comando de substituir/mesclar/rebasear está habilitado. Parar sincronização é encerramento local do coordenador, não alegação de revogação do JWT em outros dispositivos.
+
+**Executado:** **486 testes globais aprovados** (`node --test tests/**/*.test.mjs scripts/astro-boy.test.mjs`); depois foram acrescentadas duas provas de mount/identidade tardia e o arquivo de ciclo de sessão passou com **5 testes direcionados**. Tipos/lint finais limpos; build Vite `envDir:false` **29,98s**. Diff-check, versões e links conferidos. SHA-256 confirma oito fontes protegidas de stores/auth/sync/tipos/cliente/App idênticas; bootstrap/main/entradas mudaram deliberadamente. SQL só ampliou whitelist na migration não aplicada; sem nova dependência. Logs `/tmp/r25-1b6-all.log`, `...-lifecycle-final.log`, `...-types-final.log`, `...-lint-final.log`, `...-build.log`; baseline `...-before.json`.
+
+Testes do coordenador/transporte usam SQL real no PGlite temporário, identidade e cliente sintéticos; lifecycle/UI/locks/timers em harness. Não comprova Supabase Auth/JWT/PostgREST hospedado, concorrência real multissessão nem QA visual em celular/tablet. Skill Supabase/changelog/docs públicos consultados, sem query/credencial do projeto real. Sem navegador/contorno do bloqueio, dados pessoais, .env/secrets, sessão real, migração remota, deploy, commit/push ou comunicação externa. Gates de conta/Auth/restauração/servidor **false**; avisos existentes de bundle/Browserslist permanecem.
+
+**Próxima 1B6B — permanecer em Sol Alto:** resolver explicitamente versões divergentes/tentativas incertas e receber progresso em outro dispositivo, com prévia/cópias/consentimento, revisão e recuperação após interrupção. Este lote conclui o coordenador da sessão e a conferência, não toda a integração online. Depois faltam aceite hospedado/rollout para clientes antigos e QA real. Avisar ANTES de mudar para **Sol Médio** no mobile/tablet/acabamento. Reserva encerrada; custódia/revisão em sequência pelo Astro Boy.
+
+## R25-1B5 — vínculo e proteção de início implementados — 0.1.102 (29/10/2026)
+
+Astro Boy em **Sol Alto**, execução sequencial no checkout `codex/fitness-ui-integration`, base `b11ed9d`. Entrega local, sem conta pessoal ativada. A autorização para assumir a integração sem esperar Matheus permanece; não inclui deploy, secrets, migração remota ou alteração de economia. [Plano e limites](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md#1b5--vínculo-durável-e-envios-posteriores--01102-29102026).
+
+**Implementado:** vínculo durável opcional por consentimento separado, contendo só referência ao recibo/revisão/hash/baseline/origem e usuário, sem credenciais ou cópia paralela do domínio. Depois de confirmado, próximos envios explícitos conferem o arquivo/recibo remoto e usam CAS contra a revisão vinculada. Tentativas duráveis aceitam revisão UUID, preservando leitura das primeiras tentativas empty. Handoff grava isolamento e vínculo verificados ANTES de retirar a tentativa; falha mantém barreira recuperável. Vínculo inválido impede início; vínculo válido isola o documento antes de App/cliente legado, mesmo se o marcador local estiver ausente. Isso não autentica o usuário nem ativa sync.
+
+**Caminho legado:** novo guard no serviço, preparado para o rollout, verifica identidade/formato antes de ler/publicar tabelas parciais e novamente antes de hidratar. Conta integral, identidade diferente, RPC indisponível e resposta desconhecida são recusadas. Rechecagem de fingerprint ocorre depois dessa última espera, preservando edições durante Auth/RPC. **Esse guard de rollout só fica ativo com o gate da integração aberto; atualmente false**, sem chamadas novas no fluxo legado existente. Não corrige leitores de clientes antigos já distribuídos; plano de rollout e concorrência real continuam pendentes.
+
+**Executado:** suíte completa `node --test tests/**/*.test.mjs scripts/astro-boy.test.mjs`, **467 aprovados**. Depois, um teste adicional de disputa CAS entre conferência e commit foi acrescentado: **27 direcionados aprovados**, incluindo esse caso e recuperação da pendência. TypeScript/lint finais e Vite `envDir:false` aprovados; build **16,98s**. Diff-check/versões/links conferidos. SHA-256 confirma oito fontes protegidas (stores/auth/tipos/cliente/App/bootstrap) preservadas; serviço mudou somente pelas guardas, sem alterar fórmulas/payloads. SQL só ajustou whitelist de versão na migration ainda não aplicada; sem dependência nova. Logs `/tmp/r25-1b5-all.log`, `...-reviewed.log`, `...-types-final2.log`, `...-lint-final.log`, `...-build.log`.
+
+Dados de teste sintéticos: PGlite/SQL real em memória, SDK/cliente/DOM/locks substitutos conforme harness. Não prova Auth/JWT/PostgREST hospedado, múltiplas sessões reais ou QA visual. Sem navegador/contorno de bloqueio, dados pessoais, .env/secrets, sessão real, banco remoto, deploy, commit/push ou mensagem externa. Gates de conta/Auth/restauração/servidor **continuam false**; avisos de bundle/Browserslist existentes permanecem.
+
+**Próximo: 1B6, sincronização integral/retomada online e resolução explícita de conflitos — manter Sol Alto.** Recebimento em outro dispositivo, bootstrap autenticado integral, transições logout/conta e sync contínuo ainda não implementados. Pendência sem recibo após conflito conserva as versões; não faz rebase/limpeza automática. Depois virão aceite hospedado/concorrência e QA real; avisar ANTES de trocar para **Sol Médio** para mobile/tablet e acabamento. Reserva encerrada; revisão e custódia documental pelo Astro Boy sequencialmente. Não apresentar o lote como integração online completa.
+
+## R25-1B4 — confirmação e retomada local preparadas — 0.1.101 (29/10/2026)
+
+Astro Boy executou sequencialmente em **Sol Alto**, no checkout `codex/fitness-ui-integration`, base `b11ed9d`, após a autorização de Fábio para assumir esta integração sem esperar Matheus. Entrega local; **não é conta pessoal online habilitada**. [Implementação e limites](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md#1b4--confirmação-isolada-e-retomada-local--01101-29102026).
+
+Novo workspace `/?progresso=conta`, acessível pela preparação de conta no Grimório, carrega antes de App/stores/cliente global. Confere cópia salva e consentimento de todos os perfis; Auth transitório é construído apenas por ação explícita, sem sessão persistida. Registro durável da tentativa precede o commit. Consulta de recibo não reenvia; retry separado reutiliza a mesma operação/arquivo e recusa arquivo antigo quando o progresso mudou. Pausa conserva a tentativa e instala isolamento local antes de liberar App; fechamento exige recibo/leitura exata, confirmação de uso local e, se necessário, consentimento para preservar edições posteriores. Nenhuma hidratação ou ativação de sync automático.
+
+**Proteções:** gate estático da UI/Auth e gate privado do servidor continuam **false**; restauração também fechada. Contas remotas com progresso integral/legado são recusadas, sem substituir/mesclar. Restauração e transferência não podem escrever uma sobre a pendência da outra; guardas de geração/origem/identidade/baseline e exclusividade continuam. Corrigida leitura de metadado de conta na restauração para ocorrer somente após obter a exclusividade. Alteração na migration ainda não aplicada restringiu-se a aceitar o arquivo de versão 0.1.101.
+
+**Executado:** **453 testes globais aprovados**, incluindo 18 novos; após o ajuste final da indicação de edições locais, **30 direcionados aprovados**. TypeScript, lint e Vite build `envDir:false` aprovados; build final **10,74s**. Diff-check e versões conferidos; SHA-256 confirma nove fontes protegidas (stores/auth/sync/tipos/cliente/App/bootstrap) idênticas ao início deste lote. Testes de protocolo usam PostgreSQL/PGlite em memória; Auth/HTTP/DOM/locks são sintéticos, e o SDK instalado também foi exercitado com fetch interceptado. Não demonstram Auth/JWT/PostgREST hospedado, concorrência real entre sessões ou QA visual/toque. Sem navegador, dados pessoais, .env/secrets, login real, banco remoto, deploy, commit/push ou comunicação externa. Avisos de bundle/Browserslist permanecem.
+
+**Próxima etapa: 1B5, inicialização online compatível e vínculo durável**, ainda em **Sol Alto**. Reconhecer o arquivo integral antes do cloud-first/reset/autosync legado; definir retomada/conflitos sem segundo escritor, preservar ambos os lados e testar troca de conta/recarga. Tentativa pausada sem recibo e com edições locais não pode reenviar o arquivo antigo nem ser descartada automaticamente. Aceite remoto e navegador continuam pendentes; não liberar gates isoladamente. Depois, avisar ANTES da troca para **Sol Médio** para QA mobile/tablet e polimento. Reserva deste lote encerrada; revisão/custódia documental realizadas sequencialmente pelo Astro Boy.
+
+## R25-1B3 — backend integral implementado localmente — 0.1.100 (29/10/2026)
+
+Fábio autorizou explicitamente implementar agora sem esperar Matheus; a dependência operacional anterior foi revogada para este lote de código. Astro Boy em Sol Alto, execução sequencial, checkout `codex/fitness-ui-integration`, base b11ed9d. Sem autorização de deploy/migração remota/secrets ou mudança de economia. [ADR-004](04-ADRs/ADR-004-Progresso-Integral-Opt-In.md) e [plano](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md).
+
+Migração aditiva local gerada por CLI implementa estado integral autoritativo opt-in com os mesmos bytes do backup, revisão CAS, idempotência e recibo na mesma transação; não recalcula XP. Tabelas privadas/RLS, auth.uid comparado ao destino esperado, wrappers invoker e helpers privados owner-bound com grants restritos. Gate de escrita do servidor inicia false. Triggers preservam legado sem opt-in e impedem dois escritores ativos após adesão. Contas já com domínio legado são recusadas para revisão, sem sobrescrita/mesclagem automática.
+
+`account-transport.ts` oferece leitor, preparo explícito de todos os perfis, commit, consulta de recibo e confirmação por leitura exata. Identidade validada via getUser do cliente fornecido; nenhuma instância/sessão global criada. Ponte ao SDK passa TypeScript. Timeout pode recuperar recibo sem novo pagamento/reenvio. Confirmar armazenamento não autoriza associação/hidratação; resultado continua associationAllowed false, sem chamador de escrita montado. Stores/core/auth/sync/tipos/cliente/bootstrap/App preexistentes preservados por SHA-256.
+
+**Executado:** 19 testes novos (11 SQL + 8 transporte), **435 globais aprovados**. Depois do ajuste de narrowing TypeScript e ponte de tipos, **19 direcionados repetidos**, tipos/lint e build `envDir:false` aprovados; build final **7,33s**. SQL real executado só em PostgreSQL 18.6/PGlite 0.5.13 temporário em memória (dependência dev fixada). Roles/identidade são sintéticas, uma conexão serial: não é prova de Supabase Auth/JWT/PostgREST, rede, versão hospedada ou concorrência multissessão real. Sem DB Advisors remoto/navegador/dados pessoais/secrets, commit/push/deploy. Avisos existentes de bundle/Browserslist permanecem. Migração NÃO aplicada no Supabase do projeto; nenhum gate real aberto. CLI alterou seu cache de atualização; o arquivo foi devolvido ao valor anterior, sem alteração restante.
+
+**Próxima etapa/modelo:** confirmação e retomada durável na UI e bootstrap online que reconheça o arquivo integral antes de auth/reset/sync legado — **continuar em Sol Alto**. Não remover isolamento nem liberar o servidor antes desse caminho e dos testes de conta/abas. Migração de contas legadas não é automática. Abertura/QA real ainda pendentes. Ao entrar na validação mobile/tablet ou polimento visual, avisar ANTES para trocar a **Sol Médio**. Matheus continua com documentação e revisão do backend; já não é necessário esperar que escreva este protocolo. Reserva encerrada, revisão/custódia sequenciais pelo Astro Boy; implementação local não é conta pessoal habilitada.
+
+## R25-1B3 — dependência de backend confirmada; integração não executada (29/10/2026)
+
+Astro Boy em Sol Alto, execução sequencial, checkout `codex/fitness-ui-integration`, versão 0.1.99 preservada. `git ls-remote origin refs/heads/main` retornou **b11ed9d85bc000e9b8fb0eb48de0d8f647823b0b**, igual a `origin/main` e à base do checkout. Não houve pull/merge, pois nenhuma revisão nova foi identificada. Inventário de fontes/migrations do repositório, exports do sync e consumidores do contrato confirma: existe interface/validador no frontend, mas não há adaptador de leitura completa/commit conectado para 1B3.
+
+**Dependência real:** Matheus precisa fornecer/revisar implementação de identidade e vínculo de perfil, leitura integral com revisão/cobertura, commit coordenado/idempotente e recibo verificável. O sync parcial existente e a função de hidratação não satisfazem esse contrato. Não criar outra camada de persistência nem remover isolamento para fazer login. Orientação vigente do usuário mantém backend com Matheus; continuar genericamente não foi interpretado como autorização para nova política/schema ou perda parcial.
+
+**Executado nesta rodada:** inspeção estática local, conferência da revisão pública de main via Git, links/versões e diff-check. Nenhum teste/build/TypeScript/lint novo, pois não houve mudança de produto/testes. Os 416 testes e build de 0.1.99 continuam evidência do lote anterior, não desta rodada. Fontes/manifests/migrations preservados por SHA-256. Sem navegador, dados pessoais, sessão/secret, banco, deploy/push ou comunicação com Matheus.
+
+**Retomada:** pergunta pendente ao usuário sobre branch/PR/contrato já disponível com Matheus. Com contrato disponível, integração 1B3 em **Sol Alto**. Sem ele, a validação/revisão de frontend pode avançar independentemente em **Sol Médio**, sem declarar conta integrada ou restauração liberada. Aviso de modelo feito antes de iniciar essa próxima frente; nenhum QA foi iniciado nesta rodada. Bloqueio de navegador anterior continua: inspeção real só com acesso funcional, sem contorno; até lá apenas código/testes locais. [Critérios para retomar](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md). Reserva documental encerrada; 1B3 aguardando dependência, 1A/QA real ainda pendentes.
+
+## R25-1B2 — pré-conferência implementada; associação online pendente — 0.1.99 (29/10/2026)
+
+Astro Boy em Sol Alto confirmado, execução sequencial; checkout `codex/fitness-ui-integration`, base `b11ed9d`. Implementada a conferência acionável em Grimório → Guarde sua jornada → Preparar conta pessoal → Conferir progresso local. Mostra valores reais da captura existente (perfil/atividades/XP/sessões) sem conectar conta, enviar ou gravar pela operação. Alterações no progresso invalidam o relatório; cancelamento, desmontagem e tentativas antigas não interferem em nova solicitação.
+
+`association-review.ts` reutiliza captura/arquivo/auditoria/comparação existentes e mantém a revisão somente em memória. Contrato para FUTURO adaptador remoto exige identidade coincidente, revisão, declaração de leitura completa, todos os campos atuais e arquivo válido; erro não é tratado como conta vazia. Guardas de perfil/origem/conteúdo/usuário/geração recusam respostas atrasadas. Resultado SEMPRE `associationAllowed:false`: não existe escritor, associação, remoção de isolamento ou adaptador conectado ao SDK. Contrato de backend/política de conflito ainda precisa de Matheus/Fábio; não foi aprovado como novo endpoint/schema.
+
+**Executado:** 12 testes novos; suíte global **416 aprovados**, TypeScript/lint limpos. Após revisão de cópia/ícone e tipos, **15 testes direcionados repetidos** e tipos/lint/build novamente; Vite `envDir:false` **14,64s**. Versões sincronizadas e diff-check limpo; SHA-256 confirma nove fontes protegidas de stores/auth/sync/tipos/cliente/bootstrap/App preservadas. Avisos de bundle/Browserslist existentes permanecem. Sem navegador/QA visual, dado pessoal, sessão/secret, banco, rede do app, commit/push/deploy.
+
+**Próximas etapas e modelos:** 1B3 = integração do adaptador de leitura completa e protocolo de commit/recibo com Matheus, **Sol Alto**; associação permanece indisponível enquanto esses contratos/decisões não existirem. QA real da restauração 1A segue pendente e gate estático false. Ao iniciar validação mobile/tablet ou correções visuais delimitadas, avisar ANTES para trocar a **Sol Médio**; polimento/acessibilidade/animações também Médio. Fragmentos: contratos/durabilidade Alto, interface Médio. Fábio conduz frontend, Matheus backend. [Contrato e critérios](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md). Revisão/custódia em sequência pelo Astro Boy; reserva encerrada, sem aceite online/visual.
+
+## R25-1B1 — cobertura e contrato preparados; associação não habilitada (29/10/2026)
+
+Astro Boy, Sol Alto solicitado; execução sequencial em `codex/fitness-ui-integration`, base `b11ed9d`. **0.1.98 mantida**, lote somente de testes/documentação; fontes/backend/manifests preexistentes idênticos por SHA-256. [Contrato e matriz](plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md) classificam os 21 campos persistidos: 7 coleções com payload, 5 projeções parciais e 9 campos fora do sync atual. Payloads testados preservam IDs/recibos/contadores; saldo independente do personagem, outros perfis e Treinos não acompanham o serviço. Falha intermediária pode deixar snapshot remoto parcial. Nenhuma associação pessoal foi tentada.
+
+**Executado:** cinco testes novos de cobertura/roundtrip/reenvio/falha usando stores/serviço reais e cliente/storage sintéticos; **155 testes de backup aprovados**, lint e diff-check limpos. Sem build/TypeScript/suíte global novos neste lote. Changelog/docs públicos Supabase consultados; nenhuma query remota ou sessão/secret/dado pessoal/browser, commit/push/deploy.
+
+**Próximo:** 1B2 precisa do contrato de identidade/perfil, leitura completa, cobertura, commit/recibo e idempotência com Matheus; política de conflito/escopo é proposta, não nova regra aprovada. Nenhum marcador local removido, auth/autosync alterado ou handler de associação criado. QA real 1A continua pendente e `RESTORE_WRITES_RELEASED=false` permanece. Sol Alto adequado à integração crítica; mobile/polimento/animações/fragmentos permanecem frentes separadas. Revisão documental/validação pelo Astro Boy em sequência; reserva encerrada.
+
+## R25-1A — código concluído, aceite de navegador pendente — 0.1.98 (29/10/2026)
+
+Astro Boy executou sequencialmente em Sol Alto, conforme autorização. Checkout `codex/fitness-ui-integration`, base `b11ed9d`; alterações preexistentes preservadas. Usuário confirmou o bloqueio persistente do navegador e pediu código/testes locais; não houve tentativa de contorno.
+
+Implementado o fluxo de confirmação, recuperação e continuação somente local antes de App/auth. A cópia anterior precisa ser selecionada e corresponder ao progresso atual; consentimentos separados exigem fechamento das outras abas e substituição/recuperação/uso local. Operações recusam resultado obsoleto e clique duplo; falha com diário retido exige recarregar a revisão. O metadado operacional de modo local é verificado/gravado antes de remover o diário committed, sobrevive à recarga e impede a construção do cliente Supabase; o app usa os stores existentes e exibe aviso de progresso local. Não há API para apagar o isolamento ou vincular conta online.
+
+**Executado:** 21 testes novos; **399 testes globais aprovados**, TypeScript/lint limpos, build Vite `envDir:false` **7,37s**. Versões dos manifests sincronizadas; SHA-256 confirmou appStore/workoutStore/authStore/serviço cloud/tipos de core e Treinos preservados neste lote. Backend, regras de XP/Prana, schemas de domínio e dependências mantidos. Avisos existentes de bundle/Browserslist permanecem. Logs: `/tmp/r25-a1a-{tests,types,lint,build}-final.log`. Nenhum dado pessoal, sessão, secret, banco, rede do app, commit/push/deploy ou teste visual.
+
+**Limite e próximo:** `RESTORE_WRITES_RELEASED=false` é uma trava estática; não há parâmetro/ambiente/storage que habilite gravação na UI distribuída. Código exercitado com armazenamento e SDK substituto em memória; não é teste do SDK/serviço real nem prova de Web Locks/BFCache, quota real ou mobile. Fechar QA real isolado antes de liberar a restauração. R25-1B (conta pessoal/reconciliação online com Matheus), QA mobile/tablet, polimento/animações e fragmentos/inventário continuam separados. [Contrato, procedimento e evidências](plans/R25-A-BACKUP-DO-PROGRESSO.md). Revisão de implementação e custódia documental feita em sequência pelo Astro Boy; reserva encerrada, aceite de produto ainda pendente.
+
+## R25-A2b11 — barreira pós-confirmação implementada (29/10/2026)
+
+**0.1.97 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`; Sol Médio solicitado, execução sequencial. Diário confirmado agora permanece salvo como barreira durável anterior a App/auth/cliente. Aplicação confirma os dois envelopes sem remover o marcador; revisão, cópias e recuperação committed não o limpam. Rollback prepared continua devolvendo os bytes anteriores e só então remove seu diário. Formato versão 1 e stores preservados; nenhuma chave/store paralelo. [Detalhes](plans/R25-A-BACKUP-DO-PROGRESSO.md) e [isolamento de auth/sync](plans/R25-A-ISOLAMENTO-AUTH-SYNC.md).
+
+**Executado:** quatro testes novos de barreira, incluindo bloqueio antes de inicializar auth em cliente sintético, e regressões existentes adaptadas à retenção do commit. **378 testes globais aprovados**, TypeScript/lint limpos, build `envDir:false` **19,50s**, diff-check e versões sincronizados. 129 testes de backup passaram antes do ajuste final da fixture de XP; suíte global final inclui os casos ajustados. SHA-256 confirma quatro fontes modificadas; stores/auth/serviço cloud/tipos/main/coordenador exclusivo intactos. Avisos de bundle/Browserslist permanecem.
+
+**Próximo:** implementar/revisar continuação local isolada ou associação explícita, com contrato de perfil/identidade e I/O tardio com Matheus. Ainda não existe operação que libere um commit para a nuvem/uso local completo. Writer da UI segue desabilitado; compatibilidade restante e teste real de abas/reload/quota continuam critérios. Sem navegador, SDK real, dados pessoais, banco, secrets, rede do app, commit/push/deploy. R25-B, QA mobile, animações e fragmentos separados. Reserva encerrada após revisão sequencial pelo Astro Boy.
+
+## R25-A2b10 — auth/autosync auditados com cliente sintético (29/10/2026)
+
+**0.1.96 mantida**, branch `codex/fitness-ui-integration`, base `b11ed9d`; Sol Alto, execução sequencial. AuthStore e serviço cloud reais foram exercitados com cliente/eventos/timers simulados, sem importar o cliente real ou acessar dados pessoais. Sessão salva pode aplicar nuvem sobre estado local; perfil remoto novo pode limpar atividades; troca de perfil local pode publicar sob a mesma identidade remota; refresh pendente pode alterar domínio após logout. Sync atual não cobre backup integral. [Achados, limites e contrato proposto](plans/R25-A-ISOLAMENTO-AUTH-SYNC.md).
+
+**Executado:** nove testes de caracterização novos; **125 testes de backup aprovados**, lint e diff-check limpos. Fontes .ts/.tsx e manifests preservados por SHA-256/conferência; sem versão nova. Sem suíte global/TypeScript/build novos. Skills Supabase/backend aplicadas; somente documentação pública consultada (MCP/changelog), nenhuma query de banco ou rede do app. Testes não demonstram perda pessoal, SDK/Auth real ou configuração remota efetiva.
+
+**Próximo:** implementar/revisar barreira pós-restauração durável antes de App/auth/cliente e definir com Matheus o vínculo de perfil/identidade e invalidação de I/O tardio. Contrato proposto, não aprovado como nova política/schema. Restauração/recuperação seguem desabilitadas; não abrir cloud-first após importação como se o isolamento estivesse fechado. QA real, R25-B, polimento/animações e fragmentos permanecem pendentes. Preservado o backend de Matheus; sem browser, secrets, dados pessoais ou publicação. Reserva encerrada; revisão sequencial pelo Astro Boy.
+
+## R25-A2b9 — ciclo de documentos/recuperação validado em memória (29/10/2026)
+
+**0.1.96 mantida**, branch `codex/fitness-ui-integration`, base `b11ed9d`; Sol Médio solicitado. Lote somente de testes/documentação. Novo teste integra startup, coordenador exclusivo, diário e hidratação real dos stores em documentos simulados independentes com armazenamento compartilhado em memória. Duas abas impedem substituição; diário pendente bloqueia hidratação; recuperação e recargas preservam perfis, IDs, XP, contadores, recibos e históricos. [Evidências R25-A2b9](plans/R25-A-BACKUP-DO-PROGRESSO.md).
+
+**Executado:** seis testes integrados novos; **116 testes de backup aprovados**, lint e diff-check limpos. SHA-256 confirma todas as fontes .ts/.tsx do produto idênticas ao início da rodada; manifests mantidos. Sem suíte global/TypeScript/build novos nesta rodada, pois fontes/dependências não mudaram. Um caso de teste foi ajustado para que anterior/destino realmente alterassem os dois envelopes e exercitassem as três fronteiras de rollback; não era um defeito demonstrado no produto.
+
+**Limites/próximo:** simulação não comprova Web Locks/BFCache, abas antigas, quota/reload real ou auth/autosync. Próximo lote deve auditar o bootstrap de autenticação/sincronização após a recarga, preservando o backend de Matheus e sem chamadas remotas/secrets; o teste atual só hidrata os stores de domínio. Compatibilidade final, isolamento e QA de navegador continuam critérios antes de habilitar gravação. R25-B conta online, QA mobile/polimento e fragmentos seguem separados. Nenhum dado pessoal, navegador, restauração real ou publicação; reserva encerrada, revisão sequencial pelo Astro Boy.
+
+## R25-A2b8 — confirmação vinculada e cópias protegidas (29/10/2026)
+
+**0.1.96 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`; Sol Médio solicitado pelo usuário, lote delimitado executado sequencialmente pelo Astro Boy. Coordenador de recuperação agora exige confirmação explícita e os bytes conferidos, congelados antes de esperar pela exclusividade; mudanças antes/depois do hashing recusam a operação. Tela isolada permite baixar **versão anterior** e **versão de destino** de um diário válido, inclusive em conflito externo, sem exportar um par parcialmente gravado. [Registro R25-A2b8](plans/R25-A-BACKUP-DO-PROGRESSO.md).
+
+**Executado:** duas regressões reproduzidas antes da correção; nove testes novos; suíte global **359 aprovados**. Após ajuste final de retenção dos detalhes durante o download, **110 testes de backup** repetidos, TypeScript/lint limpos e build `envDir:false` em **15,00s**. SHA-256 confirma somente quatro fontes alteradas neste lote; stores/auth/sync/tipos/main preservados. Versões sincronizadas, diff-check limpo; avisos de bundle/Browserslist existentes permanecem. Sem navegador, dados pessoais, recuperação real, rede do app, commit/push/deploy.
+
+**Próximo:** fechar compatibilidade e isolamento restante, confirmação/recuperação acionáveis antes do bootstrap e teste real de interrupção/abas/reload. O coordenador segue sem chamador de gravação na UI; recuperação/restauração permanecem desabilitadas. A cópia exportada usa a versão protegida do diário, não prova sincronização online nem que o usuário guardou um arquivo pessoal. R25-B conta online, QA mobile, animações e fragmentos seguem separados. Sol Médio foi suficiente para este lote; reavaliar esforço conforme a próxima integração. Reserva encerrada; revisão sequencial de código/documentação pelo Astro Boy.
+
+## R25-A2b7 — conferência de recuperação e vínculos internos (29/10/2026)
+
+**0.1.95 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`; Sol Alto confirmado pelo usuário. Sessões/check-ins/recibos passam por correlação interna de identidade, fase e atividade; referências históricas ausentes por exclusão continuam preservadas. A tela isolada permite **Conferir recuperação pendente**: distingue retorno ao estado anterior, manutenção do destino confirmado e conflito externo. Resumos vêm das duas versões validadas do diário, nunca de um par parcialmente gravado. [Escopo e limites](plans/R25-A-BACKUP-DO-PROGRESSO.md).
+
+**Executado:** 12 testes novos; suíte global **350 aprovados**. Após ajuste final de texto e ampliação das regressões, **101 testes de backup** repetidos, TypeScript/lint limpos e build sem .env em **8,29s**. Versões sincronizadas e diff-check limpo; SHA-256 confirma stores/auth/sync/tipos/main/coordenador exclusivo preservados. Avisos conhecidos de bundle/Browserslist permanecem. Sem browser/QA visual, dados pessoais, recuperação real, rede do app, commit/push/deploy.
+
+**Próximo:** fechar compatibilidade restante e fluxo acionável de confirmação/recuperação anterior ao bootstrap, incluindo isolamento de abas antigas e auth/sync; testar interrupção/reload/concorrência em navegador antes de liberar escrita. A conferência desta rodada não certifica todas as relações do domínio nem altera dados. R25-B conta online, QA mobile, polimento e fragmentos permanecem separados. Manter Sol Alto na integração crítica; Sol Médio após esse fechamento. Reserva encerrada; revisão sequencial de implementação e documentação pelo Astro Boy.
+
+## R25-A2b6 — catálogos, avaliações e recordes conferidos (28/10/2026)
+
+**0.1.94 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`. Retomada com Astra Médio. Auditoria pura cobre catálogos nativo/legado, avaliações, recordes e indicadores de força. Achados entram na prévia e na revalidação dos dois lados do diário; nenhuma correção automática ou alteração de stores/fórmulas. [Escopo e limites](plans/R25-A-BACKUP-DO-PROGRESSO.md).
+
+**Executado:** 89 testes de backup aprovados (quatro novos e casos ampliados de diário), TypeScript/lint limpos, build sem .env em **7,77s**. SHA-256 confirma que, entre os arquivos de fonte preexistentes ao lote, somente os dois validadores mudaram. Versões sincronizadas; avisos de bundle/Browserslist permanecem. Sem teste visual, dados pessoais, restore real, rede do app ou publicação. Suíte global não repetida nesta rodada.
+
+**Próximo:** revisar vínculos ativos e demais estruturas críticas antes de integrar confirmação/recuperação pré-bootstrap; preservar referências históricas após exclusão. A limpeza nativa pode deixar uma avaliação sem sessão, portanto ausência de alvo histórico não é motivo isolado para rejeitar a cópia. Restauração continua desabilitada até concluir os critérios e validar interrupção/reload real. R25-B conta online, QA mobile e fragmentos permanecem separados. Reserva encerrada; revisão sequencial de código/documentação pelo Astro Boy.
+
+## R25-A2b5 — inventário de compatibilidade de Treinos (28/10/2026)
+
+**0.1.93 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`. Retomada com Luna Baixo; auditoria somente estática/documental. [Matriz](plans/R25-A-BACKUP-DO-PROGRESSO.md). Cobertura ausente confirmada em `exercisesCatalog`, `nativeCatalog`, `ratings`, `strengthRecords`, `strengthProgressPoints`, `strengthStat` e referências cruzadas; sem evidência de corrupção em dados pessoais. Nenhuma mudança de código ou versão.
+
+**Executado:** inspeção dos validadores, tipos, projeções persistidas, documentação canônica e procedimentos. Sem suíte/build/browser/dado pessoal. Árvore de trabalho ampla e pré-existente preservada; sem commit/push/deploy.
+
+**Próximo:** Sol Médio para revisar produtores, remoções e compatibilidade legada dessas estruturas, implementar uma parte por vez com fixtures reais em memória e regressões de preservação. Depois fechar critérios pré-bootstrap e interrupção/reload antes de habilitar escrita. R25-B, QA mobile e fragmentos seguem independentes.
+
+## R25-A2b4 — conferência isolada na interface (28/10/2026)
+
+**0.1.93 local**, branch codex/fitness-ui-integration/base b11ed9d. Sol Médio solicitado pelo usuário. [Registro](plans/R25-A-BACKUP-DO-PROGRESSO.md). Grimório → Guarde sua jornada → Conferir restauração com o app pausado (`/?progresso=restaurar`). Tela antes de App/stores/auth permite exportar estado atual, selecionar arquivo e comparar perfis/XP/atividades. Diário pendente encaminha à tela e pausa controles sem ler um par misturado. Eventos storage/cancelamento invalidam resultados atrasados; não há handler de gravação ou parâmetro de URL que habilite restore.
+
+**Executado:** 14 testes novos; suíte completa **334 aprovados**. Após ajuste final de erro JSON sem conteúdo bruto, **85 testes de backup** repetidos, TypeScript/lint limpos e build `envDir:false` **11,34s**. Diff-check e versões conferidos; oito arquivos stores/auth/sync/tipos/journal/coordenador preservados por SHA-256. Avisos bundle/Browserslist permanecem. Sem browser/QA mobile, dados pessoais, download pessoal observado, gravação/restore, rede do app, commit/push/deploy.
+
+**Próximo:** inventário R25-A2b5 confirmou as estruturas de Treinos que faltam à prévia; consultar o registro mais recente acima. Aplicação permanece desabilitada até fechar critérios de domínio e teste real de interrupção/reload. R25-B conta online, QA global mobile e fragmentos separados. Implementação incremental de validação deve ocorrer em Sol Médio; elevação apenas se surgir complexidade demonstrada. Reserva encerrada, revisão sequencial pelo Astro Boy; Fábio frontend/mobile, Matheus backend/contratos.
+
+## R25-A2b3 — compatibilidade e coordenação exclusiva (28/10/2026)
+
+**0.1.92 local**, branch codex/fitness-ui-integration/base b11ed9d. Usuário confirmou Sol Alto. [Registro técnico](plans/R25-A-BACKUP-DO-PROGRESSO.md). Ambos os pares do diário são validados antes de executar/recuperar; baseline parcial recusa. Auditoria aponta vínculos ausentes/circulares/divergentes e experiência legado que a hidratação converteria. Regra existente preservada.
+
+Coordenador exclusivo isolado exige página anterior ao import do app, Web Locks, confirmação de fechamento de abas/substituição e cópia anterior correspondente. Bloqueia operação na página já iniciada, inclusive import parcialmente falho. Guarda bytes/consentimento antes de awaits. Sem chamador de UI/produção; restauração continua desabilitada e recuperação automática não integrada. Fechamento de abas antigas é confirmação humana, não prova técnica de ausência de escritor externo.
+
+**Executado:** 12 testes novos; **320 testes totais**, TypeScript e lint limpos, build `envDir:false` **19,99s**, diff-check e versões sincronizadas. Oito arquivos stores/auth/sync/tipos/main/bootstrap preservados por SHA-256. Avisos bundle/Browserslist permanecem. Sem browser, dados pessoais, restore real, rede do app, secrets, commit/push/deploy.
+
+**Próximo:** confirmação/recuperação pré-bootstrap e compatibilidade restante; tratar abas antigas/isolamento e testar interrupção/reload real. R25-B conta online, QA mobile e fragmentos permanecem pendentes. Manter Sol Alto na integração crítica; voltar ao Médio após evidência de fechamento. Reserva encerrada, revisão sequencial de código/documentação pelo Astro Boy; Fábio frontend/mobile, Matheus backend/contratos.
+
+## R25-A2b2d — validação de Treinos nos backups (28/10/2026)
+
+**0.1.91 local**, branch codex/fitness-ui-integration/base b11ed9d. [Registro](plans/R25-A-BACKUP-DO-PROGRESSO.md). Auditoria de planos/séries/sessões nativos e legados, sessão ativa, check-ins, recibos e medidas em perfis ativos/inativos. Integra comparação/preparo de diário; não altera dados nem recalcula recompensas. Histórico não exige template ainda existente.
+
+**Executado:** seis testes novos com comandos reais em memória; **308 totais**, TypeScript, lint limpos, build `envDir:false` **18,25s**. Diff-check e versões conferidos; SHA-256 confirma seis arquivos stores/auth/sync/tipos de Treinos/main intactos. Avisos bundle/Browserslist permanecem. Sem navegador, dados pessoais, restauração, rede do app, commit/push/deploy.
+
+**Próximo:** vínculos/compatibilidade e validação dos dois lados do diário; aplicação exclusiva antes de stores/auth com cópia anterior e confirmação; teste real de interrupção/reload/mobile. Restauração segue desabilitada; auditoria ainda não certifica todo o domínio/catalogo/ratings/strengthRecords. R25-B conta online permanece separado. Reserva encerrada após revisão sequencial pelo Astro Boy.
+
+**Restante geral:** quatro frentes, não quatro rodadas: backup/restauração e conta; QA mobile/tablet; polimento visual/acessibilidade/animações; fragmentos/inventário e persistência. Sem percentual ou prazo inventado. Matheus backend/contratos, Fábio frontend/mobile.
+
+## R25-A2b2c — dados críticos conferidos na prévia (28/10/2026)
+
+**0.1.90 local**, branch codex/fitness-ui-integration/base b11ed9d. [Registro](plans/R25-A-BACKUP-DO-PROGRESSO.md). Auditoria de estruturas críticas, XP/recibos/contadores/descendentes/perfis com avisos na prévia; preparo de diário recusa problemas conhecidos. Não repara dados nem habilita restauração. Treinos ainda tem somente checagem das coleções/IDs; relações e semântica completa permanecem pendentes.
+
+**Executado:** oito testes novos, **302 testes totais**, TypeScript e lint limpos, build `envDir:false` **15,67s**. Diff-check passou, versões sincronizadas. SHA-256 confirma sete arquivos de stores/auth/sync/tipos/main/bootstrap preservados. Avisos de bundle/Browserslist permanecem. Sem dado pessoal, restauração, chamada remota, commit/push/deploy.
+
+**Abertura resolvida segundo o usuário:** porta 5173 estava sem servidor; Vite reiniciado em 127.0.0.1:5173 sem carregar .env, e usuário confirmou “O Santuário abriu”. Processo ativo conferido. Inspeção visual do agente segue recusada por política salva; nenhum contorno. Prévia não reinicia automaticamente após encerramento do processo.
+
+**Próximo:** validação aninhada de Treinos, vínculos/compatibilidade dos snapshots e diário; execução exclusiva antes do bootstrap com tratamento de abas antigas/isolamento de auth e confirmação/cópia anterior. R25-B online e QA visual continuam pendentes. Reserva encerrada, revisão sequencial pelo Astro Boy; Matheus backend, Fábio frontend/mobile.
+
+## R25-A2b2b — inicialização protegida (28/10/2026)
+
+**0.1.89 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`. [Registro técnico](plans/R25-A-BACKUP-DO-PROGRESSO.md). main confere diário pendente antes do import dinâmico do app/stores/auth; pendência ou leitura negada mostra tela de proteção sem gravação. Web Locks compartilhados mantêm sessões compatíveis durante a vida do documento; falha parcial de import também retém lease até recarga. Uso normal preservado quando API ausente; restauração continua desabilitada.
+
+**Executado:** nove testes novos, **294 testes totais**, TypeScript, lint sem avisos, build `envDir:false` **17,18s** e diff-check passaram. SHA-256 confirma appStore/workoutStore/authStore/supabaseCloudSync/types intactos. Avisos de bundle/Browserslist permanecem. Sem QA visual, dados pessoais, restore, rede do app, commit/push/deploy. Codex retornou `queued` ao pedido de abrir Santuário; não é confirmação visual.
+
+**Próximo:** validação de destino/compatibilidade e fluxo exclusivo anterior ao bootstrap, resolvendo abas antigas e isolamento de auth/sync antes de habilitar recuperação e confirmação de restauração. Lease simulada não comprova comportamento real de abas/BFCache. Conta online R25-B, backup pessoal observado e QA mobile continuam pendentes. Reserva encerrada; revisão sequencial pelo Astro Boy; Matheus mantém backend/contratos e Fábio frontend/mobile.
+
+## R25-A2b2a — protocolo de recuperação isolado (28/10/2026)
+
+**0.1.88 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`. [Registro técnico](plans/R25-A-BACKUP-DO-PROGRESSO.md). Implementado diário versionado com integridade, gravação verificada dos dois envelopes e recuperação retomável. Antes do marcador de confirmação, restaura os bytes anteriores; depois, preserva o destino confirmado. Conflitos detectáveis e diário inválido interrompem sem apagar evidência.
+
+**Executado:** 12 testes novos, suíte completa **285 aprovados**, TypeScript e lint sem avisos. Build `envDir:false` (6,96s), diff-check e SHA-256 dos seis arquivos preservados passaram. Dados sintéticos/storage em memória; sem navegador, dados pessoais, rede do app, commit/push/deploy. Nenhum import de produção usa o novo módulo. Stores/core/auth/sync/tipos/entrypoint preservados neste lote.
+
+**Próximo:** A2b2b integrar validação de domínio/compatibilidade, recuperação antes da hidratação e exclusão de escritores/abas com isolamento de autosync. A biblioteca exige acesso exclusivo externo; comparações não são um lock. Restauração segue indisponível na UI. Cópia anterior e confirmação do usuário, associação online R25-B e QA mobile permanecem pendentes. Reserva encerrada; revisão sequencial de implementação e documentação pelo Astro Boy. Matheus mantém contratos/backend; Fábio frontend/mobile.
+
+## R25-A2b1 — prévia comparativa implementada (27/10/2026)
+
+**0.1.87 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Registro e aplicação pendente](plans/R25-A-BACKUP-DO-PROGRESSO.md). Grimório → Cópia de segurança → Conferir arquivo salvo → Comparar com meu progresso. Comparação por perfil de IDs/conteúdo, adições/alterações/remoções, XP e históricos de Treinos. Identifica diferenças de origem/versão/perfil ativo; invalida prévia ao mudar estado. Não soma recompensas nem grava dados.
+
+**Executado:** suíte completa 273 testes; após ajuste de cleanup, 24 testes de backup repetidos. TypeScript, lint sem avisos e build `envDir:false` final (14,01s) passaram. Diff-check limpo. Cinco arquivos core/auth/sync/tipos preservados por SHA-256. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, chamada remota, commit/push/deploy.
+
+**Próximo:** A2b2 diário de recuperação e coordenação de gravação/hidratação, com aplicação ainda desabilitada até demonstrar rollback, quota/interrupção, concorrência e isolamento do autosync. A inspeção do authStore confirmou observador que pode enviar alterações do core automaticamente; dois stores não formam transação atômica. A2b1 é somente prévia, não restauração completa nem validação integral de domínio. R25-B conta online, QA mobile R28-F, fragmentos/sync continuam pendentes. Reserva encerrada; revisão sequencial de código/documentação pelo Astro Boy.
+
+## R25-A2a — preservação de contas e carregamento corrigidos (27/10/2026)
+
+**0.1.86 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Registro A2a](plans/R25-A-BACKUP-DO-PROGRESSO.md#r25-a2a--correções-de-preservação-0186). Criar conta captura o progresso da conta de saída; salvar/alternar mantém o ID do personagem. Treinos usa o estado fornecido pelo callback de hidratação, evitando acesso antes da inicialização. Backup agora exige core e Treinos carregados.
+
+**Executado:** seis regressões novas (quatro falharam antes da correção); 264 testes totais passaram, TypeScript, lint e build `envDir:false` (16,03s). Diff-check limpo. AuthStore, serviço de sync e tipos preservados por SHA-256. Revisão delimitada confirma nenhuma alteração de fórmula de XP/Prana. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, chamada remota, commit/push/deploy.
+
+**Próximo:** R25-A2b restauração coordenada com prévia, cópia anterior, confirmação e rollback; R25-B associação online separada. Não habilitar aplicação de backup antes dos testes de falha/quota/interrupção. Este lote previne o defeito nas operações seguintes; não recupera dados antigos perdidos. Backup pessoal e crédito retroativo pessoal continuam não observados. QA mobile R28-F, fragmentos/sync e fechamento visual global pendentes. Reservas A2a encerradas; revisão sequencial pelo Astro Boy. Matheus mantém contratos/backend; Fábio frontend/mobile.
+
+## R25-A1 — cópia e conferência implementadas (27/10/2026)
+
+**0.1.85 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Escopo e evidências](plans/R25-A-BACKUP-DO-PROGRESSO.md). Grimório → Cópia de segurança exporta as projeções persistidas de personagem/atividades e Treinos, com todas as contas locais. Conferência de arquivo valida estrutura e SHA-256 sem aplicar dados. Não há restauração habilitada nem backup pessoal observado nesta rodada.
+
+**Executado:** 258 testes (nove específicos de backup), TypeScript, lint e build `envDir:false` (20,84s). Diff-check limpo; cinco arquivos de core/auth/cloud/tipos preservados por SHA-256 neste lote. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, sync remoto, secrets, commit/push/deploy.
+
+**Próximo:** R25-A2 deve tratar dois defeitos reproduzidos com dados sintéticos: criação de conta não captura o estado ativo anterior e readiness de Treinos fica falso na inicialização síncrona. Depois, restauração com prévia, confirmação, backup anterior e rollback; associação online R25-B separada. QA mobile R28-F e contratos de fragmentos/sync continuam pendentes. Reservas A1 encerradas; revisão documental sequencial pelo Astro Boy. Matheus backend; Fábio frontend/mobile.
+
+## R28-F5 — cancelamento e contexto verificados por código (27/10/2026)
+
+**0.1.84 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Registro F5](plans/R28-F-REVISAO-MOBILE.md). Invocar isola campos por conta e permite cancelar sugestão; Voltar mantém texto manual e invalida resposta pendente. Respostas antigas não sobrescrevem nova tentativa. Invocar/Forja bloqueiam callbacks de conta anterior. Cancelar diálogos da Forja não grava dados; reabrir lê o salvo.
+
+**Executado:** 249 testes, TypeScript, lint e build `envDir:false` (58,49s). SHA-256 confirma cinco arquivos de core preservados neste lote; versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, chamada Supabase/Cloudflare, secrets, commit/push/deploy. I03 remoto e XP retroativo pessoal não executados.
+
+**Próximo:** R25-A inventário e backup/restauração validável do progresso local, seguido de associação segura à conta R25-B. QA mobile R28-F depende da inspeção disponível; não contornar bloqueio salvo. Formulários não salvos continuam temporários, sem autosave ou persistência paralela. Fragmentos/sync e fechamento visual global continuam pendentes. Reservas F5 encerradas; revisão sequencial pelo coordenador. Matheus backend; Fábio frontend/mobile.
+
+## R29-D — recompensas visuais compartilhadas implementadas (27/10/2026)
+
+**0.1.83 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Escopo, testes e limites](plans/R29-D-RECOMPENSAS-VISUAIS.md). Painel comum em Ciclos, lista/trilhas de Rituais, conquistas e resumo de Treinos. Ganho real, zero, ausência e reversão distintos; nível confirmado e movimento reduzido. Observador da lista suprime histórico/hidratação/conta e reconcilia Undo. Resumo de treino não reproduz celebração histórica.
+
+**Executado:** 243 testes, TypeScript, lint e build `envDir:false` (15,22s). SHA-256 confirma stores/tipos/helpers de recompensa preservados neste lote; versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, sync remoto, commit/push/deploy. Crédito retroativo pessoal ainda não aplicado/observado.
+
+**Próximo:** R28-F5 revisão de cancelamento/contexto dos formulários; QA mobile R28-F ao permitir inspeção. Backup/conta R25 e contratos de fragmentos/sync continuam pendentes. Reservas R29-D encerradas; revisão sequencial pelo coordenador. Matheus backend; Fábio frontend/mobile. Animações globais ainda não encerradas.
+
+## R29-C — conclusão de conquistas implementada (27/10/2026)
+
+**0.1.82 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Contrato, UX e evidências](plans/R29-C-CONQUISTAS.md). Jornadas/Grandes Obras e trilhas ganham Concluir/Reabrir com prévia explícita, bônus já configurado, snapshot e reversão original. Rituais/subitens pontuais devem estar concluídos; ciclos permanecem recorrentes. Barras de catálogo/detalhes leem dados atuais sem regravar progress.
+
+**Executado:** 238 testes, TypeScript, lint, build `envDir:false` (17,11s), diff-check e versões sincronizadas. Avisos de bundle/Browserslist permanecem. Sem navegador, dados pessoais, sync remoto, commit/push/deploy. Crédito retroativo pessoal R29-R ainda não aplicado/observado.
+
+**Próximo:** R29-D recibos/animações compartilhados ligados a concessões reais. QA mobile R28-F, backup/conta R25 e contratos de fragmentos continuam pendentes. Reservas R29-C encerradas; revisão sequencial pelo coordenador. Matheus backend; Fábio frontend/mobile. Trabalho anterior preservado.
+
+## R29-R/B — recuperação preparada e XP de Rituais (27/10/2026)
+
+**0.1.81 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Contrato, operação e evidências](plans/R29-RECUPERACAO-E-RITUAIS.md). Ciclos oferece prévia de XP histórico, confirmação explícita, cópia local anterior e marcadores contra duplicação. Rituais/subitens ganham snapshot por folha e Undo pelo valor/elemento original; pais não duplicam e adapter nativo é preservado.
+
+**Executado:** 231 testes, TypeScript, lint, build `envDir:false` (22,08s), diff-check e versões sincronizadas. Avisos de bundle/Browserslist permanecem. **XP pessoal ainda não aplicado/observado**: navegador recusou acesso mesmo após liberação informada; não contornado. Aplicação disponível em Ciclos → Seu esforço também conta → Conferir recuperação. Não afirmar valor recuperado sem observar execução.
+
+**Próximo:** R29-C conclusão/reabertura explícita e bônus de Jornadas/Grandes Obras; depois R29-D recibos/animações compartilhados. R25 backup/conta, QA mobile R28-F e contratos de fragmentos continuam pendentes. Reservas R29-R/B encerradas, revisão sequencial pelo coordenador. Matheus backend, Fábio frontend. Sem dados pessoais, migração remota, commit/push/deploy.
+
+## R29-A — XP dos Ciclos e recibo elemental (27/10/2026)
+
+**0.1.80 local**, base `b11ed9d`. [Diagnóstico, contrato, cobertura e próximas etapas](plans/R29-XP-E-RECOMPENSAS.md). Reproduzido com store real isolado: concluir Ciclo não creditava XP. Novas conclusões válidas creditam os pontos já calculados como XP no elemento correspondente, com snapshot por recibo e Undo exato. Agregadores não duplicam; histórico antigo e contadores extras não são recalculados.
+
+Recibo de Ciclos mostra ganho real, elemento, barra do personagem e nível alcançado, com movimento reduzido, dispensar e supressão em hidratação/troca de conta. **Executado:** 221 testes, TypeScript, lint, build envDir:false (16,92s) e diff-check passaram. Avisos de bundle/Browserslist permanecem. Sem navegador, persistência remota, dados pessoais, commit/push/deploy.
+
+**Próximo:** R29-B: fechar concessão de XP em subitens de Rituais e simetria do Undo; depois bônus explícitos de Jornadas/Grandes Obras (R29-C), apresentação compartilhada/QA (R29-D). Pedido global de recompensas ainda parcial. Revisão de contexto/cancelamento R28-F5 fica após integridade de XP. R25 backup/conta, fragmentos e QA mobile continuam pendentes. Reservas R29-A encerradas; revisão sequencial pelo Astro Boy. Matheus mantém backend, Fábio frontend; impacto de contrato detalhado no plano.
+
+## R28-F4 — falhas de criação e Forja tratadas (27/10/2026)
+
+**0.1.79 local**, base `b11ed9d`, branch `codex/fitness-ui-integration`. [Registro F4](plans/R28-F-REVISAO-MOBILE.md). Forja preserva campos em falhas de captura/edição; exclusão/classificação só exibem sucesso após conferir o estado local. Invocar trata falhas nos cinco formatos de criação manual e mantém os dados. Guardas locais evitam repetição após sucesso; não substituem idempotência do backend.
+
+**Executado:** 211 testes, TypeScript, lint e build `envDir:false` (8,95s) passaram. SHA-256 confirmou stores app/workout e tipos preservados. Versões sincronizadas e diff-check limpo; avisos de bundle/Browserslist permanecem. Nenhuma tentativa de navegador, gravação em dados pessoais ou chamada remota. Fluxo de IA preservado; não é evidência de persistência durável/sincronização.
+
+Próximo: revisar estado temporário e cancelamento ao sair/trocar contexto em Invocar e demais formulários. Manter revisão somente código. QA mobile R28-F, backup/restauração R25-A/B e contratos continuam pendentes. Reserva F4 encerrada; revisão de código/documentação sequencial pelo Astro Boy. Sem commit/push/deploy.
+
+## R28-F3 — retorno de Treinos revisado (26/10/2026)
+
+**0.1.78 local**, base `b11ed9d`. [Registro F3](plans/R28-F-REVISAO-MOBILE.md). Séries/blocos conferem retorno real do comando, mostram erro em recusa/exceção e preservam campos para tentar novamente. Guarda local evita envio repetido antes da atualização; foco vai ao recibo somente depois de props confirmadas. Histórico não desloca foco.
+
+**Executado:** 206 testes, TypeScript, lint e build `envDir:false` (11,04s) passaram. SHA-256 confirma stores/tipo/páginas ActiveWorkout e WorkoutSummary preservados. Versões sincronizadas e diff-check limpo; avisos de bundle/Browserslist permanecem. Não executados navegador, sessão real ou suíte Deno de domínio.
+
+Próximo: tratar erros de captura/edição/exclusão na Forja e revisar confirmação manual de Invocar. Inspeção inicial encontrou handlers sem captura de exceção; correção ainda não implementada nesses dois módulos. Manter orientação de revisão somente código. R28-F visual, R25-A/B e contratos continuam pendentes. Reservas F3 encerradas; revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-F2 — revisão de foco do contador (26/10/2026)
+
+**0.1.77 local**, base `b11ed9d`. Usuário escolheu continuar somente revisão de código; não tentar navegador por enquanto. [Registro F2 e matriz pendente](plans/R28-F-REVISAO-MOBILE.md). Contador devolve foco a Somar ao dia após salvar/desfazer e ao controle de configuração após cancelar, sem rolar, repetir comandos ou mover foco no erro.
+
+**Executado:** 202 testes, TypeScript, lint e build `envDir:false` (8,93s) passaram. SHA-256 de cinco arquivos confirma stores/tipos/helper/página Ciclos preservados. Versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist permanecem.
+
+Próximo: revisão de código do foco em Treinos e estados de erro/retorno. R28-F continua parcial: testes de navegador/mobile/leitor de tela não executados. R25-A/B e contratos mantidos. Reservas encerradas; revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-F1 — revisão parcial e atalho do Grimório (26/10/2026)
+
+**0.1.76 local**, base `b11ed9d`. [Matriz de revisão e evidências](plans/R28-F-REVISAO-MOBILE.md). Corrigido tratamento dos links para seções do Grimório após reset global de rota, com foco programático e cancelamento de navegação obsoleta. Stores/tipos/histórico preservados por SHA-256.
+
+**Executado:** 198 testes, TypeScript, lint e build `envDir:false` (6,81s) passaram; versões sincronizadas, diff-check limpo. Avisos de bundle/Browserslist permanecem. Revisão de código transversal registrada.
+
+**Bloqueio atual:** navegador interno recusou observação da origem local por permissão salva nesta rodada. Pedido de revisão da permissão enviado; nenhum contorno e nenhuma evidência visual nova. QA 360/390/768px e R28-F não concluídos. Próximo: executar matriz ao liberar inspeção; manter R25-A/B backup/conta e contratos pendentes. Reservas F1 encerradas, revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-E — marcos nas trilhas implementados (26/10/2026)
+
+**0.1.75 local**, base `b11ed9d`. [Escopo e evidências](plans/R28-E-MARCOS.md). Recibo de ritual distingue avanço, todos os rituais da trilha realizados e subida de nível confirmada pelo getter existente. Mostra progresso e próxima sugestão da trilha de origem; ciclos continuam recorrentes. Modal compacto com rolagem, fechar e continuar sem espera. Recorte no QuestHub, não cobertura global de conquistas.
+
+**Executado:** 194 testes, TypeScript, lint e build `envDir:false` (6,69s) passaram. SHA-256 de seis arquivos confirma stores/tipos/comandos/timer/projeção preservados; versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist continuam. Sem validação de navegador/mobile/FPS/cloud.
+
+Próximo: R28-F revisão transversal e QA 360/390/768px; cobertura restante de marcos requer eventos reais. R25-A/B backup/conta e fragmentos continuam pendentes. Reservas encerradas; revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-D2 — Treinos implementado; QA mobile pendente (26/10/2026)
+
+**0.1.74 local**, base `b11ed9d`. [Entrega e evidências](plans/R28-D2-TREINOS.md). Séries/blocos ganham recibo com valores reais, confirmação breve somente após conclusão nova e cancelamento por movimento reduzido. Expansão compartilhada com controles inertes quando fechados; barras por transformação e pressionamento reduzido.
+
+**Executado:** 189 testes, TypeScript, lint e build `envDir:false` (6,87s) passaram; quatro testes do lote repetidos após ajuste do contêiner. SHA-256 confirma stores/tipos/sessão/resumo inalterados. Versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist permanecem. Sem navegador/FPS/execução real ou suíte Deno nova.
+
+Próximo: QA mobile 360/390/768px e R28-E marcos, seguido de revisão R28-F. R25-A/B backup/conta e demais contratos continuam pendentes. Reservas encerradas; revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-C1 / D1 — salto de Domínios corrigido e Roda avançada (26/10/2026)
+
+**0.1.73 local**, base `b11ed9d`. [Causa, implementação e testes](plans/R28-D1-ROLAGEM-E-RODA.md). Alterar grupo/filtro de Domínios e Mapa não dispara mais reset global ao topo; navegação real continua resetando. Roda permite pular apresentação sem repetir sorteio e acompanha movimento reduzido dinâmico. Stores, tipos, recompensas e trabalho preexistente preservados.
+
+**Executado:** 185 testes, TypeScript, lint e build `envDir:false` (7,87s) passaram. Regressão do efeito real de scroll com dublês e testes de timer/skip/desmontagem; não são prova visual de navegador. SHA-256 de stores/tipos preservado, versões sincronizadas e diff-check limpo. Avisos de bundle/Browserslist permanecem.
+
+Próximo: confirmar correção em mobile e R28-D2 Treinos; depois marcos/revisão final. QA acumulado e R25-A/B backup/conta continuam pendentes. Reservas encerradas; revisão documental sequencial. Sem commit/push/deploy.
+
+## R28-C — exploração e leitura implementadas; QA mobile pendente (26/10/2026)
+
+**0.1.72 local**, base `b11ed9d`, R27/R28-A/B preservados. [Entrega e roteiro](plans/R28-C-EXPLORACAO-LEITURA.md). Painel de expansão compartilhado em Domínios, Pilares, Mapa e menu Explorar; controles fechados inertes, movimento reduzido respeitado. Busca/categoria do Mapa na URL; resultados revelados sem controle de recolher conflitante. Dados, pontuação e destinos preservados.
+
+**Executado:** 181 testes, TypeScript, lint e build `envDir:false` (8,80s) passaram. SHA-256 de stores/tipos e páginas Dominios/Pilares/Mapa inalterado desde início. Versões sincronizadas, diff-check limpo. Avisos de bundle/Browserslist permanecem. Sem navegador, medição de FPS ou aceite visual novo.
+
+Próximo: QA 360/390/768px e R28-D Treinos/Roda. R25-A/B backup/conta e contratos anteriores continuam pendentes. Reservas encerradas; revisão documental sequencial pelo coordenador. Sem commit/push/deploy.
+
+## R28-B — criação e organização implementadas; QA mobile pendente (26/10/2026)
+
+**0.1.71 local**, base `b11ed9d`, R27/R28-A preservados. [Entrega, evidências e roteiro](plans/R28-B-CRIACAO-ORGANIZACAO.md). Invocar ganha transição direcional, controles de saída inertes e confirmação com destinos explícitos, sem redirecionamento automático. Forja identifica a ideia no resultado e restaura foco ao fechar diálogos. Seleção elemental das trilhas com resposta breve; celebrações e comandos preservados.
+
+**Executado:** 177 testes, TypeScript, lint e build `envDir:false` (8,34s) passaram. Nove chamadas de domínio idênticas por AST; SHA-256 dos stores/tipos inalterado desde início do lote. Avisos de bundle/Browserslist permanecem. Sem inspeção renderizada/FPS ou teste de sync remoto.
+
+Próximo: aceite 360/390/768px e R28-C exploração/leitura. R25-A/B backup/conta e contratos anteriores permanecem pendentes. Reservas encerradas; revisão documental sequencial pelo coordenador. Sem commit/push/deploy.
+
+## R28-A — fundação e piloto implementados; aceite mobile pendente (25/10/2026)
+
+**0.1.70 local**, sobre R27/base Git b11ed9d. Fábio aprovou começar a sequência. [Entrega e roteiro de aceite](plans/R28-A-FUNDACAO-PILOTO.md). Tokens compartilhados, preferência dinâmica, navegação sem blur, diálogos reduzidos e pressionamento opt-in. Contador usa transform e feedback local estável; conclusões rápidas são agrupadas por recibo no mesmo aviso, com remoção após Undo. Nenhuma premiação pela animação.
+
+**Executado:** 174 testes, TypeScript, lint e build `envDir:false` (10,11s) passaram. Diff-check limpo e versões sincronizadas; SHA-256 confirma appStore/workoutStore/types/Ciclos.tsx idênticos ao início do lote, preservando R27. Avisos de chunks/Browserslist permanecem. Sem navegador, FPS ou aceite visual novo; bloqueio anterior não contornado.
+
+Próximo: validar o piloto 360/390/768px, corrigir diferenças reproduzidas e avançar criação/organização. R25-A/B e contratos continuam pendentes; não prometer preservação cloud. Início da fase já autorizado, sem necessidade de reconfirmar esse escopo. Reservas encerradas; revisão documental sequencial pelo coordenador. Sem commit/push/deploy.
+
+## R28 — auditoria e proposta de próxima fase (25/10/2026)
+
+Fábio pediu balanço do escopo e planejamento para animar ações em todas as abas posteriormente. [Relatório R28](plans/R28-AUDITORIA-MOVIMENTO.md): estado por área, pendências R25/R19/NOTE/fragmentos, cinco achados estáticos de movimento, cobertura de ações e seis lotes propostos. Não implementado. Astro Boy conferiu achados de duas inspeções somente leitura; nenhum agente alterou código. Versão 0.1.69 e trabalho R27 preservados, ainda locais.
+
+Nesta rodada: leitura de código/documentação e revisão do diff documental; sem testes/build/navegador novos, consulta remota, commit/push/deploy. Evidências R27 abaixo são da rodada anterior. Retomada: validar R27 no celular; manter R25-A/B prioritário para proteção do progresso; escolher fundação + piloto de Ciclos para a fase de animações. Planos executáveis serão delimitados depois dessa escolha. Revisão documental pelo coordenador; sem reservas de código abertas.
+
+## R27 — contador genérico implementado; QA mobile pendente (25/10/2026)
+
+**0.1.69 local**, branch `codex/fitness-ui-integration`, base `b11ed9d`. [Entrega, contrato e roteiro de validação](plans/R27-QUANTIDADES-DIARIAS.md). Alterações R27 preexistentes continuadas; Astro Boy sequencial. Fábio confirmou quantidades sem XP adicional e conclusão separada, depois pediu contador para qualquer atividade: presets Água/Aulas/Banhos removidos.
+
+**Entregue:** Adicionar contador em ciclos comuns, padrão de repetições, meta ajustável, medida/incremento personalizados, prévia e Somar ao dia. Histórico por data, Undo individual, valores além da meta e após conclusão. Guia distingue ciclo/sequência/subitem; vista ociosa de Hoje acompanha a nova data sem limpar histórico. Feedback de confirmação observa recibos reais; campos opcionais usam action/hábito e snapshots existentes. Treinos nativos mantêm medição própria; sem contador nos subitens individuais/Rituais neste recorte.
+
+**Executado:** 170 testes passaram (store real em memória isolada + SSR/helpers), TypeScript, lint e build Vite `envDir:false` (7,60s) passaram; versões sincronizadas e diff-check limpo. Lint encontrou cascata no efeito de execução, corrigida com agendamento/cancelamento de frame. Avisos de chunks grandes/Browserslist permanecem. Não foram alterados serviços remotos, fórmulas de XP/Prana ou dados pessoais.
+
+**Pendente:** QA renderizado/toque/fluidez 360/390/768px e execução completa no navegador; bloqueio anterior de localhost não contornado. Sync remoto não foi testado; não prometer proteção da futura conta. Próximo: roteiro genérico do R27 e R25-A/B (backup/associação segura), preservando pendências R19/NOTE/fragmentos. Módulo visual de hidratação é futuro, não implementado. Sem commit/push/deploy R27. Reservas encerradas; revisão documental pelo coordenador, independente pendente.
+
 ## R44 — escolher tipo de subitem na edição (01/11/2026)
 
 Removidas do menu rápido as ações para converter subitem em Pontuável, Checklist ou Nota. O modal Editar subitem agora oferece três cards selecionáveis; Checklist e Nota ocultam área, tempo e pontuação, e Nota fica sem checkbox na lista após salvar. Conversão e limpeza são aplicadas somente ao salvar; cancelamento mantém os dados. ESLint de Ciclos.tsx e TypeScript da aplicação passaram; sem testes automatizados ou QA visual.

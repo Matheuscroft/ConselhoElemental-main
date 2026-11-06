@@ -72,9 +72,22 @@ export interface BaseItem {
   aggregatedScore: number;
 }
 
+export type RecurrenceType = 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
+/** Months are 1–12. Missing fields are retained for legacy, unconfigured schedules. */
+export interface RecurrenceConfig {
+  daysOfWeek?: number[];
+  daysOfMonth?: number[];
+  month?: number;
+  day?: number;
+  /** Inclusive local date, YYYY-MM-DD; absent means no end date. */
+  until?: string;
+}
+
 // ============================================
 // ACTION: linha raiz ou descendente da tabela actions, ligada por parentId.
 export interface Action extends BaseItem {
+  /** Optional local date YYYY-MM-DD, independent of creation time and device time zone. */
+  dueDate?: string | null;
   sourceModule?: 'modulo_treino';
   sourceRefId?: string;
   type: 'TASK' | 'HABIT' | 'TASK_ITEM';
@@ -86,6 +99,7 @@ export interface Action extends BaseItem {
   plannedTimeMinutes: number | null;
   actualTimeMinutes: number | null;
   completedScore?: number | null;
+  completionXp?: { amount: number; elementId: ElementId; ruleset: 'ritual-leaf-xp-v1' };
   completedAt?: Date | null;
   areaPrimaryId: string | null;
   areaSecondaryId1: string | null;
@@ -99,9 +113,11 @@ export interface Action extends BaseItem {
   lastStartedAt: Date | null;
   isExpanded: boolean;
   displayOrder: number;
-  recurrenceType?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  recurrenceConfig?: { daysOfWeek?: number[]; daysOfMonth?: number[] };
+  recurrenceType?: RecurrenceType;
+  recurrenceConfig?: RecurrenceConfig;
   completions?: HabitCompletion[];
+  dailyTracking?: HabitDailyTracking;
+  dailyEntries?: HabitDailyEntry[];
   controlledBySequenceId?: string | null;
   areaId?: string;
   subareaId?: string | null;
@@ -136,6 +152,10 @@ export interface Task extends Action {
   childItems: TaskItem[];
 }
 
+/** Optional quantitative diary; entries do not award points or complete the habit. */
+export interface HabitDailyTracking { target: number; step: number; unit: string }
+export interface HabitDailyEntry { id: string; dateKey: string; quantity: number; unit: string; recordedAt: string }
+
 /** @deprecated View legado temporário; Habit canônico é uma Action com lifecycleType HABIT. */
 export interface Habit extends Action {
   type: 'HABIT';
@@ -145,8 +165,8 @@ export interface Habit extends Action {
   areaId: string;
   plannedTimeMinutes: number;
   plannedPoints: number;
-  recurrenceType: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  recurrenceConfig: { daysOfWeek?: number[]; daysOfMonth?: number[] };
+  recurrenceType: RecurrenceType;
+  recurrenceConfig: RecurrenceConfig;
   streak: number;
   longestStreak: number;
   lastCompletedAt: Date | null;
@@ -174,11 +194,8 @@ export interface CycleSequence {
   id: string;
   name: string;
   displayOrder: number;
-  recurrenceType: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
-  recurrenceConfig: {
-    daysOfWeek?: number[];
-    daysOfMonth?: number[];
-  };
+  recurrenceType: RecurrenceType;
+  recurrenceConfig: RecurrenceConfig;
   currentPosition: number;
   lastCompletedDate: Date | null;
   isActive: boolean;
@@ -186,13 +203,15 @@ export interface CycleSequence {
   updatedAt: Date;
 }
 
-export type CommitmentRecurrence = 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY';
+export type CommitmentRecurrence = 'ONCE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 
 export interface Commitment {
   id: string;
   title: string;
   date: Date;
   recurrence: CommitmentRecurrence;
+  untilDate?: string;
+  description?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -214,6 +233,10 @@ export interface HabitCompletion {
   completionDate: Date;
   timeSpentMinutes: number;
   scoreEarned: number;
+  /** Actual XP credited by this receipt. Absent on historical, unreconciled completions. */
+  xpAwarded?: number;
+  xpElementId?: ElementId;
+  xpRuleset?: 'cycle-xp-v1' | 'cycle-xp-recovery-v1';
   plannedScoreAtCompletion?: number;
   executedScore?: number;
   actualEffortLevel?: number;
@@ -278,6 +301,15 @@ export interface Quest extends BaseItem {
   // Recompensa
   reward?: string;
   xpBonus: number;
+  completionBonus?: AchievementBonus;
+}
+
+export interface AchievementBonus {
+  id: string;
+  amount: number;
+  elementId: ElementId;
+  completedAt: string;
+  ruleset: 'achievement-bonus-v1';
 }
 
 // ============================================
@@ -309,6 +341,7 @@ export interface Project extends BaseItem {
   // Recompensa
   reward?: string;
   xpBonus: number;
+  completionBonus?: AchievementBonus;
 }
 
 // ============================================
@@ -354,6 +387,8 @@ export interface ExecutionLog {
 // USUÁRIO
 // ============================================
 export interface User {
+  /** Optional local alert metadata; retained by the existing full-progress archive. */
+  reminderState?: import('@/lib/reminders/profile-reminders').ProfileReminders;
   /** Energia canônica; perfis anteriores iniciam em 100 ao primeiro despacho. */
   pranaLevel?: number;
   id: string;

@@ -102,7 +102,7 @@ const LegacyWorkoutPreview: React.FC = () => {
 
       <div className="relative -mt-8 rounded-t-[2rem] bg-fitness-canvas px-6 pt-7">
         <div className="flex items-baseline justify-between gap-4">
-          <h2 className="min-w-0 break-words font-sans text-[28px] font-semibold leading-tight text-fitness-text">{workout.name}</h2>
+          <h2 className="min-w-0 break-words font-display text-[28px] font-medium leading-tight text-fitness-text">{workout.name}</h2>
           <span className="shrink-0 text-lg font-medium text-fitness-primary">{formatMinutes(workout.estimatedDurationMinutes)}</span>
         </div>
 

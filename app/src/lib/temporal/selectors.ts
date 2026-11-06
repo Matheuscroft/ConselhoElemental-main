@@ -1,3 +1,4 @@
+import { recurrenceMatchesDate, operationalDate } from './recurrence';
 import { EFFORT_MULTIPLIERS } from '@/constants';
 import type { Commitment, CycleSequence, Habit, Mission, Project, Quest, Task } from '@/types';
 import { eachDayOfInterval, isWithinInterval, startOfDay, toDayStamp, toValidDate } from '@/lib/temporal/date';
@@ -14,7 +15,7 @@ export interface TemporalEvent {
 
 export interface TemporalCommitment {
   id: string;
-  sourceType: 'commitment' | 'habit' | 'project' | 'quest' | 'mission' | 'sequence' | 'google';
+  sourceType: 'task' | 'commitment' | 'habit' | 'project' | 'quest' | 'mission' | 'sequence' | 'google';
   sourceId: string;
   title: string;
   date: Date;
@@ -51,35 +52,6 @@ const walkHabits = (habits: Habit[], visitor: (habit: Habit) => void): void => {
   });
 };
 
-const habitMatchesDate = (habit: Habit, targetDate: Date): boolean => {
-  const targetDayStamp = toDayStamp(targetDate);
-  const startStamp = toDayStamp(habit.startDate ?? habit.createdAt);
-  if (targetDayStamp == null || startStamp == null) return false;
-  if (targetDayStamp < startStamp) return false;
-
-  const dayOfWeek = targetDate.getDay();
-  const dayOfMonth = targetDate.getDate();
-
-  switch (habit.recurrenceType) {
-    case 'DAILY': {
-      return habit.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-    }
-    case 'WEEKLY': {
-      return habit.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-    }
-    case 'MONTHLY': {
-      return habit.recurrenceConfig.daysOfMonth?.includes(dayOfMonth) ?? true;
-    }
-    case 'YEARLY': {
-      const startDate = toValidDate(habit.startDate ?? habit.createdAt);
-      if (!startDate) return false;
-      return startDate.getMonth() === targetDate.getMonth() && startDate.getDate() === targetDate.getDate();
-    }
-    default: {
-      return false;
-    }
-  }
-};
 
 const pushDueCommitment = (
   output: TemporalCommitment[],
@@ -126,46 +98,20 @@ const collectMissionDueDates = (project: Project, rangeStart: Date, rangeEnd: Da
   return output;
 };
 
-const sequenceMatchesDate = (sequence: CycleSequence, targetDate: Date): boolean => {
-  const targetDayStamp = toDayStamp(targetDate);
-  const startStamp = toDayStamp(sequence.createdAt);
-  if (targetDayStamp == null || startStamp == null) return false;
-  if (targetDayStamp < startStamp) return false;
-
-  const dayOfWeek = targetDate.getDay();
-  const dayOfMonth = targetDate.getDate();
-
-  switch (sequence.recurrenceType) {
-    case 'DAILY': {
-      return sequence.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-    }
-    case 'WEEKLY': {
-      return sequence.recurrenceConfig.daysOfWeek?.includes(dayOfWeek) ?? true;
-    }
-    case 'MONTHLY': {
-      return sequence.recurrenceConfig.daysOfMonth?.includes(dayOfMonth) ?? true;
-    }
-    case 'YEARLY': {
-      const startDate = toValidDate(sequence.createdAt);
-      if (!startDate) return false;
-      return startDate.getMonth() === targetDate.getMonth() && startDate.getDate() === targetDate.getDate();
-    }
-    default: {
-      return false;
-    }
-  }
-};
 
 const commitmentMatchesDate = (commitment: Commitment, targetDate: Date): boolean => {
   const commitmentDate = toValidDate(commitment.date);
-  if (!commitmentDate || startOfDay(targetDate) < startOfDay(commitmentDate)) return false;
-
-  if (commitment.recurrence === 'ONCE') {
-    return toDayStamp(commitmentDate) === toDayStamp(targetDate);
-  }
-  if (commitment.recurrence === 'DAILY') return true;
-  if (commitment.recurrence === 'WEEKLY') return commitmentDate.getDay() === targetDate.getDay();
-  return commitmentDate.getDate() === targetDate.getDate();
+  if (!commitmentDate) return false;
+  if (commitment.recurrence === 'ONCE') return toDayStamp(commitmentDate) === toDayStamp(targetDate);
+  return recurrenceMatchesDate({
+    createdAt: commitmentDate, recurrenceType: commitment.recurrence,
+    recurrenceConfig: {
+      ...(commitment.recurrence === 'WEEKLY' ? { daysOfWeek: [commitmentDate.getDay()] } : {}),
+      ...(commitment.recurrence === 'MONTHLY' ? { daysOfMonth: [commitmentDate.getDate()] } : {}),
+      ...(commitment.recurrence === 'YEARLY' ? { month: commitmentDate.getMonth() + 1, day: commitmentDate.getDate() } : {}),
+      ...(commitment.untilDate ? { until: commitment.untilDate } : {}),
+    },
+  }, targetDate);
 };
 
 export const buildOwnTemporalCommitments = (
@@ -240,12 +186,13 @@ export const buildTemporalCommitments = (
   rangeStart: Date,
   rangeEnd: Date
 ): TemporalCommitment[] => {
-  const commitments: TemporalCommitment[] = [];
+  const commitments = buildOwnTemporalCommitments(snapshot.commitments ?? [], rangeStart, rangeEnd);
   const days = eachDayOfInterval(rangeStart, rangeEnd);
 
-  walkHabits(snapshot.habits, (habit) => {
+  // One commitment per executable root. Substeps inherit it; rotations own their members' agenda.
+  snapshot.habits.filter(habit => !habit.controlledBySequenceId).forEach((habit) => {
     days.forEach((day) => {
-      if (!habitMatchesDate(habit, day)) return;
+      if (!recurrenceMatchesDate(habit, day)) return;
 
       const dayStamp = toDayStamp(day);
       if (dayStamp == null) return;
@@ -266,7 +213,7 @@ export const buildTemporalCommitments = (
     .filter((sequence) => sequence.isActive)
     .forEach((sequence) => {
       days.forEach((day) => {
-        if (!sequenceMatchesDate(sequence, day)) return;
+        if (!recurrenceMatchesDate(sequence, day)) return;
 
         const dayStamp = toDayStamp(day);
         if (dayStamp == null) return;
@@ -282,6 +229,14 @@ export const buildTemporalCommitments = (
         });
       });
     });
+
+  snapshot.tasks.filter(task => !task.isCompleted).forEach(task => {
+    const date = operationalDate(task.dueDate);
+    if (!date || !isWithinInterval(date, rangeStart, rangeEnd)) return;
+    const dayStamp = toDayStamp(date)!;
+    commitments.push({ id: `task:${task.id}:due:${dayStamp}`, sourceType: 'task', sourceId: task.id,
+      title: task.title, date: startOfDay(date), dayStamp, kind: 'due' });
+  });
 
   snapshot.projects.forEach((project) => {
     pushDueCommitment(commitments, {

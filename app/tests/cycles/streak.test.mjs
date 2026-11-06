@@ -1,7 +1,6 @@
+import { fixture } from './load-store.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { build } from 'esbuild';
-import { createRequire } from 'node:module';
 import { webcrypto } from 'node:crypto';
 import { loadComponent } from '../elemental/load-component.mjs';
 const { calculateHabitStreak, findHabitScheduleRoot } = loadComponent('src/lib/temporal/habit-streak.ts');
@@ -44,15 +43,6 @@ test('root agenda inheritance and explicit unsupported rotation/annual modes', (
   assert.equal(calculateHabitStreak(records(19), { ...root, recurrenceType: 'YEARLY' }).rule, 'legacy-yearly');
 });
 
-// Real Zustand commands, bundled without browser/network. Every instance gets empty in-memory storage.
-const bundled = await build({ entryPoints: ['src/stores/appStore.ts'], bundle: true, platform: 'node', format: 'cjs', write: false, alias: { '@': new URL('../../src', import.meta.url).pathname }, logLevel: 'silent' });
-function fixture() {
-  const memory = new Map();
-  const storage = { getItem: key => memory.get(key) ?? null, setItem: (key, value) => memory.set(key, value), removeItem: key => memory.delete(key) };
-  const module = { exports: {} };
-  new Function('require', 'module', 'exports', 'window', 'crypto', bundled.outputFiles[0].text)(createRequire(import.meta.url), module, module.exports, { localStorage: storage }, webcrypto);
-  return { store: module.exports.useAppStore, memory };
-}
 function addCycle(store, extra = {}) {
   return store.getState().addHabit({ name: 'Ciclo de teste', ...schedule(), startDate: date(1), plannedPoints: 3, ...extra });
 }

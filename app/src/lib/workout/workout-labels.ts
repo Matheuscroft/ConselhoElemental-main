@@ -1,17 +1,5 @@
-import {
-  Bike,
-  Footprints,
-  Swords,
-  Dumbbell,
-  Flame,
-  Flower2,
-  HeartPulse,
-  PersonStanding,
-  Shapes,
-  Sparkles,
-  Waves,
-  type LucideIcon,
-} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { FITNESS_ICONS } from '@/components/fitness-kit/FitnessGlyph';
 import type {
   MuscleGroupId,
   WorkoutExerciseCategory,
@@ -67,18 +55,18 @@ export const CATEGORY_DESCRIPTIONS: Record<WorkoutExerciseCategory, string> = {
 };
 
 export const CATEGORY_ICONS: Record<WorkoutExerciseCategory, LucideIcon> = {
-  running: Footprints,
-  swimming: Waves,
-  martial_arts: Swords,
-  cycling: Bike,
-  strength: Dumbbell,
-  hypertrophy: Flame,
-  calisthenics: PersonStanding,
-  yoga: Flower2,
-  mobility: Waves,
-  conditioning: HeartPulse,
-  mixed: Shapes,
-  custom: Sparkles,
+  running: FITNESS_ICONS.running,
+  swimming: FITNESS_ICONS.swimming,
+  martial_arts: FITNESS_ICONS.martial_arts,
+  cycling: FITNESS_ICONS.cycling,
+  strength: FITNESS_ICONS.strength,
+  hypertrophy: FITNESS_ICONS.hypertrophy,
+  calisthenics: FITNESS_ICONS.calisthenics,
+  yoga: FITNESS_ICONS.yoga,
+  mobility: FITNESS_ICONS.mobility,
+  conditioning: FITNESS_ICONS.conditioning,
+  mixed: FITNESS_ICONS.mixed,
+  custom: FITNESS_ICONS.custom,
 };
 
 export const SOURCE_LABELS: Record<WorkoutExerciseSource, string> = {

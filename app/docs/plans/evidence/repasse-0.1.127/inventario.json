@@ -1,0 +1,2408 @@
+{
+  "version": "0.1.127",
+  "branch": "codex/fitness-ui-integration",
+  "base": "be78b1e",
+  "generatedBeforeCommit": true,
+  "files": [
+    {
+      "status": "M",
+      "path": "README.md",
+      "bytes": 3062,
+      "sha256": "54fbb13365f140c6edcf7be77528ba0998179b58328cf6651fed7776510e1713"
+    },
+    {
+      "status": "M",
+      "path": "app/.gitignore",
+      "bytes": 593,
+      "sha256": "558be8466f59c558dae0b6949ecfb49839f9db42e879f399b3b1550a17335d41"
+    },
+    {
+      "status": "M",
+      "path": "app/README.md",
+      "bytes": 4490,
+      "sha256": "c61158d48f0846c76a1d5888ef3cfb374cc0256c6c10fcf3bdf73214758068d5"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/03-Project-Management/fitness/CHANGELOG.md",
+      "bytes": 78704,
+      "sha256": "dc4d5d38a3f3758cdf1989ad3487f5331e3e7b5afb7eebc3404e72d81292aa62"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/03-Project-Management/reports/A30-DIRETRIZES-AUDIO-2026-10-29.md",
+      "bytes": 18359,
+      "sha256": "f7a15c486a34381f90320627563d1fcb562b3350879fb48be16a74fabb89e15b"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/04-ADRs/ADR-004-Progresso-Integral-Opt-In.md",
+      "bytes": 12769,
+      "sha256": "55ba78514fbe38689a7debc2747fe450938293460fd8b317ae5cf72c95da3bc0"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/AUDITORIA-CONTRATOS-CORE.md",
+      "bytes": 26652,
+      "sha256": "ff4cceef0c9b036ec4d44960ed258435182943786aa3bb13abe33710334ada18"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/CONTINUIDADE.md",
+      "bytes": 335543,
+      "sha256": "2d71477a12e39e67e46b16f59198c4bc0d2d71fcfbaf0c3811bc7010d438a735"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/DOSSIE-TECNICO.md",
+      "bytes": 45132,
+      "sha256": "96a3883ddcb1462e450fa51d2ad405f6881bc212befd7c4d4e64003fc2f326d9"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/FILA-ENTREGAS.md",
+      "bytes": 300746,
+      "sha256": "42ea531e3dc1f6aed222d3693233872401503a07738db52ef9e9deeb9952ccc8"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/MANUAL-ENGENHARIA.md",
+      "bytes": 62958,
+      "sha256": "31c780e4c93bb08760747df798865c5436621e2163ec7db9e02a85bb1a5c71a4"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md",
+      "bytes": 36650,
+      "sha256": "c65fddb601abc2a21f8da52938ce7f24762c5cfb0c7ca2e4f70a99042ecd2980"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/README.md",
+      "bytes": 15378,
+      "sha256": "41d369209d8d8f95a6b9e3a05f55e37968aec603d12cfa2f6e6cafb4a85c2067"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/REPASSE-FRONTEND-PARA-BACKEND.md",
+      "bytes": 28518,
+      "sha256": "a7790fa32369a0c0f64e01e2176c5f36d7581e756856aa446b9def2547adccdc"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/CICLOS-CALENDARIO-UX-2026-10-30.md",
+      "bytes": 4371,
+      "sha256": "0aefd2a3f7781ffa2e9dd7531e4d25a956f3d238337dc68599dee14c836b5738"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/CICLOS-DATA-URL-2026-10-30.md",
+      "bytes": 5151,
+      "sha256": "f31cd1c7baac783085357d7c1be6fdde6784899b0f76ff1ef34eeafd02229e3c"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-CONTA-E-PUBLICACAO.md",
+      "bytes": 6740,
+      "sha256": "afb0cfa6134793e3bacf5669aaee3bb3614a0c00063b643c0bb0d8e82749bbf9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-F1-SESSAO-ONLINE.md",
+      "bytes": 3930,
+      "sha256": "548bb3f6d501ecc632596532f1ac3caecb41929f73b5cc5ee6acd333291c7df9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-F2-BANCO-HOSPEDADO.md",
+      "bytes": 5934,
+      "sha256": "92d61730b18d3839566c9bfa406f990e9dd9183885813acf85ba5184c04528d8"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-F3-INSTALACAO-INTEGRAL.md",
+      "bytes": 10472,
+      "sha256": "6a5c8549bc3cd4dbded4caf00b8db58b5080368fb59ecd598b81f953cd383736"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-F4-RECUPERACAO-ACESSO.md",
+      "bytes": 11230,
+      "sha256": "fa09e9a38cf243889a80d1559d156991d278afb274119bc27009e875335ac3a0"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/FECHAMENTO-F5-CADASTRO-CONFIRMACAO.md",
+      "bytes": 10062,
+      "sha256": "dcc8305072e44050056b1bc5c659492e2bee16cf11d37a6b7e6af3a528852df1"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/GYMMANE-AVALIACAO-INTEGRACAO-2026-11-05.md",
+      "bytes": 17804,
+      "sha256": "3a7a34b88847ab07f364faac5da00b51263fcd20fb43361dda247328ee02e850"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/INTEGRACAO-MAIN-2026-11-05.md",
+      "bytes": 6750,
+      "sha256": "b59abe52fb56201ac555c88510d2ad900685d6cc4288fd67acfa05877a0ca814"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R25-A-BACKUP-DO-PROGRESSO.md",
+      "bytes": 81652,
+      "sha256": "6d015587923f70e6ca8889274babff422578be23928826c5623f3204b893edd2"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R25-A-ISOLAMENTO-AUTH-SYNC.md",
+      "bytes": 14248,
+      "sha256": "1792a69cf4c3743a07c499a2fb3f58a18b18e77261b31c98cb006ee22cbaa4c4"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R25-B-ASSOCIACAO-CONTA-PESSOAL.md",
+      "bytes": 57098,
+      "sha256": "97836d851e9619f2da7e9f94d6bb77bb13571faaa31f2bd131312e1ba50eeba6"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M-REVISAO-MOBILE-ATUAL.md",
+      "bytes": 7167,
+      "sha256": "c677ecf61f32e495a59dc291aebbd4e823a4a6dcfe214daacb684be6b2a119c6"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M2A-AGENDA-COMPATIVEL.md",
+      "bytes": 9455,
+      "sha256": "1e727e1fb32d15317f88ef83da4297bf0304fbadcc607068810ea55a5a02241a"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M2B-HOJE-TEMPORAL-MOBILE.md",
+      "bytes": 7517,
+      "sha256": "60e4928c9622b843dc0a3b14d20fbf5039b2668a7e31cf7303083ebd9a34f9be"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M2C-FORMULARIOS-TEMPORAL.md",
+      "bytes": 5483,
+      "sha256": "7dcb6e4b3ae3b0a6cd5d1acd8d42c6bfbb1ba2ccd69ba616b38a6100a511efc9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M2D-REVISAO-NAVEGACAO.md",
+      "bytes": 4358,
+      "sha256": "9ceec4f156adcc24a38c92617887fd577e85561509b876807f3373229e120583"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R26-M2E-RETORNO-SEGURO.md",
+      "bytes": 4063,
+      "sha256": "c83fd10849bd52ed804283bfdb91ff7f16f3834da7d9d7e7b9d7a9120bdbc157"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-A-CONTRATO-LEMBRETES.md",
+      "bytes": 6487,
+      "sha256": "898a871265b761b4f800db31c4a57e76f318c9851f912c492cf986385d30a7f4"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-B1-PERSISTENCIA-LEMBRETES.md",
+      "bytes": 6866,
+      "sha256": "a6b0fe118a8cf7784cdea5b2e2dfd9272b09f42e68c6b742bbde69408afeaa5f"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-B2A-ESCRITA-ISOLADA-LEMBRETES.md",
+      "bytes": 5718,
+      "sha256": "7d6200b003daba0223db4c0d28b08ec3ac4c4678003007900ae1bffd956d9728"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-B2B-TRANSPORTE-E-RETORNO.md",
+      "bytes": 7247,
+      "sha256": "f91244d1a54090ceb3b95ce44c7312ab90f97049d4ab9b60e1f10e70e2c2ef92"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-C1-WORKSPACE-PROTEGIDO-LEMBRETES.md",
+      "bytes": 8365,
+      "sha256": "43547f098091ba7fd255889027407d4c47f0a75d409c07eb339adb8a50ee9438"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-C2-CONTROLES-E-PREPARACAO-LEMBRETES.md",
+      "bytes": 9556,
+      "sha256": "c38d5028c42df74003cbbcdaadd19465b6b482698f0325c15f294d26b57ef2d8"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-D1-ACEITE-MOBILE-LEMBRETES.md",
+      "bytes": 19556,
+      "sha256": "fd63000594912eeb7f169885af655b295337bed5dc34a0fc952a5fde504a99b5"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R27-QUANTIDADES-DIARIAS.md",
+      "bytes": 6376,
+      "sha256": "7f567f36028995988764817fa539da13dd0fe50326b2681de8b89f6bd76f8432"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-A-FUNDACAO-PILOTO.md",
+      "bytes": 4792,
+      "sha256": "ffb26716b9e6c5fe33158716bc439ca2fd373e87f1ea8d0d8b1920b48bf4f834"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-AUDITORIA-MOVIMENTO.md",
+      "bytes": 13715,
+      "sha256": "159107f9c286fd999b63a5d9e5e31efe469f808738146a15ae6aee6397675f59"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-B-CRIACAO-ORGANIZACAO.md",
+      "bytes": 4031,
+      "sha256": "7490cf289c80851be6383bcded07fe86fae6165bfd91620dd7f84cce0358893f"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-C-EXPLORACAO-LEITURA.md",
+      "bytes": 4350,
+      "sha256": "6c1f135316715266242586d2bc7e7126da6ead2dda83254fd156fdb0d84ba7a9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-D1-ROLAGEM-E-RODA.md",
+      "bytes": 4075,
+      "sha256": "82f3a92a8e3c946ba4c9862ac2917936d92c5d9027a0353bbe9c0c2d29ace4d4"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-D2-TREINOS.md",
+      "bytes": 4247,
+      "sha256": "26f0ec64aede6a7727bd06b24a1fbf8bcab87f40badac6ff9547bb7f4ef039a3"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-E-MARCOS.md",
+      "bytes": 4428,
+      "sha256": "9c343b9f821183c5dea2f9d4a4a62691c936cdbd67be34d6a55ac732f4fa9cc0"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R28-F-REVISAO-MOBILE.md",
+      "bytes": 16767,
+      "sha256": "6b478b5f9056ef970e980546136021d78309684220c34621a693b3ddd7e913f9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R29-C-CONQUISTAS.md",
+      "bytes": 6454,
+      "sha256": "4a7a29f05ad2ffdb92e869fa35cf7c2b20e22cb5917be6daae5c01ee7c1e0c26"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R29-D-RECOMPENSAS-VISUAIS.md",
+      "bytes": 4731,
+      "sha256": "fd716b51568bf07b5a3dcbd8f1ecf19c2c83c2eef12702333577a0fa42682e1c"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R29-RECUPERACAO-E-RITUAIS.md",
+      "bytes": 6247,
+      "sha256": "2a1a07fc9d7933b14c9530c25ac943b1da0076e0d10478c2bd8dfeca07008e92"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/R29-XP-E-RECOMPENSAS.md",
+      "bytes": 8114,
+      "sha256": "bf3c4c218f0da35d9aacd042bb2337a1c832c1dae91376c50ef0e246b20776a4"
+    },
+    {
+      "status": "M",
+      "path": "app/docs/plans/README.md",
+      "bytes": 24755,
+      "sha256": "d293ed88e78d13d089d5aebd32697f5973202a5e56b710759c866d3e386ecace"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/REPASSE-BACKEND-0.1.123.md",
+      "bytes": 9911,
+      "sha256": "55af012d9306ee1a62816541761bcb98f1d000155ac9dccf81ea01326f8841b6"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/REPASSE-BACKEND-0.1.127.md",
+      "bytes": 8290,
+      "sha256": "7dffe0b7f5fd9967281b3c042155e50193925d65fe5884b2529d2cc2bf443b01"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/TREINOS-CATALOGO-AGRUPADO-0.1.126.md",
+      "bytes": 5069,
+      "sha256": "038ee1ffa3a7f80f18a996becc7709db59abe277ebe110f6986109e40d5c6901"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/TREINOS-ICONES-INTUITIVOS-0.1.125.md",
+      "bytes": 5054,
+      "sha256": "c753843bd9325bc81bf636e03eb12c93ebb0ebcbbeffb87187c54b54d9b51134"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/TREINOS-IDENTIDADE-0.1.124.md",
+      "bytes": 5843,
+      "sha256": "55705919604d0d549ebeb7acf5725407be5665bbaab97e042d5ebf70edd23d6b"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/CONTA-INSTALACAO-2026-10-30.json",
+      "bytes": 5940,
+      "sha256": "4b9451d2afe3cc214332f50bb51c17d787561397f58ad56f174d7f320bc5c7a9"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/CONTA-REVISAO-121-2026-10-30.json",
+      "bytes": 1065,
+      "sha256": "81899358c34af8ed3a6a57710b701e2c135a89f4a686feb32c1b7b7a9759e4e8"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/CONTA-REVISAO-122-2026-10-30.json",
+      "bytes": 1023,
+      "sha256": "c6b94d0ad7d56143499b80321a1d5c6eb335a5570bbb376ed8fd23ba12d4d724"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/CONTA-SCHEMA-2026-10-30.json",
+      "bytes": 11567,
+      "sha256": "ccc5b5de0bfeb126055d0e87dce601b194a231f9fd3738d9388e5bcb67463d06"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/REPASSE-0.1.123-INVENTARIO.json",
+      "bytes": 73045,
+      "sha256": "8691248be6367a8f8ea6db507979c578c3846d36500b25f111615188f5cf533c"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/repasse-0.1.127/artes-marciais.png",
+      "bytes": 10763,
+      "sha256": "fee854c76f4eba05dc5a244d75f280c1989622db4100ba12ba28958a35c94184"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/repasse-0.1.127/artes-marciais.svg",
+      "bytes": 3505,
+      "sha256": "4dfaa8ea2dc8a39a17fc2e3b86ff4686109e82ab33452a48ff68e441e1c560c6"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/repasse-0.1.127/inventario.json",
+      "bytes": 79724,
+      "note": "own report hash omitted to avoid self-reference"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/repasse-0.1.127/verificacoes.json",
+      "bytes": 920,
+      "note": "own report hash omitted to avoid self-reference"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-catalogo-0.1.126/verificacoes.json",
+      "bytes": 3013,
+      "note": "own report hash omitted to avoid self-reference"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-icones-0.1.125/prancha.png",
+      "bytes": 158548,
+      "sha256": "17bdbeda311fc6e051d7ba829d40ecce4407525b1cb2e9d5dea446390072ef9f"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-icones-0.1.125/prancha.svg",
+      "bytes": 96763,
+      "sha256": "02ca5f086157049a5a977fee36b4440fcfa6f9d541fb70b29d96b5997e133cfc"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-icones-0.1.125/previa.png",
+      "bytes": 28101,
+      "sha256": "cb1e8dfeb82f767a46156679ce3d73adc02cafc80fa5b472847a69fa6cc04142"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-icones-0.1.125/previa.svg",
+      "bytes": 10683,
+      "sha256": "80aaf39f087c1b4743b26bf749b2db42bc4197315d3795a7a46ca0068d215c75"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-icones-0.1.125/verificacoes.json",
+      "bytes": 3922,
+      "note": "own report hash omitted to avoid self-reference"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-identidade-0.1.124/icones.png",
+      "bytes": 88915,
+      "sha256": "0de0848b53558ecb0f3c4a33d02d0124786bb95b551f60234444c35a5006f548"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-identidade-0.1.124/icones.svg",
+      "bytes": 27683,
+      "sha256": "57196c77579bf459d3217119ff7ab16a891eeefd1283d3e12769bb98ed84741e"
+    },
+    {
+      "status": "A",
+      "path": "app/docs/plans/evidence/treinos-identidade-0.1.124/verificacoes.json",
+      "bytes": 8647,
+      "note": "own report hash omitted to avoid self-reference"
+    },
+    {
+      "status": "M",
+      "path": "app/package-lock.json",
+      "bytes": 298246,
+      "sha256": "b7a5df337985d0f0d0aca08ecfca125b480fa10139df16c5db4f97b00d940906"
+    },
+    {
+      "status": "M",
+      "path": "app/package.json",
+      "bytes": 3281,
+      "sha256": "08d89a72f7f360d693864ae155add46c6e03193d537e231f013e5a06a0a6ce8d"
+    },
+    {
+      "status": "A",
+      "path": "app/scripts/build-reminder-qa.mjs",
+      "bytes": 3424,
+      "sha256": "47079e71cf5db441ec73fb0a46f6d9f5403ad29d670adb1cf5e7746f74dbb43c"
+    },
+    {
+      "status": "M",
+      "path": "app/src/App.css",
+      "bytes": 4257,
+      "sha256": "54889def66e29efe6c5b566bfc0cd11be9e91bfaed69dd683edabe46fe82286a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/App.tsx",
+      "bytes": 7971,
+      "sha256": "ec5a3f7b93f7fe6a9bd397a434c7128dc62fb47f02423635755019985bf1ea0a"
+    },
+    {
+      "status": "A",
+      "path": "app/src/bootstrap-app.tsx",
+      "bytes": 919,
+      "sha256": "b3c1b86f313e93bb7019d02413eaea966295be7c2d5f890f0102847edd6d57f6"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/AccountPreparation.tsx",
+      "bytes": 5329,
+      "sha256": "951fea3ed493d83c249822fbb74d0861511234d0618cc9188db1db21bf7e7584"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/AccountRecoveryWorkspace.tsx",
+      "bytes": 6378,
+      "sha256": "1f7d2f8963ce1807e10b60d0e125478528858fcf90da9feddbc54fd83e583797"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/AccountResolutionPanel.tsx",
+      "bytes": 5971,
+      "sha256": "7b3205f5a889a2f6169d4e534a0c7bfc7240b3d6edfcc1f05cd289b48fb912cf"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/AccountSyncStatus.tsx",
+      "bytes": 1296,
+      "sha256": "a7b0005ecde98e4a8999f467a0ad69b223ffa6530f1f009f70b95d0acd2231b6"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/AccountWorkspace.tsx",
+      "bytes": 31924,
+      "sha256": "10f94a66c68d566dca74682a6469b3c1a79092ed24ba54b6523c64fcb3549b3a"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/ProgressBackup.tsx",
+      "bytes": 6579,
+      "sha256": "8f78bb78b78cf8fc4e9e699558563d507837a2bb6628cb67e0639825d349d9c8"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/RestoreActions.tsx",
+      "bytes": 7413,
+      "sha256": "d98ad8083f71fa90a2545463bf10eef61035d91cceb5366a5fa47abc67665252"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/RestoreComparison.tsx",
+      "bytes": 6054,
+      "sha256": "a93bea24b08dfc4e5ea32b55e3701d055b6109476d1e0769fb5e4abbca22e952"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/RestoreWorkspace.tsx",
+      "bytes": 14420,
+      "sha256": "67962345a43b1614080764cef6c2f7d52ae52e2ec6d5a1c7d9e6809b70a428b1"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/RestoredLocalNotice.tsx",
+      "bytes": 643,
+      "sha256": "bfbba64ef388f629a3d33cded55a5bc249217bc1e6d59ca48c9fcbb2293d8fee"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/progress-backup.css",
+      "bytes": 4738,
+      "sha256": "25ceecb54f872dae5d697e8a824cd75453f9ca3cacc4fc62ab413a63d67a0850"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/restore-workspace.css",
+      "bytes": 5628,
+      "sha256": "69398eee517d56d2322a09ee22a0a7d065179e8ce1ddb620f0e1b5c6b9c6549e"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/backup/restored-local-notice.css",
+      "bytes": 1509,
+      "sha256": "7778c151a24cd4042904054a18bd19b89fcb80011e7d443e368198af46be6813"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/CycleCalendarNavigation.tsx",
+      "bytes": 3894,
+      "sha256": "90166ff9aa729191b8b28ad95d39135abf129e3d7514bd34458eb017a279c5d7"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/CycleCompletionFeedback.tsx",
+      "bytes": 2437,
+      "sha256": "2689da66abc4cb4d03c44baca65e9f28a7d98209cf7f7d80602f69e81dcd2a02"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/cycles/CycleCreationForm.tsx",
+      "bytes": 2793,
+      "sha256": "abac66e2772a052206bab8ffdd745ed80dda3da66f65c7840f7c5dec79e7757f"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/CycleDailyCounter.tsx",
+      "bytes": 7020,
+      "sha256": "6525ce7875f92006c37ca61081c2cf4cc2c96e8d4331fceeb7b87962eb5e8d39"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/cycles/CycleExecutionActions.tsx",
+      "bytes": 722,
+      "sha256": "b4d89c92dae121153a80cf8ea15f23509e1e1d74b2a7bd5b3b1043b92b4a101f"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/CycleRewardNotice.tsx",
+      "bytes": 797,
+      "sha256": "6f12651151e222d299033f93d65b53cc5d1c52c18f2d7f175659ae6880519159"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/cycles/CycleRoutineToolbar.tsx",
+      "bytes": 2448,
+      "sha256": "f8bd462fb9dbe6920c40a23795cd3b02a13fd74ce5570707ecfad3814c7da763"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/cycles/CycleSubitemComposer.tsx",
+      "bytes": 1961,
+      "sha256": "f76aebd599e50e59e65cbbdd0c22b92b4a4b22dd6ab466d2ff4649e3f3e7a189"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/CycleXpRecovery.tsx",
+      "bytes": 4495,
+      "sha256": "b0ce84165173cf96dda51d2aeadac88dcce82d7a4999f152133aa080e5fe1d57"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/RecurrenceEditor.tsx",
+      "bytes": 5093,
+      "sha256": "c05a334a7df088dbc116b14b87b7f93e355270ec79c7d15217467dded09d479e"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/completion-event.ts",
+      "bytes": 2717,
+      "sha256": "22b57e7dfca271ecfc8a776bc52fabbf8adf32c23e3b1b75801b8a9b3c4afba9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/cycles/cycle-date-navigation.ts",
+      "bytes": 1570,
+      "sha256": "ca976d3fb1638e2667af2ef9bf21a3d022963216609610f189b6f5398a7c192c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/destiny/destiny-reveal.ts",
+      "bytes": 1166,
+      "sha256": "5588fa2c8ba758f61ba14acaaa6f578ebbc97817ae10ad41517ca961736957b4"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/destiny/destiny.css",
+      "bytes": 7447,
+      "sha256": "8e497fa695ce69409d23ecc3489a9a4ba795d5608a4c5da9e81619474bcfea05"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/domains/DomainCatalogue.tsx",
+      "bytes": 4156,
+      "sha256": "4514a50b6832bf0b020c1072e2b049beaf8a3b872c80bc800138299b4c7d7340"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/domains/DomainPresentation.tsx",
+      "bytes": 5644,
+      "sha256": "97aa8bd7556cfdcc4a201c8d32ed364a039873f81e1403943ae3d867e137c993"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/domains/domains.css",
+      "bytes": 19483,
+      "sha256": "40c3d97a2a93dd8f0813d40bae28cfa637df4d3e0b84633fca66bc3007a9da24"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/elemental/ExpandedElements.tsx",
+      "bytes": 1810,
+      "sha256": "f18e6a4e06865f16261611073dfd0cba723242112b3f67a7055a9ea87bf75c75"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/elemental/NavigationCards.tsx",
+      "bytes": 3548,
+      "sha256": "cb87a01126867229b870a87716182128dd4060e7e2246c8cdc2bb760c6872b0e"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/elemental/PageAtlas.tsx",
+      "bytes": 3632,
+      "sha256": "72fd80bdcc80c8428e859b6e84864306067739652932023aacff0bbf682bfdf8"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/elemental/atlas-navigation.ts",
+      "bytes": 1001,
+      "sha256": "533acfe3de34ec5e6ae97995067ec7398b9c5dc987d523a95bcc021ff640efad"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/elemental/page-atlas.css",
+      "bytes": 5082,
+      "sha256": "16e7a753d39556551740bb8916a44fcf6caf01eeba03f7525974060035d3f8ae"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/ChartWidget.tsx",
+      "bytes": 1666,
+      "sha256": "769871edec5fb86c6247a2893b19a1f484592d273d331820eea64ab11d9cc0a9"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/ExerciseCard.tsx",
+      "bytes": 3224,
+      "sha256": "2989b626dc71e464fc28ec9a62e17babfa69900322dba68aa91a7c99118af58e"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/ExerciseSetRow.tsx",
+      "bytes": 7982,
+      "sha256": "f71b4e734917c09a3cd4b889339cbafbddfac0412e61facf13c5105436da7476"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessBottomNav.tsx",
+      "bytes": 3677,
+      "sha256": "e20c7a54e3a451cc0fd0dfda033b4370900b78b8b3097b83944d6c885a7ba1db"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessButton.tsx",
+      "bytes": 1792,
+      "sha256": "ec34c84aa593e35b0625355feecda88bcf17708c398d8fb79a1699e521346d6d"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessCard.tsx",
+      "bytes": 1208,
+      "sha256": "45950dcef5bca134714db603e4847cf0853c92aa8e3df3d8446c49314b160ec0"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/FitnessGlyph.tsx",
+      "bytes": 3333,
+      "sha256": "e7ca1e24e39bec55513618a799735a2054f83d51ecd94613fe4e3606d3a21b28"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessHeader.tsx",
+      "bytes": 1581,
+      "sha256": "33acc560e2c76ecfd7e2473fd00aeca7a5cf44cd0509b53673db6e0db51da5c6"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessIconBadge.tsx",
+      "bytes": 955,
+      "sha256": "c456b3d4139cbc8b768c53cd02a390ade2d188e629e45a798413d25b3f95bf09"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessListRow.tsx",
+      "bytes": 1830,
+      "sha256": "e5ec4a7fba3093f68d5cbf18ddfab083507aa7ea9fb15c1cc54d3167e294e7fb"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessMetaPill.tsx",
+      "bytes": 1096,
+      "sha256": "5207ffd4e8a2b236b268d50add56e5ac2b80c77abdd8d963063edf03a4bdd2a4"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/FitnessPageShell.tsx",
+      "bytes": 4176,
+      "sha256": "76fb63d6ae273beb7ff85f08e20b98eb2d70c510a27877940091b8723135cfb6"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/MuscleBars.tsx",
+      "bytes": 1460,
+      "sha256": "09df96d53f0ec2ccbcd83197fe45578201fa4954ed1c3e64c4221dc6c4e23c66"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/SectionHeader.tsx",
+      "bytes": 1340,
+      "sha256": "f62a2a9823a6e7e264fed0d30e2085e783b4dbe39d69d2ec08f9c5dbacaeba63"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/TrendAreaChart.tsx",
+      "bytes": 2284,
+      "sha256": "c3ef68d033d509fb49bf76e9fe10baa221723ecc9abffbcbc6e122d10e523c85"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/WorkoutCategoryCard.tsx",
+      "bytes": 3216,
+      "sha256": "c3ed58a1a1149fbf0c97948dd82416afd823734bf246674f074046b37b24754c"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/WorkoutPreviewHero.tsx",
+      "bytes": 1972,
+      "sha256": "87207dd11e34cb5cfa211edeeaccacb2890166a7a5bf92ad5bf98f2af61135e9"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/fitness-kit/WorkoutReferenceIcons.tsx",
+      "bytes": 487,
+      "sha256": "a2b38cf6f14c473844c3434179490eabb718e9ac39d358008a8328a103509375"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/WorkoutSetReceipt.tsx",
+      "bytes": 2398,
+      "sha256": "b8b9704115a41f9fe8d5aeda1168feb8bff35677af2508ef0b55391ab958b016"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/fitness-elemental.css",
+      "bytes": 7153,
+      "sha256": "0d3c417a206977da8a1540200584f6548f71836f50efa539edff8f8b04d0880d"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/fitness-glyph-data.ts",
+      "bytes": 5433,
+      "sha256": "8030c1756eb57ec15e3f36c2327e2abdef078d0f635180d8b15bf1b28c0fe123"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/set-command-result.ts",
+      "bytes": 541,
+      "sha256": "8bfff2cbabf191cbff714656e11977ad70bb3e5bdb47c1f91f8fc8453e073a91"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/fitness-kit/set-receipt.ts",
+      "bytes": 405,
+      "sha256": "1dee43688604858807c154ed6c1f2a4dbc2afdcca8d19e711b87b40cdb0c8051"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/forge/ForgeDraftCard.tsx",
+      "bytes": 2111,
+      "sha256": "439a56b0a13ee7a64c3b4febf7401d1a44ac533bc2adea7496ad4dc834aaa4e5"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/forge/ForgeFeedback.tsx",
+      "bytes": 901,
+      "sha256": "fed7a0b5266037beac7bfd7246819f35f3a207840a064558715a49856935b4d0"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/forge/forge.css",
+      "bytes": 9612,
+      "sha256": "95297ca315cdc7524f8b0dc25e55ca8bb5bffef61dfce4455325c5f9dfc1e561"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/grimorio/GrimoireHistory.tsx",
+      "bytes": 4163,
+      "sha256": "fd09b83980721041c6147b2fa0721876c48157ad44fac27e40e6229fda2c2987"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/grimorio/useGrimoireAnchor.ts",
+      "bytes": 815,
+      "sha256": "5f7a288fad06a88443966826c9f674c3ac5d2376c2a17fcd07a7484b476f95f9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/invocation/CreationResult.tsx",
+      "bytes": 1018,
+      "sha256": "64fc0df2202c20a9a0afec29dc14e4884995d66b30235be5d6d8568f4d7c00c0"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/invocation/creation-destination.ts",
+      "bytes": 435,
+      "sha256": "138e8657347f05184de543424cffc473a04d692eef0f4e29724f5f14a6bc8218"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/invocation/invocation.css",
+      "bytes": 6712,
+      "sha256": "0de144754bcf7a68f6d921f2302e43c1b854ab7fe610b03a9f0f1e6e4c3fb6a1"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/layout/AppLayout.tsx",
+      "bytes": 6879,
+      "sha256": "d26d4da0c1ba05f67877e475982db5f33d5a80abddfbb6bd03913c18c5768b52"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/layout/ScrollToTop.tsx",
+      "bytes": 1518,
+      "sha256": "557f46edc710fd68ade8b3b49d46ebe2131011c8313c83a01c8eba723770c7b8"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/layout/discovery-scroll.ts",
+      "bytes": 548,
+      "sha256": "aa6daa46f0a5bcf0e3406ca3a7b4ed99efa4b11b09dc8432f46eb81251a90b73"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/motion/CreationStep.tsx",
+      "bytes": 1006,
+      "sha256": "b51a9d5b0387579f580cf06ad3466c26ae480515c16044221b1d751e9df6937f"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/motion/ElementalMotion.tsx",
+      "bytes": 359,
+      "sha256": "082e1f5e7b85a65fd037cc7a66aa18d0ae03f6ceae3f59de636eaa80b1f9034c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/motion/RevealPanel.tsx",
+      "bytes": 436,
+      "sha256": "ed933be96a77bdabf335eddb9fc5979803d76f4717ad7cc32ac140fc961bf8b7"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/motion/useMotionPreference.ts",
+      "bytes": 701,
+      "sha256": "af1db0354d9d61f9e46107422de72029152bfd5ac285ed3b8ffd09b32c4ef0b6"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/quests/AchievementCompletion.tsx",
+      "bytes": 5491,
+      "sha256": "5de09409092739d088e6121ded37d4b440a0ef6bc7c85befe7921bea9ca54524"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/quests/QuestCompletionBody.tsx",
+      "bytes": 2504,
+      "sha256": "5a9fb70bcbca6376d605359fa26e4c3e97e7f72ed080631138bfd2825b3692ab"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/quests/QuestHub.tsx",
+      "bytes": 14631,
+      "sha256": "c03b1567236cd0ed0d0bc43e68be73af9ec6915ed863a105dfaaeea75a419286"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/quests/QuestResultStats.tsx",
+      "bytes": 1621,
+      "sha256": "22207c2735aabb111ffd9d3070b4724b37e2af4706ad8278ead63b6833744e9a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/quests/quest-commands.ts",
+      "bytes": 4353,
+      "sha256": "9c0d59499cab30eece394002d65ae8001233ed3461d699d5836702361ecc5019"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/quests/quest-milestone.ts",
+      "bytes": 1349,
+      "sha256": "c4376602a61be4f735ed9452ac67caea585a83903f10980ccee2ea8d07daf73a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/quests/quest-path.ts",
+      "bytes": 114,
+      "sha256": "2b3b7af6f584d6e70bd09a110227f14cb8e5ef9d97edcb241f0489b02469b3a2"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/quests/quests.css",
+      "bytes": 35301,
+      "sha256": "25dc759de0703a1e6dfe963d115e06aa77aae3fdac5ef64d780dd40ead74dbf2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/reminders/ActivityReminderControl.tsx",
+      "bytes": 5897,
+      "sha256": "6e4c2d8fa97e6c02ecba913f8e40fd908f65ce32610e277ed8d4b1b9d9aa4beb"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/reminders/ReminderWorkspace.tsx",
+      "bytes": 9809,
+      "sha256": "2cfaf2eee419c52d648b37f0c353447558619014360d1e07d728f95a3c81e6f9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/reminders/TemporalReminderControl.tsx",
+      "bytes": 969,
+      "sha256": "39548d3d31dacec63e715eee86050369e1cabfa18ddb5c70bac9a2b676905887"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/rewards/RewardNotice.tsx",
+      "bytes": 631,
+      "sha256": "f563414921f90ef49500aac7cb0110bceb4ce377874c2690ca7cda6a18f8ea71"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/rewards/RewardSummary.tsx",
+      "bytes": 3170,
+      "sha256": "222f8879b754a2d2e49e26a35ac5d8bbdb750f2e40df463da9283acdab49388c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/rewards/TaskCompletionFeedback.tsx",
+      "bytes": 2660,
+      "sha256": "b8480660f7c9e1d1428ba06e394cc9d3a9116cfce098e97b8e494463c43cf915"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/rewards/task-reward-events.ts",
+      "bytes": 1487,
+      "sha256": "bb123da89ee833d5066d354a7783ff4b9b2f265cf916ccdc3bc4ac8b4a7df8e5"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/temporal/DayDetailsDialog.tsx",
+      "bytes": 1610,
+      "sha256": "099762e88e17142bce611ea2870095250d771527175fde0205974f1c633f60de"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/temporal/MonthShowcase.tsx",
+      "bytes": 1343,
+      "sha256": "4a5bdd97a561c5469196395fa9ab336c06c0b815b0e1f4e9bf4ffff91006b87a"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/TemporalDayAgenda.tsx",
+      "bytes": 3811,
+      "sha256": "c412c4027072172f37bde46c68d033017030938e8e1275c4018af4a2eae361ea"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/TemporalEntryForms.tsx",
+      "bytes": 6777,
+      "sha256": "0edeed626386b7d37149b94245199eeeaa7cb048cb5c79afd89aedea438a4224"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/TemporalMonthPicker.tsx",
+      "bytes": 1810,
+      "sha256": "c01547ab15af85a40735b92cf3ef3e236720100f0457596adbc3ab4046c4a6dc"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/TemporalReturnLink.tsx",
+      "bytes": 654,
+      "sha256": "6e2f71b061a6ef82f23f091e4dc6bf0e6a802cfb5014ec2563ed61a9e417b947"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/temporal-navigation.ts",
+      "bytes": 2674,
+      "sha256": "898b9c0be33105c73146e681a65cbb778437408b1adbaffe94042836c564be5c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/components/temporal/useTemporalView.ts",
+      "bytes": 2315,
+      "sha256": "fdceff58dbaade5f424a54833ff65ec009acb77fa049ebc670b3970e1484efa9"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/workout/ExerciseDetailSheet.tsx",
+      "bytes": 17486,
+      "sha256": "46fe4dbc0cee8b872c1f648f4f95492812e8d8e315159f151df93c9f4b9d85ca"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/workout/FitnessHabitWidget.tsx",
+      "bytes": 20431,
+      "sha256": "4119925d353abf0b0e0c11dfe920302a1ff40f43b9f28b15d400fe60d05124c0"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/workout/MuscleExerciseCatalog.tsx",
+      "bytes": 12816,
+      "sha256": "9b341d3ce6770f930727eb4beae6cb5557d2857c2de37bbc4009fab80887c5ed"
+    },
+    {
+      "status": "M",
+      "path": "app/src/components/workout/NativeTemplateDialog.tsx",
+      "bytes": 24729,
+      "sha256": "d8fb6aa3735ae11b53a4d3b921baf7ab9415a870782c63c4c69592c93ed873ed"
+    },
+    {
+      "status": "M",
+      "path": "app/src/constants/muscle-regions.ts",
+      "bytes": 1971,
+      "sha256": "4dff84e7206f9cc3199074ea8bd029a1907e2da0912f22fa0e22aead8afa9dc2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/achievement-completion.ts",
+      "bytes": 1476,
+      "sha256": "55a9a4352748b7a1ad6b012699ba44baa09da92879448254bc12f692c4562298"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-access.ts",
+      "bytes": 3627,
+      "sha256": "2b4fb9b8e112829556166117911bf089410f92e92e2c3016b5076e8aa47be262"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-binding.ts",
+      "bytes": 4097,
+      "sha256": "e7112089dfcdad4a2875f587e6847cc1b3268b26da310f50e56921e1798840f2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-conflict.ts",
+      "bytes": 4305,
+      "sha256": "17ec2956de9c3de07a491279630c9ce3b9d91ba6ab6bfc149abaa514f7f90209"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-intent.ts",
+      "bytes": 3413,
+      "sha256": "949fde863a384050fcfb2ac43b2e6e8a25ca4af39f038bedadafa717fde18402"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-live-access.ts",
+      "bytes": 1897,
+      "sha256": "25cc55b813b6b4707dabfea7e15d842676413f78b1e53dd30a7f7921ba66a244"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-live-sync.ts",
+      "bytes": 8071,
+      "sha256": "755cf9214499b147285b50de720fd6ec243abb99009f8a62205c8362aa18a071"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-recovery-entry.ts",
+      "bytes": 1341,
+      "sha256": "2dc999b2cd8663342494978255d7a5146a1cd425ba5a4c74a6fc348ff9c8d53a"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-recovery.ts",
+      "bytes": 7155,
+      "sha256": "54b6b34838c6d27ab557ba93321cf3dc50484a65521554686094d1f4f790f532"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-release.ts",
+      "bytes": 217,
+      "sha256": "7eedeae0fc0101dda1285ff5f9e0b95f5a84d404cc4a80c2471aedb461d3ceef"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-resolution-key.ts",
+      "bytes": 160,
+      "sha256": "7aebba952cc226cdd4eea29448456f69659c87893dcac9aabc6e8d99adccd645"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-resolution.ts",
+      "bytes": 14704,
+      "sha256": "c4e46b0a326097b776b06d30596cceafd91b45773721ab9ca5674cc0da23802c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-resume-entry.ts",
+      "bytes": 360,
+      "sha256": "26e92702806ce4a76bfc28ff7dbb3fca791065bc744819a0f0d59d8177a28dd9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-return.ts",
+      "bytes": 1213,
+      "sha256": "8b59a949fc7b2550607dee76be3905c44f7f52e76e3764d3a90203ff2c14aaad"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-session-refresh.ts",
+      "bytes": 1037,
+      "sha256": "4633da89b2939b67f485352cc2cafa3032258f1d7110aa2ad17c5804b4e8fcb2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-session.ts",
+      "bytes": 1947,
+      "sha256": "cff7a5d0de9c0758e000bd47db2d1be0728f4119f77d049c21fd3998423b3dbd"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-tab-access.ts",
+      "bytes": 4216,
+      "sha256": "0f321808396dfeb49ab39b24500d857be8b16fe8ba6ad599a92ff1034569b611"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-transfer.ts",
+      "bytes": 11263,
+      "sha256": "de4e013d5605c63d8f4642a45213ea0601644dc97660f6dbfe7fb1657197cc45"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/account-transport.ts",
+      "bytes": 9520,
+      "sha256": "3cc868e99158b105f2458e74e51489ac67d3596e85ea60ffbb0e56c5e322f68d"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/association-review.ts",
+      "bytes": 8262,
+      "sha256": "148c3996633d8ee85b99df90c4be2e16c86ff5e0c3a78b01fee6264fa1e8c8de"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/attach-account-sync.ts",
+      "bytes": 2516,
+      "sha256": "e17bd5416f1dc4f49ff5b1c6dc15563fe3b62410076de96235b01a5df2d2a496"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/capture-progress.ts",
+      "bytes": 1365,
+      "sha256": "52557978c725c955566a109999670127b376f904b403d750e16233c7d878f844"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/critical-progress.ts",
+      "bytes": 9005,
+      "sha256": "74d7afc93b1e2361b8c054b99b3c97a7f69af06fb671048acad1639ffd24ea00"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/exclusive-restore.ts",
+      "bytes": 5048,
+      "sha256": "2eadcbf7081b46e29aeb9cbbc418307394a689771c97053d066d0dbcd34b0d89"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/fitness-audit.ts",
+      "bytes": 13935,
+      "sha256": "0cf434def4304aed015be51e513d2bf653c4c44f5b49e8bc163b5d02f1fec391"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/legacy-account-guard.ts",
+      "bytes": 1510,
+      "sha256": "6d8a703174ad7418a4fdfd0dfc19a66a3d560a991d86afd7333fab53c9029415"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/progress-backup.ts",
+      "bytes": 7825,
+      "sha256": "e975ec0a459887efb9ee22a77740a6ec67ee0d4a8bbfbdc63c5691ab6fcb66dc"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/progress-links.ts",
+      "bytes": 4422,
+      "sha256": "3f7c4fd32f72b83131c979c8f6e49778c981c5420c2a75acecb91f7bbe630ae7"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/progress-mode.ts",
+      "bytes": 1719,
+      "sha256": "7bb672cb89be8baf457ade231b1bf0287e0db0d36e20741c2e56a4c2cd0c66b1"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/progress-startup.ts",
+      "bytes": 4976,
+      "sha256": "99af4c85a20037a3967822692eca7194875c577eff2412f75d61e2e05dd5a67f"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/restore-comparison.ts",
+      "bytes": 7565,
+      "sha256": "f61cff0d329cc83202f0c96a7a9d465fc20734d088732b907e92cea1a417caef"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/restore-confirmation.ts",
+      "bytes": 2102,
+      "sha256": "8c27bd8958e3a8f0387fcb085547c9ccd0c0f0d4de3550caf9d8bfa78a136bb9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/restore-journal.ts",
+      "bytes": 14271,
+      "sha256": "0425f1d651ee0fc18fa88cd9d742da36d97b9c741a0efa7ea5dc32c134641bd2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/restore-release.ts",
+      "bytes": 293,
+      "sha256": "8963659717422f6b520ae03f077f732a0be0f2f7eda67bb7eb7c71c6481f7878"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/resume-account-session.ts",
+      "bytes": 3386,
+      "sha256": "fe97c333b9caf123fddb565043e4baf1222c71de89aeec7a285b594bbd68f397"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/startup-screen.css",
+      "bytes": 839,
+      "sha256": "7eed6d0ed9fb4383328e223f3569dd341940f3a49a3732568116e90ceccfdcc5"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/startup-screen.ts",
+      "bytes": 2445,
+      "sha256": "cebe4b3eddac5d2d464044df7f91837f22e47796c4da7cedd60036663034c7ce"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/stored-progress.ts",
+      "bytes": 2140,
+      "sha256": "8936c92808be76ed57398fb67c61f010b82c77b9cfccd997b7c1275a29bea41e"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/backup/workspace-preview.ts",
+      "bytes": 3380,
+      "sha256": "9422900d8af5fa644dd33030c49b546ec7ea8d590067aa582105390ad3d3214d"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/cycles/daily-tracking.ts",
+      "bytes": 1228,
+      "sha256": "b8f07e4a4dd934177c0a1940c207c1955e3d0c04fc411e0caadb68d8f175e5a8"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/cycles/daily-view.ts",
+      "bytes": 258,
+      "sha256": "25beb3f0604d30626bee208afadae40a1f82bcc8a35b8f2bdf4d0c45d95f7af6"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/cycles/reward-ledger.ts",
+      "bytes": 1360,
+      "sha256": "3549ad337c7f842687c4074000f5b6ca382d2e20ee095166ba51a9a44947e374"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/cycles/xp-recovery.ts",
+      "bytes": 2811,
+      "sha256": "63efb5ac00d66f625f829e281619b504d7ac6d74f4b1a05220a9e3bdb4c597fe"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/quest-trails.ts",
+      "bytes": 5303,
+      "sha256": "ad658425e2d004416b25bad107c183906cfb1738cc7e3fe2c8e08f051daa4c48"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/activity-reminder-adapter.ts",
+      "bytes": 1249,
+      "sha256": "894f80c6472a4dae50f6184c0bba299c714ab2ecf747469498c6b4fc086c43e9"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/exclusive-reminder-write.ts",
+      "bytes": 2504,
+      "sha256": "f238c56b80cc2c9110ba8303012559f94916afdaaa3cd6f0cd364502380834bb"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/occurrence-reminder.ts",
+      "bytes": 5776,
+      "sha256": "2fa60c4e9795ce11ae84de832ccb1843b7aec8cc55c82c6152516f018d5eea21"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/profile-reminder-codec.ts",
+      "bytes": 2392,
+      "sha256": "df8ca2a8714981770012797ebf309225a212965907e6590ac4507452db77d253"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/profile-reminders.ts",
+      "bytes": 3732,
+      "sha256": "fc9560a36f5e67139fdb7a4b771a5e8cb901a49e1f041c578f334b6def0c1cfa"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-entry.ts",
+      "bytes": 497,
+      "sha256": "484d45ded35beaceb29330488b6d7259912676630da048455a4305ed9ae025ed"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-handoff-commit.ts",
+      "bytes": 824,
+      "sha256": "4f97ce6d958fba5f510ee8f880de55cb5f235dceedf3ae65440badee06636d79"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-handoff-key.ts",
+      "bytes": 158,
+      "sha256": "ccea2dc8dd6020594df5a500f4728f3028f9cc0a427436e8688ac00ef027089c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-handoff.ts",
+      "bytes": 7964,
+      "sha256": "7ab24f78e1316acfe20b0bff75515f276aaaa8537788f19f15fa5b17cae9388c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-preparation.ts",
+      "bytes": 7520,
+      "sha256": "9409dec36ac22cc013af07dc58827f9fff75c5d937cc7f748bd137cc9b740008"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-release.ts",
+      "bytes": 218,
+      "sha256": "a64c837e43a1cb0b6e5de8095e00ef2ff705078c519d92d24cd9a34c1249c298"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-return.ts",
+      "bytes": 1062,
+      "sha256": "232fa3b700046a61c9cd59d3c9d013849961bb23a483561269e4d3d3699682ee"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-workspace.ts",
+      "bytes": 7400,
+      "sha256": "3da081025e55eb1affde459384b7504d22e05b3f6cbd7cf387178d2b99a91623"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/reminders/reminder-write-plan.ts",
+      "bytes": 1431,
+      "sha256": "c6f38c374792c61abe074057ac636edba60d311536bd16640b17c4a78a2170d9"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/supabase.ts",
+      "bytes": 856,
+      "sha256": "b24b853a35b4f3d3a371cbea6ffaa18eb95b3fc10c8015466660be07c3a0b7a0"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/task-rewards.ts",
+      "bytes": 2553,
+      "sha256": "cf924fcab713f7758498bcad393bc0504b64b38a73179e9ace605b6f138c32cf"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/temporal/annual-entry.ts",
+      "bytes": 1573,
+      "sha256": "2c8b260a7f386895fe7e265affb53b345f68685c3e0ccc821d8b8974a7027284"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/temporal/date.ts",
+      "bytes": 2268,
+      "sha256": "2f4c98b32f321ffdcc77e9d33ffdf27b105805442fb653d2656ffb5ec2c78cf2"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/temporal/habit-schedule.ts",
+      "bytes": 318,
+      "sha256": "31cd8ba5787232e92e848a3203f51571a93873a04d740f0b3da678273028410d"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/temporal/habit-streak.ts",
+      "bytes": 2458,
+      "sha256": "8725128b756f11d5160c8640b33b30b62ed992061eb35549a7acf36f1558a67d"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/temporal/recurrence.ts",
+      "bytes": 4647,
+      "sha256": "36aa40a4757412dfee689702f79417a061704be72cdc52fde19983387bf8d225"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/temporal/selectors.ts",
+      "bytes": 8348,
+      "sha256": "1ef6bc34f08a209bc9760996eda130b50d0f595fed0b999c8860d02e9908c4f2"
+    },
+    {
+      "status": "A",
+      "path": "app/src/lib/workout/catalog-navigation.ts",
+      "bytes": 2033,
+      "sha256": "9c226aa8fd1d677f3b9ae05e67aae4054a1c099a6fc10a2741a69554247f20db"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/workout/workout-focus.ts",
+      "bytes": 2166,
+      "sha256": "f5a16c5bacdcc603241dfc4ddf9fd7fc9c130a5c1ccba5d06a356a14043f887d"
+    },
+    {
+      "status": "M",
+      "path": "app/src/lib/workout/workout-labels.ts",
+      "bytes": 4394,
+      "sha256": "324e0708fd7960f15ed7e32eb4b1e1b5da0035f41aacc8a090f1177729223e8a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/main.tsx",
+      "bytes": 4205,
+      "sha256": "d70249fa5dd5d19627b5935a8b7e9f2482d982891a46a18c360f063f0c5393a8"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-account-app.ts",
+      "bytes": 1991,
+      "sha256": "5dcba9decbdaa0b8de2e4566e79f1332bc4f8442e2f15a731db6ba349a72713f"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-account-recovery.tsx",
+      "bytes": 540,
+      "sha256": "b9b7b48fb398b1b8d0fa960a85293a16828834d1b8d50e9280322fcf7b40cdaf"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-account-resume.ts",
+      "bytes": 2504,
+      "sha256": "2e88adf4d054e0906d15f90ff2d69c09e2d783fe8b77c63b7533aea4f7938c13"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-account-workspace.tsx",
+      "bytes": 768,
+      "sha256": "f6a38d3029938171fd50be8f3abd949bd52e7000a4bbc9994162c54e0a67cc2c"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-reminder-workspace.tsx",
+      "bytes": 438,
+      "sha256": "b6519420601be679df9ecabcc3cd9a5753254cfce6a9328efe34e9c261fcf414"
+    },
+    {
+      "status": "A",
+      "path": "app/src/mount-restore-workspace.tsx",
+      "bytes": 438,
+      "sha256": "e1fa281893a9e3db0926822877d2d18bc821e327f0477f86578d270bd6213b19"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/CassinoArcano.tsx",
+      "bytes": 8808,
+      "sha256": "9dff399d37d5b3ff26196421dcfcec4d057566b3131cb7f628e59f1e533b6222"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Ciclos.tsx",
+      "bytes": 149483,
+      "sha256": "e710c1bc16f2688bef2a34e3d777a1a82ce17ca1366de195bf99ef082411caf7"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Dominios.tsx",
+      "bytes": 11021,
+      "sha256": "3b87294c2f64d694fed17061a8efb367bc1da08f77349a12667e8596de5d05b7"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/ElementalPreview.tsx",
+      "bytes": 23191,
+      "sha256": "8d3c508647e6bca2e4a7cf8409306887b181d582a1d6ae7bacefbd51854b3c82"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Forja.tsx",
+      "bytes": 14764,
+      "sha256": "6d0aa7588f7f1a0d4a9dc147f43626181019c58543a5e69be9b84977c2c79b0f"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/GrandesObras.tsx",
+      "bytes": 18276,
+      "sha256": "b1ea6d066782f8b289129c05e844e2a2ea35e101d8371b30ed7996b3f46ed612"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Grimorio.tsx",
+      "bytes": 11760,
+      "sha256": "83b22843c7a1a6821c79b490f8ef7dd155231928edd86284cdd7c3ed0e1d5736"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Invocar.tsx",
+      "bytes": 25440,
+      "sha256": "74a844cc2ce43e0e10825c5d1674b0a7ce1a13e9930fa1073eb8b010b6c502cd"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Jornadas.tsx",
+      "bytes": 15599,
+      "sha256": "9f20bc0a446e948c3d589b2281f879589f468e98cd20138347533e6df128e917"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/Rituais.tsx",
+      "bytes": 86040,
+      "sha256": "88541df3334fbd4c3b810a1e3fd68df547087d9068757e19cebdebbbee95ecd5"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/ciclos.css",
+      "bytes": 47022,
+      "sha256": "96652db63a49a326f87b4a9e64bf86bfd131aff41917d7e79e4904915b840342"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/elemental-preview.css",
+      "bytes": 24782,
+      "sha256": "aa9d709cda7956020eef179b8eddc883286a3c645bdd3a9b5dbc8dc3e5d55098"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/fitness/FitnessRoot.tsx",
+      "bytes": 19441,
+      "sha256": "f8c4860f5cdd863e54c11163f1a104313fd51e3e558b2623c52d07df2c65d05a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/fitness/HealthDashboard.tsx",
+      "bytes": 5559,
+      "sha256": "bc72be8a571491151e6fa990623dbd2889944d7786aa5613b7b2171d83b43ab0"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/fitness/WorkoutHistory.tsx",
+      "bytes": 7324,
+      "sha256": "17ad57844901d2977f3c7f3bfd63b0f50625b7e68abaf9a332361a57774479d7"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/fitness/WorkoutPreview.tsx",
+      "bytes": 6684,
+      "sha256": "58e5dc9a1f99d2cb5cfaddba4d6cc908f3d68b45b4515d06c91451881b581eea"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/fitness/WorkoutSummary.tsx",
+      "bytes": 15213,
+      "sha256": "21bd97c54c39a9c13e0b929534217cbda4ca6f362478cc2b647161de9d86889d"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/grimorio.css",
+      "bytes": 18763,
+      "sha256": "f4c2d76b89f860a7b5a173a99762dd82ea12892f4e0d4079a3317c4ffb21672f"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/pilares.css",
+      "bytes": 6640,
+      "sha256": "0956be430443bfe591db985eab26e05760b3723a7546e4e5dba353e3dd95f0cd"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/TemporalCalendarPage.tsx",
+      "bytes": 21299,
+      "sha256": "c66243f855f9bb83c8b4dd7380aee08afccc48a4e403a6d2906d4fa37b8f8f67"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/TemporalLayout.tsx",
+      "bytes": 2446,
+      "sha256": "6048ac888405a669cc592426be0963edeab8f0001d4e093155bf84484d7f0ece"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/TemporalMonthPage.tsx",
+      "bytes": 6251,
+      "sha256": "ef69db00bd132b7619e3b7f4101f77eb133bc57d19bce082375035ddf4664c9d"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/TemporalWeekPage.tsx",
+      "bytes": 5309,
+      "sha256": "94ab7d1496b31d96182f7ffa66d612216f4c96939b262bf4b5b402bdf7b6d3e4"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/TemporalYearPage.tsx",
+      "bytes": 16961,
+      "sha256": "85fc55ae23bb6b0a0b07f7100f5f78ef934a156ed3f5b4032f2c0fddbe109cc4"
+    },
+    {
+      "status": "M",
+      "path": "app/src/pages/temporal/temporal-elemental.css",
+      "bytes": 23302,
+      "sha256": "052b9daf3ff0d3584a96f3a64bafe86e0f9699cc1d899dbf80ebd0a9c6931238"
+    },
+    {
+      "status": "M",
+      "path": "app/src/services/supabaseCloudSync.ts",
+      "bytes": 31093,
+      "sha256": "81075e0fa7f043ceb88933a64d8b96c6cc417a789f0110cbbb2358e041fa2304"
+    },
+    {
+      "status": "M",
+      "path": "app/src/stores/appStore.ts",
+      "bytes": 197404,
+      "sha256": "7e87ad82298a8a5f2c4f6399cc1bd60b0159f7c09ee43de48b78990df2b1574a"
+    },
+    {
+      "status": "M",
+      "path": "app/src/stores/workoutStore.ts",
+      "bytes": 110360,
+      "sha256": "eadc91fa9388992e7d3908f305004485837916814de42022e41c4fbc830f8242"
+    },
+    {
+      "status": "M",
+      "path": "app/src/styles/elemental-design-system.css",
+      "bytes": 1561,
+      "sha256": "4c6a3f3a9ff66c0d333a565b96c64d0b6ec41647ef3c5e41ebdba992cc247780"
+    },
+    {
+      "status": "A",
+      "path": "app/src/styles/elemental-motion.css",
+      "bytes": 3212,
+      "sha256": "e680e730140c548299b00ce8b83c3535164edbfa9b2a4a7531a76c02bdce2982"
+    },
+    {
+      "status": "A",
+      "path": "app/src/styles/elemental-rewards.css",
+      "bytes": 4459,
+      "sha256": "587faf12f68cdec0917a937d5d90804a2765dabe3ae83077e429b41a58ac1565"
+    },
+    {
+      "status": "M",
+      "path": "app/src/styles/elemental-theme.css",
+      "bytes": 14808,
+      "sha256": "bccae72d7eba9f878056d9d27de6f6fda33c02f516fcefb488c8ce4614173725"
+    },
+    {
+      "status": "M",
+      "path": "app/src/types/index.ts",
+      "bytes": 13827,
+      "sha256": "05e833f433f6da4da828f5652f38a052c4a76868b05d24e4baeffd5e4ebda782"
+    },
+    {
+      "status": "D",
+      "path": "app/supabase/.temp/cli-latest",
+      "note": "removed from tracking; local generated cache preserved"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261030202517_progress_account_atomic.sql",
+      "bytes": 18106,
+      "sha256": "9d0d074a51e62f4a98248ff699948546aab6a8203f586bd5d556b4b65bf85809"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261030204257_account_archive_version_121.sql",
+      "bytes": 5206,
+      "sha256": "4329eaf485d78d5542c12b8314173a1d14128508b3ce71f19b0c55fb70c9f09b"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261030211424_account_archive_version_122.sql",
+      "bytes": 5216,
+      "sha256": "eddb04b4faf01a42a0fc0ef065297cf38408f0d7e642d73992a523c2c73915d2"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261106022901_account_archive_version_123.sql",
+      "bytes": 5304,
+      "sha256": "0463dd27482101d42e82529b74f085995ba89f5760b474934a080edeab1ce710"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261106031901_account_archive_version_124.sql",
+      "bytes": 5307,
+      "sha256": "1b5102a5ac253649920369c1226d2fc492bfee2a4a1530a10b51f45141b24136"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261106033034_account_archive_version_125.sql",
+      "bytes": 5314,
+      "sha256": "36ddab09eeff04cc2e28c9b3ab1c9226771b51fdb1cfea0cc0b40e2b09859136"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261106033906_account_archive_version_126.sql",
+      "bytes": 5325,
+      "sha256": "aaa8a098d1960f72bb50deffaa5434d9e4d44e25c24a1e006d0b41a00a458569"
+    },
+    {
+      "status": "A",
+      "path": "app/supabase/migrations/20261106034829_account_archive_version_127.sql",
+      "bytes": 5325,
+      "sha256": "1bab93b7a49df6bbfe439fbd9ad989406fbc95bd22f471de561093e8e15e8315"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-access.test.mjs",
+      "bytes": 6875,
+      "sha256": "2dc295c985af50c4675e3cbfca63eef8a86f8b91ef66c05f482ffe8c560d8ebf"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-association-contract.test.mjs",
+      "bytes": 6696,
+      "sha256": "3126c294ee4434bba7d9d3903dfc732bb72e5c6ee907f1bd825be4231a9afd69"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-database.test.mjs",
+      "bytes": 10529,
+      "sha256": "afecb6df5be503817224230edf51ba0d5c99e6f3303496fdb506e417cc895216"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-installation.test.mjs",
+      "bytes": 7724,
+      "sha256": "0afa8162c79241ea52aeafac88eb4f505801ac1d80a5b15c42698d353bf4dc75"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-live-sync.test.mjs",
+      "bytes": 13390,
+      "sha256": "1d0431c1856f8fa02c0a18945cf7712b88330a99b4ba2ca92a4a0e5af480fbe7"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-preparation-ui.test.mjs",
+      "bytes": 6326,
+      "sha256": "28d4f96e1146135f2d505908907768a79444eb0421a2898223ea4e6fe42e48ee"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-preservation.test.mjs",
+      "bytes": 6362,
+      "sha256": "021df7dc240f2b6d189b5605669726e8c880709d1f142a35415e09ce18041ce4"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-recovery-ui.test.mjs",
+      "bytes": 5344,
+      "sha256": "305edc1113a93d6d461c87b7dff2d3cf98cfed0e1e14420f4a35974b8e46f597"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-recovery.test.mjs",
+      "bytes": 9915,
+      "sha256": "7baa729cc79bcaebdbaaba5b4cb7dff71c520d836305ee02136660dd87960ed1"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-refresh.test.mjs",
+      "bytes": 2352,
+      "sha256": "d54f0401c4850b90630c56087d79255010c818ca13084ae948134e083205db0b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-resolution-ui.test.mjs",
+      "bytes": 5218,
+      "sha256": "5ee92b7092e6d83d82583da5eee683fe299c1aa7ea26418a80f88c0e83b7cf18"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-resolution.test.mjs",
+      "bytes": 15740,
+      "sha256": "44df0964a4e0af6635356dd27bab2d4f7cf33ad3078253f1d0d0c8cec5e819f8"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-resume.test.mjs",
+      "bytes": 8370,
+      "sha256": "88f1cbfda77f8a8945217be13159efa9396979e9d612eeb04da787d317d1967e"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-session.test.mjs",
+      "bytes": 6885,
+      "sha256": "c5b04a3f14e1d75dba41a19020268390795c5d4af2ba4902a3635b199fb6ac54"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-sync-lifecycle.test.mjs",
+      "bytes": 7084,
+      "sha256": "230002575cbd51d1cf53c8c1002b64f3725d6ce8ed08bea076deee2210cd87ba"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-transfer.test.mjs",
+      "bytes": 19409,
+      "sha256": "f18470ac35128ef0b79cceedbb15c401e6fa6d07deedbcca39e4c09e719bcb73"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-transport.test.mjs",
+      "bytes": 8289,
+      "sha256": "c9a2d20a18b8326df45c755d21fcedf11d843afb02e92d002f6f0d28a489b209"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-version.test.mjs",
+      "bytes": 6698,
+      "sha256": "0ce4ff3df92f2dffa01a7da2d29a156c7121efa5a8e520651ae89ce13ff15354"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/account-workspace-ui.test.mjs",
+      "bytes": 24128,
+      "sha256": "65fee177d4365e9e523cde542aadade31a196bb852a0726e8c3525878ea17267"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/agenda-adapter.test.mjs",
+      "bytes": 2782,
+      "sha256": "582af9fa0e1da9a004a48e221f75f1f6262b40aa918040cb29561ca8b412315f"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/association-review.test.mjs",
+      "bytes": 8644,
+      "sha256": "1edc75fbe52c1454685c54772e035e9238ef483678f8f62b14c55d60abafe348"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/auth-bootstrap-audit.test.mjs",
+      "bytes": 6935,
+      "sha256": "ab673aecc92d4afeeb26ea957a096123d21423fe35207938fa42ed14287156f3"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/backup-ui.test.mjs",
+      "bytes": 5583,
+      "sha256": "9970c50d4a60ac2322b94e6c080bcca20105829b727f3b7ee8ed4400f5ba25bf"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/cloud-coverage-contract.mjs",
+      "bytes": 2197,
+      "sha256": "cdd4f7969da2e514e60fcac11096cc115330ce66fdb2cf537bffebd4faa2b877"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/critical-progress.test.mjs",
+      "bytes": 4830,
+      "sha256": "97cd0f97394b97ed49823e74f579f0577610c9d53cae1cd70f1b8d757e5d8f24"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/document-lifecycle.test.mjs",
+      "bytes": 12206,
+      "sha256": "0fb080a9a291ac050432c5978eeac729c2759e2ab06818de99cb5b7cd4c6a2be"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/exclusive-restore.test.mjs",
+      "bytes": 9747,
+      "sha256": "1bad3e26d0c52baa3cfd6a17feb4f9d2e4791f11dedd3ea4447adbcb697c22b8"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/fitness-audit.test.mjs",
+      "bytes": 16238,
+      "sha256": "0c81dc6a6d3e53d8b8af3d23007c73649fb11694f78e5147a3767e525e193247"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/legacy-account-guard.test.mjs",
+      "bytes": 3634,
+      "sha256": "d97c723df4adf533bb1c1416d87df0fc9c37010b281c052dbe4d531f3619eb1c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/load-account-db.mjs",
+      "bytes": 3205,
+      "sha256": "ef7c2e648fac2efc1450db036e40c96fbce9e63f12c30dbdbc297ffeadf15e79"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/load-auth-sync.mjs",
+      "bytes": 6433,
+      "sha256": "3eb5d4655851353f3dc6ccbab43209da5e4080d457a966ab4c755bef8f601389"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/load-progress.mjs",
+      "bytes": 1313,
+      "sha256": "510ec642b44d547173dc020f4473a973b4cce211f4c19858c51aa36178594973"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/local-continuation.test.mjs",
+      "bytes": 14117,
+      "sha256": "cb44132c407a009ab2e097acef728528817f265d16356ea5913b106000dc2e3b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/post-restore-barrier.test.mjs",
+      "bytes": 6505,
+      "sha256": "efda46cf1133dc842454f0f985dc63898d5a05cc747e9d8794fad63450b86baf"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/progress-backup.test.mjs",
+      "bytes": 6635,
+      "sha256": "bee4c4ebfa2ae7836917a2d3d583eedad5dcf36b523cab47e53bc243ce6ea735"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/recovery-review.test.mjs",
+      "bytes": 10452,
+      "sha256": "336d2634c18ec137274fcc981606758fb23fecbd5af42dc0a21bab2a98d3fb4b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-actions-ui.test.mjs",
+      "bytes": 9485,
+      "sha256": "51fdfb9c6ea8b3850ef75b71159e90fc01bf20b1ccd16825a558aec9d0768eea"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-comparison-ui.test.mjs",
+      "bytes": 5610,
+      "sha256": "f0cc09ddf36308b0606dc27babc19a410da202373b38c15cb64b164e5a99418b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-comparison.test.mjs",
+      "bytes": 5180,
+      "sha256": "5190ec781e0a1e2f2338522c47ffc9ceab1bf3b3e15108591ab4a3b22dd9a110"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-compatibility.test.mjs",
+      "bytes": 7205,
+      "sha256": "694c8855dead875a3e37e65e424ffda8363f0ef298c38222235d18a8dbe46e42"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-confirmation.test.mjs",
+      "bytes": 6008,
+      "sha256": "2853ca38dbd7f6b0b1e813da704bd96960ece73968fc00ee571ddd0aafc3781c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-journal.test.mjs",
+      "bytes": 11106,
+      "sha256": "09d7830b0c3f060192d9a21066cf913fdc6ab9908af36aa9b95edad232ecb0db"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/restore-workspace-ui.test.mjs",
+      "bytes": 13798,
+      "sha256": "755d6e3ec8fc99d8ad8c93d951c229f1d2e22a1c015987d3ac325333f047a268"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/startup.test.mjs",
+      "bytes": 9792,
+      "sha256": "032b41f01bb4267dff3fc82fdbe73688d6d4ec19878c3dccdb8038650a966c54"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/workspace-entry.test.mjs",
+      "bytes": 7718,
+      "sha256": "9900b3a4457f937f47386d5f3d3d8abc8bf6876e4ac2096db1b1b6117694dfe0"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/backup/workspace-preview.test.mjs",
+      "bytes": 4852,
+      "sha256": "17c1d854088e3d507fead6d70622caa1f4690bd10f5c2948d79968267ca8bca4"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/calendar-navigation.test.mjs",
+      "bytes": 4781,
+      "sha256": "58072cee12929c780c41e755d2fee9462cfc42ea95f8f5915a7118a4522b91d0"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/cycles/calendar.test.mjs",
+      "bytes": 4059,
+      "sha256": "e8fc18520fb7820e0b575ffa07af09045fd6e8c75a161eb27ddd1790d089f880"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/counter-focus.test.mjs",
+      "bytes": 4970,
+      "sha256": "329b6e40f45d4d0f896713254ad960b88d4ebe028ec258448aedee3687adf6ac"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/daily-tracking.test.mjs",
+      "bytes": 9584,
+      "sha256": "c83a7868f20038dd3a441344d99577a46422e71efa5018246b10be954bc7bede"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/date-navigation.test.mjs",
+      "bytes": 5464,
+      "sha256": "cacf0dbf6a0a9c2ffbc7429c039894db3eaeb4733e712ae19d2e2d1b974cfe0b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/load-store.mjs",
+      "bytes": 932,
+      "sha256": "343f2eb8de893be915024f42d804b2a2fba27e7e36ef9e65cbf9b25069fe6329"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/merge-compatibility.test.mjs",
+      "bytes": 2651,
+      "sha256": "683c24fb2b7904e8577877187b014cfd18c334fc9d6c24660ac0d9acb079bdeb"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/motion.test.mjs",
+      "bytes": 3996,
+      "sha256": "eb33890048fba0d7d8e3106f2241bddc995b579983bef9bf07c2f1702d503af3"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/reward-feedback.test.mjs",
+      "bytes": 3824,
+      "sha256": "0fb6cfe43fc672157a9423d0458ed432b0b86b0776b765f102faccb1e87beb80"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/reward-visual.test.mjs",
+      "bytes": 2055,
+      "sha256": "d9ae60b6f576969091d3c55e3222fb54ecbd544566acf3eb4dce8ced63bbd63c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/rewards.test.mjs",
+      "bytes": 5433,
+      "sha256": "38918d9d5f314681737632f84ddd91d3f73e04e3020b7b4563a6852b4214262b"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/cycles/streak.test.mjs",
+      "bytes": 9314,
+      "sha256": "7a8c61e445e2ed1cd53292413ccffbace7d7eb6b2e9b62ed2647d8cefa33bc5d"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/xp-recovery-ui.test.mjs",
+      "bytes": 3240,
+      "sha256": "2221e54aaab09484f20c44b534f7e205d58c0b0bd3fc4414cbddf4331d06561d"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/cycles/xp-recovery.test.mjs",
+      "bytes": 3899,
+      "sha256": "38f3e86f9c645fcf1136a80487bd0c11f3e25097c28dbc8a1e57d7faf35a6d7c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/creation-errors.test.mjs",
+      "bytes": 20092,
+      "sha256": "6f73e2a280c243768479c1f8e363bbacf3d23cb44dbeb78092d78345821da14b"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/creation-feedback.test.mjs",
+      "bytes": 2325,
+      "sha256": "33901ff7c20b34a513ba1803a4eed3b3ffa36091053b0abf8a7fa33d16242ff3"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/elemental/cycle-subitems-streak.test.mjs",
+      "bytes": 2429,
+      "sha256": "6c1bac6654bf2b548e0bcc33a3b43885ad5b31966ee02012d3cd56381c601e20"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/destiny-reveal.test.mjs",
+      "bytes": 1879,
+      "sha256": "3d6a49ec1f72cd74ef0a3625f992bcf53a70447a16ec3e596a6f5f06555e4461"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/discovery-scroll.test.mjs",
+      "bytes": 3391,
+      "sha256": "222b82c694ef99bc71515196f26d183e6dccb6f9db1dfafe7e777090f8d4901a"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/elemental/domain-catalogue.test.mjs",
+      "bytes": 3008,
+      "sha256": "4e0452744a19d391cfc988c1dee30857d02f863c1f0b1f3c62b8b542cd4a2712"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/exploration-motion.test.mjs",
+      "bytes": 3631,
+      "sha256": "b0a52d912161932cbe42e301f3ecdc8199f47c6e185c8f895c9a73f9830f11e5"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/fitness-actions.test.mjs",
+      "bytes": 5519,
+      "sha256": "19ceac3769c5f8c8dc940bfb0ac0c08d9c90431cd69a7aca0b94aedfafbe52ea"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/fitness-identity.test.mjs",
+      "bytes": 10275,
+      "sha256": "678a823ba953ea579706acb78d7d06babecb6c6fdea1a74f5aeee898e18c7d2c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/elemental/fitness-motion.test.mjs",
+      "bytes": 5355,
+      "sha256": "de8afbbc1f49870bd02619d5904b9267ff3cb8d675903b3dbba0ea0c4996c8d0"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/elemental/icon-navigation.test.mjs",
+      "bytes": 3891,
+      "sha256": "45611fd014c809c98fc8838165e00746984e8a89a98293132f723cbea4c1d463"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/elemental/load-component.mjs",
+      "bytes": 1521,
+      "sha256": "0455b3608f832fcf2377fe7959439eff4b2f0d00c913f7ed0cc1217bea5a8ac5"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/elemental/mobile-discovery.test.mjs",
+      "bytes": 3535,
+      "sha256": "47e007aba9c1241019796e0d1d9e99342a231f87efbf86dddacdbca52384430e"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/fixtures/qa-storage.mjs",
+      "bytes": 1083,
+      "sha256": "4e11273dd407c409cfa8270514a77b1b54d7193346eb474a0fef1fa109af8d2c"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/fixtures/reminder-qa.tsx",
+      "bytes": 3999,
+      "sha256": "a835cb4928582fb1cbe58751920022f771ebb53ac4db1ca85ebc03315e2f8b91"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/grimorio/anchors.test.mjs",
+      "bytes": 2869,
+      "sha256": "8cda91e501e4330789b6171d29c0e152b73bb4393ca4d748900029eee7ffc9ab"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/achievement-completion.test.mjs",
+      "bytes": 5525,
+      "sha256": "a659aa6c9aa499d39d535a5e075e9ec4327e4c6b700433f444fdb2a0a13223e3"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/achievement-ui.test.mjs",
+      "bytes": 3513,
+      "sha256": "4be4c2f4cf85cf03f1812f78377475f29441bb571256dd7ce443b9866a059dd7"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/quests/commands.test.mjs",
+      "bytes": 6126,
+      "sha256": "26ff4dc88a89f8a7fb6ee30df42e16682fa43e780bb8ffb114ceb2c5debaf1ef"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/milestones.test.mjs",
+      "bytes": 3927,
+      "sha256": "a7ef4062cd3b32502c43cb93436a7f4f7d807c3c9012547591c3004a2f8f75d0"
+    },
+    {
+      "status": "M",
+      "path": "app/tests/quests/presentation.test.mjs",
+      "bytes": 5170,
+      "sha256": "7a94fcd736f01a083688f19aea2dffe9b21777a15b50392120bf22fcc3785eb6"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/reward-summary.test.mjs",
+      "bytes": 2097,
+      "sha256": "1965c0fa36c7d28e58756a30f3186d972130277783ee8dd28a2dba9cc2c0c91a"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/task-feedback.test.mjs",
+      "bytes": 5024,
+      "sha256": "20e96879eaeba40fa9f0730988ac90a20c6674f307d6a103201fb0fca5953c74"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/quests/task-rewards.test.mjs",
+      "bytes": 4574,
+      "sha256": "22bb1c2dc4bbd1dffdd08b5eb243dca653db1c16c0759431bca9525e6e53abc8"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/activity-control-ui.test.mjs",
+      "bytes": 6628,
+      "sha256": "c6ef6d5d613c51ee937e09ac19b09f7e0aee9664e793be9c7f68c0602e206b8a"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/exclusive-write.test.mjs",
+      "bytes": 10163,
+      "sha256": "52ecdbda81e3282ef7d068aa7c770d09d0adda21ba058724b919fee3f9f83e22"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/handoff.test.mjs",
+      "bytes": 5995,
+      "sha256": "3151c02c0cb6c2f2a083717bef4b0ec2598532d886c660b8b13ddfec48d92327"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/occurrence-reminder.test.mjs",
+      "bytes": 6600,
+      "sha256": "44d2d3325ced4176477443fdd004ee82b00ce07b52e65df46c3f804dd5800277"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/preparation.test.mjs",
+      "bytes": 9267,
+      "sha256": "7450501ab8853df70c7ac2b4ffb32eba42bd3702643542311d949d1fd24764bf"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/profile-reminders.test.mjs",
+      "bytes": 7356,
+      "sha256": "982909ef17dcb1e87c628ad96fbd21f3d44af5acfb4bc9e60a5c60cd4b3f7926"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/qa-storage.test.mjs",
+      "bytes": 2022,
+      "sha256": "7cfd2ebc4ea667be89fe988ee05920ff4f2e7a2c29fc28176b02bde23cdda9b9"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/workspace-ui.test.mjs",
+      "bytes": 8033,
+      "sha256": "9f40e84a23a5b12b6586f1fa68e7aead9ee3fa99db98805d18a903bb0bd9e397"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/reminders/workspace.test.mjs",
+      "bytes": 9792,
+      "sha256": "bfb32545ab862f1c181c45ffe144a55a0ffe95c22455e050d1a9dab7fd023334"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/temporal/agenda.test.mjs",
+      "bytes": 14123,
+      "sha256": "8c097bc4e4a6bdf6fc932709ce8f1e11ba1b080ab137ba2313c19cd7bac77e15"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/temporal/entry-forms.test.mjs",
+      "bytes": 14562,
+      "sha256": "7c57baa513f413a347dcb7c89043879f0d5dcedae372116b6e4c5ef5a36f47e4"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/temporal/mobile-agenda.test.mjs",
+      "bytes": 15809,
+      "sha256": "d4a8360db69f21ce5c72fa0e6062ad979c6daa4d2ef94ed744dd260b0a0e12c9"
+    },
+    {
+      "status": "A",
+      "path": "app/tests/temporal/navigation-review.test.mjs",
+      "bytes": 3322,
+      "sha256": "6b033c605057ebd55c4fee0542685233232db451396ca505f134b8cfd03cedec"
+    },
+    {
+      "status": "M",
+      "path": "app/vercel.json",
+      "bytes": 979,
+      "sha256": "84c2aee85abf8eac843a9911ea365a8b9b8049128a258559c4386e39ef32569e"
+    }
+  ],
+  "note": "Pre-publication snapshot. A later documentation-only custody note can update publication fields; source hashes belong to the technical commit. Own report hashes omitted."
+}

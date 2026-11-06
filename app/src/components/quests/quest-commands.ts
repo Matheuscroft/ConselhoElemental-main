@@ -56,5 +56,5 @@ export function finishQuestStep(getState: () => FinishState, accountId: string |
   if (!completeRitualTimer(getState, { accountId, taskId })) return null;
   const after = getState();
   const completed = after.tasks.find(t => t.id === taskId)!;
-  return { title: completed.title, points: completed.completedScore ?? null, xp: after.getLevelProgress().xpTotal - xpBefore, minutes: completed.actualTimeMinutes };
+  return { title: completed.title, points: completed.completedScore ?? null, xp: after.getLevelProgress().xpTotal - xpBefore, minutes: completed.actualTimeMinutes, element: completed.completionXp?.elementId ?? completed.elementId, progress: after.getLevelProgress() };
 }

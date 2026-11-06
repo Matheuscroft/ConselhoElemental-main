@@ -11,7 +11,7 @@ export function loadComponent(file) {
   const absolute = resolve(root, file);
   if (cache.has(absolute)) return cache.get(absolute);
   const source = readFileSync(absolute, 'utf8');
-  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
+  const output = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, esModuleInterop: true, jsx: ts.JsxEmit.ReactJSX, target: ts.ScriptTarget.ES2022 } }).outputText;
   const module = { exports: {} };
   cache.set(absolute, module.exports);
   const localRequire = (id) => {

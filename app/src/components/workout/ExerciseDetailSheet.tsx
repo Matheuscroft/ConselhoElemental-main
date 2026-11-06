@@ -1,3 +1,4 @@
+import { TriangleAlert } from 'lucide-react';
 import React from 'react';
 import { AlertCircle, Lightbulb, ListChecks, Plus, Wind } from 'lucide-react';
 import './exercise-detail.css';
@@ -221,7 +222,7 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({
                 <ul className="space-y-1.5 text-sm text-orange-200/80">
                   {exercise.contraindications.map((item) => (
                     <li key={item} className="flex gap-2">
-                      <span className="text-orange-400 mt-1" aria-hidden="true">⚠</span>
+                      <TriangleAlert className="mt-1 h-4 w-4 shrink-0 text-orange-400" aria-hidden="true" />
                       <span>{item}</span>
                     </li>
                   ))}

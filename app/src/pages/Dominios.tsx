@@ -6,6 +6,7 @@ import { DomainSectionJump } from '@/components/domains/DomainNavigation';
 import { readDomainFilters, domainFilterSearch, type DomainFilters } from '@/components/domains/navigation';
 import { focusDomainSection } from '@/components/domains/navigation';
 import { AppLayout } from '@/components/layout';
+import { DISCOVERY_NAVIGATION_OPTIONS } from '@/components/layout/discovery-scroll';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { DomainElementRail, DomainElementPicker, DomainEmpty } from '@/components/domains/DomainPresentation';
 import { useAppStore } from '@/stores/appStore';
@@ -35,7 +36,7 @@ function DomainsWorkspace() {
   const location = useLocation();
   const filters = readDomainFilters(searchParams.toString());
   const { element: selectedElement, mode: listMode, query: search } = filters;
-  const updateFilters = (patch: Partial<DomainFilters>) => setSearchParams(domainFilterSearch({ ...filters, ...patch }), { replace: true });
+  const updateFilters = (patch: Partial<DomainFilters>) => setSearchParams(domainFilterSearch({ ...filters, ...patch }), DISCOVERY_NAVIGATION_OPTIONS);
   const setSelectedElement = (element: ElementId | null) => updateFilters({ element });
   const setListMode = (mode: 'active' | 'inactive') => updateFilters({ mode });
   const setSearch = (query: string) => updateFilters({ query });

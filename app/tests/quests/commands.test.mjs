@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { loadComponent } from '../elemental/load-component.mjs';
 const { createQuestPlan, appendQuestStep, finishQuestStep } = loadComponent('src/components/quests/quest-commands.ts');
+const { LevelingCalculatorService } = loadComponent('src/services/leveling-calculator.ts');
 const { openRitualTimer } = loadComponent('src/components/elemental/sanctuary-timer.ts');
 const plan = { kind: 'quest', title: ' Aprender desenho ', element: 'ar', chapter: ' Primeiros traços ', steps: [' Escolher material ', ' Praticar '] };
 function fixture() {
@@ -17,11 +18,11 @@ function fixture() {
     stopTimer() { calls.push(['stop']); const seconds = state.timer.elapsedSeconds; state.timer = { entityId: null, entityType: null, isRunning: false, elapsedSeconds: 0 }; return seconds; },
     pauseTimer() {}, resumeTimer() {},
     completeTask(id, minutes) { calls.push(['complete', id, minutes]); state.tasks = state.tasks.map(t => t.id === id ? { ...t, isCompleted: true, completedScore: 7, actualTimeMinutes: minutes } : t); state.xp += 3; },
-    getLevelProgress() { return { xpTotal: state.xp }; },
+    getLevelProgress() { return LevelingCalculatorService.calculate(state.xp); },
   };
   return { state, calls, getState: () => state };
 }
-const leaf = { id: 't', title: 'Praticar', childItems: [], isCompleted: false };
+const leaf = { id: 't', title: 'Praticar', elementId: 'ar', childItems: [], isCompleted: false };
 
 test('new quest delegates existing store IDs and trimmed names without changing scoring defaults', () => {
   const f = fixture(); assert.equal(createQuestPlan(f.getState, 'a', plan), 'quest:existing-store-quest-id');
@@ -52,7 +53,7 @@ test('append reuses the selected mission and rejects missing or archived destina
 
 test('completion reports recorded values and delegates exact fractional minutes only once', () => {
   const f = fixture(); f.state.tasks = [{ ...leaf }]; openRitualTimer(f.getState, { accountId: 'a', taskId: 't' }); f.state.timer.elapsedSeconds = 91;
-  assert.deepEqual(finishQuestStep(f.getState, 'a', 't'), { title: 'Praticar', points: 7, xp: 3, minutes: 91 / 60 });
+  assert.deepEqual(finishQuestStep(f.getState, 'a', 't'), { title: 'Praticar', points: 7, xp: 3, minutes: 91 / 60, element: 'ar', progress: LevelingCalculatorService.calculate(13) });
   assert.equal(finishQuestStep(f.getState, 'a', 't'), null);
   assert.equal(f.calls.filter(c => c[0] === 'complete').length, 1); assert.deepEqual(f.calls.at(-1), ['complete', 't', 91 / 60]);
 });
