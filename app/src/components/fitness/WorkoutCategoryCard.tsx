@@ -1,6 +1,6 @@
 /**
  * WorkoutCategoryCard — category selection card for "Select Workout" screen.
- * Selected state: thick violet border + glow.
+ * Selected state: elemental gold border.
  * Unselected: dark surface, icon centered.
  */
 import React from 'react';
@@ -30,21 +30,21 @@ export const WorkoutCategoryCard: React.FC<WorkoutCategoryCardProps> = ({
     className={cn(
       'relative flex flex-col items-center justify-center gap-3 w-full rounded-[22px] p-5',
       'bg-fitness-surface transition-all duration-150',
-      'hover:bg-fitness-surface-hover active:scale-[0.97]',
+      'hover:bg-fitness-surface-hover motion-safe:active:scale-[0.97] motion-reduce:transition-none',
       'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary',
       tall ? 'h-44' : 'h-36',
       selected
-        ? 'ring-[3px] ring-fitness-primary shadow-fitness-primary'
+        ? 'ring-1 ring-[rgb(var(--el-gold)/0.6)]'
         : 'shadow-fitness-card'
     )}
   >
     <div className={cn(
-      'w-12 h-12 rounded-full flex items-center justify-center',
-      'bg-fitness-lavender/15',
+      'w-14 h-14 rounded-2xl border border-[rgb(var(--el-gold)/0.25)] flex items-center justify-center',
+      'bg-[rgb(var(--el-gold)/0.06)]',
     )}>
       <Icon
         className={cn(
-          'w-6 h-6',
+          'w-8 h-8',
           selected ? 'text-fitness-primary' : 'text-fitness-primary'
         )}
         aria-hidden="true"

@@ -1,0 +1,134 @@
+{
+  "scope": "source inspection across app; UI remediation concentrated in Fitness auxiliary views",
+  "sourceFilesSearched": 455,
+  "fitnessFilesInventoried": 90,
+  "legacyPaletteFilesAtHead": [
+    "src/components/fitness/TrendAreaChart.tsx",
+    "src/components/workout/create-workout.css",
+    "src/components/workout/exercise-detail.css",
+    "src/index.css",
+    "src/pages/fitness/HealthDashboard.tsx"
+  ],
+  "legacyPaletteMatchesAfter": [],
+  "changedExistingFiles": {
+    "src/index.css": {
+      "before": "b326e20ee787754d282a86fd0689e0064fc8e0961e5da441f50b61b863f2ea40",
+      "after": "574718f28bad4c34b0b78a741cbc955c8ac7ce2fa8a42eed5b64d08cd6077f08"
+    },
+    "src/pages/fitness/ActiveFitnessSession.tsx": {
+      "before": "610d61abb14be0b0bff39c531f59851d3ce18864e77aec184eb81502257e9e91",
+      "after": "1accd5a5c89da27fe6c22cb242924e258925fc7d9c9ec1fb38f779b6ca1c4861"
+    },
+    "src/pages/fitness/HealthDashboard.tsx": {
+      "before": "bc72be8a571491151e6fa990623dbd2889944d7786aa5613b7b2171d83b43ab0",
+      "after": "723bad8886405147ba7844a9e52d44c02af11c0ff8d1768d31140833f410ee81"
+    },
+    "src/lib/backup/critical-progress.ts": {
+      "before": "74d7afc93b1e2361b8c054b99b3c97a7f69af06fb671048acad1639ffd24ea00",
+      "after": "693e6314b6da7bc82fc6593eaf6f9fc39393c7939de7fcc1e9551bb1b6cd936f"
+    },
+    "src/components/ui/sheet.tsx": {
+      "before": "fbe9b257fd95b9865e1aba651489899c959ed5c16cb8493fe8c2733f83b92ee1",
+      "after": "f43f647eecb1890b25f49160bd667adc8d9152cd5f1f95b9165e61b33bdaf686"
+    },
+    "src/components/fitness-kit/WorkoutStatsGrid.tsx": {
+      "before": "fecdd7957e2ec957d484658de197b7ea617fd09e7ceddcf5dd4153ea774f48a5",
+      "after": "520bd813903b3ad8f25a843c22d78faf87eb55c6dc8f5228d1b60ddd5647076c"
+    },
+    "src/components/fitness-kit/TrendAreaChart.tsx": {
+      "before": "c3ef68d033d509fb49bf76e9fe10baa221723ecc9abffbcbc6e122d10e523c85",
+      "after": "1f69676996c4cc896d4372fb22c2ded39f5d080d38e2a83fb22e76a330b1f39f"
+    },
+    "src/components/fitness-kit/MuscleBars.tsx": {
+      "before": "09df96d53f0ec2ccbcd83197fe45578201fa4954ed1c3e64c4221dc6c4e23c66",
+      "after": "f4f23a1ff92418c9b170666430d94994ff04c14a4c15451083614f46537f7852"
+    },
+    "src/components/fitness/FitnessButton.tsx": {
+      "before": "c6224b71382c553c99db2303509b5db939a1b1662a2fac4335918f1082a48c83",
+      "after": "bbf1b0814aa866d1a045cda3ed797b89742457b07dd834d71c47b969175a4c5c"
+    },
+    "src/components/fitness/FitnessIconBadge.tsx": {
+      "before": "950adace56fa8b8c98921fe6a4c8dc0a4f10facbcb3381f5bd3224fb57166e73",
+      "after": "a8391860e7fbad12ab2c93e05c4eaff1ed4d8aebdd0b2a407afe1703ed0f4b70"
+    },
+    "src/components/fitness/TrendAreaChart.tsx": {
+      "before": "ae7168f51c43506ef470de194b74ee24672a16902ee78e7319fea88f43724885",
+      "after": "495a3a3b266103d3e80d84ba00e3970bc506bb2fb4ca9ffe888497c0b6212c9b"
+    },
+    "src/components/fitness/WorkoutCategoryCard.tsx": {
+      "before": "b4139c077c7f8ccb448687026e459d6decb41719b6e51bbfe76cfd117748fdb2",
+      "after": "a9ab219c16898493cc08147a286ffcc7a6f2d8eb959e1c8bdaa36ce89bdfa04d"
+    },
+    "src/components/fitness/FitnessCard.tsx": {
+      "before": "b77bb0e5d924e1e95b324e71f9b51149a474746bb3b53349c576d8577c349138",
+      "after": "ac45fb7813ff2476f2d71d1a186176ce5826bdea327c844f16141f056ff20677"
+    },
+    "src/components/workout/create-workout.css": {
+      "before": "9cb094eddeea0a984a6d5f82f128e30119c3c00a4e1aad2c03d252bca1985c98",
+      "after": "7deefea4f0b46879c7e58cf8e9ef7a1b3b2faa31f44bee5e7ac7b68b253e0db2"
+    },
+    "src/components/workout/BodyMeasurementDialog.tsx": {
+      "before": "5ec19bdb259232443edcdc878f4e2c8ae0eada4cbb8c74c3797b6870cbb45370",
+      "after": "3581084d44d259784c19b3b9e54db67db268c8646b12e850a65ea0a472868886"
+    },
+    "src/components/workout/MuscleDistributionBars.tsx": {
+      "before": "e8cdc589d0174d051d4437c819dd210eaa197eaeab4ffbc0e1d1c0b0668084f9",
+      "after": "f87051a590782b56fad69ff55149d9bab438143e0e87ea2af6cf2d7ae72e592b"
+    },
+    "src/components/workout/WorkoutListCard.tsx": {
+      "before": "2bba2ac56ee2f1470c0a1550644f4dca85827599323b4a6f703b0774c7b3ad9c",
+      "after": "987a2890737a66e537264f89491c529bd4440877d6a140ee7efd33ff24263a76"
+    },
+    "src/components/workout/FitnessHabitWidget.tsx": {
+      "before": "4119925d353abf0b0e0c11dfe920302a1ff40f43b9f28b15d400fe60d05124c0",
+      "after": "955e9660128d5e26df980c01641ab29e66fdbec81dbcfb26eb0f64e44d4ca125"
+    },
+    "src/components/workout/NativeTemplateDialog.tsx": {
+      "before": "d8fb6aa3735ae11b53a4d3b921baf7ab9415a870782c63c4c69592c93ed873ed",
+      "after": "2da60cc7fbdce46c76c6d8886ce627c1d6e954f75b7f057fcef0b8a9469554f3"
+    },
+    "src/components/workout/ExerciseDetailSheet.tsx": {
+      "before": "46fe4dbc0cee8b872c1f648f4f95492812e8d8e315159f151df93c9f4b9d85ca",
+      "after": "5261e547492d3ae790f380649f3cc0efb43f33c4a62fd97eb3109113618d9400"
+    },
+    "src/components/workout/WorkoutCategoryGrid.tsx": {
+      "before": "0527ae6c10e75a769536ff12324135f7e62685e28180c6e764c1430f5a9ca1d4",
+      "after": "eae4c5181e3c03647a97f8ea730d0ec45b26f6e66f517e76a2855e2e43d31200"
+    },
+    "src/components/workout/exercise-detail.css": {
+      "before": "ec8a7a50ebfefdc25b7feeb7387ddff630e35cca572a7fdbd795dc90378e9ad1",
+      "after": "ec47f743cda8873fab7e039931c3c590ce905e239a0867c5df5f28859941052f"
+    },
+    "src/components/workout/MakeCycleModal.tsx": {
+      "before": "30d10cb0b2a9df8dc5b2ea51a280fa0dc833a0f80464c0f13aebe6f3b28b805e",
+      "after": "b7d5ab1ebd4ca53e48098fd9a414152df293dea4c9310bf8bac1e22203aab11e"
+    },
+    "src/components/workout/ActiveExerciseCard.tsx": {
+      "before": "448cc3a45538a607650b8c2dc8d769369a4591241460c7460a20a80319c489f9",
+      "after": "d7702ab41a086efdefd88ebc70816fa0f59b6c88315987da8fa53bfd5a3bb4c2"
+    },
+    "src/components/workout/WorkoutSequenceLibrary.tsx": {
+      "before": "bfcdb32c9be9a1c1de873223aa7c69dfd54e90b54f9c3927c9bb5c1ea23e437b",
+      "after": "0401c651395e4022c3a1ced4d763610ffff99702b09c1ab0ef75908c3347c433"
+    },
+    "tests/backup/account-version.test.mjs": {
+      "before": "0ce4ff3df92f2dffa01a7da2d29a156c7121efa5a8e520651ae89ce13ff15354",
+      "after": "d2a32e44eaf1d54ba02d77b5db721ba42d26acb6d00c657b22ce04754380c11d"
+    },
+    "tests/backup/load-account-db.mjs": {
+      "before": "ef7c2e648fac2efc1450db036e40c96fbce9e63f12c30dbdbc297ffeadf15e79",
+      "after": "5a367267264d11b8c67537d817dd9891cab114e68cad6fe2ab96276029c46348"
+    },
+    "package.json": {
+      "before": "08d89a72f7f360d693864ae155add46c6e03193d537e231f013e5a06a0a6ce8d",
+      "after": "04e006f71c7e6235a57f9faae0062207d951099ff7ac0fa9c69184753152ca8f"
+    },
+    "package-lock.json": {
+      "before": "b7a5df337985d0f0d0aca08ecfca125b480fa10139df16c5db4f97b00d940906",
+      "after": "aed60d94038e4a576d639dc165475335f5c725afa225b5a78f9ad9431f2572a3"
+    }
+  },
+  "protectedDomainFiles": 48,
+  "protectedDomainFilesChanged": [],
+  "visualEvidence": "user screenshot for diagnosis only; no app browser inspection"
+}

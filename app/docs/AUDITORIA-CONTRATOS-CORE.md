@@ -1,3 +1,7 @@
+## T05 — 0.1.129: apresentação de XP, sem nova recompensa
+
+[Repasse para main](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Medalhão/elementos coloridos e valores já formatados; lógica de valor/progresso/estado conferida contra fonte anterior. Sem gravar/conceder XP, inferir fragmentos ou alterar stores. Compatibilidade local de produtor 128/129, formato mantido/gates false. F6, associação pessoal e contrato de fragmentos seguem pendentes; publicação não autoriza ativação/migração remota.
+
 ## H02 — pacote de contratos para revisão backend — 0.1.127
 
 [Repasse integral para Matheus](plans/REPASSE-BACKEND-0.1.127.md): alterações de core/recibos/recorrência já pertencem aos lotes anteriores autorizados; H02 somente ícone/apresentação, compatibilidade de produtor e higiene/publicação. Sem mudança nova de fórmula/store/tipo neste lote. Candidato SQL 127 separado, gate fechado; sem reescrever revisões anteriores/aplicar remotamente. Conta integral/F6 e associação pessoal seguem pendentes.

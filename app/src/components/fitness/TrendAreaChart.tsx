@@ -35,8 +35,8 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({ data, height = 1
       <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
         <defs>
           <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#8582F2" stopOpacity={0.45} />
-            <stop offset="100%" stopColor="#8582F2" stopOpacity={0} />
+            <stop offset="0%" stopColor="#d5b66f" stopOpacity={0.45} />
+            <stop offset="100%" stopColor="#d5b66f" stopOpacity={0} />
           </linearGradient>
         </defs>
         <XAxis
@@ -54,16 +54,16 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({ data, height = 1
             fontSize: 12,
           }}
           itemStyle={{ color: '#F5F5F7' }}
-          cursor={{ stroke: '#8582F2', strokeWidth: 1, strokeDasharray: '4 2' }}
+          cursor={{ stroke: '#d5b66f', strokeWidth: 1, strokeDasharray: '4 2' }}
         />
         <Area
           type="monotone"
           dataKey="value"
-          stroke="#8582F2"
+          stroke="#d5b66f"
           strokeWidth={3}
           fill="url(#trendGradient)"
           dot={false}
-          activeDot={{ r: 5, fill: '#8582F2', stroke: '#F5F5F7', strokeWidth: 2 }}
+          activeDot={{ r: 5, fill: '#d5b66f', stroke: '#F5F5F7', strokeWidth: 2 }}
         />
       </AreaChart>
     </ResponsiveContainer>

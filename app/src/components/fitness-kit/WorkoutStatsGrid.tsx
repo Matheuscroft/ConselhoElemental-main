@@ -7,7 +7,7 @@ interface SummaryMetricProps {
   unit?: string;
 }
 
-/** Métrica direto sobre o canvas: rótulo violeta, número branco, unidade menor em caixa-alta. */
+/** Métrica direto sobre o canvas: rótulo dourado, número branco, unidade menor em caixa-alta. */
 export const SummaryMetric: React.FC<SummaryMetricProps> = ({ label, value, unit }) => (
   <div className="min-w-0">
     <dt className="text-lg text-fitness-primary">{label}</dt>

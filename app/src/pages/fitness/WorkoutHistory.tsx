@@ -1,3 +1,4 @@
+import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import React, { useContext, useMemo, useState } from 'react';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -107,6 +108,7 @@ export const WorkoutHistory: React.FC = () => {
               name={item.name}
               dateLabel={item.dateLabel}
               metricValue={item.reward == null ? 'XP indisponível' : `+${formatEarthXp(item.reward)} XP`}
+              metricNode={item.reward == null ? undefined : <ElementalXpBadge value={`+${formatEarthXp(item.reward)}`} element="terra" size="sm" />}
               metricUnit=""
               icon={CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.mixed}
               onClick={() => navigate(`/treinos/resumo/${item.id}`)}

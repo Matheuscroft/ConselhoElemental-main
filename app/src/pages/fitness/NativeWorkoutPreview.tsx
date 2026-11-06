@@ -1,3 +1,4 @@
+import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil, Play } from 'lucide-react';
@@ -30,7 +31,7 @@ export function NativeWorkoutPreview({ template }: { template: WorkoutTemplate }
     <div className="relative -mt-8 rounded-t-[2rem] bg-fitness-canvas px-6 pt-7">
       <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="break-words font-sans text-2xl font-semibold">{template.name}</h2><p className="mt-2 text-sm text-fitness-muted">{CATEGORY_LABELS[template.modality ?? 'mixed']} · {template.estimatedDurationMinutes} min planejados</p></div><button type="button" aria-label="Editar treino" onClick={() => setEditing(true)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-fitness-surface text-fitness-primary focus-visible:ring-2 focus-visible:ring-fitness-primary"><Pencil size={19} /></button></div>
       {template.scheduledAt && <p className="mt-3 text-sm text-fitness-muted">Planejado para {new Date(template.scheduledAt).toLocaleDateString('pt-BR')}</p>}
-      {reward && <p className="mt-5 rounded-2xl bg-fitness-surface p-4 text-sm leading-relaxed"><span className="font-semibold text-fitness-green">{formatEarthXp(reward.earthXp)} XP Terra</span><span className="mt-1 block text-fitness-muted">Estimativa das séries planejadas. Sua recompensa usa apenas o que você concluir.</span></p>}
+      {reward && <p className="mt-5 rounded-2xl bg-fitness-surface p-4 text-sm leading-relaxed"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><span className="mt-1 block text-fitness-muted">Estimativa das séries planejadas. Sua recompensa usa apenas o que você concluir.</span></p>}
       <h3 className="mt-7 font-sans text-xl font-semibold">Seu programa</h3><p className="mt-2 text-sm text-fitness-muted">{rows.length} exercícios · {rows.reduce((sum, row) => sum + row.exercise.sets.length, 0)} séries ou blocos. Abra para ver os detalhes.</p>
       <div className="mt-5 space-y-4">{rows.map(({ exercise, definition, media }, index) => <FitnessCard key={exercise.id} className="overflow-hidden p-4">
         <details open={rows.length === 1}>

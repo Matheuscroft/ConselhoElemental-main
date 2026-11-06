@@ -34,12 +34,12 @@ export const WorkoutCategoryGrid: React.FC<WorkoutCategoryGridProps> = ({ catalo
         onClick={() => onSelect(null)}
         className={`rounded-2xl border p-3.5 text-left transition-all ${
           selected === null
-            ? 'border-mystic-arcane bg-mystic-arcane/15 shadow-glow-arcane'
+            ? 'border-[rgb(var(--el-gold))] bg-[rgb(var(--el-gold)/0.15)] shadow-sm'
             : 'border-white/10 bg-black/20 hover:border-white/20'
         }`}
       >
-        <div className="w-9 h-9 rounded-full bg-mystic-arcane/20 flex items-center justify-center mb-2">
-          <Layers className="w-5 h-5 text-mystic-arcane" aria-hidden="true" />
+        <div className="w-9 h-9 rounded-full bg-[rgb(var(--el-gold)/0.2)] flex items-center justify-center mb-2">
+          <Layers className="w-5 h-5 text-[rgb(var(--el-gold))]" aria-hidden="true" />
         </div>
         <p className="text-sm font-medium text-white">Todos</p>
         <p className="text-[11px] text-white/50 mt-0.5">Catálogo completo</p>
@@ -59,12 +59,12 @@ export const WorkoutCategoryGrid: React.FC<WorkoutCategoryGridProps> = ({ catalo
             onClick={() => onSelect(isSelected ? null : category)}
             className={`rounded-2xl border p-3.5 text-left transition-all ${
               isSelected
-                ? 'border-mystic-arcane bg-mystic-arcane/15 shadow-glow-arcane'
+                ? 'border-[rgb(var(--el-gold))] bg-[rgb(var(--el-gold)/0.15)] shadow-sm'
                 : 'border-white/10 bg-black/20 hover:border-white/20'
             }`}
           >
-            <div className="w-9 h-9 rounded-full bg-mystic-arcane/20 flex items-center justify-center mb-2">
-              <Icon className="w-5 h-5 text-mystic-arcane" aria-hidden="true" />
+            <div className="w-9 h-9 rounded-full bg-[rgb(var(--el-gold)/0.2)] flex items-center justify-center mb-2">
+              <Icon className="w-5 h-5 text-[rgb(var(--el-gold))]" aria-hidden="true" />
             </div>
             <p className="text-sm font-medium text-white">{CATEGORY_LABELS[category]}</p>
             <p className="text-[11px] text-white/50 mt-0.5 line-clamp-2">{CATEGORY_DESCRIPTIONS[category]}</p>

@@ -1,6 +1,7 @@
 <p align="center">
 
-> **Repasse 0.1.127 para Matheus:** [estado, mudanças, testes e próximos lotes de backend](docs/plans/REPASSE-BACKEND-0.1.127.md). Branch de revisão; conta integral/F6 e associação pessoal ainda pendentes, gates fechados.
+> **Repasse 0.1.129 / main:** [XP/elementos coloridos, superfícies de Treinos e próximos lotes backend](docs/plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Conta/F6 e associação pessoal continuam pendentes, gates fechados.
+
   <img src="Mago_app.jpeg" width="250" alt="Logo Domínio do Mago - Elemental Arcane UI">
 </p>
 

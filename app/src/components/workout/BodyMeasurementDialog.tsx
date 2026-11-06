@@ -33,7 +33,7 @@ interface BodyMeasurementDialogProps {
   onSaved?: () => void;
 }
 
-export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ open, onOpenChange, onSaved, variant = 'default' }) => {
+export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ open, onOpenChange, onSaved }) => {
   const titleId = useId();
   const returnFocus = useRef<HTMLElement | null>(null);
   const { addBodyMeasurement } = useWorkoutStore();
@@ -79,7 +79,7 @@ export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ op
             returnFocus.current.focus();
           }
         }}
-        aria-labelledby={titleId} aria-describedby={undefined} className={variant === 'fitness' ? 'fitness-dialog max-w-md max-h-[85dvh] overflow-y-auto' : 'bg-mystic-purple/95 border-white/10 max-w-md max-h-[85vh] overflow-y-auto'}>
+        aria-labelledby={titleId} aria-describedby={undefined} className="fitness-dialog max-w-md max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle id={titleId} className="font-mystic">Registrar avaliação corporal</DialogTitle>
         </DialogHeader>
@@ -101,7 +101,7 @@ export const BodyMeasurementDialog: React.FC<BodyMeasurementDialogProps> = ({ op
           <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button type="button" className="bg-mystic-arcane hover:bg-mystic-arcane/80" onClick={handleSubmit}>
+          <Button type="button" className="bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))] hover:brightness-105" onClick={handleSubmit}>
             Salvar
           </Button>
         </DialogFooter>

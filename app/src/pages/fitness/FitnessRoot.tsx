@@ -1,3 +1,4 @@
+import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import { FITNESS_ICONS, FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -7,7 +8,7 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
-import { getWorkoutFocus, getExerciseFocus } from '@/lib/workout/workout-focus';
+import { getWorkoutPresentation, getExercisePresentation } from '@/lib/workout/workout-focus';
 import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessHeader, FitnessPageShell, FitnessListRow, SectionHeader } from '@/components/fitness-kit';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -56,10 +57,10 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
   const previewReward = useWorkoutStore((state) => state.previewTemplateReward);
   const reward = previewReward(template.id);
   const series = template.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
-  const focus = getWorkoutFocus(template, catalog);
+  const focus = getWorkoutPresentation(template, catalog);
   return <FitnessCard className="space-y-4 p-5">
-    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary">{focus ? <FitnessGlyph name={focus.icon} size={28} label={`Foco predominante: ${focus.label}`} /> : <FitnessGlyph name="strength" size={21} />}</span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
-    {reward && <div className="space-y-2"><span className="inline-flex items-center gap-2 rounded-full border border-emerald-300/25 bg-emerald-300/10 px-4 py-2 font-semibold text-emerald-200">{formatEarthXp(reward.earthXp)} XP <FitnessGlyph name="earth" size={17} label="Terra" /></span><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
+    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary"><FitnessGlyph name={focus.icon} size={28} label={focus.label} /></span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
+    {reward && <div className="space-y-2"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
     {template.scheduledAt && <p className="text-sm text-fitness-muted">Planejado para {new Date(template.scheduledAt).toLocaleDateString('pt-BR')}</p>}
     <FitnessButton size="md" className="w-full" disabled={!!active || template.exercises.length === 0} onClick={() => {
       const session = startSession(template.id);
@@ -70,7 +71,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
     <div id={`template-content-${template.id}`} hidden={!expanded} className="space-y-4">
     <ol aria-label={`Composição de ${template.name}`} className="space-y-3 rounded-xl bg-fitness-canvas/60 p-3">
       {template.exercises.slice().sort((a, b) => a.order - b.order).map((exercise) => {
-        const exerciseFocus = getExerciseFocus(exercise.exerciseId, catalog);
+        const exerciseFocus = getExercisePresentation(exercise.exerciseId, catalog, template.modality);
         const summary = (['reps', 'duration'] as const).flatMap((mode) => {
           const sets = exercise.sets.filter((set) => set.measureMode === mode);
           if (!sets.length) return [];
@@ -79,7 +80,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
           const varies = amounts.some((amount) => amount !== amounts[0]);
           return [`${sets.length} × ${varies ? '~' : ''}${average.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}${mode === 'reps' ? ' reps' : 's'}`];
         }).join(' + ');
-        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <FitnessGlyph name={exerciseFocus.icon} size={24} label={`Foco: ${exerciseFocus.label}`} className="mr-2 inline-block align-middle text-[rgb(var(--el-gold))]" />}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
+        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <FitnessGlyph name={exerciseFocus.icon} size={24} label={exerciseFocus.label} className="mr-2 inline-block align-middle text-[rgb(var(--el-gold))]" />}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
       })}
     </ol>
     <div className="grid grid-cols-2 gap-2">

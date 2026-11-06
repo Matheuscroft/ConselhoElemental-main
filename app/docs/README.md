@@ -1,3 +1,7 @@
+> **0.1.129 — T05/main:** [XP e elementos coloridos, validação e repasse para Matheus](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Inclui a rodada local 0.1.128. 674 testes/checks; pendências de conta e limites visuais explícitos.
+
+> **0.1.128 — T04 local:** [fichas, editor, diálogos e componentes auxiliares de Treinos modernizados](plans/TREINOS-SUPERFICIES-0.1.128.md). 670 testes e checks locais; aceite visual pendente. Posterior ao PR #1/0.1.127, sem novo push.
+
 > **0.1.127 — H02:** [Matheus: começar pelo repasse atualizado](plans/REPASSE-BACKEND-0.1.127.md). Resumo completo, recebimento, testes e tarefas backend; conta pessoal/F6 continuam pendentes e gates false.
 
 > **0.1.126 — T03:** [124 exercícios agrupados, busca e carregamento progressivo](plans/TREINOS-CATALOGO-AGRUPADO-0.1.126.md). 668 testes, tipos/lint/build; aceite visual pendente e compatibilidade SQL apenas local.

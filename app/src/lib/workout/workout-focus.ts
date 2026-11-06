@@ -1,5 +1,6 @@
 import type { FitnessGlyphName } from '@/components/fitness-kit/FitnessGlyph';
-import type { Exercise, MuscleGroupId, WorkoutTemplate } from '@/types/workout';
+import { CATEGORY_LABELS } from './workout-labels';
+import type { Exercise, MuscleGroupId, WorkoutExerciseCategory, WorkoutTemplate } from '@/types/workout';
 
 const muscleRegions: Record<MuscleGroupId, { id: string; label: string; icon: FitnessGlyphName }> = {
   chest: { id: 'chest', label: 'Peito', icon: 'chest' },
@@ -36,4 +37,22 @@ export function getWorkoutFocus(template: WorkoutTemplate | undefined, catalog: 
     counts.set(region.id, { label: region.label, icon: region.icon, count: (existing?.count ?? 0) + 1 });
   }
   return [...counts.values()].sort((a, b) => b.count - a.count)[0];
+}
+
+const muscleFocusedModalities = new Set<WorkoutExerciseCategory>(['strength', 'hypertrophy', 'calisthenics']);
+
+/** Presentation only: the saved sport wins over muscle tags and arbitrary workout names. */
+function activityPresentation(modality: WorkoutExerciseCategory | undefined, focus: { label: string; icon: FitnessGlyphName } | undefined) {
+  if ((!modality || muscleFocusedModalities.has(modality)) && focus) return focus;
+  const activity = modality && Object.hasOwn(CATEGORY_LABELS, modality) ? modality : 'mixed';
+  return { icon: activity as FitnessGlyphName, label: CATEGORY_LABELS[activity] };
+}
+
+export function getExercisePresentation(exerciseId: string, catalog: Exercise[], fallbackModality?: WorkoutExerciseCategory) {
+  const exercise = catalog.find((item) => item.id === exerciseId);
+  return activityPresentation(exercise?.modality ?? fallbackModality, getExerciseFocus(exerciseId, catalog));
+}
+
+export function getWorkoutPresentation(template: WorkoutTemplate | undefined, catalog: Exercise[], fallbackModality?: WorkoutExerciseCategory) {
+  return activityPresentation(template?.modality ?? fallbackModality, getWorkoutFocus(template, catalog));
 }

@@ -5,6 +5,7 @@ import { FitnessEmptyState } from '@/components/fitness-kit/FitnessEmptyState';
 import { FitnessListRow } from '@/components/fitness-kit/FitnessListRow';
 import { FITNESS_ICONS, FitnessGlyph, type FitnessGlyphName } from '@/components/fitness-kit/FitnessGlyph';
 import { MUSCLE_REGIONS as regions, MUSCLE_TARGETS } from '@/constants/muscle-regions';
+import { getExercisePresentation } from '@/lib/workout/workout-focus';
 import { groupCatalogExercises, matchesCatalogSearch } from '@/lib/workout/catalog-navigation';
 import { STRENGTH_EQUIPMENT_LABELS } from '@/constants/strength-training-exercises';
 
@@ -54,8 +55,8 @@ export function MuscleExerciseCatalog({ exercises, onSelect, icon = FITNESS_ICON
     setSelected([]); setSelectedTargets([]); setIncludeSecondary(false); setSelectedEquipment([]); setContraction(null); setQuery(''); setLimit(12);
   }
   function exerciseRow(exercise: Exercise) {
-    const region = regions.find(region => region.muscles.includes(exercise.primaryMuscles?.[0] as MuscleGroupId));
-    return <FitnessListRow key={exercise.id} icon={region ? FITNESS_ICONS[region.icon] : icon} title={exercise.name}
+    const presentation = getExercisePresentation(exercise.id, exercises);
+    return <FitnessListRow key={exercise.id} icon={exercise.modality || exercise.primaryMuscles?.length ? FITNESS_ICONS[presentation.icon] : icon} title={exercise.name}
       subtitle={[exercise.primaryMuscles?.length ? exercise.primaryMuscles.map(muscle => muscleLabels[muscle]).join(' · ') : exercise.focus, exercise.strengthProfile?.equipmentIds.map(item => STRENGTH_EQUIPMENT_LABELS[item]).join(', ')].filter(Boolean).join(' · ')}
       onClick={() => onSelect(exercise)} ariaLabel={`Ver ${exercise.name}`} />;
   }

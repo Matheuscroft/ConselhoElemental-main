@@ -57,8 +57,9 @@ test('two elemental rails have unique panel references and collapsed accessible 
   const markup = renderToStaticMarkup(React.createElement(MemoryRouter, null, React.createElement(React.Fragment, {}, ...[1, 2].map(key => React.createElement(ExpandedElements, { key, elements })))));
   const ids = [...markup.matchAll(/ id="([^"]+)"/g)].map(match => match[1]);
   const controls = [...markup.matchAll(/aria-controls="([^"]+)"/g)].map(match => match[1]);
-  assert.equal(ids.length, 8); assert.equal(new Set(ids).size, 8);
-  assert.deepEqual(new Set(controls), new Set(ids));
+  const panels = ids.filter(id => id.startsWith('expanded-'));
+  assert.equal(panels.length, 8); assert.equal(new Set(ids).size, ids.length);
+  assert.deepEqual(new Set(controls), new Set(panels));
   assert.equal((markup.match(/aria-expanded="true"/g) || []).length, 0);
   assert.equal((markup.match(/ inert=""/g) || []).length, 8);
 });

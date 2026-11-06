@@ -1,3 +1,4 @@
+import { ExperienceIcon } from './ExperienceIcon';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import type { ElementId } from '@/types';
 import type { LevelProgress } from '@/services/leveling-calculator';
@@ -15,7 +16,7 @@ export function RewardSummary({ xp, elements = [], progress, fromLevel, animate 
   const validProgress = progress && Number.isFinite(progress.xpToNextLevel) && progress.xpToNextLevel > 0 && Number.isFinite(progress.xpTotal) && Number.isFinite(progress.xpAtLevelStart);
   const levelXp = validProgress ? Math.max(0, Math.min(progress.xpToNextLevel, progress.xpTotal - progress.xpAtLevelStart)) : 0;
   return <div className={`elemental-reward-summary${animate ? ' is-fresh' : ''}${levelUp ? ' is-level-up' : ''}${amount !== null && amount < 0 ? ' is-reversal' : ''}`}>
-    <div className="elemental-reward-value"><span className="elemental-reward-sigil" aria-hidden="true"><ArcaneIcon name={levelUp ? 'conquista' : 'grimorio'} size={28} /></span>
+    <div className="elemental-reward-value"><span className="elemental-reward-sigil" aria-hidden="true">{levelUp ? <ArcaneIcon name="conquista" size={28}/> : <ExperienceIcon size={32}/>}</span>
       <div><span className="elemental-reward-label">{amount !== null && amount < 0 ? 'Ajuste registrado' : 'XP registrado'}</span>
         <strong>{amount === null ? 'XP indisponível' : amount === 0 ? 'Conclusão registrada' : `${amount > 0 ? '+' : '−'}${format(Math.abs(amount))} XP`}</strong>
         {amount === 0 && <small>Sem XP adicional</small>}
@@ -23,7 +24,7 @@ export function RewardSummary({ xp, elements = [], progress, fromLevel, animate 
     </div>
     {amount !== null && amount !== 0 && <div className="elemental-reward-elements">{(Object.keys(names) as ElementId[]).map(element => {
       const earned = elements.filter(e => e.element === element && Number.isFinite(e.amount)).reduce((sum,e) => sum + e.amount,0);
-      return earned !== 0 ? <span key={element} data-element={element}><ElementIcon element={element} />{names[element]} {earned > 0 ? '+' : '−'}{format(Math.abs(earned))}</span> : null;
+      return earned !== 0 ? <span key={element} data-element={element}><ElementIcon element={element} size={22} />{names[element]} {earned > 0 ? '+' : '−'}{format(Math.abs(earned))}</span> : null;
     })}</div>}
     {levelUp && <div className="elemental-reward-level"><span>Você avançou de nível</span><strong>Você chegou ao nível {progress.level}!</strong></div>}
     {validProgress && <div className="elemental-reward-progress"><div><span>Nível {progress.level}</span><span>{format(levelXp)} / {format(progress.xpToNextLevel)} XP</span></div>

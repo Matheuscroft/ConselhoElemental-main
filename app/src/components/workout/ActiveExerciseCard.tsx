@@ -157,13 +157,13 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
         <div
           className={cn(
             'w-10 h-10 rounded-full flex items-center justify-center shrink-0 border',
-            isComplete ? 'bg-terra-light/15 border-terra-light/40' : 'bg-mystic-arcane/15 border-mystic-arcane/30'
+            isComplete ? 'bg-terra-light/15 border-terra-light/40' : 'bg-[rgb(var(--el-gold)/0.15)] border-[rgb(var(--el-gold)/0.3)]'
           )}
         >
           {isComplete ? (
             <Check className="w-5 h-5 text-terra-light" aria-hidden="true" />
           ) : (
-            <Icon className="w-5 h-5 text-mystic-arcane" aria-hidden="true" />
+            <Icon className="w-5 h-5 text-[rgb(var(--el-gold))]" aria-hidden="true" />
           )}
         </div>
         <div className="min-w-0 flex-1">
@@ -173,7 +173,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
           </p>
           <div className="h-1.5 w-full rounded-full bg-white/10 overflow-hidden mt-1.5">
             <div
-              className={cn('h-full rounded-full transition-all', isComplete ? 'bg-terra-light' : 'bg-mystic-arcane')}
+              className={cn('h-full rounded-full transition-all', isComplete ? 'bg-terra-light' : 'bg-[rgb(var(--el-gold))]')}
               style={{ width: `${progressPercent}%` }}
             />
           </div>

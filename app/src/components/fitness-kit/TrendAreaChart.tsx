@@ -49,7 +49,7 @@ export const TrendAreaChart: React.FC<TrendAreaChartProps> = ({ data, height = 2
             strokeLinecap="round"
             fill={`url(#${gradientId})`}
             dot={false}
-            activeDot={{ r: 6, fill: '#252B3A', stroke: color, strokeWidth: 3 }}
+            activeDot={{ r: 6, fill: 'rgb(var(--el-surface))', stroke: color, strokeWidth: 3 }}
             isAnimationActive={false}
           />
         </AreaChart>

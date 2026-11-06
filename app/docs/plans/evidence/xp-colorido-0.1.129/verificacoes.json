@@ -1,0 +1,94 @@
+{
+  "lot": "T05",
+  "version": "0.1.129",
+  "date": "2026-11-06",
+  "baseCommit": "c0e4827d2d8f33a06bf2018addca1aabfa12c897",
+  "checks": {
+    "fullSuite": {
+      "passed": 674,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 65736.235875,
+      "command": "node --test --test-concurrency=4 tests/**/*.test.mjs scripts/astro-boy.test.mjs"
+    },
+    "activityAndCatalogueTargeted": {
+      "passed": 9,
+      "durationMs": 448.919
+    },
+    "typescript": "passed",
+    "eslint": "passed",
+    "build": {
+      "passed": true,
+      "envDir": false,
+      "seconds": 26.33,
+      "warnings": [
+        "existing large chunks",
+        "outdated Browserslist dataset"
+      ]
+    },
+    "diffCheck": "passed",
+    "browser": "not inspected; saved denial unchanged; no workaround",
+    "mobileAcceptance": "pending"
+  },
+  "protectedFilesCompared": 44,
+  "protectedFilesChanged": [],
+  "calculationBlocksPreserved": [
+    "RewardSummary amount/level/progress",
+    "FitnessHabitWidget XP/above/below/partial",
+    "original exercise/workout muscle-vote functions"
+  ],
+  "protectedSha256": {
+    "src/types/workout.ts": "d032c17331e41bb4ae049a6963c76e992f404023681a25d6271328b59c6a19d3",
+    "src/types/index.ts": "05e833f433f6da4da828f5652f38a052c4a76868b05d24e4baeffd5e4ebda782",
+    "src/constants/yoga-poses.ts": "2a48aa763db85bc6b9cde9c0abfaf5d232513959161c60f792690b832d647a88",
+    "src/constants/calistenia-muscles.ts": "dde0ee839b9b6c7d8bcddb15b1001b8fea45f19e188730b1cb1acc57f112d2eb",
+    "src/constants/areas-with-subareas.ts": "de90db264e6082d7e5ab3f80039c8291304676cd68778d90f268dc1bd7a1b635",
+    "src/constants/yoga-image-prompts.ts": "f77b1e896bc956d4ab1515a441975dc51ce606121db990490d72a7256fe6f11b",
+    "src/constants/index.ts": "04334d3c0b39731a4d84f46a1fce3e601f2c6d6854cb3dddf3be178a8e53f80a",
+    "src/constants/calistenia-exercises.ts": "24dbc7274eea36062d94e5172eb5f43261f9a191bcfbbc607e9ed362078b9ede",
+    "src/constants/sport-activities.ts": "6aa056d357d904ce075f9795e64d24a02326267af3586785ba418e19d197f222",
+    "src/constants/muscle-regions.ts": "4dff84e7206f9cc3199074ea8bd029a1907e2da0912f22fa0e22aead8afa9dc2",
+    "src/constants/strength-training-exercises.ts": "69cb85363ac1d775467a9bd68a82b4c20ac2922645f7c5606d2c408b67a747b2",
+    "src/stores/appStore.ts": "7e87ad82298a8a5f2c4f6399cc1bd60b0159f7c09ee43de48b78990df2b1574a",
+    "src/stores/authStore.ts": "fa97b8b849dc9d33616ded23cffc4c413b25eaf569932bb98716047519ba4dd8",
+    "src/stores/workoutStore.ts": "eadc91fa9388992e7d3908f305004485837916814de42022e41c4fbc830f8242",
+    "src/lib/workout/activity-metrics.ts": "6bdd74fadae8af2a480d287ef0fa499c61367fef0efb81fe9d9fb3810d864d37",
+    "src/lib/workout/catalog-navigation.ts": "9c226aa8fd1d677f3b9ae05e67aae4054a1c099a6fc10a2741a69554247f20db",
+    "src/lib/workout/workout-duration.ts": "37fafb3bbeee7b11e03bbe62fd50113fb17f52683868f9eb4f358262cd4bb2e8",
+    "src/lib/workout/native-progress-reward.ts": "5299ecf7fa2c885a1f999559de777138eb04ff4c61d62fc8bfe688c4202568e1",
+    "src/lib/workout/workout-equivalents.ts": "868cbec7224d152672c40739f644fa44f073cc1d379eab36711e1e8e3bb3915e",
+    "src/lib/workout/workout-ids.ts": "4b2f37e8120d5f4798a749a9e78394b446146d67a8901bc00379e8d20cfd009c",
+    "src/lib/workout/empty-native-session.ts": "ca396cbab4c0c82bd91d5ee977bd7a9999d70704de8c19072085f4522fb20d24",
+    "src/lib/workout/workout-balance.ts": "9048d43a50c90c97dce33bcbcfb4b76496314d72e29653538453f5894aee782b",
+    "src/lib/workout/workout-labels.ts": "324e0708fd7960f15ed7e32eb4b1e1b5da0035f41aacc8a090f1177729223e8a",
+    "src/lib/workout/exercise-media.ts": "805b2bb0b1bf6967fc96ac653821fd93fd67852c04d8f993ebe416350128c866",
+    "src/lib/workout/shared-sequences.ts": "0daa82abfbf5f1c64bcfcfae352c8a795120b3247f24e6a39bcb577723287fe2",
+    "src/lib/workout/index.ts": "491a8539839260faf5c75089a43b14f0cf02521f9f05936c44f5c16b7d8a24c4",
+    "src/lib/workout/workout-format.ts": "d9a1db1ee43298bdb7da73abb855101bcd6b1dc514d37afec8837aa02d248485",
+    "src/lib/workout/native-session-reward.ts": "d6374d358f2ea475a3a0ee25d6972a126f5f89200ccb877390ec06bce7e538c8",
+    "src/lib/workout/fitness-core-adapter.ts": "591999d163674b8c4aa558e9c7c45d1bab7df2efc665acd23268217be538eb15",
+    "src/lib/workout/native-reward-preview.ts": "d29381ec677faf5219dae7affe42200b2439272d0cfe72f866f9a864c315bb3f",
+    "src/lib/workout/session-clock.ts": "6adaed02d0c660e567b286158fb58629fbe9ca00d88ff3a57e7b8225f32d70d0",
+    "supabase/migrations/20261106034829_account_archive_version_127.sql": "1bab93b7a49df6bbfe439fbd9ad989406fbc95bd22f471de561093e8e15e8315",
+    "supabase/migrations/20261106022901_account_archive_version_123.sql": "0463dd27482101d42e82529b74f085995ba89f5760b474934a080edeab1ce710",
+    "supabase/migrations/20260816_google_calendar_integration_foundation.sql": "f70f6ece56d1cebb0a12c893e3ebf97d04078c51a0a401280e8823d5646568b1",
+    "supabase/migrations/20261011_align_cycle_sequence_active.sql": "0a591109fb458035588f6aca2bb9a47594cd4ce410e01019f2c426cc2b8fe191",
+    "supabase/migrations/20261106041510_account_archive_version_128.sql": "0a1865bef54054087d85140630aed01a4005e16c7f1a7196b7732b7320467f80",
+    "supabase/migrations/20261011_align_sequence_membership_position.sql": "1e9f57e640bdf426e464530066b7e7eaef3eea48764746f5d919e37a03e8c577",
+    "supabase/migrations/20261106031901_account_archive_version_124.sql": "1b5102a5ac253649920369c1226d2fc492bfee2a4a1530a10b51f45141b24136",
+    "supabase/migrations/20261106033906_account_archive_version_126.sql": "aaa8a098d1960f72bb50deffaa5434d9e4d44e25c24a1e006d0b41a00a458569",
+    "supabase/migrations/20261106033034_account_archive_version_125.sql": "36ddab09eeff04cc2e28c9b3ab1c9226771b51fdb1cfea0cc0b40e2b09859136",
+    "supabase/migrations/20261030204257_account_archive_version_121.sql": "4329eaf485d78d5542c12b8314173a1d14128508b3ce71f19b0c55fb70c9f09b",
+    "supabase/migrations/20260319_init_auth_and_user_data.sql": "def53f8ba6822cdd879feb4b3b9e57db573b1af83cbc95f2f14762f52470523f",
+    "supabase/migrations/20261030202517_progress_account_atomic.sql": "9d0d074a51e62f4a98248ff699948546aab6a8203f586bd5d556b4b65bf85809",
+    "supabase/migrations/20261030211424_account_archive_version_122.sql": "eddb04b4faf01a42a0fc0ef065297cf38408f0d7e642d73992a523c2c73915d2"
+  },
+  "releaseGates": "false",
+  "gitAutoDeployment": {
+    "codex/fitness-ui-integration": false,
+    "main": false
+  },
+  "remoteDatabaseChanges": false,
+  "personalDataAccess": false,
+  "publication": "prepared; remote commit is recorded in the report after push"
+}

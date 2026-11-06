@@ -1,3 +1,18 @@
+## 0.1.129 — 06/11/2026 · XP e elementos coloridos
+
+- Medalhão original de XP e Terra/Fogo/Água/Ar coloridos, com SVGs vetoriais, gradientes próprios e nomes acessíveis.
+- Selo compartilhado em biblioteca, editor, prévia, histórico, widget e recibos; valores e estados existentes preservados, sem novo saldo de fragmentos ou mudança de fórmula.
+- Ícones de treinos e exercícios passam a seguir a modalidade salva: bike/nado/corrida etc.; foco muscular preservado em força, sem depender do nome ou migrar dados.
+- T04 integrada ao pacote para main; revisão de publicação/README/repasse/inventário. Auto-deploy desativado na main e integração; candidato SQL 129 somente local após 128, gates fechados.
+- 674 testes completos, tipos/lint/build passaram. [Evidências e recebimento](../../plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Prancha própria inspecionada; aceite visual do app/mobile pendente, sem dados pessoais/SQL remoto/deploy.
+
+## 0.1.128 — 06/11/2026 · superfícies restantes de Treinos
+
+- Ficha unificada e elemental nas duas entradas, com conteúdo preservado, categoria sem duplicação e CTA em rodapé separado da rolagem.
+- Editor nativo/legado, diálogos de sequência/Ciclos/avaliação, confirmações de sessão, gráficos/widgets e componentes Fitness anteriores alinhados aos tokens de ouro/vidro escuro.
+- Campos/foco/selos/alvos e rótulos de fechar modernizados. Callbacks, IDs, dados, stores e cálculos preservados. Compatibilidade de produtor 128 em candidato SQL somente local, sem reescrever migrações/gates.
+- 670 testes completos, tipos/lint/build passaram; [evidências e limites](../../plans/TREINOS-SUPERFICIES-0.1.128.md). Sem aceite visual do app/mobile ou nova publicação após PR #1/0.1.127.
+
 ## 0.1.127 — 06/11/2026 · artes marciais e repasse para backend
 
 - Ícone de artes marciais redesenhado como kimono com faixa dourada; mesmos nomes/APIs/modalidade. Prancha vetorial em tamanhos reais inspecionada.

@@ -1,5 +1,5 @@
 /**
- * FitnessIconBadge — circular lavender badge with a violet icon inside.
+ * FitnessIconBadge — elemental gold badge with an anatomical or activity icon inside.
  * Used in exercise cards, workout history cards, and summary headers.
  */
 import React from 'react';
@@ -15,9 +15,9 @@ interface FitnessIconBadgeProps {
 }
 
 const sizeMap = {
-  sm: { outer: 'w-10 h-10', icon: 'w-4 h-4' },
-  md: { outer: 'w-12 h-12', icon: 'w-5 h-5' },
-  lg: { outer: 'w-14 h-14', icon: 'w-6 h-6' },
+  sm: { outer: 'w-12 h-12', icon: 'w-7 h-7' },
+  md: { outer: 'w-14 h-14', icon: 'w-8 h-8' },
+  lg: { outer: 'w-16 h-16', icon: 'w-10 h-10' },
 };
 
 export const FitnessIconBadge: React.FC<FitnessIconBadgeProps> = ({
@@ -31,13 +31,14 @@ export const FitnessIconBadge: React.FC<FitnessIconBadgeProps> = ({
   return (
     <div
       className={cn(
-        'rounded-full flex items-center justify-center shrink-0',
-        'bg-fitness-lavender/20',
+        'rounded-2xl border border-[rgb(var(--el-gold)/0.25)] flex items-center justify-center shrink-0',
+        'bg-[rgb(var(--el-gold)/0.06)]',
         outer,
         className
       )}
+      role={ariaLabel ? 'img' : undefined}
       aria-label={ariaLabel}
-      aria-hidden={!ariaLabel}
+      aria-hidden={ariaLabel ? undefined : true}
     >
       <Icon className={cn('text-fitness-primary', icon, iconClassName)} />
     </div>

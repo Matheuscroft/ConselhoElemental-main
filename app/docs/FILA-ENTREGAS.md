@@ -1,3 +1,17 @@
+## T05 — XP e elementos coloridos; envio para main — 0.1.129 (06/11/2026)
+
+[Entrega, recebimento e evidências](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Medalhão XP original, quatro miniaturas elementais coloridas e selo compartilhado na biblioteca/editor/prévia/histórico/Ciclos/recibos. Valores, fórmulas, estados parcial/meta superada e dados preservados. T04/0.1.128 local incluída. Pedido atual autoriza main; preflight confirmou be78b1e, sem commits novos de Matheus para mesclar. A confirmação/hash remoto serão registrados após push.
+
+674 testes completos, nove direcionados, TypeScript, lint e build passaram; prancha vetorial própria inspecionada, sem aceite visual do app/mobile por bloqueio salvo ou contorno. Estágio/inventário/segredos por padrões revisados antes de publicar. Gates false; candidatos SQL 128/129 somente locais, versões/formato preservados. Deploy Git desativado em main e branch de integração para enviar apenas código; sem dados pessoais, SQL remoto ou deploy. Próximo: Matheus fecha F6/compatibilidade/associação pessoal; fragmentos e GymMane continuam pendentes. Reservas de publicação ainda ativas até conferir ref remota. Registros abaixo históricos.
+
+Correção incluída antes da publicação: ícone do treino/exercício segue a modalidade salva (bike/nado/corrida etc.), sem fallback indevido para halter; foco muscular preservado em força. Resolvedor compartilhado em biblioteca/editor/catálogo/Ciclos, sem alteração de dados.
+
+## T04 — áreas auxiliares de Treinos modernizadas — 0.1.128 local (06/11/2026)
+
+[Escopo, diagnóstico e evidências](plans/TREINOS-SUPERFICIES-0.1.128.md). Captura de Fábio comprovou ficha antiga; fonte mostrou hardcodes independentes em ficha/editor/portais. Busca em 455 arquivos e inventário de 90 de Fitness. Padronizados ficha em ambas as entradas, criar/editar, diálogos de sequências/Ciclos/avaliação, confirmações, componentes antigos e gráficos/widgets. Tokens de vidro escuro/ouro e campos/foco/alvos móveis; informações e callbacks preservados. Rótulo acessível de fechar compartilhado, sem mudança de domínio.
+
+670 testes completos, tipos/lint/build passaram; 14 direcionados e, após últimos ajustes cosméticos, 13 de apresentação/lint/build repetidos. Sem inspeção visual/mobile por bloqueio salvo ou contorno. Stores/tipos/catálogos/cálculos preservados, gates false, SQL 128 candidato somente local. Sem dados pessoais, commit/push/deploy/SQL remoto. Esta rodada é posterior ao PR #1/0.1.127; não publicada automaticamente. Reservas encerradas após custódia sequencial. Próximo: aceite visual das superfícies/fluxos em celular/tablet quando disponível; atualizar repasse/inventário antes de eventual nova publicação. Registros abaixo históricos.
+
 ## H02 — publicado para Matheus — 0.1.127 (06/11/2026)
 
 Commit técnico **68a5004** enviado a origin/codex/fitness-ui-integration; [PR #1 em rascunho](https://github.com/Matheuscroft/ConselhoElemental-main/pull/1) para main, conferido MERGEABLE. Main continua be78b1e, sem merge/force/deploy. [Matheus: começar pelo repasse](plans/REPASSE-BACKEND-0.1.127.md). README raiz/app apontam o pacote; Fábio frontend/mobile, Matheus backend, Astro Boy coordena.

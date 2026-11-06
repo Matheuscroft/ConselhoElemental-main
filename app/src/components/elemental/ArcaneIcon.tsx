@@ -1,3 +1,4 @@
+import { ColoredElementIcon } from './ColoredElementIcon';
 import type { CSSProperties } from 'react';
 import type { ElementId } from '@/types';
 
@@ -46,8 +47,8 @@ export function ArcaneIcon({ name, size = '1em', className = '', label, style }:
   return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={`arcane-icon ${className}`} style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0, ...style }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false"><path d={PATHS[name]} /></svg>;
 }
 
-export function ElementIcon({ element, ...props }: IconProps & { element: ElementId }) {
-  return <ArcaneIcon {...props} name={element} />;
+export function ElementIcon({ element, tone = 'color', ...props }: IconProps & { element: ElementId; tone?: 'color' | 'outline' }) {
+  return tone === 'outline' ? <ArcaneIcon {...props} name={element} /> : <ColoredElementIcon {...props} element={element} />;
 }
 
 const ROUTE_ICONS: Record<string, ArcaneIconName> = {

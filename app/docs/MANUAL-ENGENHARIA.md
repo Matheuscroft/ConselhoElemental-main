@@ -1,3 +1,13 @@
+## XP/elementos — T05 / 0.1.129
+
+Usar ElementalXpBadge com valor já formatado pelo chamador, elemento e tamanho; não calcular/conceder XP no componente. ExperienceIcon e ColoredElementIcon usam IDs próprios via useId; testes de painéis devem distinguir IDs de gradientes de aria-controls, mantendo unicidade global. ElementIcon usa cor por padrão e tone=outline para compatibilidade. Rodapé/main e estimativa/recibo mantêm funções separadas. [Recebimento e evidências](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Main e branch de integração com auto-deploy desativado; futura release requer escopo explícito. Candidatos 128/129 locais, gates false.
+
+Ícones de treino/exercício: usar getWorkoutPresentation/getExercisePresentation, priorizando modalidade salva em esportes. Foco muscular só em força/hipertrofia/calistenia. Não inferir categoria pelo título nem modificar dados para corrigir representação.
+
+## Superfícies auxiliares — T04 / 0.1.128
+
+Portais ficam fora da casca Fitness: seus estilos devem usar --el-* na própria classe de conteúdo. ExerciseDetailSheet compartilha a composição entre variantes e preserva o callback/objeto; não duplicar outro tema. Conteúdo rola e CTA fica no rodapé próprio. Campos numéricos e texto usam 16px; excluir checkbox/radio das regras de altura de campos. .fitness-dialog é escopo de portal e SheetContent aceita closeLabel. [Testes e limites](plans/TREINOS-SUPERFICIES-0.1.128.md). Não assumir que build confirma teclado/scroll/foco no celular. Candidato SQL 128 permanece local após 127, gates false; sem nova publicação deste lote.
+
 ## Recebimento backend — H02 / 0.1.127
 
 Usar [repasse/inventário atual](plans/REPASSE-BACKEND-0.1.127.md), preservar branch/trabalho local e instalar pelo lockfile. Configuração Vercel desativa auto-deploy exclusivamente em codex/fitness-ui-integration; não confundir push com release. Cache supabase/.temp é local/ignorado. Candidatos SQL 123–127 exigem revisão de histórico, hash e gate fechado; as instalações 120–122 foram registradas em lotes anteriores, sem nova consulta/aplicação hospedada aqui. Não rodar db push indiscriminado. Astro Boy registra hash/PR após publicação.

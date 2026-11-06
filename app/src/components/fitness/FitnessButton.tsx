@@ -1,6 +1,6 @@
 /**
  * FitnessButton — pill-shaped button following the Health UI Kit.
- * Variants: primary (violet), secondary (surface), coral (finish/danger).
+ * Variants: primary (elemental gold), secondary (surface), coral (finish/danger).
  */
 import React from 'react';
 import { cn } from '@/lib/utils';
@@ -15,7 +15,7 @@ interface FitnessButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variantClasses: Record<FitnessButtonVariant, string> = {
   primary:
-    'bg-fitness-primary hover:bg-fitness-primary-hover text-white shadow-fitness-primary',
+    'border border-[rgb(var(--el-gold)/0.5)] bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))] hover:brightness-105',
   secondary:
     'bg-fitness-surface hover:bg-fitness-surface-hover text-fitness-text',
   coral:
@@ -25,7 +25,7 @@ const variantClasses: Record<FitnessButtonVariant, string> = {
 };
 
 const sizeClasses: Record<FitnessButtonSize, string> = {
-  sm: 'h-10 px-5 text-sm',
+  sm: 'h-11 px-5 text-sm',
   md: 'h-14 px-7 text-base',
   lg: 'h-16 px-10 text-base font-semibold',
 };
@@ -36,9 +36,9 @@ export const FitnessButton = React.forwardRef<HTMLButtonElement, FitnessButtonPr
       ref={ref}
       disabled={disabled}
       className={cn(
-        'inline-flex items-center justify-center rounded-full font-medium',
+        'inline-flex items-center justify-center rounded-xl font-medium',
         'transition-all duration-150 ease-out',
-        'active:scale-[0.98]',
+        'motion-safe:active:scale-[0.98] motion-reduce:transition-none',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas',
         disabled && 'opacity-40 cursor-not-allowed',
         variantClasses[variant],

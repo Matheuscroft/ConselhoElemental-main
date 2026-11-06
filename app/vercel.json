@@ -37,7 +37,8 @@
   ],
   "git": {
     "deploymentEnabled": {
-      "codex/fitness-ui-integration": false
+      "codex/fitness-ui-integration": false,
+      "main": false
     }
   }
 }

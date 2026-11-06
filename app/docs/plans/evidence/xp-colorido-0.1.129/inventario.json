@@ -1,0 +1,348 @@
+{
+  "version": "0.1.129",
+  "scope": "T04 and T05 pending delta from c0e4827; own inventory digest omitted to avoid self-reference",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3074,
+      "sha256": "02d458563dd7e2626341e0e805800c7c88bec0bceb059bb69aa602561dc274a7"
+    },
+    {
+      "path": "app/README.md",
+      "bytes": 4487,
+      "sha256": "60c4b1f2616bb9f3b764a6d70448abb062c7cd71a5bd52a0bdb07f194a634f99"
+    },
+    {
+      "path": "app/docs/03-Project-Management/fitness/CHANGELOG.md",
+      "bytes": 80463,
+      "sha256": "8fd9c9162333f2e6ca9fc16a5119df8e54d7e02d587a159ed7c971776161b7cf"
+    },
+    {
+      "path": "app/docs/AUDITORIA-CONTRATOS-CORE.md",
+      "bytes": 27161,
+      "sha256": "f5d0490b571f48b91d8c5cf950ad0ac045ac80b14d71df8432a93d305a7c7d68"
+    },
+    {
+      "path": "app/docs/CONTINUIDADE.md",
+      "bytes": 338587,
+      "sha256": "dde3f41f5683ac89a2060c34d3da6d33f492ec5b9b99d00dc1cf110caa61141e"
+    },
+    {
+      "path": "app/docs/DOSSIE-TECNICO.md",
+      "bytes": 46148,
+      "sha256": "e18c45085d59956e7ae68ead216f92b4b2d53b4ba75fb46fd17f50f0b60d668a"
+    },
+    {
+      "path": "app/docs/FILA-ENTREGAS.md",
+      "bytes": 303790,
+      "sha256": "52264d075610bf630c75496d3872c4b2f9f404eda29c38f70acf15565838866c"
+    },
+    {
+      "path": "app/docs/MANUAL-ENGENHARIA.md",
+      "bytes": 64577,
+      "sha256": "78e2a41f5bbef775dbb3897b9e30f34d2c57b82a6e34fc02c9ba6b52922499c5"
+    },
+    {
+      "path": "app/docs/PROGRESSO-ATUAL-E-PROXIMOS-PASSOS.md",
+      "bytes": 37951,
+      "sha256": "e9bfb2b0b325bd61471e892cbfd67d642653da72801fc17938b11b0f9dc60a71"
+    },
+    {
+      "path": "app/docs/README.md",
+      "bytes": 15856,
+      "sha256": "832a74f2a09fe20cd682cacb2ce5a127b3348a05cce1af3671d89a331d5f2cad"
+    },
+    {
+      "path": "app/docs/REPASSE-FRONTEND-PARA-BACKEND.md",
+      "bytes": 29819,
+      "sha256": "f8c762bd0924d3c72a2b05cf536b701cd0ed9451bacdbcc8c76419b194d8dbfe"
+    },
+    {
+      "path": "app/docs/plans/README.md",
+      "bytes": 25203,
+      "sha256": "e783361a8e51ecf25dc1e256989349e499f0f8e57f9b83d802842363898a82ae"
+    },
+    {
+      "path": "app/docs/plans/TREINOS-SUPERFICIES-0.1.128.md",
+      "bytes": 7085,
+      "sha256": "0e3d1e8ca9deaf5956f6e3aed5e91cf7a7ab7b5e775d6549696a9b50df4c8d7e"
+    },
+    {
+      "path": "app/docs/plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md",
+      "bytes": 8136,
+      "sha256": "33697c8e20e8804994c41d2b6e09fa9861357b13ce38441b06e5e66909b093d9"
+    },
+    {
+      "path": "app/docs/plans/evidence/treinos-superficies-0.1.128/inspecao.json",
+      "bytes": 7075,
+      "sha256": "69352e055ac0c310e71c9e2d955d75c7a75548f2c5e371c46fd9a0c7bee742f9"
+    },
+    {
+      "path": "app/docs/plans/evidence/treinos-superficies-0.1.128/verificacoes.json",
+      "bytes": 1142,
+      "sha256": "549840eabde588e88172ea7d2b6a826f1ded96aeef0d4c127885b60528669d41"
+    },
+    {
+      "path": "app/docs/plans/evidence/xp-colorido-0.1.129/prancha.png",
+      "bytes": 31881,
+      "sha256": "e04add8b76d1b90d5cddb17988beea440174905f17506216fcfad5124954102a"
+    },
+    {
+      "path": "app/docs/plans/evidence/xp-colorido-0.1.129/prancha.svg",
+      "bytes": 10996,
+      "sha256": "5e426b72352facf6d42c35a126d21f01ae3c40de73a3a0ce01b2f9c1074ef60b"
+    },
+    {
+      "path": "app/docs/plans/evidence/xp-colorido-0.1.129/verificacoes.json",
+      "bytes": 6567,
+      "sha256": "daba0b402190dcb74d06473817ff27fe42f3b351fb5ece652634dbdf60059c0d"
+    },
+    {
+      "path": "app/package-lock.json",
+      "bytes": 298246,
+      "sha256": "f391e01abad8f8cffa95ef53246c83ae72b8e92bb9308330b216623532a82c5a"
+    },
+    {
+      "path": "app/package.json",
+      "bytes": 3281,
+      "sha256": "9610f4cb47df5e65e05568bb0d05380634f60b08845cde6d3d82ffe0a75f1c64"
+    },
+    {
+      "path": "app/src/components/elemental/ArcaneIcon.tsx",
+      "bytes": 5074,
+      "sha256": "7836cf6fa4448119ae65e9471dbabc85b10eb8eb900dc0136af88a98c870729e"
+    },
+    {
+      "path": "app/src/components/elemental/ColoredElementIcon.tsx",
+      "bytes": 3286,
+      "sha256": "5b53911493474cc20fd7aeb2a86051822e9c278834e131ece0423679a4bf0117"
+    },
+    {
+      "path": "app/src/components/fitness-kit/MuscleBars.tsx",
+      "bytes": 1460,
+      "sha256": "f4f23a1ff92418c9b170666430d94994ff04c14a4c15451083614f46537f7852"
+    },
+    {
+      "path": "app/src/components/fitness-kit/TrendAreaChart.tsx",
+      "bytes": 2299,
+      "sha256": "1f69676996c4cc896d4372fb22c2ded39f5d080d38e2a83fb22e76a330b1f39f"
+    },
+    {
+      "path": "app/src/components/fitness-kit/WorkoutHistoryCard.tsx",
+      "bytes": 1573,
+      "sha256": "cf4314cad511f3385ed41afb09cc8bcba1eb362464711dc7af5e36430d48e8e0"
+    },
+    {
+      "path": "app/src/components/fitness-kit/WorkoutStatsGrid.tsx",
+      "bytes": 1094,
+      "sha256": "520bd813903b3ad8f25a843c22d78faf87eb55c6dc8f5228d1b60ddd5647076c"
+    },
+    {
+      "path": "app/src/components/fitness/FitnessButton.tsx",
+      "bytes": 1941,
+      "sha256": "bbf1b0814aa866d1a045cda3ed797b89742457b07dd834d71c47b969175a4c5c"
+    },
+    {
+      "path": "app/src/components/fitness/FitnessCard.tsx",
+      "bytes": 1158,
+      "sha256": "ac45fb7813ff2476f2d71d1a186176ce5826bdea327c844f16141f056ff20677"
+    },
+    {
+      "path": "app/src/components/fitness/FitnessIconBadge.tsx",
+      "bytes": 1256,
+      "sha256": "a8391860e7fbad12ab2c93e05c4eaff1ed4d8aebdd0b2a407afe1703ed0f4b70"
+    },
+    {
+      "path": "app/src/components/fitness/TrendAreaChart.tsx",
+      "bytes": 1934,
+      "sha256": "495a3a3b266103d3e80d84ba00e3970bc506bb2fb4ca9ffe888497c0b6212c9b"
+    },
+    {
+      "path": "app/src/components/fitness/WorkoutCategoryCard.tsx",
+      "bytes": 1760,
+      "sha256": "a9ab219c16898493cc08147a286ffcc7a6f2d8eb959e1c8bdaa36ce89bdfa04d"
+    },
+    {
+      "path": "app/src/components/rewards/ElementalXpBadge.tsx",
+      "bytes": 1317,
+      "sha256": "7fc88f4618888aced38a30410085d30585fda5673a0990a4b9dac2cad58727d5"
+    },
+    {
+      "path": "app/src/components/rewards/ExperienceIcon.tsx",
+      "bytes": 1432,
+      "sha256": "d600853125bddc9cffe8dde455e686685a8e785250f1a320372ced7df516e1fa"
+    },
+    {
+      "path": "app/src/components/rewards/RewardSummary.tsx",
+      "bytes": 3247,
+      "sha256": "43a24bb3a0e5fe3976888ee4db23a15fed18d0297bd93683b387b213eacec1a8"
+    },
+    {
+      "path": "app/src/components/rewards/elemental-xp-badge.css",
+      "bytes": 1718,
+      "sha256": "d2e6a5d18bad990ec8b1ae8df3972ec0132da5a970973950701c26ff78770e58"
+    },
+    {
+      "path": "app/src/components/ui/sheet.tsx",
+      "bytes": 4130,
+      "sha256": "f43f647eecb1890b25f49160bd667adc8d9152cd5f1f95b9165e61b33bdaf686"
+    },
+    {
+      "path": "app/src/components/workout/ActiveExerciseCard.tsx",
+      "bytes": 8332,
+      "sha256": "d7702ab41a086efdefd88ebc70816fa0f59b6c88315987da8fa53bfd5a3bb4c2"
+    },
+    {
+      "path": "app/src/components/workout/BodyMeasurementDialog.tsx",
+      "bytes": 4020,
+      "sha256": "3581084d44d259784c19b3b9e54db67db268c8646b12e850a65ea0a472868886"
+    },
+    {
+      "path": "app/src/components/workout/ExerciseDetailSheet.tsx",
+      "bytes": 12411,
+      "sha256": "5261e547492d3ae790f380649f3cc0efb43f33c4a62fd97eb3109113618d9400"
+    },
+    {
+      "path": "app/src/components/workout/FitnessHabitWidget.tsx",
+      "bytes": 20215,
+      "sha256": "9a889034e921eb00c7e955367779d7bb57769e197dc5bdfe866d3b7c6598fc41"
+    },
+    {
+      "path": "app/src/components/workout/MakeCycleModal.tsx",
+      "bytes": 3164,
+      "sha256": "b7d5ab1ebd4ca53e48098fd9a414152df293dea4c9310bf8bac1e22203aab11e"
+    },
+    {
+      "path": "app/src/components/workout/MuscleDistributionBars.tsx",
+      "bytes": 2067,
+      "sha256": "f87051a590782b56fad69ff55149d9bab438143e0e87ea2af6cf2d7ae72e592b"
+    },
+    {
+      "path": "app/src/components/workout/MuscleExerciseCatalog.tsx",
+      "bytes": 12898,
+      "sha256": "2e2e4e0622eb56387e780bcfdda2ac8d3b8b68fafc208ee4c00d20e8e4f0fbc7"
+    },
+    {
+      "path": "app/src/components/workout/NativeTemplateDialog.tsx",
+      "bytes": 24639,
+      "sha256": "be07989ce08d39daabda2acbc5031edc6a71d727af7c392a9d87280b69165556"
+    },
+    {
+      "path": "app/src/components/workout/WorkoutCategoryGrid.tsx",
+      "bytes": 3383,
+      "sha256": "eae4c5181e3c03647a97f8ea730d0ec45b26f6e66f517e76a2855e2e43d31200"
+    },
+    {
+      "path": "app/src/components/workout/WorkoutListCard.tsx",
+      "bytes": 3453,
+      "sha256": "987a2890737a66e537264f89491c529bd4440877d6a140ee7efd33ff24263a76"
+    },
+    {
+      "path": "app/src/components/workout/WorkoutSequenceLibrary.tsx",
+      "bytes": 9342,
+      "sha256": "0401c651395e4022c3a1ced4d763610ffff99702b09c1ab0ef75908c3347c433"
+    },
+    {
+      "path": "app/src/components/workout/create-workout.css",
+      "bytes": 9803,
+      "sha256": "7deefea4f0b46879c7e58cf8e9ef7a1b3b2faa31f44bee5e7ac7b68b253e0db2"
+    },
+    {
+      "path": "app/src/components/workout/exercise-detail.css",
+      "bytes": 5146,
+      "sha256": "ec47f743cda8873fab7e039931c3c590ce905e239a0867c5df5f28859941052f"
+    },
+    {
+      "path": "app/src/index.css",
+      "bytes": 5717,
+      "sha256": "574718f28bad4c34b0b78a741cbc955c8ac7ce2fa8a42eed5b64d08cd6077f08"
+    },
+    {
+      "path": "app/src/lib/backup/critical-progress.ts",
+      "bytes": 9013,
+      "sha256": "710218b558f4e979be40c72639516cecb28366eb8628e148610758b9aeab203d"
+    },
+    {
+      "path": "app/src/lib/workout/workout-focus.ts",
+      "bytes": 3414,
+      "sha256": "269cc91bcc1895ed0912cac6ad490ee9b12fea1ba7daf77af746e1dd3d886b64"
+    },
+    {
+      "path": "app/src/pages/fitness/ActiveFitnessSession.tsx",
+      "bytes": 16489,
+      "sha256": "1accd5a5c89da27fe6c22cb242924e258925fc7d9c9ec1fb38f779b6ca1c4861"
+    },
+    {
+      "path": "app/src/pages/fitness/FitnessRoot.tsx",
+      "bytes": 19301,
+      "sha256": "cbeca3ade7c9f2cf48c77ef4cea4a1616a29d53e4184662bab19de43bd82daed"
+    },
+    {
+      "path": "app/src/pages/fitness/HealthDashboard.tsx",
+      "bytes": 5559,
+      "sha256": "723bad8886405147ba7844a9e52d44c02af11c0ff8d1768d31140833f410ee81"
+    },
+    {
+      "path": "app/src/pages/fitness/NativeWorkoutPreview.tsx",
+      "bytes": 6293,
+      "sha256": "7ed9291ffd41e8ba24a3476615e20b34bef15d8bd13035b555e2da8922017cb8"
+    },
+    {
+      "path": "app/src/pages/fitness/WorkoutHistory.tsx",
+      "bytes": 7547,
+      "sha256": "fbf3ec53e2c69cba09a71ef3b82a0473b780459ca911c0a1941e3a2ee179ec72"
+    },
+    {
+      "path": "app/supabase/migrations/20261106041510_account_archive_version_128.sql",
+      "bytes": 5341,
+      "sha256": "0a1865bef54054087d85140630aed01a4005e16c7f1a7196b7732b7320467f80"
+    },
+    {
+      "path": "app/supabase/migrations/20261106172724_account_archive_version_129.sql",
+      "bytes": 5345,
+      "sha256": "e0e301ae476c656b67778c8580d08a304f498c36f7f3716e74c2fc7fe3505a82"
+    },
+    {
+      "path": "app/tests/backup/account-version.test.mjs",
+      "bytes": 8114,
+      "sha256": "7ca59cb0c76c5ef94fd67366f61a0fa8dff8ca5ab4ba2c821b760b304632d0b0"
+    },
+    {
+      "path": "app/tests/backup/load-account-db.mjs",
+      "bytes": 3543,
+      "sha256": "c9f50cdfc39f4defff30dca37906d637850ff4e06d75f0633817ee5b9d2d08a0"
+    },
+    {
+      "path": "app/tests/elemental/fitness-identity.test.mjs",
+      "bytes": 12400,
+      "sha256": "c1e8ce8813d0b9605e07d210b7d78bc40ef631d6bcbb38430d6e4cebabd4a189"
+    },
+    {
+      "path": "app/tests/elemental/fitness-panels.test.mjs",
+      "bytes": 3960,
+      "sha256": "d283be96d310cfaaedf297f38a4c544926d5f373613220e0acb78b45def2f851"
+    },
+    {
+      "path": "app/tests/elemental/icon-navigation.test.mjs",
+      "bytes": 3969,
+      "sha256": "527a6c4640f91871e2d3934df3b0094d1da9e844520a571b5d3d8efab6703f60"
+    },
+    {
+      "path": "app/tests/elemental/load-component.mjs",
+      "bytes": 1614,
+      "sha256": "bba7eb1b5775951ce2e0ac6b0c44646d3a65b38a9d4524d2992965eb86bc4d93"
+    },
+    {
+      "path": "app/tests/elemental/xp-visual.test.mjs",
+      "bytes": 2315,
+      "sha256": "0f15eb22d020599c66c9501fd27001e122ac620e1af5b34562a1eef0d1d992d1"
+    },
+    {
+      "path": "app/vercel.json",
+      "bytes": 1000,
+      "sha256": "cca73cc2c0d7abe53a0a36e6aa054cf472f6294a2e8c457d1661153b9a0bcd68"
+    }
+  ],
+  "credentialPatternFindings": [],
+  "excluded": "ignored/private environment, sessions, caches, dist and node_modules"
+}

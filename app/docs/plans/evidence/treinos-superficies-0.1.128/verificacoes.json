@@ -1,0 +1,39 @@
+{
+  "lot": "T04",
+  "date": "2026-11-06",
+  "version": "0.1.128",
+  "base": "c0e4827",
+  "checks": {
+    "fullSuite": {
+      "passed": 670,
+      "failed": 0,
+      "skipped": 0,
+      "durationMs": 75272.158292
+    },
+    "targetedIncludingCompatibility": 14,
+    "presentationAfterFinalCosmeticChanges": 13,
+    "typescript": "passed",
+    "eslint": "passed",
+    "build": {
+      "passed": true,
+      "envDir": false,
+      "seconds": 12.13,
+      "warnings": [
+        "existing large chunks",
+        "outdated Browserslist dataset"
+      ]
+    },
+    "diffCheck": "passed",
+    "browser": "not inspected; saved denial unchanged",
+    "mobileAcceptance": "pending"
+  },
+  "protectedFilesCompared": 48,
+  "protectedFilesChanged": [],
+  "newCode": {
+    "tests/elemental/fitness-panels.test.mjs": "d283be96d310cfaaedf297f38a4c544926d5f373613220e0acb78b45def2f851",
+    "supabase/migrations/20261106041510_account_archive_version_128.sql": "0a1865bef54054087d85140630aed01a4005e16c7f1a7196b7732b7320467f80"
+  },
+  "releaseGates": "unchanged false",
+  "publication": "local changes only; PR #1 remains at 0.1.127",
+  "remoteActions": []
+}

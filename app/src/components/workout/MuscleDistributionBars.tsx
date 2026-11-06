@@ -43,7 +43,7 @@ export const MuscleDistributionBars: React.FC<MuscleDistributionBarsProps> = ({
               className={`h-full rounded-full ${
                 index === 0
                   ? 'bg-gradient-to-r from-mystic-gold/70 to-mystic-gold'
-                  : 'bg-gradient-to-r from-mystic-arcane/50 to-mystic-arcane/80'
+                  : 'bg-gradient-to-r from-[rgb(var(--el-gold)/0.5)] to-[rgb(var(--el-gold)/0.8)]'
               }`}
             />
           </div>

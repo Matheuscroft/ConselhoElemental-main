@@ -47,6 +47,39 @@ test('focus keeps one vote per exercise, ignores unknown IDs and preserves worko
  assert.equal(getWorkoutFocus(undefined,catalog),undefined);
 });
 
+test('saved activity selects the workout and exercise glyph, irrespective of title or muscle tags',()=>{
+ const {getWorkoutPresentation,getExercisePresentation}=loadComponent('src/lib/workout/workout-focus.ts');
+ const {ALL_CATEGORIES}=loadComponent('src/lib/workout/workout-labels.ts');
+ const catalog=ALL_CATEGORIES.map(modality=>({id:modality,modality,name:'Nome livre',primaryMuscles:['chest']}));
+ const before=JSON.stringify(catalog);
+ for(const modality of ALL_CATEGORIES){
+  const template={id:'saved-workout',name:'Passeio pelo Bairro',modality,exercises:[{exerciseId:modality}]};
+  const snapshot=JSON.stringify(template);
+  const expected=['strength','hypertrophy','calisthenics'].includes(modality)?'chest':modality;
+  assert.equal(getWorkoutPresentation(template,catalog).icon,expected,modality);
+  assert.equal(getExercisePresentation(modality,catalog).icon,expected,modality);
+  assert.equal(JSON.stringify(template),snapshot);
+ }
+ assert.equal(getWorkoutPresentation({modality:'cycling',exercises:[]},[]).icon,'cycling');
+ assert.equal(getWorkoutPresentation({modality:'swimming',exercises:[{exerciseId:'deleted'}]},[]).icon,'swimming');
+ assert.equal(getExercisePresentation('deleted',[],'running').icon,'running');
+ assert.equal(getWorkoutPresentation(undefined,[],'cycling').icon,'cycling');
+ assert.equal(getWorkoutPresentation(undefined,[]).icon,'mixed');
+ assert.equal(getWorkoutPresentation({modality:'obsolete',exercises:[]},[]).icon,'mixed');
+ assert.equal(JSON.stringify(catalog),before);
+});
+
+test('sports catalogue rows use the sport vector even when muscle groups are present',()=>{
+ const f=fixture([{id:'bike',modality:'cycling',name:'Passeio',primaryMuscles:['quadriceps']},
+  {id:'swim',modality:'swimming',name:'Nado',primaryMuscles:['chest']}]);
+ f.click('Ver em lista');
+ const rows=f.nodes().filter(node=>node.props?.ariaLabel?.startsWith('Ver '));
+ assert.equal(rows[0].props.icon,FITNESS_ICONS.cycling);
+ assert.equal(rows[1].props.icon,FITNESS_ICONS.swimming);
+ rows[0].props.onClick();assert.equal(f.calls[0],f.exercises[0]);
+ assert.equal(JSON.stringify(f.exercises),f.before);
+});
+
 function fixture(supplied){
  const exercises=supplied ?? [
   {id:'bar',name:'Supino reto com barra',primaryMuscles:['chest'],secondaryMuscles:['triceps'],strengthProfile:{equipmentIds:['barbell','bench'],contraction:'dynamic'}},

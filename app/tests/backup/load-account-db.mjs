@@ -8,8 +8,10 @@ export const fitnessIdentityVersionMigration=readFileSync('supabase/migrations/2
 export const intuitiveIconsVersionMigration=readFileSync('supabase/migrations/20261106033034_account_archive_version_125.sql','utf8');
 export const catalogueVersionMigration=readFileSync('supabase/migrations/20261106033906_account_archive_version_126.sql','utf8');
 export const handoffVersionMigration=readFileSync('supabase/migrations/20261106034829_account_archive_version_127.sql','utf8');
+export const auxiliaryUiVersionMigration=readFileSync('supabase/migrations/20261106041510_account_archive_version_128.sql','utf8');
+export const colouredRewardsVersionMigration=readFileSync('supabase/migrations/20261106172724_account_archive_version_129.sql','utf8');
 // Integration fixtures exercise the complete LOCAL candidate, not hosted state.
-export const migration=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+mergeVersionMigration+'\n'+fitnessIdentityVersionMigration+'\n'+intuitiveIconsVersionMigration+'\n'+catalogueVersionMigration+'\n'+handoffVersionMigration;
+export const migration=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+mergeVersionMigration+'\n'+fitnessIdentityVersionMigration+'\n'+intuitiveIconsVersionMigration+'\n'+catalogueVersionMigration+'\n'+handoffVersionMigration+'\n'+auxiliaryUiVersionMigration+'\n'+colouredRewardsVersionMigration;
 export async function createLegacyDatabase(){
  const db=new PGlite();
  // Isolated in-memory PostgreSQL. No network, server connection, env or real Auth.

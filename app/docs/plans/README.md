@@ -1,3 +1,11 @@
+## Recompensas coloridas e publicação — T05 / 0.1.129
+
+- [Entrega e recebimento em main](XP-ELEMENTOS-PUBLICACAO-0.1.129.md). T04 incluída, 674 testes completos, gates fechados, sem deploy/SQL remoto.
+
+## Treinos: superfícies restantes — T04 / 0.1.128 local
+
+- [Auditoria, correções e limites](TREINOS-SUPERFICIES-0.1.128.md). Fichas/editor/portais/componentes compartilhados, 670 testes; aceite visual pendente e sem nova publicação.
+
 ## Repasse para publicação — H02 / 0.1.127
 
 - [Frontend, contratos e próximos lotes de Matheus](REPASSE-BACKEND-0.1.127.md). Substitui H01 como ponto de entrada atual, preservando o histórico.

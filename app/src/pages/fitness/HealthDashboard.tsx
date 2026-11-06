@@ -97,7 +97,7 @@ export const HealthDashboard: React.FC = () => {
           summary={`Volume por dia nesta semana: ${volumeValues.map((value) => Math.round(value)).join(', ')} ${measuredLoad ? 'u.a.' : 'min'}`}
           bodyClassName="mt-6"
         >
-          <MiniSparkline values={volumeValues} color="#8582F2" height={96} />
+          <MiniSparkline values={volumeValues} color="#d5b66f" height={96} />
         </ChartWidget>
 
         <ChartWidget

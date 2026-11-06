@@ -15,6 +15,7 @@ export function loadComponent(file) {
   const module = { exports: {} };
   cache.set(absolute, module.exports);
   const localRequire = (id) => {
+    if (id.endsWith('.css')) return {}; // SSR content checks do not evaluate layout/styles.
     if (!id.startsWith('.') && !id.startsWith('@/')) return require(id);
     const target = id.startsWith('@/') ? resolve(root, 'src', id.slice(2)) : resolve(dirname(absolute), id);
     const path = [target, `${target}.tsx`, `${target}.ts`, resolve(target, 'index.ts'), resolve(target, 'index.tsx')].find((candidate) => existsSync(candidate) && statSync(candidate).isFile());

@@ -8,7 +8,7 @@ interface MuscleBarsProps {
   maxItems?: number;
 }
 
-/** Barras horizontais finas (violeta sobre surface-muted) com a distribuição muscular real. */
+/** Barras horizontais finas (dourado sobre surface-muted) com a distribuição muscular real. */
 export const MuscleBars: React.FC<MuscleBarsProps> = ({ distribution, emptyMessage, maxItems = 6 }) => {
   const sorted = [...distribution].sort((a, b) => b.percentage - a.percentage).slice(0, maxItems);
   if (sorted.length === 0) return <p className="py-2 text-sm text-fitness-muted">{emptyMessage}</p>;
