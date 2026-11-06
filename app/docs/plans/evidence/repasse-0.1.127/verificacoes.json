@@ -30,7 +30,17 @@
   },
   "vercel": "project metadata access refused 403; exact branch disabled via versioned deploymentEnabled configuration",
   "backend": "no hosted SQL or personal data; all three gates false",
-  "publication": "pending next step",
+  "publication": {
+    "technicalCommit": "68a50042d93c36f1c73067d204eab1839fbe8bd8",
+    "branch": "codex/fitness-ui-integration",
+    "pullRequest": "https://github.com/Matheuscroft/ConselhoElemental-main/pull/1",
+    "draft": true,
+    "mergeable": "MERGEABLE",
+    "mainUnchanged": "be78b1e8f4c5f378ff2efade69753b86bd19b2da",
+    "forcePush": false,
+    "deploy": false,
+    "note": "final custody documentation commit follows; product source and validation unchanged"
+  },
   "stagedReview": {
     "addedOrModifiedPaths": 399,
     "credentialPatternFindings": 0,

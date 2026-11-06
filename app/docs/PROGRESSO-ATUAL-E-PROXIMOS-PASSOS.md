@@ -1,6 +1,6 @@
 ## H02 — repasse atualizado para Matheus — 0.1.127
 
-[Resumo, recebimento e prioridades backend](plans/REPASSE-BACKEND-0.1.127.md). Kimono/faixa em artes marciais; 668 testes, tipos/lint/build passaram. Publicação preparada em branch de revisão com auto-deploy desativado somente nela. Gates false, revisão SQL 127 somente local, F6/conta pessoal e fragmentos pendentes. Histórico de T01–T03 e H01 preservado; usar este repasse/inventário mais recente.
+[Resumo, recebimento e prioridades backend](plans/REPASSE-BACKEND-0.1.127.md). Kimono/faixa em artes marciais; 668 testes, tipos/lint/build passaram. Publicado no commit técnico 68a5004, [PR #1 em rascunho](https://github.com/Matheuscroft/ConselhoElemental-main/pull/1), com auto-deploy desativado somente na branch de revisão. Gates false, revisão SQL 127 somente local, F6/conta pessoal e fragmentos pendentes. Histórico de T01–T03 e H01 preservado; usar este repasse/inventário mais recente.
 
 ## T03 — Treinos 0.1.126: navegação do catálogo
 

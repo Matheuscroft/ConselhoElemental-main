@@ -1,8 +1,8 @@
-## H02 — repasse 0.1.127 pronto para publicação (06/11/2026)
+## H02 — publicado para Matheus — 0.1.127 (06/11/2026)
 
-[Começar pelo repasse para Matheus](plans/REPASSE-BACKEND-0.1.127.md): frontend entregue, contratos a revisar, F6/conta, compatibilidade, associação pessoal, fragmentos e GymMane. Kimono/faixa substitui o ícone de artes marciais. Branch de revisão codex/fitness-ui-integration, base/main be78b1e conferidas; publicar sem force/merge direto. README raiz/app apontam o repasse.
+Commit técnico **68a5004** enviado a origin/codex/fitness-ui-integration; [PR #1 em rascunho](https://github.com/Matheuscroft/ConselhoElemental-main/pull/1) para main, conferido MERGEABLE. Main continua be78b1e, sem merge/force/deploy. [Matheus: começar pelo repasse](plans/REPASSE-BACKEND-0.1.127.md). README raiz/app apontam o pacote; Fábio frontend/mobile, Matheus backend, Astro Boy coordena.
 
-668 testes completos (66,40s), TypeScript, lint e build envDir:false (30,09s) passaram. Inventário integral e busca por padrões de credenciais revisados; cache Supabase retirado do índice/ignorado e preservado localmente. Branch desativada para auto-deploy Vercel em configuração versionada; leitura de configuração hospedada recusada 403, sem contorno. Três gates seguem false; candidato SQL 127 somente local, sem alteração em migrações anteriores, dados pessoais ou banco remoto. Sem aceite visual do app/mobile por bloqueio salvo. Registrar hash/PR após push; estado abaixo histórico.
+668 testes completos, TypeScript, lint e build passaram; ajuste de EOF em arquivo novo conferido por JavaScript emitido idêntico e seis testes de lembretes. Inventário integral/stage e padrões de credenciais revisados; cache Supabase ignorado/fora do Git e preservado na máquina. Três gates false, candidatos SQL 123–127 somente locais; conta/F6, associação pessoal, fragmentos e GymMane pendentes. Sem aceite visual do app/mobile por permissão salva. Branch tem auto-deploy Vercel desativado em configuração; metadados hospedados recusados 403. PR criado via gh após 403 do conector GitHub; sem alteração de permissões. Sem dados pessoais/SQL remoto/deploy. Custódia sequencial concluída/reservas encerradas; próximo Matheus revisar PR e fechar F6/compatibilidade em Sol Alto. Registros abaixo históricos.
 
 ## T03 — catálogo agrupado e pesquisável — 0.1.126 (06/11/2026)
 

@@ -4,7 +4,7 @@
 
 ## Recebimento
 
-A entrega segue na branch `codex/fitness-ui-integration`, para revisão contra `main`. Base integrada `be78b1e`; a main remota foi conferida por fetch. Não há force push nem reaplicação do stash antigo `c41b2bd`. Hash efetivamente enviado e PR serão registrados ao concluir a publicação.
+A entrega segue na branch `codex/fitness-ui-integration`, para revisão contra `main`. Base integrada `be78b1e`; a main remota foi conferida por fetch. Não há force push nem reaplicação do stash antigo `c41b2bd`. Commit técnico enviado: `68a50042d93c36f1c73067d204eab1839fbe8bd8`. [PR #1 em rascunho](https://github.com/Matheuscroft/ConselhoElemental-main/pull/1), conferido MERGEABLE, sem auto-merge; main permanece be78b1e. A nota final de custódia é um commit documental posterior.
 
 Com seu trabalho local preservado, na raiz Git:
 
@@ -64,3 +64,9 @@ Revisão de fontes/contratos e busca por padrões de credenciais no inventário:
 ## Modelos e próximo lote
 
 Sol Alto para fechar F6/contratos/CAS e compatibilidade hospedada; Sol Médio para aceite mobile/polimento delimitado. Matheus continua do estado real da branch e da fila; documentos não trocam modelos nem iniciam agentes. Não abrir gates/publicar Vercel por inferência deste push.
+
+## Publicação confirmada
+
+O conector GitHub recusou criação do PR com 403 de permissão da integração; o push já estava concluído e a CLI gh autenticada criou o PR em rascunho. Nenhuma permissão foi alterada. O resumo está no PR e neste documento; não houve mensagem externa a Matheus por chat/e-mail.
+
+Fonte técnica/testada: commit 68a5004. A conferência pós-push confirmou essa ref remota e main be78b1e. O commit documental final atualiza somente status de publicação/repasse; não exige novo bump ou repetição da suíte de produto. Inventário é snapshot pré-publicação; hashes de fontes são do commit técnico, sem autorreferência nem promessa de hash final destes documentos de status.
