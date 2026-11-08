@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/appStore';
 import { useAuthStore } from '@/stores/authStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { useWeekStartsOnPreference } from '@/lib/temporal';
+import { SANCTUARY_CITIES, useSanctuaryCityPreference } from '@/lib/temporal/sanctuary-city';
 import {
   getGoogleCalendarConnectUrl,
   getGoogleCalendarConnection,
@@ -63,6 +64,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [googleEmail, setGoogleEmail] = React.useState<string | null>(null);
   const [googleStatusMessage, setGoogleStatusMessage] = React.useState<string>('');
   const { weekStartsOn, setWeekStartsOn } = useWeekStartsOnPreference();
+  const { cityId: sanctuaryCityId, setCity: setSanctuaryCity } = useSanctuaryCityPreference();
   const googleConnectUrl = React.useMemo(() => getGoogleCalendarConnectUrl(), []);
   const googleSyncUrl = React.useMemo(() => getGoogleCalendarSyncUrl(), []);
 
@@ -317,6 +319,27 @@ export const TopBar: React.FC<TopBarProps> = ({
                 Segunda
               </button>
             </div>
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-white/15 p-3">
+            <p className="text-sm font-medium text-white">Cidade do santuário</p>
+            <p className="text-xs text-white/70">O sol, a lua e a estação da cena são calculados para ela.</p>
+            <div className="inline-flex rounded-lg border border-white/20 bg-white/5 p-1 text-xs">
+              {SANCTUARY_CITIES.map((opcao) => (
+                <button
+                  key={opcao.id}
+                  type="button"
+                  onClick={() => setSanctuaryCity(opcao.id)}
+                  aria-pressed={sanctuaryCityId === opcao.id}
+                  className={`rounded-md px-2 py-1 ${sanctuaryCityId === opcao.id ? 'bg-mystic-gold/20 text-mystic-gold' : 'text-white/70'}`}
+                >
+                  {opcao.name}
+                </button>
+              ))}
+            </div>
+            <a href="/despertar" className="inline-flex min-h-[44px] items-center text-xs text-white/70 underline underline-offset-4">
+              Rever a introdução
+            </a>
           </div>
 
           <div className="space-y-3 rounded-lg border border-white/15 p-3">

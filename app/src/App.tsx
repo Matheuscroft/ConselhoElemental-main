@@ -42,7 +42,7 @@ import './App.css';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
 
 const ElementalPreview = lazy(() => import('@/pages/ElementalPreview'));
-const DespertarCena = lazy(() => import('@/components/sanctuary/DespertarCena'));
+const DespertarRota = lazy(() => import('@/components/sanctuary/DespertarRota'));
 
 function ProtectedRoute() {
   const location = useLocation();
@@ -132,9 +132,9 @@ function App() {
           {/* Auth */}
           <Route path="/auth" element={<PublicAuthRoute />} />
 
-          {/* Despertar: cena isolada, ainda não ligada à entrada. Nada aponta
-              para cá; serve para testar a cena no app e no deploy. */}
-          <Route path="/despertar" element={<Suspense fallback={<p className="p-8 text-white">Preparando o Despertar…</p>}><DespertarCena /></Suspense>} />
+          {/* Rever a introdução. O primeiro acesso roda a cena por outro
+              caminho; aqui ela leva de volta ao Santuário. */}
+          <Route path="/despertar" element={<Suspense fallback={<p className="p-8 text-white">Preparando o Despertar…</p>}><DespertarRota /></Suspense>} />
 
           {/* Main Routes */}
           <Route element={<ProtectedRoute />}>

@@ -326,3 +326,11 @@ Os quatro elementos continuam explicados, agora em quatro linhas compactas em ve
 **O contrato do M10 foi preservado e continua verde**: os cinco destinos (`/auth?modo=cadastro`, `/auth`, `/santuario`, `/?progresso=restaurar`, `/onboarding`), um único `h1`, a manchete "Seu cotidiano" e a ausência de carrossel ou de XP inventado. O teste `access-entry` passa sem alteração.
 
 Conferido em 390x844: sem rolagem horizontal, conteúdo dentro da altura, um `h1`, e nenhum alvo de toque abaixo de 44 px.
+
+## Lote G — rever a introdução e escolher a cidade (08/11/2026)
+
+A rota `/despertar` deixou de ser só teste. Ela agora é "rever a introdução": `DespertarRota` roda a mesma cena e, ao concluir ou pular, volta para o Santuário em vez de seguir para a entrada — quem revê já tem o progresso dele, e nada é gravado.
+
+Em "Preferências e integrações", na TopBar, ao lado do início da semana, entraram dois controles: a cidade do santuário, entre Recife e Olinda, com a explicação de para que serve; e o link para rever a introdução. A cidade usa o mesmo hook de preferência do lote C, então a escolha feita aqui e a feita na pesquisa de primeiro acesso são a mesma.
+
+Com isso o M11 fecha o essencial: a cena existe, é calculada pela cidade, abre o app no primeiro acesso, e pode ser revista depois.
