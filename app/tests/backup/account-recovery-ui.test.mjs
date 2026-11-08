@@ -11,7 +11,7 @@ function fixture({released=true,callback=true}={}){
  const hook=initial=>{const at=cursor++;if(!(at in values))values[at]=initial;return [values[at],value=>{values[at]=value;}];};
  const react={useState:hook,useRef:initial=>hook({current:initial})[0],useEffect(fn,deps){const at=effectCursor++,previous=effects[at];const changed=!previous||!deps||deps.some((value,index)=>!Object.is(value,previous.deps?.[index]));if(!changed)return;previous?.cleanup?.();effects[at]={deps,cleanup:fn()};}};
  const jsx=(type,props)=>({type,props:props??{}});
- const entry={kind:callback?'callback':'request',takeCode(){taken++;return taken===1?'synthetic-code':null;}};
+ const entry={kind:callback?'callback':'request',takeCredentials(){taken++;return taken===1?{accessToken:'synthetic-access',refreshToken:'synthetic-refresh'}:null;}};
  const controller={dispose(){disposals++;},request(...args){return pending('request',args);},exchange(...args){return pending('exchange',args);},update(...args){return pending('update',args);}};
  function pending(name,args){return new Promise((resolve,reject)=>calls.push({name,args,resolve,reject}));}
  const exports={};

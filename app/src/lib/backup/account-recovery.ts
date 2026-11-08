@@ -1,17 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
-import { RECOVERY_PROOF_KEY } from './account-recovery-proof';
-import { PRODUCTION_APP_ORIGIN } from './account-recovery-entry';
+import { PRODUCTION_APP_ORIGIN, type RecoveryCredentials } from './account-recovery-entry';
 
-export { RECOVERY_PROOF_KEY } from './account-recovery-proof';
 export const RECOVERY_LOCK = 'conselho-elemental-password-recovery-operation-v1';
-const MAX_AGE = 60 * 60 * 1000;
-type StoragePort = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 interface Options {
-  url?: string; key?: string; origin: string; storage: StoragePort;
-  locks?: Pick<LockManager, 'request'>; now?: () => number;
+  url?: string; key?: string; origin: string;
+  locks?: Pick<LockManager, 'request'>;
 }
-/** Dedicated PKCE client. Only the expiring recovery verifier is durable;
- * tokens/user session stay in a private Map, never in the progress or old Auth. */
+/** Dedicated implicit-flow client. Recovery credentials stay only in this Map
+ * after the URL fragment is scrubbed; they never enter progress or normal Auth. */
 export function createPasswordRecovery(options: Options, construct: typeof createClient = createClient) {
   if (!options.url || !options.key) throw new Error('A conexão de acesso ainda não está disponível.');
   const project = new URL(options.url), origin = new URL(options.origin);
@@ -19,45 +15,17 @@ export function createPasswordRecovery(options: Options, construct: typeof creat
     if (url.username || url.password || (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)))) throw new Error('A conexão de acesso precisa de revisão.');
   }
   if (!options.locks) throw new Error('Este navegador não oferece a proteção necessária. Use um navegador atualizado.');
-  const now = options.now ?? Date.now, memory = new Map<string, string>();
-  let disposed = false, working = false, ownedProof: string | null = null, userId: string | null = null;
+  const memory = new Map<string, string>();
+  let disposed = false, working = false, userId: string | null = null;
   const live = () => { if (disposed) throw new Error('A conferência de acesso foi encerrada. Solicite outro link.'); };
-  function readProof() {
-    const raw = options.storage.getItem(RECOVERY_PROOF_KEY);
-    if (!raw || raw.length > 4096) throw new Error('Solicite um novo link neste navegador e abra-o no mesmo navegador.');
-    let p;
-    try { p = JSON.parse(raw); } catch { throw new Error('Solicite um novo link neste navegador.'); }
-    if (p?.kind !== 'password-recovery' || p.project !== project.origin || p.origin !== origin.origin || typeof p.createdAt !== 'number' || !Number.isFinite(p.createdAt)
-      || now() < p.createdAt || now() - p.createdAt >= MAX_AGE || typeof p.verifier !== 'string' || p.verifier.length > 2048) throw new Error('Este link precisa ser solicitado novamente neste navegador.');
-    let verifier;
-    try { verifier = JSON.parse(p.verifier); } catch { throw new Error('Solicite um novo link neste navegador.'); }
-    if (typeof verifier !== 'string' || !verifier.endsWith('/PASSWORD_RECOVERY')) throw new Error('Este link não pertence à recuperação de senha.');
-    ownedProof = raw;
-    return p.verifier as string;
-  }
   // Unique key also isolates SDK BroadcastChannel/locks from every other client.
   const key = 'ce-recovery-memory-' + crypto.randomUUID();
   const client = construct(options.url, options.key, { auth: {
-    flowType: 'pkce', persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, storageKey: key,
+    flowType: 'implicit', persistSession: true, autoRefreshToken: false, detectSessionInUrl: false, storageKey: key,
     storage: {
-      getItem(name) {
-        if (disposed) return null;
-        if (name !== key + '-code-verifier') return memory.get(name) ?? null;
-        try { return readProof(); } catch { return null; } // SDK probes are optional; exchange checks strictly first.
-      },
-      setItem(name, value) {
-        live();
-        if (name !== key + '-code-verifier') { memory.set(name, value); return; }
-        const raw = JSON.stringify({ kind: 'password-recovery', project: project.origin, origin: origin.origin, createdAt: now(), verifier: value });
-        options.storage.setItem(RECOVERY_PROOF_KEY, raw);
-        if (options.storage.getItem(RECOVERY_PROOF_KEY) !== raw) throw new Error('Não foi possível guardar a proteção do link.');
-        ownedProof = raw;
-      },
-      removeItem(name) {
-        if (name !== key + '-code-verifier') { memory.delete(name); return; }
-        if (ownedProof && options.storage.getItem(RECOVERY_PROOF_KEY) === ownedProof) options.storage.removeItem(RECOVERY_PROOF_KEY);
-        ownedProof = null;
-      },
+      getItem(name) { return disposed ? null : memory.get(name) ?? null; },
+      setItem(name, value) { live(); memory.set(name, value); },
+      removeItem(name) { memory.delete(name); },
     },
   } });
   async function exclusive<T>(action: () => Promise<T>): Promise<T> {
@@ -77,22 +45,20 @@ export function createPasswordRecovery(options: Options, construct: typeof creat
   return {
     request(email: string) { return exclusive(async () => {
       if (userId) throw new Error('Encerre a conferência atual antes de solicitar outro link.');
-      if (origin.origin !== PRODUCTION_APP_ORIGIN) throw new Error('Continue a recuperação no endereço oficial do app e solicite o link novamente.');
       const address = email.trim();
       if (!address || address.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) throw new Error('Informe um e-mail válido.');
-      // Supabase must return to the canonical app domain even when a request
-      // is accidentally initiated from a local dev tab.
+      // Internal navigation stays on its current origin. Only the email return
+      // uses the canonical app, so the link also works on another device.
       const redirectTo = `${PRODUCTION_APP_ORIGIN}/?progresso=recuperar`;
       const result = await client.auth.resetPasswordForEmail(address, { redirectTo }); live();
       if (result.error) throw new Error('Não foi possível enviar o link agora. Aguarde e tente novamente.');
       // Generic response avoids disclosing whether this email has an account.
-      return 'Se houver uma conta com esse e-mail, você receberá um link. Abra-o neste navegador. Apenas o link mais recente será válido.';
+      return 'Se houver uma conta com esse e-mail, você receberá um link. Ele pode ser aberto em outro aparelho. Apenas o link mais recente será válido.';
     }); },
-    exchange(code: string) { return exclusive(async () => {
-      if (userId || !code || code.length > 2048) throw new Error('Solicite outro link de recuperação.');
+    exchange(credentials: RecoveryCredentials) { return exclusive(async () => {
+      if (userId || !credentials?.accessToken || !credentials?.refreshToken) throw new Error('Solicite outro link de recuperação.');
       try {
-        readProof();
-        const result = await client.auth.exchangeCodeForSession(code); live();
+        const result = await client.auth.setSession({ access_token: credentials.accessToken, refresh_token: credentials.refreshToken }); live();
         if (result.error || !result.data.session || !result.data.user?.id) throw new Error('Não foi possível validar este link. Solicite outro.');
         userId = result.data.user.id;
         const user = await verified();

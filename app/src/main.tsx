@@ -1,8 +1,7 @@
 import { accessEntry, shouldShowWelcome } from './lib/backup/access-entry';
 import type { LiveAccountSession } from './lib/backup/account-live-sync';
 import { hasAccountTabAccess } from './lib/backup/account-resume-entry';
-import { canonicalRecoveryRequestTarget, captureRecoveryEntry, isPasswordRecoveryCallback } from './lib/backup/account-recovery-entry';
-import { RECOVERY_PROOF_KEY } from './lib/backup/account-recovery-proof';
+import { captureRecoveryEntry, isPasswordRecoveryCallback } from './lib/backup/account-recovery-entry';
 import { captureAccountReturn, type AccountReturnNotice } from './lib/backup/account-return';
 import { needsReminderWorkspace } from './lib/reminders/reminder-entry'
 import './index.css'
@@ -40,14 +39,8 @@ function startAccountApp(session: LiveAccountSession) {
   });
 }
 const progressView = new URLSearchParams(window.location.search).get('progresso');
-const recoveryRedirect = canonicalRecoveryRequestTarget(window.location.href);
-let recoveryProof: string | null = null;
-try { recoveryProof = window.localStorage.getItem(RECOVERY_PROOF_KEY); } catch { /* storage denial keeps recovery on its explicit route */ }
-const recoveryCallback = isPasswordRecoveryCallback(window.location.href, recoveryProof, window.location.origin, import.meta.env.VITE_SUPABASE_URL);
-if (recoveryRedirect) {
-  window.location.replace(recoveryRedirect);
-}
-else if (progressView === 'recuperar' || recoveryCallback) {
+const recoveryCallback = isPasswordRecoveryCallback(window.location.href);
+if (progressView === 'recuperar' || recoveryCallback) {
   try {
     const entry = captureRecoveryEntry(window.location.href, url => window.history.replaceState(null, '', url), recoveryCallback);
     void import('./mount-account-recovery').then(({ mountAccountRecovery }) => mountAccountRecovery(root, entry)).catch(() => { entry.discard(); showProgressStartup(root, 'startup-failed'); });

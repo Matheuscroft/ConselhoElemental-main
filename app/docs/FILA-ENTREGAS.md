@@ -1,3 +1,7 @@
+## F6-N16 — recuperação entre aparelhos e rotas locais — pronta para publicação
+
+Matheus confirmou o contrato: navegação interna iniciada em localhost permanece em localhost; somente o retorno enviado por e-mail usa `https://conselho-elemental-main.vercel.app/?progresso=recuperar`. Implementado fluxo implícito isolado para permitir abrir o e-mail em outro aparelho, com fragmento removido antes de Auth e sessão temporária somente em memória. Dashboard mostra Site URL oficial e somente as duas rotas Vercel necessárias: conta e recuperação. Após integrar três commits novos do frontend, 31 testes integrados, ESLint completo, build de 4.813 módulos e navegador local passaram; localhost e módulos Vite respondem 200. Reservas seguem com Astro Boy até commit/push e conferência de CI/Vercel.
+
 ## F6-N15 — login destravado e e-mails no domínio oficial — validação remota em andamento
 
 A conferência local pendente não bloqueia mais email, senha ou entrada; ela continua bloqueando qualquer envio, substituição ou sincronização até revisão, preservando os dados do navegador. Recuperação, cadastro e reenvio de confirmação usam retornos fixos no `conselho-elemental-main.vercel.app`, inclusive quando iniciados em localhost. 60 testes direcionados, lint, diff-check e build passaram. Código integrado sobre os seis commits novos do M11 e enviado até `7fe5d29`. Restam CI/Vercel e, com confirmação final na interface do Supabase, remover os dois redirects locais antigos antes do novo teste pessoal.
