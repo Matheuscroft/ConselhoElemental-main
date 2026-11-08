@@ -12,6 +12,8 @@
 
 Corrigidas declarações anteriores que apontavam o mesmo PNG 2048×2048 como se tivesse tamanhos 192 e 512. Não declarar maskable para uma arte integral sem preparação específica de área segura; o sistema operacional aplica seu tratamento nativo. Arquivo antigo public/icon.png preservado para referências antigas, sem usá-lo nos novos links de instalação.
 
+Atualização de 08/11/2026: o endereço continua preservado, o peso não. Servia 2048×2048 com 5,93 MB em cada deploy e para qualquer referência antiga que ainda o buscasse. Como o maior ícone declarado no manifest é 512, nenhum consumidor legítimo daquela URL precisa de 2048: agora é um 512×512 de 0,43 MB, e o master de 2048 foi para `app/arte-fonte/icone/icon-2048.png`, fora do que é publicado. O README de `arte-fonte` traz as alternativas medidas e descartadas, e o comando para regerar.
+
 ## Verificações
 
 Quatro PNGs conferidos por Sharp: formato, largura/altura e ausência de EXIF. Manifest refere dimensões reais, root scope e start_url preservados, display standalone. PNG 512 inspecionado visualmente: mesma arte inteira. Um teste de compatibilidade de produtor SQL passou (8,51s); TypeScript, ESLint, build Vite envDir:false (10,50s) e diff-check passaram. Sem suíte completa nova para esta alteração de assets/metadados; resultados de 679 da P04 permanecem históricos.

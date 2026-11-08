@@ -111,3 +111,13 @@ São referências/assets com uso atual. A otimização de imagens originais/avat
 ## Publicação confirmada
 
 Push sem force aceito pelo GitHub: main avançou de 03f0588 para 4f180f9 em 10/10/2026. Commit contém o estado acumulado autorizado de Fitness/Saúde/assistente e os arquivos portáveis de Astro Boy. A documentação de encerramento acompanha esse commit em atualização posterior. Nenhum deployment ou chamada remota do assistente foi realizado.
+
+## Arquivos grandes — resolvidos em 08/11/2026
+
+A lista acima é o retrato de quando a auditoria foi feita. Desde então:
+
+- `app/public/icon.png`: servia 2048×2048 com 5,93 MB por um endereço legado. Agora serve 512×512 com 0,43 MB; o master foi para `app/arte-fonte/icone/`.
+- `app/public/yoga/poses/*.png`: seis masters de 2816×1536, 30 MB no total, que o app nunca pedia — ele serve os WebP em `full/` e `thumb/`, e o fallback para o PNG estava exportado sem nenhum chamador. Foram para `app/arte-fonte/yoga/poses/` e a função saiu.
+- `app/docs/plans/conceito-b/`: 6,85 MB de derivados da arte do Despertar saíram, com a arte original entrando no lugar para que o pipeline do ffmpeg passasse a ser reproduzível dentro do repositório.
+
+O pacote de deploy caiu de 58 MB para 22 MB, medido em `dist/` depois de um build limpo. Continuam grandes e em uso, para decidir depois: `app/public/avatar_fabio.glb` com 3,4 MB, e as artes elementais em `app/public/sanctuary/elements/` somando 6,4 MB em WebP de resolução alta demais para o uso que têm.
