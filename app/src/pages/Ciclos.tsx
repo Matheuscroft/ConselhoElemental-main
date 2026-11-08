@@ -1631,7 +1631,7 @@ export const Ciclos: React.FC = () => {
   const canReorderVisibleCards = !hasCycleFilters(cycleFilters) && cyclesViewMode === 'ordered';
 
   return (
-    <AppLayout showAura={false}>
+    <AppLayout>
       <MotionConfig reducedMotion="user">
       <div className="cycles-workspace">
       <header className="cycles-header">

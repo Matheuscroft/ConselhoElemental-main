@@ -121,3 +121,22 @@ A lista acima é o retrato de quando a auditoria foi feita. Desde então:
 - `app/docs/plans/conceito-b/`: 6,85 MB de derivados da arte do Despertar saíram, com a arte original entrando no lugar para que o pipeline do ffmpeg passasse a ser reproduzível dentro do repositório.
 
 O pacote de deploy caiu de 58 MB para 22 MB, medido em `dist/` depois de um build limpo. Continuam grandes e em uso, para decidir depois: `app/public/avatar_fabio.glb` com 3,4 MB, e as artes elementais em `app/public/sanctuary/elements/` somando 6,4 MB em WebP de resolução alta demais para o uso que têm.
+
+## Aura 3D e avatar — código morto removido em 08/11/2026
+
+`AppLayout` montava um bloco de aura com `AuraAvatar3D`, que carregava
+`public/avatar_fabio.glb` (3,4 MB) e trazia junto um HUD de RPG com nome,
+nível, HP, Stamina, Prana e XP. Nada disso aparecia para ninguém.
+
+O bloco dependia de `AURA_ROUTES = ['/santuario', '/grimorio']`, mas
+`/santuario` renderiza `ElementalPreview`, que não usa `AppLayout`, e
+`/grimorio` passava `showAura={false}`. Nenhuma página ativa chegava à
+condição. Confirmado na produção: o `.glb` nunca era requisitado.
+
+Removidos o `.glb`, o componente, o bloco e a prop `showAura`, com as seis
+páginas que a desligavam explicitamente ajustadas. É por isso que a aura
+"não aparecia": ela não existia em tela desde que o Santuário deixou de usar
+o `AppLayout`. Uma aura nova, por nível e por signo, é trabalho novo e não
+reaproveita este código.
+
+Deploy depois desta limpeza: 18 MB, contra 58 MB antes da série.

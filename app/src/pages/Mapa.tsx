@@ -27,7 +27,7 @@ export const Mapa: React.FC = () => {
   };
 
   return (
-    <AppLayout showAura={false}>
+    <AppLayout>
       <header className="page-atlas-heading"><span><ArcaneIcon name="mapa" size={32} /></span><div><h1>Mapa de páginas</h1><p>Encontre seu próximo passo. Busque uma atividade ou abra uma categoria.</p></div></header>
       <PageAtlas routes={APP_ROUTES} liveStatus={liveStatus} />
 

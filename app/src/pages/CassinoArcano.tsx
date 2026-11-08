@@ -15,7 +15,7 @@ import '@/components/destiny/destiny.css';
 
 export function CassinoArcano() {
   const accountId = useAppStore(state => state.currentAccountId);
-  return <AppLayout showAura={false}><DestinyWorkspace key={accountId ?? 'local'} /></AppLayout>;
+  return <AppLayout><DestinyWorkspace key={accountId ?? 'local'} /></AppLayout>;
 }
 
 function DestinyWorkspace() {

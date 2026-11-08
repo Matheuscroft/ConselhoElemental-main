@@ -18,7 +18,7 @@ export const Pilares = () => {
   const activeCount = areas.filter((area) => onboarding.selectedAreas.includes(area.id)).length;
   const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
-  return <AppLayout showAura={false}>
+  return <AppLayout>
     <div className="elemental-pillars">
       <Link className="pillars-back" to="/santuario"><ArrowLeft size={16} />Voltar ao Santuário</Link>
       <header className="pillars-heading">

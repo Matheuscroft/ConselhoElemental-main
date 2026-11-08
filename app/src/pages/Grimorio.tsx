@@ -76,7 +76,7 @@ function GrimorioContent() {
     setShowAvatarDialog(false);
   };
 
-  return <AppLayout showAura={false}>
+  return <AppLayout>
     <div className="grimoire-workspace">
       <header className="grimoire-page-heading"><div><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></div><ArcaneIcon name="grimorio" size={32} /></header>
       <nav className="grimoire-index" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a><a href="#grimoire-backup">Cópia de segurança</a></nav>
