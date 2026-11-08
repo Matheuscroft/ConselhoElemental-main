@@ -1,5 +1,7 @@
 ## 0.1.145 — 08/11/2026 · recuperação de senha no domínio oficial
 
+- Uma conferência local que precise de revisão não mantém mais o formulário em “Preparando acesso”: email e senha continuam disponíveis, enquanto toda transferência de progresso permanece pausada.
+- Cadastro, reenvio de confirmação e recuperação usam somente as rotas oficiais do Vercel nos e-mails, mesmo quando a ação começa em localhost.
 - O pedido de recuperação agora envia explicitamente o callback oficial, e o Supabase não aceita mais o retorno local antigo para reset; clientes fora do domínio oficial não criam um verificador PKCE inutilizável.
 - Após aceitar o pedido, a tela confirma o envio de forma neutra e conta 60 segundos até liberar novo envio.
 - Pedidos de reset abertos em localhost encaminham para o Vercel oficial antes de criar o verificador PKCE; o e-mail e o retorno passam a usar a mesma origem.

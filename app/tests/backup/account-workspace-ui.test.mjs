@@ -8,9 +8,9 @@ const require=createRequire(import.meta.url),flush=()=>new Promise(r=>setImmedia
 const flatten=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flatten):[n,...flatten(n.props?.children)];
 const text=n=>Array.isArray(n)?n.map(text).join(''):typeof n==='object'?text(n?.props?.children):String(n??'');
 const uid='11111111-1111-4111-8111-111111111111',key='conselho-elemental-account-intent-v1';
-const accessModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(accessModule.exports);
+const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
 const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-revision',createdAt:'2026-10-29T12:00:00Z'};
-function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false}={}){
+ function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false}={}){
  let si,ri,mounted=false,tree,cleanup,authId=uid,constructions=0,disposals=0,staleCopy=false,download=0;const handoffs=[];const slots=[],refs=[],listeners=new Set(),requests=[],navigations=[],sessions=[],timers=[];
  const memory=new Map([['conselho-elemental-storage','synthetic core'],['dominio-do-mago-workout-storage-v1','synthetic fitness']]);if(empty)memory.clear();if(pending)memory.set(key,'synthetic intent');if(bound)memory.set('conselho-elemental-account-binding-v1','synthetic binding');
  const baseline={pair:{core:empty?null:'synthetic core',fitness:empty?null:'synthetic fitness'},snapshot:empty?null:{},localMode:null};
@@ -25,7 +25,7 @@ function fixture({released=true,accessReleased=released,pending=false,bound=fals
   if(id.endsWith('.css'))return {};
   if(id.endsWith('/connect-account-progress'))return Object.fromEntries(['connectCurrentAccountProgress','receiveReviewedAccountProgress','resumeAccountConnection'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
   if(id.endsWith('/account-access'))return accessModule.exports;
-  if(id.endsWith('/workspace-preview'))return {readWorkspaceBaseline:()=>baseline,createWorkspaceSafetyCopy:async()=>({baseline,text:'local archive'})};
+   if(id.endsWith('/workspace-preview'))return {readWorkspaceBaseline:()=>{if(contextFailure)throw Error('synthetic context failure');return baseline;},createWorkspaceSafetyCopy:async()=>({baseline,text:'local archive'})};
   if(id.endsWith('/restore-confirmation'))return {verifyPreviousSafetyCopy:async()=>{if(staleCopy)throw Error('Cópia diferente');}};
   if(id.endsWith('/progress-backup'))return {MAX_BACKUP_BYTES:20*1024*1024,STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}};
   if(id.endsWith('/AccountResolutionPanel'))return {AccountResolutionPanel:()=>null};
@@ -120,7 +120,7 @@ test('an unbound device authenticates without adopting data and hands only an ex
 
 test('signup needs matching confirmation and discards an autoconfirm session without sending local progress',async()=>{
  const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
- f.fill('password','synthetic password',1);f.submit();f.submit();await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');assert.equal(f.sessions[0].args.options.emailRedirectTo,'https://fixture.test/?progresso=conta');
+ f.fill('password','synthetic password',1);f.submit();f.submit();await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');assert.equal(f.sessions[0].args.options.emailRedirectTo,'https://conselho-elemental-main.vercel.app/?progresso=conta');
  f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.match(f.content(),/Se este e-mail precisar/);assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.deepEqual([...f.memory.entries()],before);assert.equal(f.disposals,1);assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='password').length,1);f.unmount();
 });
 
@@ -143,6 +143,12 @@ test('confirmation return is only an informational notice and never constructs A
 
 test('authentication waits for initial pending-context inspection, even with valid credentials and forced handlers',async()=>{
  const f=fixture({pending:true,bound:true});f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.submit();await flush();assert.equal(f.constructions,0);f.render();await signed(f);assert.equal(f.constructions,1);assert.equal(f.requests.length,0);f.unmount();
+});
+
+test('a failed data inspection keeps transfers blocked but releases email and password access',async()=>{
+ const f=fixture({contextFailure:true});await flush();f.render();assert.match(f.content(),/acesso à conta segue disponível|você ainda pode entrar/);
+ const fields=f.nodes().filter(n=>n.type==='input'&&['email','password'].includes(n.props.type));assert.equal(fields.length,2);assert.ok(fields.every(n=>n.props.disabled===false));
+ f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.doesNotMatch(f.content(),/Salvar minha jornada na conta/);f.unmount();
 });
 
 test('a failed choice mounts recovery controls, never resends on receipt check, and can explicitly re-evaluate while keeping local data',async()=>{

@@ -1,3 +1,7 @@
+## F6-N15 — login destravado e e-mails no domínio oficial — validação remota em andamento
+
+A conferência local pendente não bloqueia mais email, senha ou entrada; ela continua bloqueando qualquer envio, substituição ou sincronização até revisão, preservando os dados do navegador. Recuperação, cadastro e reenvio de confirmação usam retornos fixos no `conselho-elemental-main.vercel.app`, inclusive quando iniciados em localhost. 60 testes direcionados, lint, diff-check e build passaram. Código integrado sobre os seis commits novos do M11 e enviado até `7fe5d29`. Restam CI/Vercel e, com confirmação final na interface do Supabase, remover os dois redirects locais antigos antes do novo teste pessoal.
+
 ## M11 — Despertar publicado (08/11/2026)
 
 Abertura do app refeita: Despertar no primeiro acesso, duas perguntas, entrada redesenhada; cidade e rever introdução em Preferências. Lotes C a G em produção. 798 testes, lint, tipos e build passam; main em 9506d94, CI verde, Vercel 0.1.145.

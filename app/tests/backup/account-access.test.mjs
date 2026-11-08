@@ -27,7 +27,8 @@ test('signup enforces confirmation/minimum while login preserves existing passwo
  assert.equal(validAccountAccess('login','synthetic@example.invalid',' x '),true);
  assert.equal(validAccountAccess('signup','synthetic@example.invalid','short','short'),false);
  assert.equal(validAccountAccess('signup','synthetic@example.invalid','synthetic password','other password'),false);
- assert.equal(accountConfirmationRedirect(origin),origin+'/?progresso=conta');
+ assert.equal(accountConfirmationRedirect(origin),'https://conselho-elemental-main.vercel.app/?progresso=conta');
+ for(const local of ['http://localhost:5173','http://127.0.0.1:5173','http://[::1]:5173'])assert.equal(accountConfirmationRedirect(local),'https://conselho-elemental-main.vercel.app/?progresso=conta');
  for(const bad of ['http://external.invalid','https://user:password@app.example.invalid','https://app.example.invalid/path','https://app.example.invalid?redirect=elsewhere'])assert.throws(()=>accountConfirmationRedirect(bad),/origem/);
 });
 
@@ -35,7 +36,7 @@ test('installed SDK sends explicit signup redirect; confirmation never authentic
  for(const autoconfirm of [false,true]){
   const f=fixture({autoconfirm});try{
    const result=await accessAccount(f.opened.client,f.input,()=>true);assert.equal(result.kind,'confirmation');assert.equal('userId' in result,false);
-   assert.equal(f.calls.length,1);assert.equal(f.calls[0].path,'/auth/v1/signup');assert.equal(f.calls[0].body.email,'synthetic@example.invalid');assert.equal(new URLSearchParams(f.calls[0].search).get('redirect_to'),origin+'/?progresso=conta');
+   assert.equal(f.calls.length,1);assert.equal(f.calls[0].path,'/auth/v1/signup');assert.equal(f.calls[0].body.email,'synthetic@example.invalid');assert.equal(new URLSearchParams(f.calls[0].search).get('redirect_to'),'https://conselho-elemental-main.vercel.app/?progresso=conta');
    f.opened.dispose();assert.equal((await f.opened.client.auth.getSession()).data.session,null);
   }finally{f.opened.dispose();}
  }
@@ -58,7 +59,7 @@ test('invalid input, stale results and opaque Auth failures never produce an aut
 
 test('resend uses signup purpose and fixed return URL without requiring or transmitting a password',async()=>{
  const f=fixture();try{
-  const result=await resendAccountConfirmation(f.opened.client,'synthetic@example.invalid',origin,()=>true);assert.match(result,/Se houver confirmação pendente/);assert.equal(f.calls.length,1);assert.equal(f.calls[0].path,'/auth/v1/resend');assert.equal(f.calls[0].body.type,'signup');assert.equal('password' in f.calls[0].body,false);assert.equal(new URLSearchParams(f.calls[0].search).get('redirect_to'),origin+'/?progresso=conta');
+  const result=await resendAccountConfirmation(f.opened.client,'synthetic@example.invalid',origin,()=>true);assert.match(result,/Se houver confirmação pendente/);assert.equal(f.calls.length,1);assert.equal(f.calls[0].path,'/auth/v1/resend');assert.equal(f.calls[0].body.type,'signup');assert.equal('password' in f.calls[0].body,false);assert.equal(new URLSearchParams(f.calls[0].search).get('redirect_to'),'https://conselho-elemental-main.vercel.app/?progresso=conta');
  }finally{f.opened.dispose();}
 });
 
