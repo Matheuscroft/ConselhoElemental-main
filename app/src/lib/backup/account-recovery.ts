@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import { RECOVERY_PROOF_KEY } from './account-recovery-proof';
 
-export const RECOVERY_PROOF_KEY = 'conselho-elemental-password-recovery-v1';
+export { RECOVERY_PROOF_KEY } from './account-recovery-proof';
 export const RECOVERY_LOCK = 'conselho-elemental-password-recovery-operation-v1';
 const MAX_AGE = 60 * 60 * 1000;
 type StoragePort = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;

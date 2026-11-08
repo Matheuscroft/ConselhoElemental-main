@@ -27,12 +27,12 @@ function fixture({released=true,callback=true}={}){
  render();return {calls,render,get constructions(){return constructions;},get disposals(){return disposals;},get taken(){return taken;},content:()=>text(tree),click(label){const b=nodes().find(n=>n.type==='button'&&text(n)===label);assert.ok(b,label);b.props.onClick?.();render();},fill(type,value,index=0){nodes().filter(n=>n.type==='input'&&n.props.type===type)[index].props.onChange({target:{value}});render();},submit(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();},unmount(){cleanup();}};
 }
 
-test('closed release rejects forced recovery handlers before Auth construction or code consumption',async()=>{
- const f=fixture({released:false});f.click('Validar meu link');f.fill('email','synthetic@example.invalid');f.submit();await tick();f.render();assert.equal(f.constructions,0);assert.equal(f.taken,0);assert.equal(f.calls.length,0);assert.match(f.content(),/em preparação/);f.unmount();
+test('closed release rejects automatic callback validation and request before Auth construction or code consumption',async()=>{
+ const f=fixture({released:false});await tick();f.fill('email','synthetic@example.invalid');f.submit();await tick();f.render();assert.equal(f.constructions,0);assert.equal(f.taken,0);assert.equal(f.calls.length,0);assert.match(f.content(),/em preparação/);f.unmount();
 });
 
-test('explicit code validation, matching passwords and separate confirmation control the update; double taps do not duplicate it',async()=>{
- const f=fixture();f.click('Validar meu link');f.click('Validar meu link');await tick();f.render();assert.equal(f.calls.length,1);assert.equal(f.calls[0].name,'exchange');assert.equal(f.taken,1);
+test('email callback validates automatically, then matching passwords and confirmation gate the update',async()=>{
+ const f=fixture();await tick();f.render();assert.equal(f.calls.length,1);assert.equal(f.calls[0].name,'exchange');assert.equal(f.taken,1);
  f.calls[0].resolve({email:'synthetic@example.invalid',userId:'synthetic'});await tick();f.render();assert.match(f.content(),/Conta conferida/);
  f.fill('password','synthetic new password',0);f.fill('password','different password',1);assert.match(f.content(),/não coincidem/);f.submit();await tick();assert.equal(f.calls.length,1);
  f.fill('password','synthetic new password',1);f.submit();f.submit();await tick();assert.equal(f.calls.length,2);assert.deepEqual(f.calls[1].args,['synthetic new password']);f.calls[1].resolve({logoutConfirmed:true});await tick();f.render();assert.match(f.content(),/Senha atualizada/);assert.equal(f.disposals,1);assert.equal(f.constructions,1);f.unmount();
@@ -43,5 +43,5 @@ test('resending uses one isolated client for the document and has no App handoff
 });
 
 test('unmount during validation disposes the owned client and ignores late identity results',async()=>{
- const f=fixture();f.click('Validar meu link');await tick();f.unmount();f.calls[0].resolve({email:'synthetic@example.invalid'});await tick();f.render();assert.doesNotMatch(f.content(),/Conta conferida/);assert.equal(f.disposals,1);
+ const f=fixture();await tick();f.unmount();f.calls[0].resolve({email:'synthetic@example.invalid'});await tick();f.render();assert.doesNotMatch(f.content(),/Conta conferida/);assert.equal(f.disposals,1);
 });

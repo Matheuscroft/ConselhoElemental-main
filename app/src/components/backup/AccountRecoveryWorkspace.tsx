@@ -11,7 +11,13 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const [verified, setVerified] = useState<{ email: string } | null>(null);
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [done, setDone] = useState(false);
   const session = useRef<ReturnType<typeof createPasswordRecovery> | null>(null), working = useRef(false), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { alive.current = true; return () => { alive.current = false; session.current?.dispose(); session.current = null; }; }, []);
+  useEffect(() => {
+    alive.current = true;
+    if (entry.kind === 'callback') exchange();
+    return () => { alive.current = false; session.current?.dispose(); session.current = null; };
+  // A callback code is one-time; mount the isolated recovery root without StrictMode replay.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   async function run(action: () => Promise<void>) {
     if (!ACCOUNT_ACCESS_RELEASED || working.current) return;
     working.current = true; setBusy(true); setError(''); setMessage('');
@@ -62,7 +68,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
         {confirm && password !== confirm && <small role="status">As senhas ainda não coincidem.</small>}
         <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || password.length < 8 || password !== confirm}>Salvar nova senha</button>
       </form></section> : <>
-      {entry.kind === 'callback' && <section className="entry-access-card"><h2>Confira o link recebido</h2><p>O código foi removido do endereço. Valide-o antes de definir sua senha. O link precisa ter sido solicitado neste navegador.</p><button type="button" disabled={busy || !ACCOUNT_ACCESS_RELEASED} onClick={exchange}>Validar meu link</button></section>}
+      {entry.kind === 'callback' && busy && <section className="entry-access-card" role="status"><h2>Validando o link</h2><p>Conferindo a solicitação com segurança. Você não precisa entrar antes de redefinir a senha.</p></section>}
       {entry.kind === 'invalid' && <p role="alert">Este link não pôde ser aceito. Solicite outro abaixo.</p>}
       <section className="entry-access-card"><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
         <label htmlFor="recovery-email">E-mail da conta<input id="recovery-email" enterKeyHint="go" name="recovery-email" type="email" inputMode="email" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>

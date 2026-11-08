@@ -5,9 +5,9 @@ import {build} from 'esbuild';
 import {createRequire} from 'node:module';
 import {createClient} from '@supabase/supabase-js';
 import {readFileSync} from 'node:fs';
-const built=await build({stdin:{contents:"export * from './src/lib/backup/account-recovery';export * from './src/lib/backup/account-recovery-entry';",resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,external:['@supabase/supabase-js'],logLevel:'silent'});
+const built=await build({stdin:{contents:"export * from './src/lib/backup/account-recovery';export * from './src/lib/backup/account-recovery-entry';export * from './src/lib/backup/account-recovery-proof';",resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,external:['@supabase/supabase-js'],logLevel:'silent'});
 const module={exports:{}};new Function('require','module','exports',built.outputFiles[0].text)(createRequire(import.meta.url),module,module.exports);
-const {createPasswordRecovery,captureRecoveryEntry,RECOVERY_PROOF_KEY}=module.exports;
+const {createPasswordRecovery,captureRecoveryEntry,canonicalRecoveryRequestTarget,isPasswordRecoveryCallback,matchesPasswordRecoveryProof,RECOVERY_PROOF_KEY}=module.exports;
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
 function fixture(){
  const memory=new Map([['conselho-elemental-storage','untouched personal sentinel'],['old-auth-session','untouched session sentinel']]),keys=[],calls=[];
@@ -62,6 +62,25 @@ test('missing, expired, wrong-project and wrong-purpose proofs never exchange co
    assert.equal(f.calls.some(c=>c.path.endsWith('/token')||c.method==='PUT'),false);
   }finally{f.close();}
  }
+});
+
+test('recovery requested in local development is forwarded to production before a PKCE proof is created',()=>{
+ for(const origin of ['http://localhost:5173','http://127.0.0.1:5173','http://[::1]:5173'])assert.equal(canonicalRecoveryRequestTarget(`${origin}/?progresso=recuperar`),'https://conselho-elemental-main.vercel.app/?progresso=recuperar');
+ assert.equal(canonicalRecoveryRequestTarget('https://conselho-elemental-main.vercel.app/?progresso=recuperar'),null);
+ assert.equal(canonicalRecoveryRequestTarget('http://localhost:5173/?progresso=recuperar&code=synthetic'),null);
+ assert.equal(canonicalRecoveryRequestTarget('http://localhost:5173/?progresso=conta'),null);
+});
+
+test('callback fallback requires a fresh same-project, same-origin PASSWORD_RECOVERY proof and strips its code',()=>{
+ const now=1_800_000_000_000,proof=JSON.stringify({kind:'password-recovery',project:'https://recovery.example.invalid',origin:'https://app.example.invalid',createdAt:now,verifier:JSON.stringify('synthetic/PASSWORD_RECOVERY')});
+ assert.equal(matchesPasswordRecoveryProof(proof,'https://app.example.invalid','https://recovery.example.invalid',now),true);
+ const href='https://app.example.invalid/?code=synthetic-code';
+ assert.equal(isPasswordRecoveryCallback(href,proof,'https://app.example.invalid','https://recovery.example.invalid',now),true);
+ assert.equal(isPasswordRecoveryCallback(href,proof,'https://other.example.invalid','https://recovery.example.invalid',now),false);
+ assert.equal(isPasswordRecoveryCallback(href,proof,'https://app.example.invalid','https://other.example.invalid',now),false);
+ assert.equal(isPasswordRecoveryCallback(href,proof,'https://app.example.invalid','https://recovery.example.invalid',now+60*60*1000),false);
+ let clean='';const entry=captureRecoveryEntry(href,value=>clean=value,true);
+ assert.equal(entry.kind,'callback');assert.equal(entry.takeCode(),'synthetic-code');assert.equal(clean,'/?progresso=recuperar');
 });
 
 test('another server identity and update without a validated recovery session cannot change a password',async()=>{
