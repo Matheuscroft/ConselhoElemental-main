@@ -7,7 +7,7 @@
 # Notas de ffmpeg: geq exige format=gbrp (com rgb24 a saída sai branca);
 # fontes "color=" precisam de :d=1 e a saída de -frames:v 1 -update 1.
 set -e
-BASE="${1:-$HOME/.codex/generated_images/01a15a72-aaea-73f2-ab5c-961629c8b9dd/exec-bd0e6139-b962-4d0d-ab2a-3a8c5f156c49.png}"
+BASE="${1:-$(cd "$(dirname "$0")" && pwd)/original-conceito-a.png}"
 OUT="${2:-.}"
 
 # Cancelamento do halo da Lua original, centrada em (768,100)

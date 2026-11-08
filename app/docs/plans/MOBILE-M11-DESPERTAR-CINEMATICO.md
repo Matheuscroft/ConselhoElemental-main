@@ -130,7 +130,7 @@ Riscos: peso da cena em celular, autoplay bloqueado, lua abaixo do horizonte (re
 
 Higgsfield indisponível para geração: conta no plano gratuito com 10 créditos ("Requires basic plan or higher"). Fallback interno: cena vetorial em camadas, pensada como base da cena 2.5D.
 
-Arquivos (documentação, fora de public e do build): `conceito-b/conceito-b.svg` (camadas com ids: ceu, agua, arcos, altar, elementos, personagem, particulas, frente) e `conceito-b/conceito-b-previa.png` (780x1688).
+Arquivos (documentação, fora de public e do build): `conceito-b/conceito-b.svg` (camadas com ids: ceu, agua, arcos, altar, elementos, personagem, particulas, frente) e `conceito-b/conceito-b-previa.jpg` (prévia reduzida; o render de 780x1688 sai do SVG).
 
 Correções sobre o conceito A: quatro elementos em cruz (fogo alto-esquerda, água alto-direita, terra baixo-esquerda, ar baixo-direita) com brilho equilibrado; sol à esquerda e lua nascendo à direita, afastados das colunas; mago de rosto visível com olhos ciano, chapéu e barba, como nos vídeos de referência; luz de contorno quente à esquerda e fria à direita; faixa inferior escura para controles; partículas de folhas como marca da estação.
 
@@ -148,7 +148,7 @@ Segunda rodada de ajustes de Fábio: mais realista, mago maior e mais perto, cri
 
 Aplicado: personagem passou de ~170px para ~380px de altura (rosto com sombra da aba, olhos turquesa com reflexo, barba em gradiente, manto com dobras e luz de contorno quente/fria). Céu ganhou gradiente de sete paradas, raios de sol, nuvens com turbulência, três camadas de montanhas com profundidade e estrelas com halo. Altar virou três degraus com runas douradas acesas, halo e reflexo na água. Cristais ficaram maiores, com halo radial, faceta interna, reflexo especular e partículas. Cena recebeu grão, textura de rocha por deslocamento e vinheta.
 
-Correção de leitura: o cristal de terra cobria o sol; terra e ar desceram e o sol subiu, deixando sol à esquerda e lua à direita visíveis ao mesmo tempo. Prévia regerada em `conceito-b/conceito-b-previa.png`.
+Correção de leitura: o cristal de terra cobria o sol; terra e ar desceram e o sol subiu, deixando sol à esquerda e lua à direita visíveis ao mesmo tempo. Prévia regerada em `conceito-b/conceito-b-previa.jpg`.
 
 Limite: continua vetorial e não fotorrealista; posições de sol e lua seguem encenadas. Sem integração ao app, teste, build ou commit.
 
@@ -162,7 +162,7 @@ Correções aplicadas: lua recortada do original e reposicionada no céu à esqu
 
 Limites: é composição sobre a arte existente, não geração nova; resta um clarão suave onde a lua estava, que lê como nuvem; o personagem continua o encapuzado sem rosto do conceito A, não o mago barbudo da referência — identidade final depende de geração nova. Sem integração ao app, teste, build ou commit.
 
-Arquivos: `conceito-b/conceito-c-fotorrealista.png` e `conceito-b/conceito-c-composicao.sh`.
+Arquivos: `conceito-b/conceito-c-fotorrealista.jpg` (registro reduzido) e `conceito-b/conceito-c-composicao.sh`, que refaz o PNG inteiro a partir do mestre.
 
 ## Lote B — camadas e compressão (08/11/2026)
 
@@ -378,3 +378,25 @@ Nada disso foi visto em aparelho real nem em WebKit — é auditoria de código 
 Uma observação sobre o navegador interno: o painel roda a cerca de 3 fps quando a página está parada e devolve o último quadro composto na captura, o que faz uma troca de tela parecer congelada. Confirmado que é da ferramenta, não do app: uma aba nova em primeiro plano pinta certo, e o DOM sempre esteve correto.
 
 798 testes passam, lint, tipos e build limpos.
+
+## Enxugando os derivados da arte (08/11/2026)
+
+O repositório carregava 6,9 MB de PNG que os scripts versionados sabem refazer — e, pior, não sabiam refazer de verdade: `lote-b-camadas.sh` tinha como entrada padrão um caminho em `~/.codex/generated_images/`, e `conceito-c-composicao.sh` esperava um `base.png` solto no diretório de trabalho. A arte original do conceito A estava fora do repositório. Em outra máquina, ou no dia em que esse cache fosse limpo, nada daquilo se refazia.
+
+A arte original entrou como `conceito-b/assets/original-conceito-a.png` (1024x1536, 2,38 MB) e os dois scripts agora apontam para ela por padrão, resolvendo o caminho a partir da própria pasta. Saíram:
+
+- `assets/placa-base.png` e `assets/sprite-lua.png`, que `lote-b-camadas.sh` regera a partir do mestre — conferido: o resultado é **byte a byte idêntico** ao que estava versionado;
+- `assets/reserva-390w.jpg` e `assets/reserva-780w.webp`, formatos sobressalentes que `lote-b-exportar.sh` regera;
+- nove arquivos de `assets/` que eram cópia exata, por checksum, do que já é servido em `public/sanctuary/despertar/` — o que ship­a continua lá e não foi tocado;
+- `conceito-c-fotorrealista.png` e `conceito-b-previa.png`, substituídos por JPEG reduzidos que preservam o registro visual do que foi aprovado a 2% do peso. O PNG completo sai do script quando for preciso.
+
+Saldo: 6,85 MB removidos, 2,38 MB acrescentados, **4,47 MB a menos** — e o pipeline da arte passou a ser reproduzível dentro do repositório, que era o problema de verdade.
+
+Para refazer a placa e os exports:
+
+```
+bash app/docs/plans/conceito-b/assets/lote-b-camadas.sh
+bash app/docs/plans/conceito-b/assets/lote-b-exportar.sh
+```
+
+Nota: isto reduz o tamanho de um checkout, não o do histórico. Os blobs antigos continuam nos commits anteriores; tirá-los de lá exigiria reescrever o histórico e um push forçado, o que não se faz com o Matheus trabalhando na mesma main.

@@ -1,4 +1,8 @@
 set -e
+# A arte original do conceito A, versionada ao lado dos scripts. Antes isto
+# era um base.png solto no diretório de trabalho, vindo de um cache fora do
+# repositório: a composição não era refazível em outra máquina.
+BASE="${1:-$(cd "$(dirname "$0")" && pwd)/assets/original-conceito-a.png}"
 HD='hypot(X-768,Y-100)'
 HC="(1-0.34*exp(-pow(${HD}/95,2))-0.11*exp(-pow(${HD}/175,2)))"
 D='hypot(X-855,Y-632)'
@@ -6,7 +10,7 @@ AIR='hypot((X-760)/115,(Y-575)/105)'
 EA='hypot((X-320)/150,(Y-300)/130)'
 V='(1-0.52*clip((Y-1180)/356,0,1))*(1-0.34*clip((hypot((X-512)/660,(Y-700)/920)-0.72)/0.6,0,1))'
 M='clip(1.35-1.65*hypot((X-85)/85,(Y-85)/85),0,1)'
-ffmpeg -y -v error -i base.png -filter_complex "
+ffmpeg -y -v error -i "$BASE" -filter_complex "
 [0:v]format=gbrp,split=3[s0][s1][s2];
 [s0]geq=r='r(X,Y)*${HC}':g='g(X,Y)*${HC}':b='b(X,Y)*${HC}',format=gbrp[h];
 
