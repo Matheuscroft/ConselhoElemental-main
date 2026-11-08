@@ -1,4 +1,5 @@
 import { EntryBrand } from './EntryVisuals';
+import { FundoSantuario } from '@/components/entry/FundoSantuario';
 import { getOpeningName } from '@/lib/sanctuary/first-run';
 import type { ElementId } from '@/types';
 import './boas-vindas.css';
@@ -24,16 +25,7 @@ export function EntryWelcome() {
         Ir para a apresentação
       </a>
 
-      <div className="boas-fundo" aria-hidden="true">
-        <picture>
-          <source
-            type="image/avif"
-            srcSet="/sanctuary/despertar/placa-base-390w.avif 390w, /sanctuary/despertar/placa-base-780w.avif 780w"
-            sizes="100vw"
-          />
-          <img src="/sanctuary/despertar/reserva-390w.webp" alt="" decoding="async" />
-        </picture>
-      </div>
+      <FundoSantuario opacidade={0.52} />
 
       <header className="boas-topo">
         <EntryBrand />

@@ -334,3 +334,47 @@ A rota `/despertar` deixou de ser só teste. Ela agora é "rever a introdução"
 Em "Preferências e integrações", na TopBar, ao lado do início da semana, entraram dois controles: a cidade do santuário, entre Recife e Olinda, com a explicação de para que serve; e o link para rever a introdução. A cidade usa o mesmo hook de preferência do lote C, então a escolha feita aqui e a feita na pesquisa de primeiro acesso são a mesma.
 
 Com isso o M11 fecha o essencial: a cena existe, é calculada pela cidade, abre o app no primeiro acesso, e pode ser revista depois.
+
+## Lote H — a jornada inicial, revista no navegador (08/11/2026)
+
+Sem Xcode na máquina (só as Command Line Tools, sem `simctl`), o simulador de iOS saiu do caminho. A validação virou duas coisas: uma auditoria de código do que é específico do WebKit, e uma passada pela jornada inteira no navegador interno, a 375 e 390 de largura.
+
+### O achado que mudou a cena
+
+Às 07:35 o Sol procedural caía em x ≈ 0 e a Lua em x ≈ 0,01: os dois empilhados na borda esquerda, contra a luz de fim de tarde que a própria placa já tem, vinda da direita. A cena usava só `sanctuaryAnchor`, a posição astronômica ao vivo.
+
+O manifesto do conceito B sempre disse o contrário: `camadas.sol.ancora` é `{0.835, 0.411}` e `camadas.lua.ancora` é `{0.396, 0.075}`, e a descrição da Lua diz que "a âncora é o ponto padrão". A placa foi composta com os dois removidos justamente para o app desenhá-los. A posição ao vivo era uma liberdade que a arte não pedia.
+
+A cena agora usa `COMPOSED_SUN` e `COMPOSED_MOON`. A placa é uma pintura de um fim de tarde, e é esse fim de tarde que ela mostra — era o pedido original, "sol de um lado, lua de outro". Continua real tudo o que o olho não consegue situar: a fase e a fração iluminada da Lua, a estação pelo hemisfério da cidade, e a luz do momento, que ainda decide entre a Lua 3D e o sprite. `sanctuaryCaption` diz as três coisas na legenda de fecho e **declara quando a Lua real está abaixo do horizonte**, que é a licença artística que o plano exigia nomear.
+
+Com isso cai o limite dos "30% das horas": a Lua está sempre no enquadramento, e a legenda nunca mente sobre o céu. `sanctuaryAnchor` continua exportada e testada; ela só não manda mais na composição.
+
+### Os outros cinco
+
+**O fecho existia e nunca era visto.** `onComplete` disparava no mesmo frame em que o quarto elemento acendia, então o clarão de 1800 ms e a frase final duravam zero. A cena agora segura 2600 ms, escurece nos últimos 760 ms e só então entrega. Pular continua saindo na hora, que é o que pular quer dizer.
+
+**Movimento reduzido perdia a introdução inteira.** A cena abria já completa, o que fazia `onComplete` disparar no primeiro frame: pedir menos movimento devolvia nenhuma abertura. Movimento reduzido é sobre movimento — os quatro continuam esperando o toque, e o que some são as animações. O teste que fixava o comportamento antigo foi reescrito dizendo por quê.
+
+**O som deixou de ser uma decisão antes de qualquer coisa.** Era um botão "Ativar som" com o mesmo peso do Pular, pedindo uma escolha sobre áudio antes de a cena existir. Agora o som entra com o primeiro elemento — que é o gesto que o navegador exige de qualquer forma — e o controle aparece depois, só para silenciar. Quem silencia fica silenciado: um toque posterior não fala por cima.
+
+**Os elementos não diziam que respondiam ao toque.** Cada um que ainda não foi tocado respira em um anel fraco da sua própria cor, escalonado, para ler como vivo e não como quatro botões piscando.
+
+**A abertura ganhou duas batidas e um rodapé.** "O santuário reconhece você." segura por 2600 ms, ou até a primeira mão chegar, e dá lugar ao convite. Embaixo, quatro marcas acendem no lugar de "Faltam N". Durante a saudação a instrução continua no texto de leitor de tela, para que ninguém dependa de uma batida que não vê.
+
+**As três telas viraram um lugar.** `FundoSantuario` é agora compartilhado pela pesquisa e pela entrada. O degradê da entrada começava em 55% de preto sobre a faixa mais escura da placa, então o santuário estava no markup e em lugar nenhum da tela; a rampa foi refeita e o recorte movido para os arcos. A pesquisa reconhece o que aconteceu: quem despertou os quatro lê "Os quatro responderam", quem pulou lê "Antes de começar".
+
+### Auditoria de WebKit
+
+`viewport-fit=cover` faltava no `index.html`. O app já declara `apple-mobile-web-app-status-bar-style: black-translucent` e tem manifest, então **instalado na tela de início ele já roda em modo cover** — as safe-areas já valiam lá, e é por isso que o CSS inteiro foi escrito com `env()`. Só a aba do Safari estava fora. Todo consumidor usa `max()` com valor de reserva, e a única exceção, o `padding-top` da TopBar, fica mais correta e não menos.
+
+Na cena e nas duas telas novas: `-webkit-tap-highlight-color: transparent`, porque `touch-action: manipulation` não apaga o retângulo cinza que o iOS pisca sobre os alvos invisíveis; `-webkit-touch-callout` e `user-select` desligados, senão um toque longo oferece salvar a placa; `-webkit-backdrop-filter`, porque o Safari 17 e anteriores só desfocam pela propriedade prefixada; `appearance: none` nos campos e botões, senão o Safari pinta a própria moldura por cima das bordas e dos raios; e `overscroll-behavior: none`, para um arraste não puxar o documento enquanto o parallax segue o dedo.
+
+`text-size-adjust` não precisou de nada: o Preflight do Tailwind já cobre.
+
+### Limites
+
+Nada disso foi visto em aparelho real nem em WebKit — é auditoria de código mais navegador Chromium. O simulador volta a ser possível com o Xcode instalado e `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
+
+Uma observação sobre o navegador interno: o painel roda a cerca de 3 fps quando a página está parada e devolve o último quadro composto na captura, o que faz uma troca de tela parecer congelada. Confirmado que é da ferramenta, não do app: uma aba nova em primeiro plano pinta certo, e o DOM sempre esteve correto.
+
+798 testes passam, lint, tipos e build limpos.

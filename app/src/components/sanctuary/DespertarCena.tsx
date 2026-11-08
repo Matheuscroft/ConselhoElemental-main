@@ -1,4 +1,13 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type CSSProperties,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
 import { createAwakeningAudio, type AwakeningAudio } from '@/lib/sanctuary/awakening-audio';
 import {
@@ -15,7 +24,6 @@ import {
   PARALLAX,
   PLATE_ASPECT,
   awaken,
-  completeAwakening,
   createAwakening,
   isAwakeningComplete,
   isLit,
@@ -27,7 +35,7 @@ import {
   type SanctuaryCityId,
   useSanctuaryCityPreference,
 } from '@/lib/temporal/sanctuary-city';
-import { sanctuaryAnchor, sanctuarySky } from '@/lib/temporal/sanctuary-sky';
+import { COMPOSED_MOON, COMPOSED_SUN, sanctuaryCaption, sanctuarySky } from '@/lib/temporal/sanctuary-sky';
 import './despertar-cena.css';
 
 /**
@@ -44,6 +52,15 @@ const NEW_MOON_LIMIT = 0.08;
 const SUN_DIAMETER = 0.2246 * 1.35 * 2;
 const MOON_WIDTH = 0.166;
 const PARTICLES_PER_ELEMENT = 14;
+/**
+ * The closing beat. Completing used to hand over on the same frame the fourth
+ * element lit, so the bloom and the closing line were never seen: the payoff
+ * of the whole scene was cut. The scene now holds, then darkens into what
+ * follows. Skipping still leaves at once, because that is what skipping means.
+ */
+const FECHO_MS = 2600;
+/** The first line holds alone, so the sanctuary is seen before it asks. */
+const ABERTURA_MS = 2600;
 
 const prefersReducedMotion = (): boolean => {
   if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return false;
@@ -93,8 +110,8 @@ export interface DespertarCenaProps {
   readonly cityId?: SanctuaryCityId;
   readonly onSkip?: () => void;
   /**
-   * Fires once, when the fourth element is lit or the scene is skipped.
-   * `soundEnabled` says whether the person turned sound on, which is the only
+   * Fires once, when the closing beat ends or the scene is skipped.
+   * `soundEnabled` says whether the person kept sound on, which is the only
    * thing that may later authorise the music that follows the introduction.
    */
   readonly onComplete?: (detail: { soundEnabled: boolean }) => void;
@@ -107,22 +124,32 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
   const reduced = useMemo(() => prefersReducedMotion(), []);
 
   const [basePhase, setPhase] = useState(reduced ? 'running' : INITIAL_PHASE);
-  const [state, setState] = useState(() => (reduced ? completeAwakening() : createAwakening()));
+  const [state, setState] = useState(createAwakening);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [soundStarted, setSoundStarted] = useState(false);
+  const [pronta, setPronta] = useState(false);
+  const [abertura, setAbertura] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const skyRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<AwakeningAudio | null>(null);
+  /** Asked for quiet. A later touch must never speak over that. */
+  const hushed = useRef(false);
+  /** Read by the closing beat, which must not restart when sound changes. */
+  const soundRef = useRef(false);
   const announced = useRef(false);
 
   const sky = useMemo(() => sanctuarySky(moment, city), [moment, city]);
   const lunar = useMemo(() => lunarSnapshot(moment), [moment]);
-  const sun = useMemo(() => sanctuaryAnchor(sky.sun), [sky]);
-  const moon = useMemo(() => sanctuaryAnchor(sky.moon), [sky]);
+  // Composed, not live. `COMPOSED_SUN` carries the reasoning: the plate is one
+  // late afternoon and its light already falls from the right, so a Sun placed
+  // by the current hour contradicts the painting it is drawn on.
+  const sun = COMPOSED_SUN;
+  const moon = COMPOSED_MOON;
   // In full daylight a Moon is washed out, so the flat sprite is enough and
   // three.js is never fetched. A new Moon still earns the 3D pass: the dark
   // disc against the sky is the point.
-  const showRealMoon = moon.visible && sky.daylight !== 'day';
+  const showRealMoon = sky.daylight !== 'day';
   const newMoon = sky.moon.illuminated < NEW_MOON_LIMIT;
   const complete = isAwakeningComplete(state);
   // Finishing is derived, not stored: the lit elements already say it, and a
@@ -130,6 +157,13 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
   // because 'skipped' is terminal and ignores the completion signal.
   const phase = complete ? advance(basePhase, 'complete') : basePhase;
   const settled = isSettled(phase);
+  /** Derived, like the phase: finishing is the only thing that darkens. */
+  const saindo = phase === 'done';
+
+  const marcarSom = useCallback((ligado: boolean) => {
+    soundRef.current = ligado;
+    setSoundEnabled(ligado);
+  }, []);
 
   // One teardown for the whole scene: the audio graph never outlives it.
   useEffect(() => {
@@ -139,12 +173,26 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
     };
   }, []);
 
+  /**
+   * The closing beat, held so the bloom and the last line are actually seen.
+   * Sound is only suspended at the end of it, so the scene does not fall
+   * silent on the very frame it is trying to land.
+   */
   useEffect(() => {
     if (!settled || announced.current) return;
     announced.current = true;
-    void audioRef.current?.suspend();
-    onComplete?.({ soundEnabled });
-  }, [settled, soundEnabled, onComplete]);
+
+    if (phase === 'skipped') {
+      void audioRef.current?.stop();
+      return;
+    }
+
+    const fim = window.setTimeout(() => {
+      void audioRef.current?.suspend();
+      onComplete?.({ soundEnabled: soundRef.current });
+    }, FECHO_MS);
+    return () => window.clearTimeout(fim);
+  }, [settled, phase, onComplete]);
 
   // Leaving the app pauses the scene and the sound; coming back resumes both.
   useEffect(() => {
@@ -157,34 +205,66 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
     return () => document.removeEventListener('visibilitychange', sync);
   }, [phase]);
 
-  const light = useCallback((id: AwakeningElementId) => {
-    setState((current) => awaken(current, id));
-    audioRef.current?.lightVoice(id);
-  }, []);
+  // The opening line gives way on its own, or the moment a hand arrives.
+  useEffect(() => {
+    if (!abertura || !isPlaying(phase)) return;
+    const fim = window.setTimeout(() => setAbertura(false), ABERTURA_MS);
+    return () => window.clearTimeout(fim);
+  }, [abertura, phase]);
+
+  /**
+   * Sound arrives with the first element: that press is the gesture every
+   * browser requires, and the moment the scene has earned a voice. Asking
+   * about audio before anything has happened was a decision with no context.
+   */
+  const ensureAudio = useCallback(async (): Promise<AwakeningAudio | null> => {
+    if (hushed.current) return null;
+    if (!audioRef.current) audioRef.current = createAwakeningAudio();
+    const audio = audioRef.current;
+    if (!audio.started) {
+      await audio.start();
+      audio.setMuted(false);
+      setSoundStarted(true);
+      marcarSom(true);
+    }
+    return audio;
+  }, [marcarSom]);
+
+  const light = useCallback(
+    (id: AwakeningElementId) => {
+      setState((current) => awaken(current, id));
+      setAbertura(false);
+      void ensureAudio().then((audio) => audio?.lightVoice(id));
+    },
+    [ensureAudio],
+  );
 
   const skip = useCallback(() => {
-    setState(completeAwakening());
     setPhase((current) => advance(current, 'skip'));
     onSkip?.();
   }, [onSkip]);
 
-  /** Sound starts here and nowhere else: a real press is the authorisation. */
   const toggleSound = useCallback(async () => {
-    if (!audioRef.current) audioRef.current = createAwakeningAudio();
     const audio = audioRef.current;
-
-    if (!audio.started) {
-      await audio.start();
-      for (const id of state.lit) audio.lightVoice(id);
-      audio.setMuted(false);
-      setSoundEnabled(true);
+    if (!audio?.started) {
+      hushed.current = false;
+      const started = await ensureAudio();
+      if (!started) return;
+      for (const id of state.lit) started.lightVoice(id);
       return;
     }
 
     const next = !audio.muted;
     audio.setMuted(next);
-    setSoundEnabled(!next);
-  }, [state.lit]);
+    hushed.current = next;
+    marcarSom(!next);
+  }, [ensureAudio, marcarSom, state.lit]);
+
+  /** The plate decides when the scene appears, and a failed plate still does. */
+  const aoCarregar = useCallback(() => {
+    setPronta(true);
+    setPhase((current) => advance(current, current === 'idle' ? 'start' : 'ready'));
+  }, []);
 
   /**
    * Parallax is written straight to the two layers, never through state: a
@@ -304,10 +384,19 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
     };
   }, [reduced, phase, state]);
 
-  const remaining = AWAKENING_ELEMENTS.length - state.lit.length;
+  const fechamento = `Os quatro responderam. ${sanctuaryCaption(sky)}.`;
+  const saudando = abertura && state.lit.length === 0;
+  const convite = saudando
+    ? 'O santuário reconhece você.'
+    : 'Toque os elementos ao redor do altar, na ordem que quiser.';
 
   return (
-    <section className="despertar-cena" aria-labelledby="despertar-titulo" data-fase={phase}>
+    <section
+      className="despertar-cena"
+      aria-labelledby="despertar-titulo"
+      data-fase={phase}
+      data-pronta={pronta}
+    >
       <h2 id="despertar-titulo" className="sr-only">
         Despertar dos quatro elementos no santuário
       </h2>
@@ -333,7 +422,8 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
             src={`${BASE}/reserva-780w.jpg`}
             alt="Santuário ancestral de pedra sobre a água, com um altar de runas douradas ao centro."
             decoding="async"
-            onLoad={() => setPhase((current) => advance(current, current === 'idle' ? 'start' : 'ready'))}
+            onLoad={aoCarregar}
+            onError={aoCarregar}
           />
         </picture>
 
@@ -341,27 +431,25 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
           {sun.visible ? (
             <div className="despertar-sol" style={{ ...squareOf(SUN_DIAMETER), ...centredAt(sun) }} />
           ) : null}
-          {moon.visible ? (
-            showRealMoon ? (
-              <div
-                className="despertar-lua-3d"
-                aria-hidden="true"
-                style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
-              >
-                <Suspense fallback={<img className="despertar-lua" src={`${BASE}/sprite-lua.webp`} alt="" />}>
-                  <MoonScene moon={lunar} south={sky.hemisphere === 'south'} />
-                </Suspense>
-              </div>
-            ) : (
-              <img
-                className="despertar-lua"
-                src={`${BASE}/sprite-lua.webp`}
-                alt=""
-                aria-hidden="true"
-                style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
-              />
-            )
-          ) : null}
+          {showRealMoon ? (
+            <div
+              className="despertar-lua-3d"
+              aria-hidden="true"
+              style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
+            >
+              <Suspense fallback={<img className="despertar-lua" src={`${BASE}/sprite-lua.webp`} alt="" />}>
+                <MoonScene moon={lunar} south={sky.hemisphere === 'south'} />
+              </Suspense>
+            </div>
+          ) : (
+            <img
+              className="despertar-lua"
+              src={`${BASE}/sprite-lua.webp`}
+              alt=""
+              aria-hidden="true"
+              style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
+            />
+          )}
         </div>
 
         {complete && !reduced ? (
@@ -383,6 +471,22 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
             }}
           />
         ) : null}
+
+        {AWAKENING_ELEMENTS.map((element, index) =>
+          isLit(state, element.id) ? null : (
+            <div
+              key={`dormente-${element.id}`}
+              className="despertar-dormente"
+              aria-hidden="true"
+              style={{
+                ...squareOf(element.glowRadius * 1.45),
+                ...centredAt(element),
+                animationDelay: `${index * 620}ms`,
+                background: `radial-gradient(circle, ${element.colour}00 54%, ${element.colour}40 73%, ${element.colour}00 90%)`,
+              }}
+            />
+          ),
+        )}
 
         {AWAKENING_ELEMENTS.map((element) => (
           <div
@@ -417,19 +521,43 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
       </div>
 
       <div className="despertar-controles">
-        <button type="button" className="despertar-pular" onClick={() => void toggleSound()}>
-          {soundEnabled ? 'Silenciar' : 'Ativar som'}
-        </button>
+        {soundStarted ? (
+          <button
+            type="button"
+            className="despertar-som"
+            aria-pressed={soundEnabled}
+            onClick={() => void toggleSound()}
+          >
+            {soundEnabled ? 'Silenciar' : 'Com som'}
+          </button>
+        ) : null}
         <button type="button" className="despertar-pular" onClick={skip}>
           Pular
         </button>
       </div>
 
-      <p className="despertar-legenda" aria-live="polite">
-        {complete
-          ? `Os quatro elementos responderam. ${sky.season.name} em ${city.name}, ${sky.moon.phaseName.toLocaleLowerCase('pt-BR')}.`
-          : `Toque os elementos ao redor do altar, na ordem que quiser. Faltam ${remaining}.`}
-      </p>
+      <div className="despertar-rodape">
+        <p className="despertar-legenda" key={complete ? 'fecho' : convite} aria-live="polite">
+          {complete ? fechamento : convite}
+          {/* While the greeting holds the line, assistive tech still gets the
+              instruction, so nothing has to wait on a beat it cannot see. */}
+          <span className="sr-only">
+            {saudando ? ' Toque os elementos ao redor do altar, na ordem que quiser.' : ''}
+            {` ${state.lit.length} de ${AWAKENING_ELEMENTS.length} elementos despertos.`}
+          </span>
+        </p>
+        <ol className="despertar-marcas" aria-hidden="true">
+          {AWAKENING_ELEMENTS.map((element) => (
+            <li
+              key={`marca-${element.id}`}
+              data-aceso={isLit(state, element.id)}
+              style={{ '--marca': element.colour } as CSSProperties}
+            />
+          ))}
+        </ol>
+      </div>
+
+      {saindo && !reduced ? <div className="despertar-fecho" aria-hidden="true" /> : null}
     </section>
   );
 }

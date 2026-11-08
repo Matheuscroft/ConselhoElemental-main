@@ -8,8 +8,10 @@
 }
 
 .pesquisa {
+  position: relative;
   display: grid;
   place-items: center;
+  overflow: hidden;
   min-block-size: 100dvh;
   padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
   background:
@@ -25,6 +27,8 @@
 }
 
 .pesquisa-cartao {
+  position: relative;
+  z-index: 1;
   inline-size: min(100%, 440px);
   display: flex;
   flex-direction: column;
@@ -156,4 +160,20 @@
   .pesquisa-opcao {
     transition: none;
   }
+}
+
+/* iOS only. Safari paints its own chrome over a text field and a button
+   unless appearance is cleared, so the borders and radii above would not be
+   what renders, and a tap would flash a grey box over the pill. */
+.pesquisa {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pesquisa-campo input,
+.pesquisa-opcao,
+.pesquisa-primaria,
+.pesquisa-secundaria {
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
 }

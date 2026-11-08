@@ -10,36 +10,6 @@
   color: #f4ece0;
 }
 
-/* The sanctuary stays behind the entry, so the opening reads as one place.
-   The plate is already cached by the awakening that came before. */
-.boas-fundo {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.boas-fundo img {
-  inline-size: 100%;
-  block-size: 100%;
-  object-fit: cover;
-  object-position: 50% 28%;
-  opacity: 0.4;
-}
-
-.boas-fundo::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgb(7 11 18 / 55%) 0%,
-    rgb(7 11 18 / 72%) 34%,
-    rgb(7 11 18 / 94%) 70%,
-    #070b12 100%
-  );
-}
-
 .boas-pular {
   position: absolute;
   inset-block-start: -100px;
@@ -205,4 +175,18 @@
   .boas-corpo {
     animation: none;
   }
+}
+
+/* iOS only, for the same reason as the survey before it. */
+.boas {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.boas-entrar,
+.boas-primaria,
+.boas-secundaria,
+.boas-rodape a {
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
 }

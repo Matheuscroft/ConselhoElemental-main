@@ -154,26 +154,30 @@ test('the scene offers a named target per element, a skip and a described plate'
   assert.ok(markup.includes('na ordem que quiser'), 'the caption must say the order is free');
 });
 
-test('reduced motion opens with the scene already awake instead of asking for four taps', () => {
+test('reduced motion still gets the introduction, only without the movement', () => {
   const { DespertarCena } = load('src/components/sanctuary/DespertarCena.tsx');
   const markup = withWindow(true, () =>
     renderToStaticMarkup(React.createElement(DespertarCena, { at: new Date('2026-11-08T20:15:00Z') })),
   );
 
-  assert.ok(markup.includes('Os quatro elementos responderam'), 'reduced motion should land complete');
-  assert.ok(!markup.includes('aria-pressed="false"'), 'no target should still be waiting');
+  // The scene used to open already complete here, which fired onComplete on
+  // the first frame: asking for no motion handed the person no opening at
+  // all. Reduced motion is about movement, so the four still wait to be
+  // touched and every animation is off instead.
+  assert.ok(markup.includes('aria-pressed="false"'), 'the four are still waiting');
+  assert.ok(!markup.includes('Os quatro responderam'), 'nothing has happened yet');
+  assert.ok(markup.includes('na ordem que quiser'), 'the instruction is there from the start');
   assert.ok(markup.includes('>Pular<'), 'skip stays available');
 });
 
-test('the scene names the season and the moon phase of the chosen city once it is complete', () => {
-  const { DespertarCena } = load('src/components/sanctuary/DespertarCena.tsx');
-  const markup = withWindow(true, () =>
-    renderToStaticMarkup(
-      React.createElement(DespertarCena, { at: new Date('2026-07-15T20:15:00Z'), cityId: 'olinda' }),
-    ),
+test('the scene names the season and the moon phase of the chosen city', () => {
+  const { sanctuaryCaption, sanctuarySky } = load('src/lib/temporal/sanctuary-sky.ts');
+  const { getSanctuaryCity } = load('src/lib/temporal/sanctuary-city.ts');
+  const frase = sanctuaryCaption(
+    sanctuarySky(new Date('2026-07-15T20:15:00Z'), getSanctuaryCity('olinda')),
   );
 
-  assert.ok(markup.includes('Inverno em Olinda'), 'southern winter in the chosen city');
+  assert.ok(frase.includes('Inverno em Olinda'), 'southern winter in the chosen city');
 });
 
 // --- lua real (lote F) -----------------------------------------------------

@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { FundoSantuario } from '@/components/entry/FundoSantuario';
 import { MAX_NAME_LENGTH, normaliseName } from '@/lib/sanctuary/first-run';
 import { SANCTUARY_CITIES, type SanctuaryCityId } from '@/lib/temporal/sanctuary-city';
 
@@ -9,11 +10,18 @@ import { SANCTUARY_CITIES, type SanctuaryCityId } from '@/lib/temporal/sanctuary
  */
 export interface PesquisaInicialProps {
   readonly cidadeInicial: SanctuaryCityId;
+  /** True when the person actually woke the four, rather than skipping. */
+  readonly despertou?: boolean;
   readonly onConcluir: (resposta: { nome: string; cidade: SanctuaryCityId }) => void;
   readonly onPular: () => void;
 }
 
-export function PesquisaInicial({ cidadeInicial, onConcluir, onPular }: PesquisaInicialProps) {
+export function PesquisaInicial({
+  cidadeInicial,
+  despertou = false,
+  onConcluir,
+  onPular,
+}: PesquisaInicialProps) {
   const [nome, setNome] = useState('');
   const [cidade, setCidade] = useState<SanctuaryCityId>(cidadeInicial);
   const nomeId = useId();
@@ -21,6 +29,8 @@ export function PesquisaInicial({ cidadeInicial, onConcluir, onPular }: Pesquisa
 
   return (
     <section className="pesquisa" aria-labelledby={`${nomeId}-titulo`}>
+      <FundoSantuario opacidade={0.34} />
+
       <form
         className="pesquisa-cartao"
         onSubmit={(event) => {
@@ -28,7 +38,9 @@ export function PesquisaInicial({ cidadeInicial, onConcluir, onPular }: Pesquisa
           onConcluir({ nome: normaliseName(nome), cidade });
         }}
       >
-        <p className="pesquisa-eyebrow">Antes de começar</p>
+        <p className="pesquisa-eyebrow">
+          {despertou ? 'Os quatro responderam' : 'Antes de começar'}
+        </p>
         <h1 id={`${nomeId}-titulo`}>Duas perguntas rápidas</h1>
         <p className="pesquisa-intro">
           Servem para o santuário falar com você e para o céu dele acompanhar o seu.
@@ -41,7 +53,7 @@ export function PesquisaInicial({ cidadeInicial, onConcluir, onPular }: Pesquisa
             name="nome"
             type="text"
             autoComplete="given-name"
-            enterKeyHint="next"
+            enterKeyHint="go"
             maxLength={MAX_NAME_LENGTH}
             placeholder="Seu nome ou apelido"
             value={nome}

@@ -25,9 +25,12 @@ const DespertarCena = lazy(() => import('@/components/sanctuary/DespertarCena'))
  */
 export function PrimeiroAcesso() {
   const [step, setStep] = useState<FirstRunStep>(() => initialFirstRunStep());
+  /** Only what was actually watched may be spoken of as having happened. */
+  const [despertou, setDespertou] = useState(false);
 
-  const avancar = useCallback(() => {
+  const avancar = useCallback((viuTudo: boolean) => {
     rememberAwakeningSeen();
+    setDespertou(viuTudo);
     setStep((atual) => nextFirstRunStep(atual));
   }, []);
 
@@ -43,7 +46,7 @@ export function PrimeiroAcesso() {
   if (step === 'despertar') {
     return (
       <Suspense fallback={<div className="primeiro-acesso-carregando" role="status">Abrindo o santuário…</div>}>
-        <DespertarCena onComplete={avancar} onSkip={avancar} />
+        <DespertarCena onComplete={() => avancar(true)} onSkip={() => avancar(false)} />
       </Suspense>
     );
   }
@@ -52,6 +55,7 @@ export function PrimeiroAcesso() {
     return (
       <PesquisaInicial
         cidadeInicial={getSanctuaryCityPreference()}
+        despertou={despertou}
         onConcluir={responder}
         onPular={() => setStep('entrada')}
       />

@@ -126,3 +126,32 @@ export function sanctuaryAnchor(body: SanctuaryBody): SanctuaryAnchor {
     visible: body.aboveHorizon && Math.abs(bearing) <= HORIZONTAL_FIELD / 2,
   };
 }
+
+/**
+ * Where the painting puts the Sun and the Moon, from `camadas` in the scene
+ * manifest. The plate was composited with both removed, so the app draws them.
+ *
+ * The scene uses these rather than `sanctuaryAnchor`, because a live position
+ * fights the artwork: the plate is one late afternoon, lit from the Sun on the
+ * right, and at 07:35 the real Sun sits on the left edge beside the Moon. The
+ * manifest says as much — the anchor is the default and the sky is composed.
+ *
+ * What stays real is everything the eye cannot place: the Moon's phase and
+ * illuminated fraction, the season for the city's hemisphere, and the light of
+ * the moment. The caption names all three, and says so when the real Moon is
+ * below the horizon, which is the artistic licence the plan asked be declared.
+ */
+export const COMPOSED_SUN: SanctuaryAnchor = { x: 0.835, y: 0.411, visible: true };
+export const COMPOSED_MOON: SanctuaryAnchor = { x: 0.396, y: 0.075, visible: true };
+
+/**
+ * What the scene can honestly say about the sky it is showing: the season for
+ * the city's own hemisphere, the city, and the Moon's real phase. When the
+ * real Moon is below the horizon the sentence says so, because the scene
+ * draws it regardless and the plan asked that the licence be declared.
+ */
+export function sanctuaryCaption(sky: SanctuarySky): string {
+  const phase = sky.moon.phaseName.toLocaleLowerCase('pt-BR');
+  const horizon = sky.moon.aboveHorizon ? '' : ', abaixo do horizonte agora';
+  return `${sky.season.name} em ${sky.city.name}, ${phase}${horizon}`;
+}
