@@ -1,3 +1,11 @@
+## F6-N15 — acesso separado da conferência local e retornos canônicos (08/11/2026)
+
+Relato reproduzido: quando a inspeção de uma conferência local falhava, `AccountWorkspace` nunca marcava a tela como pronta e reutilizava o bloqueio de transferência para desativar email, senha e botão de entrada. O usuário ficava indefinidamente em “Preparando acesso…”. O acesso Auth agora fica disponível mesmo nesse estado; envio, recebimento, associação e sincronização continuam bloqueados até a revisão dos dados. Nenhum journal, progresso, XP, sessão ou storage foi apagado. Após login, a tela não oferece ações de transferência enquanto o contexto permanece bloqueado.
+
+Recuperação já enviava `redirect_to` fixo para `https://conselho-elemental-main.vercel.app/?progresso=recuperar`. Cadastro e reenvio de confirmação também passaram a usar somente `https://conselho-elemental-main.vercel.app/?progresso=conta`, inclusive quando iniciados em localhost. No dashboard, Site URL e as duas rotas oficiais foram reconferidas; ainda existem dois retornos locais antigos na allowlist, selecionados para remoção, mas a exclusão exige confirmação final na interface. Templates seguem os padrões do Supabase porque SMTP custom não está configurado.
+
+Evidências locais: 60/60 testes direcionados de acesso, recuperação, callbacks, workspaces e PKCE passaram; caso novo confirma que falha de inspeção libera email/senha sem liberar transferências. ESLint direcionado, `git diff --check` e build TypeScript/Vite com 4.806 módulos passaram. Commit de código reaplicado sobre `origin/main` após integrar seis commits do M11, sem conflito. Próximo: publicar pelo push autorizado, conferir CI/Vercel e remover os dois redirects locais após a confirmação de ação externa; então solicitar um link novo no Vercel e ignorar mensagens antigas.
+
 ## M11 — Despertar publicado: abertura, cena e preferências (08/11/2026)
 
 [Plano, conceitos e lotes](plans/MOBILE-M11-DESPERTAR-CINEMATICO.md). O app agora abre com o Despertar no primeiro acesso, faz duas perguntas (nome e cidade, ambas puláveis) e só então mostra a entrada, que foi redesenhada para manter o santuário atrás de si. Em Preferências entraram a cidade do santuário e o link para rever a introdução, e `/despertar` leva de volta ao Santuário.
