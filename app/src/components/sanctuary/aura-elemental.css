@@ -1,0 +1,51 @@
+.aura-elemental {
+  position: absolute;
+  /* Twice the body on each axis. The shader puts the silhouette at d = 1 and
+     lets the field reach zero before the canvas edge, so the glow never ends
+     in a straight line. */
+  inset: -50%;
+  pointer-events: none;
+}
+
+/*
+ * The reserve, and what stays when WebGL is unavailable or the context is
+ * lost: the same colour and the same growth, without the tongues of light.
+ */
+.aura-elemental::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 30% 34% at 50% 50%,
+    color-mix(in srgb, var(--aura-cor) 46%, transparent) 0%,
+    color-mix(in srgb, var(--aura-cor) 20%, transparent) 38%,
+    transparent 72%
+  );
+  scale: var(--aura-escala, 1);
+  mix-blend-mode: screen;
+}
+
+.aura-elemental[data-mode='3d']::before {
+  /* Under the shader it would only wash the colour out. */
+  opacity: 0.35;
+}
+
+.aura-elemental-tela {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+  transition: opacity 900ms ease;
+  mix-blend-mode: screen;
+}
+
+.aura-elemental[data-mode='3d'] .aura-elemental-tela {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aura-elemental-tela {
+    transition: none;
+  }
+}

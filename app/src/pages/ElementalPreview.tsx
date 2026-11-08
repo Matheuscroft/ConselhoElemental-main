@@ -4,7 +4,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft, ChevronRight, Crown, Footprints, Gem, Heart, Menu, Pause, Play, Plus, RotateCw, Search, Shield, Sparkles, WandSparkles, X, Zap } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -13,7 +13,14 @@ import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, SANCTUARY_HOME as HOME, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
+import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
 import './elemental-preview.css';
+
+/** The aura costs a shader and three.js, so it arrives after the page does. */
+const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'));
+
+/** Before anyone gives a birth date the aura still burns, in the app's gold. */
+const AURA_SEM_SIGNO = { colour: '#d6b66f', modality: 'fixo' as ZodiacModality };
 
 const ACCENTS: Record<ElementId, string> = { terra: '#a3ce9b', fogo: '#f5ad83', agua: '#8bcee3', ar: '#d2e6df' };
 const EQUIPMENT = [
@@ -89,6 +96,10 @@ function ElementalOrbit() {
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  // The aura is the person's: their sign gives it colour, their level its reach.
+  const { profile: perfil } = useZodiacPreference();
+  const { getLevelProgress } = useAppStore();
+  const nivel = getLevelProgress().level;
 
   useEffect(() => {
     const media = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -157,6 +168,14 @@ function ElementalOrbit() {
       <div className="ep-orbit-track ep-orbit-track-inner" aria-hidden="true" />
       <div className="ep-avatar-stage">
         <div className="ep-avatar-halo" aria-hidden="true" />
+        <Suspense fallback={null}>
+          <AuraElemental
+            colour={perfil?.colour ?? AURA_SEM_SIGNO.colour}
+            modality={perfil?.modality ?? AURA_SEM_SIGNO.modality}
+            scale={auraScale(nivel)}
+            reducedMotion={reducedMotion}
+          />
+        </Suspense>
         <img className="ep-elemental-body" src="/sanctuary/elemental-body-v1.png" width={913} height={1723} alt="Personagem elemental com vestes escuras, detalhes dourados e cristal luminoso" draggable={false} />
       </div>
       <nav className="ep-portals" aria-label="Escolha um elemento">{ORDER.map((id, index) => {

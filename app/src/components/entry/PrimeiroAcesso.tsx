@@ -13,6 +13,7 @@ import {
   setSanctuaryCityPreference,
   type SanctuaryCityId,
 } from '@/lib/temporal/sanctuary-city';
+import { setBirthDatePreference } from '@/lib/sanctuary/zodiac';
 import './primeiro-acesso.css';
 
 /** The awakening is the heaviest part of the opening, so it loads on its own. */
@@ -35,9 +36,10 @@ export function PrimeiroAcesso() {
   }, []);
 
   const responder = useCallback(
-    ({ nome, cidade }: { nome: string; cidade: SanctuaryCityId }) => {
+    ({ nome, cidade, nascimento }: { nome: string; cidade: SanctuaryCityId; nascimento: string }) => {
       setOpeningName(nome);
       setSanctuaryCityPreference(cidade);
+      setBirthDatePreference(nascimento || null);
       setStep('entrada');
     },
     [],

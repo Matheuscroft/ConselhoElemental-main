@@ -224,7 +224,7 @@ export type ZodiacSign = {
   planet: string;
 };
 
-const ZODIAC_SIGNS = [
+export const ZODIAC_SIGNS = [
   { name: 'Áries', icon: '♈' },
   { name: 'Touro', icon: '♉' },
   { name: 'Gêmeos', icon: '♊' },

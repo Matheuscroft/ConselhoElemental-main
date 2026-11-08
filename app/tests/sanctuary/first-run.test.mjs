@@ -10,6 +10,22 @@ import ts from 'typescript';
 const require = createRequire(new URL('../../package.json', import.meta.url));
 const root = new URL('../../', import.meta.url).pathname;
 
+// The survey now names the sign behind an aura, so it reaches the zodiac,
+// which reads ZODIAC_SIGNS. Only that declaration is lifted out of the
+// constants barrel, exactly as the sky and zodiac tests do, so this test
+// never pulls leveling, storage or account code in behind it.
+const constantsSource = readFileSync(resolve(root, 'src/constants/index.ts'), 'utf8');
+const constantsAst = ts.createSourceFile('constants.ts', constantsSource, ts.ScriptTarget.Latest, true);
+const liftedConstants = constantsAst.statements
+  .filter((node) => ts.isVariableStatement(node)
+    && node.declarationList.declarations.some((d) => d.name.getText(constantsAst) === 'ZODIAC_SIGNS'))
+  .map((node) => node.getText(constantsAst))
+  .join('\n');
+const constantsModule = { exports: {} };
+new Function('exports', ts.transpileModule(liftedConstants, {
+  compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.CommonJS },
+}).outputText)(constantsModule.exports);
+
 const cache = new Map();
 function load(file) {
   const path = resolve(root, file);
@@ -20,6 +36,7 @@ function load(file) {
   const module = { exports: {} };
   new Function('require', 'module', 'exports', output)((id) => {
     if (id.endsWith('.css')) return {};
+    if (id === '@/constants') return constantsModule.exports;
     if (id.startsWith('@/')) {
       const base = 'src/' + id.slice(2);
       return load(['.ts', '.tsx'].map((ext) => base + ext).find((c) => existsSync(resolve(root, c))));
@@ -113,7 +130,7 @@ test('the opening runs awakening, questions, entry — and is skipped once seen'
   assert.equal(nextFirstRunStep('entrada'), 'entrada');
 });
 
-test('the two questions can both be answered or both be left for later', () => {
+test('each question can be answered or left for later', () => {
   const { PesquisaInicial } = load('src/components/entry/PesquisaInicial.tsx');
   const markup = renderToStaticMarkup(
     React.createElement(PesquisaInicial, { cidadeInicial: 'recife', onConcluir() {}, onPular() {} }),
@@ -121,6 +138,8 @@ test('the two questions can both be answered or both be left for later', () => {
 
   assert.ok(markup.includes('Como quer ser chamado?'));
   assert.ok(markup.includes('De onde você olha o céu?'));
+  assert.ok(markup.includes('Quando você nasceu?'), 'the sign decides the aura colour');
+  assert.ok(markup.includes('Sem data, a aura fica dourada'), 'skipping the date must be answered for');
   assert.ok(markup.includes('Recife') && markup.includes('Olinda'), 'both cities must be offered');
   assert.ok(markup.includes('aria-checked="true"'), 'the current city starts selected');
   assert.ok(markup.includes('Responder depois'), 'the survey must be skippable');

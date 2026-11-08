@@ -177,3 +177,18 @@
   appearance: none;
   touch-action: manipulation;
 }
+
+/* The sign, answered back the instant the date is complete, so the question
+   explains itself instead of asking for a birthday on faith. */
+.pesquisa-signo {
+  margin: 0;
+  min-block-size: 22px;
+  color: rgb(214 182 111 / 88%);
+  font-size: 15px;
+}
+
+.pesquisa-campo input[type='date'] {
+  /* Safari lays a date field out by its own rules unless told otherwise. */
+  display: block;
+  inline-size: 100%;
+}
