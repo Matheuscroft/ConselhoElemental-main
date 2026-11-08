@@ -2,6 +2,7 @@ import { ElementIcon } from './ArcaneIcon';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import type { ElementId } from '@/types';
+import './showcase-card.css';
 
 interface ShowcaseCardProps {
   title: string;

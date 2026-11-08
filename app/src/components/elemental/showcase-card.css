@@ -1,0 +1,77 @@
+/*
+ * The project card, opening into its summary.
+ *
+ * Two things carry it: a foot of blur under the title, where the card stops
+ * being a headline and becomes a reading; and the content sharpening out of
+ * that blur as it opens, so the detail arrives rather than appears.
+ */
+.elemental-showcase {
+  border: var(--ds-edge);
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  transition:
+    border-color var(--ds-duration-reveal) var(--ds-ease),
+    box-shadow var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.elemental-showcase[open] {
+  box-shadow: var(--ds-rim), var(--ds-lift-near);
+}
+
+/*
+ * The foot. One blurred layer with a gradient mask, not a stack of six: a
+ * real progressive blur costs a backdrop-filter per step, and this reads the
+ * same at a fraction of it. Only while the card is open, so the cost is
+ * bounded by how many cards someone has actually opened -- on a list of
+ * twenty journeys, that is one.
+ */
+.elemental-showcase[open] summary::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: 54px;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  -webkit-mask-image: linear-gradient(to top, #000 18%, transparent);
+  mask-image: linear-gradient(to top, #000 18%, transparent);
+}
+
+/* The detail sharpens out of the blur instead of cutting in. */
+.elemental-showcase[open] .elemental-showcase-content {
+  animation: showcase-nitidez var(--ds-duration-settle) var(--ds-ease) both;
+}
+
+@keyframes showcase-nitidez {
+  from { opacity: 0; filter: blur(8px); translate: 0 -8px; }
+  to { opacity: 1; filter: blur(0); translate: 0 0; }
+}
+
+/* The chips arrive a step apart, so the summary reads as a sequence. */
+.elemental-showcase[open] .elemental-showcase-chips li {
+  animation: showcase-nitidez var(--ds-duration-reveal) var(--ds-ease) both;
+}
+
+.elemental-showcase[open] .elemental-showcase-chips li:nth-child(1) { animation-delay: calc(var(--ds-stagger) * 1); }
+.elemental-showcase[open] .elemental-showcase-chips li:nth-child(2) { animation-delay: calc(var(--ds-stagger) * 2); }
+.elemental-showcase[open] .elemental-showcase-chips li:nth-child(3) { animation-delay: calc(var(--ds-stagger) * 3); }
+.elemental-showcase[open] .elemental-showcase-chips li:nth-child(n+4) { animation-delay: calc(var(--ds-stagger) * 4); }
+
+.elemental-showcase-chevron {
+  transition: rotate var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.elemental-showcase[open] .elemental-showcase-chevron {
+  rotate: 180deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .elemental-showcase,
+  .elemental-showcase-chevron,
+  .elemental-showcase[open] .elemental-showcase-content,
+  .elemental-showcase[open] .elemental-showcase-chips li {
+    transition: none;
+    animation: none;
+  }
+}

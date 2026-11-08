@@ -65,3 +65,37 @@ onde estão agora.
 
 Nada em WebKit nem em aparelho real. O reflexo e o desfoque são exatamente o
 tipo de coisa que só se julga numa tela de verdade.
+
+## O cartão de projeto (08/11/2026)
+
+A referência: um cartão que abre num resumo de caso, com visão geral, chips e
+descrição saindo do desfoque, e um pé progressivamente desfocado sob o título.
+
+**O componente já existia**, e já estava nos dois lugares certos: `Jornadas` e
+`Grandes Obras`, que são literalmente cartões de projeto. A estrutura também
+já batia com o modelo da referência — visão geral, chips, descrição. Faltava o
+tratamento, não o componente.
+
+### O pé de desfoque, e o orçamento
+
+Um desfoque progressivo de verdade custa um `backdrop-filter` por degrau:
+cinco ou seis camadas empilhadas. Isso estouraria o orçamento de vidro sozinho.
+
+O que entrou é **uma camada só, com máscara em gradiente** — o desfoque some
+para cima em vez de ser recortado. Lê igual por um sexto do custo. E só existe
+**enquanto o cartão está aberto**: numa lista de vinte jornadas, o custo em
+tempo de execução é uma faixa desfocada, não vinte.
+
+Isso levou o teto de vidro de 11 para 12, e aqui o guarda fez exatamente o
+trabalho dele: a mudança teve de ser consciente e justificada por escrito em
+vez de passar despercebida.
+
+### O conteúdo chegando
+
+O corpo do cartão sai de `blur(8px)` para nítido no tempo `settle`, e os chips
+entram escalonados pelo passo de 60 ms que o sistema já tinha. O detalhe
+chega, em vez de aparecer.
+
+Conferido na tela com uma jornada real: `backdrop-filter: blur(7px)` ativo no
+pé, a máscara em gradiente aplicada e a animação `showcase-nitidez` no
+conteúdo.
