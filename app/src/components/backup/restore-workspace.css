@@ -7,7 +7,7 @@
 .restore-workspace header > div { min-width: 0; }
 .restore-workspace header > svg { flex-shrink: 0; }
 .restore-workspace header p { margin: 0 0 .4rem; font-family: 'Cinzel', Georgia, serif; }
-.restore-workspace h1 { font-size: clamp(1.6rem, 6vw, 2.3rem); line-height: 1.25; margin: 0; color: #eceae3; }
+.restore-workspace h1 { font-size: var(--ds-fluid-display); line-height: 1.25; margin: 0; color: #eceae3; }
 .restore-workspace h2 { font-size: var(--ds-text-lead); margin-bottom: 1rem; }
 .restore-workspace h3 { font-size: var(--ds-text-body); margin: 1rem 0 .5rem; }
 .restore-workspace p, .restore-workspace li { line-height: 1.65; }

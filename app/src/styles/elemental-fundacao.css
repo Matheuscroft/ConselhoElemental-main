@@ -37,6 +37,24 @@
   --ds-text-display: 1.75rem; /* 28px */
   --ds-text-hero: 2.25rem;    /* 36px */
 
+  /*
+   * Fluid steps, for headings that should grow with the screen. Built out of
+   * the discrete scale above rather than beside it: each one runs from one
+   * step to another, so there is a single ladder with two modes and a
+   * heading can never land between the sizes the rest of the app uses.
+   *
+   * The app had 22 different clamp() expressions, no two alike.
+   *
+   * The `-cq` pair exists because four of them measured the container with
+   * cqi, not the viewport. That is a real difference inside a card, so it is
+   * kept rather than flattened into vw.
+   */
+  --ds-fluid-lead: clamp(var(--ds-text-body), 4vw, var(--ds-text-title));
+  --ds-fluid-title: clamp(var(--ds-text-lead), 5vw, var(--ds-text-display));
+  --ds-fluid-display: clamp(var(--ds-text-title), 6vw, var(--ds-text-hero));
+  --ds-fluid-title-cq: clamp(var(--ds-text-lead), 3.6cqi, var(--ds-text-display));
+  --ds-fluid-display-cq: clamp(var(--ds-text-title), 4.5cqi, var(--ds-text-hero));
+
   /* Cinzel is a display serif and tightens as it grows; Inter carries the
      reading, and reading wants air. */
   --ds-leading-tight: 1.12;

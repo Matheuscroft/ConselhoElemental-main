@@ -1,7 +1,7 @@
 .progress-backup { padding: 22px; border: 1px solid var(--grimoire-line); border-radius: 24px; background: rgb(var(--el-surface) / .8); margin-top: 28px; }
 .progress-backup-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
 .progress-backup-heading > svg { flex-shrink: 0; color: rgb(var(--el-gold)); }
-.progress-backup h2 { font-size: clamp(21px,3.6cqi,28px); }
+.progress-backup h2 { font-size: var(--ds-fluid-title-cq); }
 .progress-backup p { color: rgb(var(--el-muted)); font-size: var(--ds-text-small); line-height: 1.6; margin-block: 8px; overflow-wrap: anywhere; }
 .progress-backup-actions { display: grid; gap: 10px; margin-block: 18px; }
 .progress-backup button,.progress-backup summary { min-height: 44px; padding: 12px; border-radius: 12px; }

@@ -40,7 +40,7 @@
 .lunar-description, .season-current h3 + p { margin-top: 16px; color: #aab4c4; font-size: var(--ds-text-small); line-height: 1.7; max-width: 48ch; }
 .lunar-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin: 26px 0; }
 .lunar-facts dt { color: #aab4c4; font-size: var(--ds-text-micro); margin-bottom: 7px; }
-.lunar-facts dd { font-size: clamp(21px, 2.5vw, 30px); font-variant-numeric: tabular-nums; }
+.lunar-facts dd { font-size: var(--ds-fluid-title); font-variant-numeric: tabular-nums; }
 .lunar-facts small { font-size: var(--ds-text-micro); color: #aab4c4; margin-left: 5px; }
 .lunar-update { display: flex; justify-content: space-between; align-items: center; gap: 20px; margin-top: 20px; font-size: var(--ds-text-micro); color: #d5b66f; }
 .lunar-update small { display: block; font-size: var(--ds-text-micro); color: #aab4c4; margin-top: 5px; }

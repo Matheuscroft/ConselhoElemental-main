@@ -282,7 +282,7 @@
   .ep-header .ep-app-menu span { display: none; }
   .ep-sanctuary { padding-top: 12px; gap: 0; }
   .ep-identity .ep-kicker { margin-bottom: 6px !important; }
-  .ep-identity h1 { font-size: clamp(24px, 6.3vw, 30px); }
+  .ep-identity h1 { font-size: var(--ds-fluid-display); }
   .ep-identity .ep-intro { margin-top: 8px !important; font-size: var(--ds-text-micro); }
   .ep-identity .ep-xp { margin: 12px 0 14px; }
   .ep-resources { gap: 8px; }

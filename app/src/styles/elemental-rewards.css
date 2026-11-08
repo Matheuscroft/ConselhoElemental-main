@@ -4,7 +4,7 @@
 .elemental-reward-sigil { display: grid; place-items: center; flex: 0 0 44px; height: 44px; color: rgb(var(--el-gold)); border: 1px solid rgb(var(--el-gold) / .35); border-radius: 14px; }
 .elemental-reward-value > div { min-width: 0; }
 .elemental-reward-label,.elemental-reward-value small { display: block; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
-.elemental-reward-value strong { display: block; font-size: clamp(1.15rem,5vw,1.65rem); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: rgb(var(--el-gold)); }
+.elemental-reward-value strong { display: block; font-size: var(--ds-fluid-title); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; color: rgb(var(--el-gold)); }
 .elemental-reward-elements { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .elemental-reward-elements > span { display: inline-flex; align-items: center; gap: 5px; font-size: var(--ds-text-micro); border-radius: 16px; padding: 4px 8px; background: #ffffff08; }
 .elemental-reward-elements [data-element=terra] { color: var(--element-terra); }

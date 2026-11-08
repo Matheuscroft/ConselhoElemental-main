@@ -80,14 +80,18 @@ test('the type scale climbs, honours the reader, and never goes unreadable', () 
  * reference to the scale is not one.
  *
  * It started at 69. Every literal within 2px of a step was snapped to that
- * step -- 602 declarations across 32 files -- which left 27: five discrete
- * sizes genuinely far from any step (25px, 40px, 44px, 1.55rem, 1.6rem) and
- * twenty-two clamp() expressions, which are fluid type and need a treatment
- * of their own rather than a step.
+ * step -- 602 declarations across 32 files -- and then sixteen of the
+ * twenty-two clamp() expressions moved onto the fluid ladder.
+ *
+ * Eleven remain, and each is a decision rather than a leftover: five
+ * discrete sizes genuinely far from any step (25px, 40px, 44px, 1.55rem,
+ * 1.6rem), and six display headings tuned to their own layout -- the entry
+ * headline, the survey heading, and the sanctuary's largest type. A single
+ * ladder would flatten exactly the places the app is allowed to be bold.
  *
  * The number may fall, never rise. Lower the ceiling whenever you remove one.
  */
-const TETO_TAMANHOS = 27;
+const TETO_TAMANHOS = 11;
 
 test('the number of distinct font sizes never grows', () => {
   // A reference to the scale is not a value: it is the opposite of one. The
@@ -97,7 +101,7 @@ test('the number of distinct font sizes never grows', () => {
     walk(src, '.css')
       .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/font-size:\s*([^;}]+)/g)])
       .map(([, valor]) => valor.trim())
-      .filter((valor) => !valor.startsWith('var(--ds-text-')),
+      .filter((valor) => !valor.startsWith('var(--ds-')),
   );
 
   assert.ok(
@@ -106,4 +110,29 @@ test('the number of distinct font sizes never grows', () => {
       + 'Use a --ds-text-* step instead of inventing a value; if the step you need '
       + 'does not exist, add it to the scale rather than beside it.',
   );
+});
+
+test('the fluid steps are built out of the discrete scale, not beside it', () => {
+  // The body of the clamp holds var() calls, so it cannot be read with
+  // [^)]*: that stops at the first closing paren, inside the first var.
+  const fluidos = [...fundacao.matchAll(/--ds-fluid-([a-z-]+):\s*clamp\((.*)\);/g)]
+    .map(([, nome, corpo]) => [nome, corpo]);
+
+  assert.ok(fluidos.length >= 5, 'the ladder needs its steps');
+  for (const [nome, corpo] of fluidos) {
+    const [minimo, , maximo] = corpo.split(',').map((parte) => parte.trim());
+    // A fluid heading must start and end on a size the rest of the app uses,
+    // so it can never land between the steps everything else sits on.
+    assert.match(minimo, /^var\(--ds-text-[a-z]+\)$/, `${nome}: the floor must be a step`);
+    assert.match(maximo, /^var\(--ds-text-[a-z]+\)$/, `${nome}: the ceiling must be a step`);
+  }
+
+  // Container units measure the card, viewport units measure the screen, and
+  // inside a card those are not the same thing.
+  const comContainer = fluidos.filter(([nome]) => nome.endsWith('-cq'));
+  assert.ok(comContainer.length > 0, 'the container variants must exist');
+  for (const [nome, corpo] of comContainer) assert.match(corpo, /cqi/, `${nome} must measure its container`);
+  for (const [nome, corpo] of fluidos.filter(([n]) => !n.endsWith('-cq'))) {
+    assert.match(corpo, /vw/, `${nome} must measure the viewport`);
+  }
 });
