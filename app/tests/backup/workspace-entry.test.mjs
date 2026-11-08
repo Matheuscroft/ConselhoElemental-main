@@ -5,8 +5,7 @@ import ts from 'typescript';
 const source=ts.transpileModule(readFileSync('src/main.tsx','utf8').replaceAll('import.meta.env.VITE_SUPABASE_URL',"'https://synthetic.supabase.invalid'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
 const entrySource=ts.transpileModule(readFileSync('src/lib/reminders/reminder-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS}}).outputText;
 const entryModule={exports:{}};new Function('require','exports',entrySource)(()=>({REMINDER_HANDOFF_KEY:'conselho-elemental-reminder-handoff-v1'}),entryModule.exports);
-const proofModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-proof.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(proofModule.exports);
-const recoveryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(()=>proofModule.exports,recoveryModule.exports);
+const recoveryModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(recoveryModule.exports);
 const returnModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-return.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(returnModule.exports);
 const accessEntryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/access-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(()=>({STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}}),accessEntryModule.exports);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
@@ -20,7 +19,6 @@ async function run(search,block,fail=false,handoff=false,sessionRaw=null,session
   if(id.endsWith('mount-account-resume')){if(fail)throw Error('chunk unavailable');return {mountAccountResume:async()=>calls.push('resume')};}
   if(id.endsWith('reminder-entry'))return entryModule.exports;
   if(id.endsWith('account-recovery-entry'))return recoveryModule.exports;
-  if(id.endsWith('account-recovery-proof'))return proofModule.exports;
   if(id.endsWith('account-return'))return returnModule.exports;
   if(id.endsWith('mount-account-recovery')){if(fail)throw Error('chunk unavailable');return {mountAccountRecovery:node=>{assert.equal(node,root);calls.push('recovery');}};}
   if(id.endsWith('mount-reminder-workspace')){if(fail)throw Error('chunk unavailable');return {mountReminderWorkspace:node=>{assert.equal(node,root);calls.push('reminders');}};}
@@ -36,19 +34,18 @@ async function run(search,block,fail=false,handoff=false,sessionRaw=null,session
 }
 
 test('recovery scrubs URL before isolated mount and never falls through to App, including scrub or import failure',async()=>{
- assert.deepEqual(await run('?progresso=recuperar&code=synthetic'),['loading','scrubbed','recovery']);
- assert.deepEqual(await run('?progresso=recuperar&code=synthetic',null,true),['loading','scrubbed','startup-failed']);
- assert.deepEqual(await run('?progresso=recuperar&code=synthetic',null,false,false,null,false,true),['loading','startup-failed']);
+ const callback='?progresso=recuperar#access_token=synthetic&refresh_token=synthetic&type=recovery';
+ assert.deepEqual(await run(callback),['loading','scrubbed','recovery']);
+ assert.deepEqual(await run(callback,null,true),['loading','scrubbed','startup-failed']);
+ assert.deepEqual(await run(callback,null,false,false,null,false,true),['loading','startup-failed']);
 });
 
-test('local recovery form forwards to the canonical Vercel page before starting Auth',async()=>{
- assert.deepEqual(await run('?progresso=recuperar',null,false,false,null,false,false,null,undefined,null,'http://localhost:5173'),['loading','redirect:https://conselho-elemental-main.vercel.app/?progresso=recuperar']);
- assert.deepEqual(await run('?progresso=recuperar&code=synthetic',null,false,false,null,false,false,null,undefined,null,'http://localhost:5173'),['loading','scrubbed','recovery']);
+test('local recovery form stays local and mounts the isolated recovery workspace',async()=>{
+ assert.deepEqual(await run('?progresso=recuperar',null,false,false,null,false,false,null,undefined,null,'http://localhost:5173'),['loading','scrubbed','recovery']);
 });
 
-test('root callback with a valid recovery verifier uses the isolated recovery workspace',async()=>{
- const proof=JSON.stringify({kind:'password-recovery',project:'https://synthetic.supabase.invalid',origin:'https://fixture.test',createdAt:Date.now(),verifier:JSON.stringify('synthetic/PASSWORD_RECOVERY')});
- assert.deepEqual(await run('?code=synthetic',null,false,false,null,false,false,null,undefined,proof),['loading','scrubbed','recovery']);
+test('root implicit recovery callback uses the isolated recovery workspace',async()=>{
+ assert.deepEqual(await run('#access_token=synthetic&refresh_token=synthetic&type=recovery'),['loading','scrubbed','recovery']);
 });
 
 test('auth callback at the site fallback URL is scrubbed and isolated instead of loading legacy App',async()=>{

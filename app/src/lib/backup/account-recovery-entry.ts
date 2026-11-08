@@ -1,45 +1,41 @@
-import { matchesPasswordRecoveryProof } from './account-recovery-proof';
-
-/** A local reset request is forwarded before Auth creates its PKCE verifier. */
 export const PRODUCTION_APP_ORIGIN = 'https://conselho-elemental-main.vercel.app';
-export function canonicalRecoveryRequestTarget(href: string) {
-  const url = new URL(href);
-  const localHost = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
-  const sensitive = ['code', 'access_token', 'refresh_token', 'token_hash', 'id_token', 'error', 'error_code', 'error_description'];
+export interface RecoveryCredentials { accessToken: string; refreshToken: string }
+const QUERY_CREDENTIALS = ['code', 'access_token', 'refresh_token', 'token_hash', 'id_token'];
+const CALLBACK_ERRORS = ['error', 'error_code', 'error_description'];
+const MAX_TOKEN_LENGTH = 32_768;
+
+function implicitCredentials(url: URL): RecoveryCredentials | null {
   const fragment = new URLSearchParams(url.hash.slice(1));
-  if (url.searchParams.get('progresso') !== 'recuperar' || !localHost || url.protocol !== 'http:'
-    || sensitive.some(key => url.searchParams.has(key) || fragment.has(key))) return null;
-  return `${PRODUCTION_APP_ORIGIN}/?progresso=recuperar`;
+  const access = fragment.getAll('access_token'), refresh = fragment.getAll('refresh_token'), types = fragment.getAll('type');
+  if (access.length !== 1 || refresh.length !== 1 || types.length !== 1 || types[0] !== 'recovery') return null;
+  if (!access[0] || !refresh[0] || access[0].length > MAX_TOKEN_LENGTH || refresh[0].length > MAX_TOKEN_LENGTH) return null;
+  if ([...QUERY_CREDENTIALS, ...CALLBACK_ERRORS].some(key => url.searchParams.has(key))) return null;
+  if (['code', 'token_hash', 'id_token', ...CALLBACK_ERRORS].some(key => fragment.has(key))) return null;
+  return { accessToken: access[0], refreshToken: refresh[0] };
 }
 
-/** Detect a recovery code even if the provider falls back to Site URL and drops
- * the route query. Auth codes are accepted only alongside this browser's proof. */
-export function isPasswordRecoveryCallback(href: string, proof: string | null, origin: string, projectUrl: string | undefined, now = Date.now()) {
+/** The implicit recovery fragment is sufficient on any browser and never reaches Vercel logs. */
+export function isPasswordRecoveryCallback(href: string) {
   const url = new URL(href);
-  return url.searchParams.getAll('code').length === 1
-    && matchesPasswordRecoveryProof(proof, origin, projectUrl, now);
+  return implicitCredentials(url) !== null;
 }
 
 /** Capture a recovery callback and remove credentials before importing Auth or App. */
-export function captureRecoveryEntry(href: string, replace: (url: string) => void, proofFallback = false) {
+export function captureRecoveryEntry(href: string, replace: (url: string) => void, callbackFallback = false) {
   const url = new URL(href);
-  const codes = url.searchParams.getAll('code');
   const recoveryRoute = url.searchParams.get('progresso') === 'recuperar';
-  const fallback = !recoveryRoute && proofFallback && codes.length === 1;
+  const fallback = !recoveryRoute && callbackFallback;
   const fragment = new URLSearchParams(url.hash.slice(1));
-  const sensitive = ['code', 'access_token', 'refresh_token', 'token_hash', 'id_token', 'error', 'error_code', 'error_description'];
-  const hasFragment = sensitive.some(key => fragment.has(key));
-  const otherSensitive = sensitive.filter(key => key !== 'code').some(key => url.searchParams.has(key));
-  const rejected = hasFragment || otherSensitive || codes.length > 1 || (!recoveryRoute && !fallback);
-  let code = !rejected && codes.length === 1 && codes[0].length > 0 && codes[0].length <= 2048 ? codes[0] : null;
-  const supplied = codes.length > 0 || hasFragment || otherSensitive;
+  let credentials = recoveryRoute || fallback ? implicitCredentials(url) : null;
+  const sensitive = [...QUERY_CREDENTIALS, ...CALLBACK_ERRORS];
+  const supplied = sensitive.some(key => url.searchParams.has(key) || fragment.has(key)) || fragment.has('type');
   for (const key of sensitive) url.searchParams.delete(key);
-  if (hasFragment) url.hash = '';
+  if (url.hash) url.hash = '';
   replace(recoveryRoute || fallback ? '/?progresso=recuperar' : url.pathname + url.search + url.hash);
   return {
-    kind: code ? 'callback' as const : supplied ? 'invalid' as const : 'request' as const,
-    takeCode() { const value = code; code = null; return value; },
-    discard() { code = null; },
+    kind: credentials ? 'callback' as const : supplied ? 'invalid' as const : 'request' as const,
+    takeCredentials() { const value = credentials; credentials = null; return value; },
+    discard() { credentials = null; },
   };
 }
 export type RecoveryEntry = ReturnType<typeof captureRecoveryEntry>;

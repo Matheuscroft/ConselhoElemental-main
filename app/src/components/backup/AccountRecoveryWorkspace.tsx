@@ -16,7 +16,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     alive.current = true;
     if (entry.kind === 'callback') exchange();
     return () => { alive.current = false; session.current?.dispose(); session.current = null; };
-  // A callback code is one-time; mount the isolated recovery root without StrictMode replay.
+  // Recovery credentials are one-time; mount this isolated root without StrictMode replay.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
@@ -34,7 +34,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     if (session.current) return session.current;
     const { createPasswordRecovery } = await import('@/lib/backup/account-recovery');
     if (!alive.current) throw new Error('A página foi encerrada.');
-    const next = createPasswordRecovery({ url: import.meta.env.VITE_SUPABASE_URL, key: import.meta.env.VITE_SUPABASE_ANON_KEY, origin: window.location.origin, storage: window.localStorage, locks: navigator.locks });
+    const next = createPasswordRecovery({ url: import.meta.env.VITE_SUPABASE_URL, key: import.meta.env.VITE_SUPABASE_ANON_KEY, origin: window.location.origin, locks: navigator.locks });
     session.current = next; return next;
   }
   function request() { if (cooldownUntil > Date.now()) return; void run(async () => {
@@ -42,10 +42,10 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     const result = await next.request(email); if (alive.current) { setMessage(result); setCooldownUntil(Date.now() + 60_000); setClock(Date.now()); }
   }); }
   function exchange() { void run(async () => {
-    const code = entry.takeCode();
-    if (!code) throw new Error('O link já foi conferido. Solicite outro se precisar.');
+    const credentials = entry.takeCredentials();
+    if (!credentials) throw new Error('O link já foi conferido. Solicite outro se precisar.');
     const next = await open();
-    const result = await next.exchange(code); if (alive.current) setVerified(result);
+    const result = await next.exchange(credentials); if (alive.current) setVerified(result);
   }); }
   function update() {
     if (password !== confirm || password.length < 8) return;
@@ -76,7 +76,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
       </form></section> : <>
       {entry.kind === 'callback' && busy && <section className="entry-access-card" role="status"><h2>Validando o link</h2><p>Conferindo a solicitação com segurança. Você não precisa entrar antes de redefinir a senha.</p></section>}
       {entry.kind === 'invalid' && <p role="alert">Este link não pôde ser aceito. Solicite outro abaixo.</p>}
-      <section className="entry-access-card"><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
+      <section className="entry-access-card"><h2>Receber um novo link</h2><p>Você pode abrir o e-mail neste navegador ou em outro aparelho. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
         <label htmlFor="recovery-email">E-mail da conta<input id="recovery-email" enterKeyHint="go" name="recovery-email" type="email" inputMode="email" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
         <button type="submit" disabled={busy || cooldownUntil > clock || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{cooldownUntil > clock ? `Enviar novamente em 00:${String(Math.ceil((cooldownUntil-clock)/1000)).padStart(2,'0')}` : message ? 'Enviar link novamente' : 'Enviar link de recuperação'}</button>
       </form></section>
