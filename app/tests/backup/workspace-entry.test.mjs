@@ -7,11 +7,14 @@ const entrySource=ts.transpileModule(readFileSync('src/lib/reminders/reminder-en
 const entryModule={exports:{}};new Function('require','exports',entrySource)(()=>({REMINDER_HANDOFF_KEY:'conselho-elemental-reminder-handoff-v1'}),entryModule.exports);
 const recoveryModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(recoveryModule.exports);
 const returnModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-return.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(returnModule.exports);
+const accessEntryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/access-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(()=>({STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}}),accessEntryModule.exports);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
-async function run(search,block,fail=false,handoff=false,sessionRaw=null,sessionDenied=false,historyDenied=false,resumeRaw=null){
+async function run(search,block,fail=false,handoff=false,sessionRaw=null,sessionDenied=false,historyDenied=false,resumeRaw=null,pathname=undefined,saved=null){
  const calls=[];const root={};
  new Function('require','document','window','navigator','exports',source)(id=>{
   if(id.endsWith('.css'))return {};
+  if(id.endsWith('access-entry'))return accessEntryModule.exports;
+  if(id.endsWith('mount-entry-welcome')){if(fail)throw Error('chunk unavailable');return {mountEntryWelcome:node=>{assert.equal(node,root);calls.push('welcome');}};}
   if(id.endsWith('account-resume-entry'))return {hasAccountTabAccess:storage=>storage.getItem('access')!==null};
   if(id.endsWith('mount-account-resume')){if(fail)throw Error('chunk unavailable');return {mountAccountResume:async()=>calls.push('resume')};}
   if(id.endsWith('reminder-entry'))return entryModule.exports;
@@ -26,7 +29,7 @@ async function run(search,block,fail=false,handoff=false,sessionRaw=null,session
   if(id.endsWith('mount-account-app'))return {mountAccountApp:async node=>{assert.equal(node,root);calls.push('online-app');}};
   if(id.endsWith('bootstrap-app'))return {mountApp:node=>{assert.equal(node,root);calls.push('app');}};
   throw Error('Unexpected eager dependency: '+id);
- },{documentElement:{classList:{add:()=>{}}},getElementById:()=>root},{location:{search,href:'https://fixture.test/'+search},history:{replaceState(_state,_unused,url){if(historyDenied)throw Error('history unavailable');assert.doesNotMatch(url,/code=|access_token=/);calls.push('scrubbed');}},localStorage:{},get sessionStorage(){if(sessionDenied)throw Error('unavailable');return {getItem:k=>k==='access'?resumeRaw:sessionRaw};}},{locks:{}},{});
+ },{documentElement:{classList:{add:()=>{}}},getElementById:()=>root},{location:{search,pathname,href:'https://fixture.test/'+(pathname??'').replace(/^\//,'')+search},history:{replaceState(_state,_unused,url){if(historyDenied)throw Error('history unavailable');assert.doesNotMatch(url,/code=|access_token=/);calls.push('scrubbed');}},localStorage:{getItem:()=>saved},get sessionStorage(){if(sessionDenied)throw Error('unavailable');return {getItem:k=>k==='access'?resumeRaw:sessionRaw};}},{locks:{}},{});
  await flush();return calls;
 }
 
@@ -82,4 +85,16 @@ test('saved access requests isolated exclusive review; malformed markers cannot 
  assert.deepEqual(await run('','pending-account',false,false,null,false,false,'saved'),['loading','exclusive','account']);
  assert.deepEqual(await run('?progresso=conta',null,false,false,null,false,false,'saved'),['loading','account']);
  assert.deepEqual(await run('',null,false,false,'pending',false,false,'saved'),['loading','reminders']);
+});
+
+
+test('auth aliases open the isolated access workspace; welcome is read-only and fresh root stays behind startup guards',async()=>{
+ for(const path of ['/auth','/entrar','/cadastro'])assert.deepEqual(await run('',null,false,false,null,false,false,null,path),['loading','account']);
+ assert.deepEqual(await run('?progresso=inicio'),['loading','welcome']);
+ assert.deepEqual(await run('?progresso=restaurar',null,false,false,null,false,false,null,'/auth'),['loading','workspace']);
+ assert.deepEqual(await run('?progresso=conta',null,false,false,null,false,false,null,'/boas-vindas'),['loading','account']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','session','welcome']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','existing progress'),['loading','session','app']);
+ assert.deepEqual(await run('', 'pending-restore',false,false,null,false,false,null,'/'),['loading','session','workspace']);
+ for(const path of ['/auth','/entrar','/cadastro'])assert.deepEqual(await run('?code=synthetic',null,false,false,null,false,false,null,path),['loading','scrubbed','account']);
 });

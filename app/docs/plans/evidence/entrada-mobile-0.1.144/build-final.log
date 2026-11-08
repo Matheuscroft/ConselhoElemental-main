@@ -1,0 +1,64 @@
+
+> my-app@0.1.144 build
+> tsc -b && vite build
+
+vite v7.3.0 building client environment for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 4798 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/app-version.json                                 0.05 kB │ gzip:   0.07 kB
+dist/index.html                                       1.19 kB │ gzip:   0.57 kB
+dist/assets/mount-account-workspace-Br4vCiv5.css      0.84 kB │ gzip:   0.40 kB
+dist/assets/restore-workspace-jXG4IYwX.css            5.58 kB │ gzip:   1.58 kB
+dist/assets/EntryVisuals-oU53W49t.css                11.91 kB │ gzip:   3.14 kB
+dist/assets/ElementalPreview-lHDx36ZR.css            21.57 kB │ gzip:   4.95 kB
+dist/assets/index-SA38Mfc7.css                      129.39 kB │ gzip:  21.10 kB
+dist/assets/bootstrap-app-C1hZKmnN.css              242.71 kB │ gzip:  41.30 kB
+dist/assets/loader-circle-Atm8NrZm.js                 0.16 kB │ gzip:   0.16 kB
+dist/assets/arrow-left-JMnt46qY.js                    0.18 kB │ gzip:   0.17 kB
+dist/assets/download-B0vPP5-0.js                      0.24 kB │ gzip:   0.20 kB
+dist/assets/file-check-corner-DntSmvCY.js             0.33 kB │ gzip:   0.25 kB
+dist/assets/file-up-wS6Jbusx.js                       0.36 kB │ gzip:   0.25 kB
+dist/assets/log-in-D3F3DsB4.js                        0.36 kB │ gzip:   0.25 kB
+dist/assets/ActivityReminderControl-BGv1zgJ_.js       0.45 kB │ gzip:   0.28 kB
+dist/assets/eye-DB0Dfe-i.js                           0.65 kB │ gzip:   0.35 kB
+dist/assets/attach-account-sync-C52DAe--.js           1.26 kB │ gzip:   0.63 kB
+dist/assets/account-session-C65GsfEH.js               1.30 kB │ gzip:   0.74 kB
+dist/assets/temporal-navigation-QmcSQlrL.js           1.45 kB │ gzip:   0.72 kB
+dist/assets/mount-entry-welcome-DLIBmlyi.js           1.95 kB │ gzip:   0.88 kB
+dist/assets/exclusive-restore-i_x2rGUc.js             2.58 kB │ gzip:   1.09 kB
+dist/assets/restore-confirmation-Xy4MUjEJ.js          2.75 kB │ gzip:   1.19 kB
+dist/assets/MoonScene-BoP26VUW.js                     2.79 kB │ gzip:   1.54 kB
+dist/assets/account-live-access-CMEyuw-Z.js           2.90 kB │ gzip:   1.45 kB
+dist/assets/new-account-progress-e1cohFQ6.js          3.22 kB │ gzip:   1.53 kB
+dist/assets/mount-account-resume-pyWQN-tf.js          3.27 kB │ gzip:   1.55 kB
+dist/assets/restore-comparison-CsFeWKXa.js            4.09 kB │ gzip:   1.89 kB
+dist/assets/account-recovery-CrQwbDrg.js              4.43 kB │ gzip:   1.89 kB
+dist/assets/association-review-DRYJ2tFu.js            4.47 kB │ gzip:   2.00 kB
+dist/assets/account-transport-DhrZ3w2A.js             4.71 kB │ gzip:   1.96 kB
+dist/assets/mount-account-app-DbWSlzsi.js             6.08 kB │ gzip:   2.70 kB
+dist/assets/mount-account-recovery-BTJDlPIP.js        6.71 kB │ gzip:   2.60 kB
+dist/assets/index-DaWeh03a.js                         8.26 kB │ gzip:   3.19 kB
+dist/assets/EntryVisuals-DhXAjFYb.js                  8.29 kB │ gzip:   3.43 kB
+dist/assets/mount-reminder-workspace-B6lCIL5k.js     14.23 kB │ gzip:   5.25 kB
+dist/assets/mount-restore-workspace-BBzjC9VO.js      21.84 kB │ gzip:   6.58 kB
+dist/assets/ElementalPreview-DZGUqF-Q.js             27.74 kB │ gzip:   9.99 kB
+dist/assets/index-DB2zjSuK.js                        55.03 kB │ gzip:  18.21 kB
+dist/assets/mount-account-workspace-jn8kJz0Z.js      59.71 kB │ gzip:  16.68 kB
+dist/assets/initial-character-Dy-7yPbd.js            86.11 kB │ gzip:  28.88 kB
+dist/assets/index-DOCObyJ7.js                       173.94 kB │ gzip:  46.04 kB
+dist/assets/createLucideIcon-VyMZ147W.js            185.74 kB │ gzip:  58.36 kB
+dist/assets/AuraAvatar3D-BeYL-5I1.js                261.59 kB │ gzip:  81.79 kB
+dist/assets/workoutStore-CVTQxUNa.js                304.53 kB │ gzip:  75.39 kB
+dist/assets/three.module-BZp4vj9u.js                746.25 kB │ gzip: 190.70 kB
+dist/assets/bootstrap-app-DsaL6-8-.js             1,529.44 kB │ gzip: 440.04 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 11.18s

@@ -1,15 +1,17 @@
+import { EntryArtwork, EntryBrand } from '@/components/entry/EntryVisuals';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, KeyRound } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import type { RecoveryEntry } from '@/lib/backup/account-recovery-entry';
 import type { createPasswordRecovery } from '@/lib/backup/account-recovery';
 import { ACCOUNT_ACCESS_RELEASED } from '@/lib/backup/account-access-release';
 
 export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [confirm, setConfirm] = useState('');
+  const [showPassword, setShowPassword] = useState(false), [showConfirm, setShowConfirm] = useState(false);
   const [verified, setVerified] = useState<{ email: string } | null>(null);
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [done, setDone] = useState(false);
   const session = useRef<ReturnType<typeof createPasswordRecovery> | null>(null), working = useRef(false), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null);
-  useEffect(() => { alive.current = true; heading.current?.focus({ preventScroll: true }); return () => { alive.current = false; session.current?.dispose(); session.current = null; }; }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; session.current?.dispose(); session.current = null; }; }, []);
   async function run(action: () => Promise<void>) {
     if (!ACCOUNT_ACCESS_RELEASED || working.current) return;
     working.current = true; setBusy(true); setError(''); setMessage('');
@@ -44,28 +46,31 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
       if (alive.current) { setDone(true); setVerified(null); setMessage(result.logoutConfirmed ? 'Senha atualizada. Entre novamente para acessar sua jornada.' : 'Senha atualizada. A saída no servidor não pôde ser confirmada; a sessão temporária deste formulário foi descartada.'); }
     });
   }
-  return <main className="restore-workspace account-workspace" aria-labelledby="recovery-title">
-    <a className="restore-workspace-back" href="/?progresso=conta"><ArrowLeft size={20} aria-hidden="true" />Voltar ao acesso da conta</a>
-    <header><KeyRound size={32} aria-hidden="true" /><div><p>Conselho Elemental</p><h1 id="recovery-title" ref={heading} tabIndex={-1}>Recupere seu acesso</h1></div></header>
-    <p>Definir outra senha não recria seu personagem nem substitui atividades, XP ou Treinos. Este formulário não abre a sincronização do app.</p>
+  return <div className="entry-shell">
+    <a className="entry-skip" href="#recovery-title">Ir para a recuperação</a>
+    <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/auth"><ArrowLeft size={16} aria-hidden="true" />Voltar ao acesso</a></div>
+    <div className="entry-layout"><EntryArtwork />
+    <main className="restore-workspace account-workspace entry-main" aria-labelledby="recovery-title">
+    <header><h1 id="recovery-title" ref={heading} tabIndex={-1}>Recupere seu acesso</h1></header>
+    <p>Vamos ajudar você a voltar. Suas atividades, conquistas e XP permanecem como estão.</p>
     {!ACCOUNT_ACCESS_RELEASED && <p role="status">O acesso online ainda está em preparação. A recuperação será liberada após a revisão do acesso.</p>}
-    {!done && (verified ? <section><h2>Defina sua nova senha</h2><p>Conta conferida: {verified.email || 'e-mail validado no servidor'}.</p>
+    {!done && (verified ? <section className="entry-access-card"><h2>Defina sua nova senha</h2><p>Conta conferida: {verified.email || 'e-mail validado no servidor'}.</p>
       <form onSubmit={event => { event.preventDefault(); update(); }}>
-        <label>Nova senha<input type="password" autoComplete="new-password" minLength={8} required value={password} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setPassword(event.target.value)} /></label>
-        <label>Confirme a nova senha<input type="password" autoComplete="new-password" minLength={8} required value={confirm} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setConfirm(event.target.value)} /></label>
+        <label htmlFor="recovery-password">Nova senha</label><div className="entry-password"><input id="recovery-password" autoCapitalize="none" autoCorrect="off" spellCheck={false} name="new-password" type={showPassword ? 'text' : 'password'} autoComplete="new-password" minLength={8} required value={password} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setPassword(event.target.value)} /><button type="button" aria-label={showPassword ? 'Ocultar nova senha' : 'Mostrar nova senha'} onClick={()=>setShowPassword(!showPassword)} disabled={busy}>{showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div>
+        <label htmlFor="recovery-confirmation">Confirme a nova senha</label><div className="entry-password"><input id="recovery-confirmation" autoCapitalize="none" autoCorrect="off" spellCheck={false} name="new-password-confirmation" type={showConfirm ? 'text' : 'password'} autoComplete="new-password" minLength={8} required value={confirm} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setConfirm(event.target.value)} /><button type="button" aria-label={showConfirm ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'} onClick={()=>setShowConfirm(!showConfirm)} disabled={busy}>{showConfirm ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div>
         <small>Use pelo menos 8 caracteres. A política de senha do servidor também será aplicada.</small>
         {confirm && password !== confirm && <small role="status">As senhas ainda não coincidem.</small>}
         <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || password.length < 8 || password !== confirm}>Salvar nova senha</button>
       </form></section> : <>
-      {entry.kind === 'callback' && <section><h2>Confira o link recebido</h2><p>O código foi removido do endereço. Valide-o antes de definir sua senha. O link precisa ter sido solicitado neste navegador.</p><button type="button" disabled={busy || !ACCOUNT_ACCESS_RELEASED} onClick={exchange}>Validar meu link</button></section>}
+      {entry.kind === 'callback' && <section className="entry-access-card"><h2>Confira o link recebido</h2><p>O código foi removido do endereço. Valide-o antes de definir sua senha. O link precisa ter sido solicitado neste navegador.</p><button type="button" disabled={busy || !ACCOUNT_ACCESS_RELEASED} onClick={exchange}>Validar meu link</button></section>}
       {entry.kind === 'invalid' && <p role="alert">Este link não pôde ser aceito. Solicite outro abaixo.</p>}
-      <section><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
-        <label>E-mail da conta<input type="email" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
-        <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>Enviar link de recuperação</button>
+      <section className="entry-access-card"><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
+        <label htmlFor="recovery-email">E-mail da conta<input id="recovery-email" enterKeyHint="go" name="recovery-email" type="email" inputMode="email" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
+        <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}Enviar link de recuperação</button>
       </form></section>
     </>)}
     {done && <a className="restore-workspace-back" href="/?progresso=conta">Entrar com a nova senha</a>}
     <p role="status" aria-live="polite">{busy ? 'Conferindo o acesso. Aguarde.' : message}</p>
     {error && <p className="restore-workspace-error" role="alert">{error}</p>}
-  </main>;
+  </main></div><footer className="entry-footer">Um novo acesso. A mesma jornada.</footer></div>;
 }

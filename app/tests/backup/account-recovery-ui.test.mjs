@@ -15,6 +15,7 @@ function fixture({released=true,callback=true}={}){
  function pending(name,args){return new Promise((resolve,reject)=>calls.push({name,args,resolve,reject}));}
  const exports={};
  new Function('require','exports','window','navigator',source)(id=>{
+  if(id.endsWith('/entry/EntryVisuals'))return {EntryArtwork:()=>null,EntryBrand:()=>null};
   if(id==='react')return react;if(id==='react/jsx-runtime')return {jsx,jsxs:jsx};if(id==='lucide-react')return {ArrowLeft:'icon',KeyRound:'icon'};
   if(id.endsWith('account-access-release'))return {ACCOUNT_ACCESS_RELEASED:released};
   if(id.endsWith('account-recovery'))return {createPasswordRecovery(){constructions++;return controller;}};

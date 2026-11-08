@@ -1,0 +1,48 @@
+✔ closed release rejects forced recovery handlers before Auth construction or code consumption (9.948708ms)
+✔ explicit code validation, matching passwords and separate confirmation control the update; double taps do not duplicate it (7.342333ms)
+✔ resending uses one isolated client for the document and has no App handoff (1.902833ms)
+✔ unmount during validation disposes the owned client and ignores late identity results (0.901666ms)
+✔ distributed release cannot construct Auth or send even if disabled handlers are invoked directly; local copy tools remain usable (135.660791ms)
+✔ login is independent from a file, while password clears and explicit copy/consent still gate the durable send (140.793084ms)
+✔ pending receipt check cannot resend without a separate consent, and offline pause does not construct a session (87.8675ms)
+✔ wrong identity, failed copy and late responses after storage changes or unmount never show a successful transfer (154.283875ms)
+✔ account mount static graph has no domain stores, global auth client or eager session construction (38.2815ms)
+✔ saving the account binding is a separate explicit consent and does not claim automatic synchronization (51.573583ms)
+✔ bound account describes revision protection, refuses another identity and invalidates consents on binding changes (38.028417ms)
+✔ live handoff requires its own consent and transfers session ownership without storing credentials (51.855ms)
+✔ version comparison is read-only in the UI and storage changes discard the shown downloads (35.512375ms)
+✔ an unbound device authenticates without adopting data and hands only an explicit reviewed online choice to the coordinator (23.991167ms)
+✔ signup needs matching confirmation and discards an autoconfirm session without sending local progress (20.129ms)
+✔ resending confirmation is explicit, needs no password and cannot be duplicated while pending (24.748916ms)
+✔ mode switches clear typed credentials and changing a verified access preserves pending data but removes authority to send (20.488ms)
+✔ late signup response after local context changes never restores access or shows a success result (24.279667ms)
+✔ confirmation return is only an informational notice and never constructs Auth or grants transfer authority (44.993ms)
+✔ authentication waits for initial pending-context inspection, even with valid credentials and forced handlers (19.651417ms)
+✔ a failed choice mounts recovery controls, never resends on receipt check, and can explicitly re-evaluate while keeping local data (21.2365ms)
+✔ remembered access has its own unchecked consent and is selected only at the reviewed live handoff (18.034834ms)
+✔ new empty account has its own start path, explicit consent and one handoff; no existing data uses it (38.627084ms)
+✔ new account start stays closed in product and storage changes revoke its consent and late handoff (38.590625ms)
+✔ access-only release permits signup and verified login without progress RPCs, writes, handoff or loss of XP projections (21.615208ms)
+✔ access-only release also keeps new-account start closed for an empty device after login (25.697667ms)
+✔ one explicit connection reuses the current journey without a file roundtrip and starts only a confirmed handoff (52.989833ms)
+✔ password visibility is explicit, keeps credentials only in the form, and mode change hides and clears them without Auth (20.834125ms)
+✔ recovery scrubs URL before isolated mount and never falls through to App, including scrub or import failure (4.39725ms)
+✔ auth callback at the site fallback URL is scrubbed and isolated instead of loading legacy App (2.618625ms)
+✔ restore URL mounts isolated workspace directly, normal URL starts the existing app (1.257167ms)
+✔ pending journal is routed to workspace while denied storage or lock retains protective screen (1.805875ms)
+✔ workspace load failure never falls through to importing the live app (1.688458ms)
+✔ account URL and pending account barrier mount only the isolated account workspace (0.633958ms)
+✔ only the explicit workspace handoff requests the exclusive online entry, without falling through to normal App (0.637959ms)
+✔ explicit reminder entry and pending session plan stop before App import; other workspaces keep priority (0.942292ms)
+✔ saved access requests isolated exclusive review; malformed markers cannot fall through to legacy App (2.123083ms)
+✔ auth aliases open the isolated access workspace; welcome is read-only and fresh root stays behind startup guards (2.042666ms)
+✔ first-run welcome requires absence of both original projections, never decodes or rewrites an existing journey (1.8145ms)
+✔ welcome offers real entry, import and guest destinations with no invented rewards or compulsory carousel (117.335875ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1499.543916

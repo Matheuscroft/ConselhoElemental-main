@@ -4,7 +4,7 @@ export type AccountReturnNotice = 'returned' | 'invalid' | 'none';
 export function captureAccountReturn(href: string, replace: (url: string) => void): AccountReturnNotice {
   const url = new URL(href), fragment = new URLSearchParams(url.hash.slice(1));
   const tokens = ['access_token', 'refresh_token', 'token_hash', 'id_token'];
-  const context = url.searchParams.get('progresso') === 'conta' || url.pathname === '/' || url.pathname === '/auth';
+  const context = url.searchParams.get('progresso') === 'conta' || url.pathname === '/' || ['/auth', '/entrar', '/cadastro', '/boas-vindas'].includes(url.pathname);
   const hashAuth = [...tokens, 'error', 'error_code', 'error_description'].some(key => fragment.has(key));
   const queryAuth = tokens.some(key => url.searchParams.has(key)) || (context && ['code', 'error', 'error_code', 'error_description'].some(key => url.searchParams.has(key)));
   if (!hashAuth && !queryAuth) return 'none';

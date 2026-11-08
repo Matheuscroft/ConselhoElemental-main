@@ -1,0 +1,20 @@
+✔ recovery scrubs URL before isolated mount and never falls through to App, including scrub or import failure (5.335834ms)
+✔ auth callback at the site fallback URL is scrubbed and isolated instead of loading legacy App (0.820041ms)
+✔ restore URL mounts isolated workspace directly, normal URL starts the existing app (0.703667ms)
+✔ pending journal is routed to workspace while denied storage or lock retains protective screen (1.489416ms)
+✔ workspace load failure never falls through to importing the live app (0.277125ms)
+✔ account URL and pending account barrier mount only the isolated account workspace (0.315583ms)
+✔ only the explicit workspace handoff requests the exclusive online entry, without falling through to normal App (0.446292ms)
+✔ explicit reminder entry and pending session plan stop before App import; other workspaces keep priority (0.517958ms)
+✔ saved access requests isolated exclusive review; malformed markers cannot fall through to legacy App (0.49875ms)
+✔ auth aliases open the isolated access workspace; welcome is read-only and fresh root stays behind startup guards (1.149ms)
+✔ first-run welcome requires absence of both original projections, never decodes or rewrites an existing journey (0.678167ms)
+✔ welcome offers real entry, import and guest destinations with no invented rewards or compulsory carousel (82.470708ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 415.478833

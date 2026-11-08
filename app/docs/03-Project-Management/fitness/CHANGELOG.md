@@ -1,3 +1,9 @@
+## 0.1.144 — 07/11/2026
+
+- Entrada redesenhada: boas-vindas para primeira visita sem progresso, login/cadastro/recuperação com identidade elemental, foco mobile, campos legíveis e senha visível por escolha. Importação e modo sem conta explícitos; /auth abre a conta integral existente.
+- Apresentação dos elementos e seleção de áreas reorganizadas sem alterar comandos/stores ou dados já existentes. Primeiro acesso respeita guards de recuperação antes de mostrar a introdução.
+- Compatibilidade de arquivos144 aditiva; Auth, isolamento, recibos e XP preservados.
+
 ## 0.1.143 — 07/11/2026
 
 - Corrigidos elemento/classificação dos rituais e subitens, filtros sem área, seleção explícita na criação rápida e fallback de área em Invocar. Recibos históricos/XP preservados.

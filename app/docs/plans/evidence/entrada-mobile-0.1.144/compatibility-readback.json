@@ -1,0 +1,16 @@
+{
+  "migration": "20261108014325_access_onboarding_version_144",
+  "validatorSha256": "a7d8b1f160e36695f218bd8c21dcbcaf3c0b81080306398d73e7573ef3b1939b",
+  "writesEnabledBefore": true,
+  "writesEnabledAfter": true,
+  "integralAccountsBefore": 0,
+  "integralAccountsAfter": 0,
+  "advisors": "unchanged: 3 private RLS/no direct policies; public.touch_updated_at search_path warning; leaked-password protection disabled",
+  "authPublicSettings": {
+    "http": 200,
+    "emailEnabled": true,
+    "signupDisabled": false,
+    "emailAutoConfirm": false
+  },
+  "realAuthOrEmailTested": false
+}

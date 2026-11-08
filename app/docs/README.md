@@ -1,3 +1,5 @@
+- [M10: introdução, login e cadastro144](plans/MOBILE-M10-INTRODUCAO-E-ACESSO.md)
+
 - [M08–M09: rituais, cronômetro e Git → Vercel143](plans/MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md)
 
 - [M07 — cronômetro e atualização no celular](plans/MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md)

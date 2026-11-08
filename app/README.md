@@ -1,4 +1,4 @@
-> **Conta pessoal —0.1.143:** [conexão integral e revisão do cadastro existente](docs/plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md). A importação no celular foi confirmada pelo usuário. Configuração Vercel corrigida e beta de progresso owner-bound ativado; cadastro externo ainda depende de SMTP.
+> **Conta pessoal —0.1.144:** [conexão integral e revisão do cadastro existente](docs/plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md). A importação no celular foi confirmada pelo usuário. Configuração Vercel corrigida e beta de progresso owner-bound ativado; cadastro externo ainda depende de SMTP.
 
 > **Testes no celular — 0.1.132:** [ambiente fixo e transferência guiada](docs/plans/TRANSFERENCIA-GUIADA-P04-0.1.132.md). Conta/sincronização ficam para a etapa seguinte; dados pessoais não são enviados pelo deploy.
 

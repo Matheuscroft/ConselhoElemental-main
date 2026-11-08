@@ -20,6 +20,7 @@ function fixture({released=true,accessReleased=released,pending=false,bound=fals
  assert.deepEqual(source.diagnostics?.filter(d=>d.category===ts.DiagnosticCategory.Error).map(d=>ts.flattenDiagnosticMessageText(d.messageText,' ')),[]);
  const compiledSource=source.outputText;
  const mod={exports:{}};new Function('require','module','exports','window','navigator','document','URL','setTimeout',compiledSource)(id=>{
+  if(id.endsWith('/entry/EntryVisuals'))return {EntryArtwork:()=>null,EntryBrand:()=>null};
   if(id==='react')return react;
   if(id.endsWith('.css'))return {};
   if(id.endsWith('/connect-account-progress'))return Object.fromEntries(['connectCurrentAccountProgress','receiveReviewedAccountProgress','resumeAccountConnection'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
@@ -57,7 +58,7 @@ async function prepared(f){await flush();f.render();f.file();await flush();f.ren
 async function signed(f){f.submit();await flush();assert.ok(f.sessions.length);f.sessions.at(-1).resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();}
 
 test('distributed release cannot construct Auth or send even if disabled handlers are invoked directly; local copy tools remain usable',async()=>{
- const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta de acesso');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
+ const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
  f.click('Baixar cópia antes do envio');await flush();f.render();assert.equal(f.downloads,1);assert.equal(f.constructions,0);f.unmount();
  // Closed-release behavior is injected above, independently of the published beta.
 
@@ -118,7 +119,7 @@ test('an unbound device authenticates without adopting data and hands only an ex
 });
 
 test('signup needs matching confirmation and discards an autoconfirm session without sending local progress',async()=>{
- const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta de acesso');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
+ const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
  f.fill('password','synthetic password',1);f.submit();f.submit();await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');assert.equal(f.sessions[0].args.options.emailRedirectTo,'https://fixture.test/?progresso=conta');
  f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.match(f.content(),/Se este e-mail precisar/);assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.deepEqual([...f.memory.entries()],before);assert.equal(f.disposals,1);assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='password').length,1);f.unmount();
 });
@@ -129,11 +130,11 @@ test('resending confirmation is explicit, needs no password and cannot be duplic
 });
 
 test('mode switches clear typed credentials and changing a verified access preserves pending data but removes authority to send',async()=>{
- const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta de acesso');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta validada nesta conferência/);const before=[...f.memory.entries()];f.click('Trocar acesso');assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta validada nesta conferência/);const before=[...f.memory.entries()];f.click('Trocar acesso');assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('late signup response after local context changes never restores access or shows a success result',async()=>{
- const f=fixture();await flush();f.render();f.click('Criar conta de acesso');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture();await flush();f.render();f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('confirmation return is only an informational notice and never constructs Auth or grants transfer authority',async()=>{
@@ -176,7 +177,7 @@ test('new account start stays closed in product and storage changes revoke its c
 
 test('access-only release permits signup and verified login without progress RPCs, writes, handoff or loss of XP projections',async()=>{
  const f=fixture({released:false,accessReleased:true,handoff:true});await flush();f.render();const before=[...f.memory.entries()];
- f.click('Criar conta de acesso');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
+ f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
  assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');f.sessions[0].resolve({data:{session:null,user:{id:uid}},error:null});await flush();f.render();
  assert.equal(f.disposals,1);assert.equal(f.requests.length,0);assert.deepEqual([...f.memory.entries()],before);
  f.fill('password','synthetic password');await signed(f);f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');f.click('Quero receber progresso de uma conta');await flush();f.render();
@@ -200,4 +201,13 @@ test('one explicit connection reuses the current journey without a file roundtri
  assert.equal(f.downloads,0);f.click('Salvar minha jornada na conta');f.click('Salvar minha jornada na conta');assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[0].otherTabsClosed,true);assert.equal(f.requests[0].args[1].confirmed,true);assert.equal(f.requests[0].args[1].userId,uid);
  f.requests[0].resolve({bindingRaw:'confirmed binding'});await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'confirmed binding');assert.equal(f.handoffs[0].remember,true);assert.equal(f.downloads,0);f.unmount();
  for(const mode of ['change','unmount']){const g=fixture({handoff:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.click('Salvar minha jornada na conta');if(mode==='change')g.emit('conselho-elemental-storage');else g.unmount();g.requests[0].resolve({bindingRaw:'late binding'});await flush();assert.equal(g.handoffs.length,0);if(mode==='change')g.unmount();}
+});
+
+
+test('password visibility is explicit, keeps credentials only in the form, and mode change hides and clears them without Auth',async()=>{
+ const f=fixture();await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic private value');
+ let input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');
+ f.nodes().find(n=>n.type==='button'&&n.props['aria-label']==='Mostrar senha').props.onClick();f.render();
+ input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'text');assert.equal(input.props.value,'synthetic private value');assert.equal(f.constructions,0);
+ f.click('Criar conta');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
 });

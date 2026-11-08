@@ -1,3 +1,4 @@
+import { accessEntry, shouldShowWelcome } from './lib/backup/access-entry';
 import type { LiveAccountSession } from './lib/backup/account-live-sync';
 import { hasAccountTabAccess } from './lib/backup/account-resume-entry';
 import { captureRecoveryEntry } from './lib/backup/account-recovery-entry';
@@ -14,6 +15,10 @@ document.documentElement.classList.add('dark');
 
 const root = document.getElementById('root')!;
 showProgressStartup(root);
+async function openWelcome() {
+  try { const { mountEntryWelcome } = await import('./mount-entry-welcome'); mountEntryWelcome(root); }
+  catch { showProgressStartup(root, 'startup-failed'); }
+}
 async function openRestoreWorkspace() {
   try { const { mountRestoreWorkspace } = await import('./mount-restore-workspace'); mountRestoreWorkspace(root); }
   catch { showProgressStartup(root, 'startup-failed'); }
@@ -46,6 +51,9 @@ else {
     if(notice!=='none')void openAccountWorkspace(notice);
     else if(progressView==='conta')void openAccountWorkspace();
     else if(progressView==='restaurar')void openRestoreWorkspace();
+    else if(progressView==='inicio')void openWelcome();
+    else if(accessEntry(window.location.pathname, window.location.search)==='account')void openAccountWorkspace();
+    else if(accessEntry(window.location.pathname, window.location.search)==='welcome')void openWelcome();
     else void openProgress();
   }catch{showProgressStartup(root,'startup-failed');}
 }
@@ -64,7 +72,10 @@ async function openProgress() {
   storage: () => window.localStorage,
   origin: window.location.origin,
   locks: navigator.locks,
-  load: async () => { const { mountApp } = await import('./bootstrap-app'); mountApp(root); },
+  load: async () => {
+    if (shouldShowWelcome(window.location.pathname, window.localStorage)) { await openWelcome(); return; }
+    const { mountApp } = await import('./bootstrap-app'); mountApp(root);
+  },
   blocked: reason => { if (reason === 'pending-account') void openAccountWorkspace(); else if (reason === 'pending-restore') void openRestoreWorkspace(); else showProgressStartup(root, reason); },
 });
 }

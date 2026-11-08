@@ -9,7 +9,7 @@ test('separate producer-version revision preserves the installed SQL, stored byt
  const db=await createLegacyDatabase();
  try{
   await db.exec(installedMigration);
-  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.143');
+  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.144');
   const archive=await f.createProgressBackup(snapshot);
   await assert.rejects(db.query('select progress_private.validate_archive($1)',[archive]),/progress_invalid_archive/);
   const previous=await f.createProgressBackup({...snapshot,appVersion:'0.1.120'}),user=randomUUID();

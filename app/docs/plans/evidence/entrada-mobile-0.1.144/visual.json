@@ -1,0 +1,304 @@
+{
+  "metrics": [
+    {
+      "name": "welcome",
+      "width": 390,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Seu cotidiano.Uma nova jornada.",
+      "inputSizes": [],
+      "storageKeys": []
+    },
+    {
+      "name": "welcome",
+      "width": 360,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Seu cotidiano.Uma nova jornada.",
+      "inputSizes": [],
+      "storageKeys": []
+    },
+    {
+      "name": "welcome",
+      "width": 768,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Seu cotidiano.Uma nova jornada.",
+      "inputSizes": [],
+      "storageKeys": []
+    },
+    {
+      "name": "login",
+      "width": 390,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Sua jornada continua",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "login",
+      "width": 360,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Sua jornada continua",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "login",
+      "width": 768,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Sua jornada continua",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "signup",
+      "width": 390,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Comece sua jornada",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "signup",
+      "width": 360,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Comece sua jornada",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "signup",
+      "width": 768,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Comece sua jornada",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "password",
+          "size": "16px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        },
+        {
+          "type": "checkbox",
+          "size": "13px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "recovery",
+      "width": 390,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Recupere seu acesso",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "recovery",
+      "width": 360,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Recupere seu acesso",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "recovery",
+      "width": 768,
+      "overflow": false,
+      "focused": "H1",
+      "h1": "Recupere seu acesso",
+      "inputSizes": [
+        {
+          "type": "email",
+          "size": "16px"
+        }
+      ],
+      "storageKeys": []
+    },
+    {
+      "name": "onboarding",
+      "width": 390,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Quatro elementos. Sua vida.",
+      "inputSizes": [],
+      "storageKeys": [
+        "conselho-elemental-storage",
+        "dominio-do-mago-workout-storage-v1"
+      ]
+    },
+    {
+      "name": "onboarding",
+      "width": 360,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Quatro elementos. Sua vida.",
+      "inputSizes": [],
+      "storageKeys": [
+        "conselho-elemental-storage",
+        "dominio-do-mago-workout-storage-v1"
+      ]
+    },
+    {
+      "name": "onboarding",
+      "width": 768,
+      "overflow": false,
+      "focused": "BODY",
+      "h1": "Quatro elementos. Sua vida.",
+      "inputSizes": [],
+      "storageKeys": [
+        "conselho-elemental-storage",
+        "dominio-do-mago-workout-storage-v1"
+      ]
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "physicalPhone": false
+}

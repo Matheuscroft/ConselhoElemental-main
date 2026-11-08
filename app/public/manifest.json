@@ -6,8 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#d4af37",
-  "background_color": "#1a1a2e",
+  "theme_color": "#080b12",
+  "background_color": "#080b12",
   "icons": [
     {
       "src": "/icons/mago-192-1140369d90.png",

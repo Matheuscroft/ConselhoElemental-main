@@ -1,3 +1,7 @@
+## Entrada144
+
+[Introdução e acesso mobile](plans/MOBILE-M10-INTRODUCAO-E-ACESSO.md): apresentação read-only, aliases de conta isolada, recuperação consistente e onboarding com comandos existentes. Guards de progresso precedem primeiro acesso. Dados e XP não mudam por visitar/login; conexão explícita preservada.
+
 ## Atualização143 — fluxo de entrega e classificação
 
 Rituais agora alinham elemento com área primária ao criar/editar; recibos existentes preservados. Cronômetro é apresentação sobre runtimeM07. Build de produção passa por verify:release (testes+lint) e tipos/build; Git main do repositório Matheus é o destino vigente, Vercel conselho-elemental-main. Configuração/histórico e limites em [M08–M09](plans/MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md). A mudança de domínio exige transferência explícita do progresso; não limpar storage.
