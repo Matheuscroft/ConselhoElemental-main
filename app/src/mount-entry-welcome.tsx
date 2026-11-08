@@ -1,9 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { EntryWelcome } from './components/entry/EntryWelcome';
+import { PrimeiroAcesso } from './components/entry/PrimeiroAcesso';
 
-/** Read-only first-run introduction. No auth client, store hydration or new storage. */
+/** First-run opening: the awakening, two questions, then the entry.
+ *  No auth client and no store hydration; only per-device preferences. */
 export function mountEntryWelcome(root: HTMLElement) {
   document.title = 'Boas-vindas — Conselho Elemental';
-  createRoot(root).render(<StrictMode><EntryWelcome /></StrictMode>);
+  createRoot(root).render(<StrictMode><PrimeiroAcesso /></StrictMode>);
 }

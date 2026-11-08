@@ -298,3 +298,17 @@ Movimento acrescentado: a cena entra com um clarear de 1,4 s; cada elemento acen
 Movimento reduzido desliga tudo isso de uma vez, incluindo a entrada e o florescer, e deixa os brilhos acesos e estáticos.
 
 Peso conferido no build: `DespertarCena` sai como chunk próprio de 13,55 kB (5,48 kB comprimido) mais 3,86 kB de CSS, e o three.js continua em chunk separado, confirmando que a introdução não o carrega sem Lua para mostrar.
+
+## Primeiro acesso: despertar, duas perguntas, entrada (08/11/2026)
+
+Fábio pediu o redesenho das telas de início e uma pesquisa para quando o app abre pela primeira vez.
+
+O portão continua sendo o `shouldShowWelcome` que já existia, em `main.tsx`. **Nenhum guard de conta, importação ou sessão foi tocado**: a mudança é inteiramente dentro do pacote de boas-vindas. `mount-entry-welcome.tsx` agora monta `PrimeiroAcesso`, que encadeia três passos — a cena do Despertar, as duas perguntas, e a `EntryWelcome` que já existia. Quem já viu o despertar cai direto na entrada.
+
+`src/lib/sanctuary/first-run.ts` guarda o que o primeiro acesso lembra: se o despertar já foi visto e as duas respostas. Tudo é preferência por aparelho em localStorage, como o início da semana já fazia; nada encosta no appStore, no arquivo de progresso ou na pontuação, e nada é inferido de IP ou de conta. Navegador com armazenamento negado não quebra: o primeiro acesso simplesmente roda de novo. `forgetAwakeningSeen` existe para o "rever introdução" das configurações, que entra no lote G.
+
+A pesquisa faz duas perguntas e só. O nome, que é como o app chama a pessoa, normalizado e limitado a 40 caracteres. E a cidade, entre Olinda e Recife, que decide o céu do santuário — com a explicação à vista, porque pedir a cidade sem dizer para quê é pedir demais. As duas podem ser puladas em "Responder depois", e nenhuma é necessária para usar o app. Campos de 16px, para o iOS não dar zoom, e alvos de 52px.
+
+Verificado no navegador, percurso inteiro em 390x844: o app abriu no Despertar, "Pular" levou à pesquisa, o nome `  Fábio   Rodrigues  ` foi gravado como `Fábio Rodrigues`, a cidade virou Olinda, o despertar ficou marcado como visto e a tela seguinte foi a entrada.
+
+Testes: `app/tests/sanctuary/first-run.test.mjs`, 6 casos — normalização e limite do nome, lembrar e esquecer o despertar, nome vazio não gravado, armazenamento negado sem quebrar, a ordem dos passos, e a pesquisa oferecendo as duas cidades com a atual marcada e o atalho para responder depois.
