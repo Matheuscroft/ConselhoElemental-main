@@ -4,9 +4,9 @@ Lote C em produção: cidade entre Olinda e Recife como preferência local e cá
 
 [Plano e lotes](plans/MOBILE-M11-DESPERTAR-CINEMATICO.md). Conceito C aprovado por Fábio e fatiado em camadas no lote B, com placa-base sem Sol e sem Lua, sprite da Lua e Sol procedural. Coreografia dos 28s prototipada em Remotion, fora de `app/` para não quebrar o CI, com MP4 de referência. Vinte skills instaladas e documentadas, fora do Git. Geração nova no Higgsfield bloqueada no plano gratuito; personagem definitivo depende disso. Próximo: lote D, a cena 2.5D.
 
-## F6-N14 — reenvio de recuperação e Vite local — pronto para publicação
+## F6-N14 — reenvio de recuperação e Vite local — publicado; aceite pessoal pendente
 
-Origem: feedback de Matheus sobre e-mail que abriu localhost, falta de confirmação/contador no reset e 404 dos módulos Vite. Dependências reinstaladas de forma limpa; localhost e módulos Vite respondem 200. Código usa somente o callback oficial, bloqueia PKCE cross-origin e mostra confirmação genérica com cooldown de 60s. Supabase mantém Site URL/retorno oficial e não aceita mais o callback local de recuperação. Evidências: 15 testes direcionados, lint e build passaram; navegador confirmou local → Vercel. Suíte geral local esbarra no loader Windows preexistente e será conferida no pipeline Linux. Após publicar, pedir link novo real, abrir no mesmo navegador, definir/confirmar senha e entrar novamente.
+Origem: feedback de Matheus sobre e-mail que abriu localhost, falta de confirmação/contador no reset e 404 dos módulos Vite. Dependências reinstaladas de forma limpa; localhost e módulos Vite respondem 200. Código usa somente o callback oficial, bloqueia PKCE cross-origin e mostra confirmação genérica com cooldown de 60s. Supabase mantém Site URL/retorno oficial e não aceita mais o callback local de recuperação. Evidências: 15 testes direcionados, lint e build locais passaram; workflow Linux passou; navegador confirmou local → Vercel. Main integrada em `502c04c`, deployment `dpl_7RGXb1QNk5ek258EVL8uAR21faW4` Ready e bundle oficial conferido. Falta apenas pedir link novo real, abrir no mesmo navegador, definir/confirmar senha e entrar novamente.
 
 ## F6-N13 — callback de reset no domínio oficial — app publicada; teste pessoal pendente
 
