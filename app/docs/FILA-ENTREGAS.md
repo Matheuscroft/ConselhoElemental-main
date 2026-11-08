@@ -1,6 +1,6 @@
 ## F6-N13 — callback de reset no domínio oficial — em execução
 
-No checkout `main` da versão 0.1.144, corrigir a entrada do reset vinda de localhost e callbacks que perderam `progresso=recuperar`, sem aceitar código sem prova PKCE correspondente. Link deve abrir nova senha + confirmação sem login anterior. Confirmar testes/build/lint, publicar no GitHub/Vercel já autorizado e dar orientação para pedir novo e-mail no domínio oficial. Não testar com senha/e-mail real nem alterar progresso ou schema.
+No checkout `main` da versão 0.1.144, corrigir a entrada do reset vinda de localhost e callbacks que perderam `progresso=recuperar`, sem aceitar código sem prova PKCE correspondente. Link deve abrir nova senha + confirmação sem login anterior. Auth não muda dados, XP ou config remota. A versão 145 requer compatibilidade aditiva do validador de arquivos; revisar/testar migration local antes de aplicar. O primeiro deployment falhou nesse gate. Confirmar testes/build/lint, publicar no GitHub/Vercel já autorizado e orientar pedido de novo e-mail no domínio oficial. Não usar senha/e-mail real.
 
 ## M10 — introdução e acesso mobile publicados — 0.1.144 (07/11/2026)
 

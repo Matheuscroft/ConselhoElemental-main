@@ -3,7 +3,7 @@
 - Pedidos de reset abertos em localhost encaminham para o Vercel oficial antes de criar o verificador PKCE; o e-mail e o retorno passam a usar a mesma origem.
 - Callback de reset sem query de rota só é adotado com comprovante válido, recente, da mesma origem e projeto. O código sai do endereço antes do Auth.
 - Ao abrir o link, o app valida automaticamente e mostra os campos de nova senha e confirmação; não exige a senha antiga nem login anterior.
-- Não altera dados, XP, armazenamento de progresso, schema, redirects remotos ou configuração SMTP.
+- O ajuste de Auth não altera dados, XP ou redirects/SMTP remotos. A versão 145 acrescenta apenas o número à allowlist do validador de arquivos: nenhuma linha/arquivo é regravado, e gate, grants e pontuação ficam preservados.
 
 ## 0.1.144 — 07/11/2026
 

@@ -25,12 +25,14 @@ export const scorePanelVersionMigration=readFileSync('supabase/migrations/202611
 export const mobileTimerVersionMigration=readFileSync('supabase/migrations/20261107215418_account_archive_version_142.sql','utf8');
 export const refinedTimerVersionMigration=readFileSync('supabase/migrations/20261108003620_account_archive_version_143.sql','utf8');
 export const accessOnboardingVersionMigration=readFileSync('supabase/migrations/20261108014325_access_onboarding_version_144.sql','utf8');
+export const accountArchiveVersion145Migration=readFileSync('supabase/migrations/20261108060000_account_archive_version_145.sql','utf8');
 // Integration fixtures exercise the complete LOCAL candidate, not hosted state.
 const migration140=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+newJourneyVersionMigration+'\n'+authOnlyVersionMigration+'\n'+restoreHelpVersionMigration+'\n'+simpleImportVersionMigration+'\n'+quotaVersionMigration+'\n'+connectionVersionMigration;
 const migration141=migration140+'\n'+scorePanelVersionMigration;
 const migration142=migration141+'\n'+mobileTimerVersionMigration;
 const migration143=migration142+'\n'+refinedTimerVersionMigration;
 export const migration=migration143+'\n'+accessOnboardingVersionMigration;
+export const migration145=migration+'\n'+accountArchiveVersion145Migration;
 export async function createLegacyDatabase(){
  const db=new PGlite();
  // Isolated in-memory PostgreSQL. No network, server connection, env or real Auth.
@@ -47,7 +49,7 @@ export async function createLegacyDatabase(){
 export async function createAccountDatabase({release=true,producerVersion=144}={}){
  const db=await createLegacyDatabase();
  try{
-  await db.exec(producerVersion>=144?migration:producerVersion>=143?migration143:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140);
+  await db.exec(producerVersion>=145?migration145:producerVersion>=144?migration:producerVersion>=143?migration143:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140);
   if(release)await db.exec('update progress_private.release_gate set writes_enabled=true where singleton'); // test-only postgres owner
   return db;
  }catch(error){await db.close();throw error;}
