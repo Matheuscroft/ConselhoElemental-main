@@ -1,3 +1,13 @@
+## 0.1.145 — 08/11/2026 · recuperação de senha no domínio oficial
+
+- O pedido de recuperação agora envia explicitamente o callback oficial, e o Supabase não aceita mais o retorno local antigo para reset; clientes fora do domínio oficial não criam um verificador PKCE inutilizável.
+- Após aceitar o pedido, a tela confirma o envio de forma neutra e conta 60 segundos até liberar novo envio.
+- Pedidos de reset abertos em localhost encaminham para o Vercel oficial antes de criar o verificador PKCE; o e-mail e o retorno passam a usar a mesma origem.
+- Callback de reset sem query de rota só é adotado com comprovante válido, recente, da mesma origem e projeto. O código sai do endereço antes do Auth.
+- Ao abrir o link, o app valida automaticamente e mostra os campos de nova senha e confirmação; não exige a senha antiga nem login anterior.
+- O ajuste de Auth não altera dados, XP ou redirects/SMTP remotos. A versão 145 acrescenta apenas o número à allowlist do validador de arquivos: nenhuma linha/arquivo é regravado, e gate, grants e pontuação ficam preservados.
+- A auditoria local também reconhece explicitamente arquivos da versão 145; versões futuras continuam bloqueadas até revisão.
+
 ## 0.1.144 — 07/11/2026
 
 - Entrada redesenhada: boas-vindas para primeira visita sem progresso, login/cadastro/recuperação com identidade elemental, foco mobile, campos legíveis e senha visível por escolha. Importação e modo sem conta explícitos; /auth abre a conta integral existente.

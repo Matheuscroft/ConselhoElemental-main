@@ -4,12 +4,12 @@ import {createHash,randomUUID} from 'node:crypto';
 import {createLegacyDatabase,installedMigration,archiveVersionMigration,accessVersionMigration,mergeVersionMigration,fitnessIdentityVersionMigration,intuitiveIconsVersionMigration,catalogueVersionMigration,handoffVersionMigration,auxiliaryUiVersionMigration,colouredRewardsVersionMigration,savedLibraryVersionMigration,localRestoreVersionMigration,guidedTransferVersionMigration,appIconVersionMigration,mobileImportVersionMigration,newJourneyVersionMigration,authOnlyVersionMigration,restoreHelpVersionMigration,simpleImportVersionMigration,quotaVersionMigration,connectionVersionMigration} from './load-account-db.mjs';
 import {fixture} from './load-progress.mjs';
 
-test('separate producer-version revision preserves the installed SQL, stored bytes and closed gate',async()=>{
+test('current producer version keeps prior migration history and stored bytes intact',async()=>{
  assert.equal(createHash('sha256').update(installedMigration).digest('hex'),'9d0d074a51e62f4a98248ff699948546aab6a8203f586bd5d556b4b65bf85809');
  const db=await createLegacyDatabase();
  try{
   await db.exec(installedMigration);
-  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.144');
+  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.145');
   const archive=await f.createProgressBackup(snapshot);
   await assert.rejects(db.query('select progress_private.validate_archive($1)',[archive]),/progress_invalid_archive/);
   const previous=await f.createProgressBackup({...snapshot,appVersion:'0.1.120'}),user=randomUUID();

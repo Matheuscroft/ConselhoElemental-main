@@ -54,6 +54,11 @@ test('file version and issue volume are explicit; public notices never copy cont
  assert.doesNotMatch(JSON.stringify(result),/Private title|private invalid date/);
 });
 
+test('current producer version 145 is reviewed while future versions remain blocked',async()=>{
+ const {f,backup}=await seed();assert.deepEqual(f.auditCriticalProgress(backup),{issues:[],truncated:false});
+ backup.appVersion='0.1.146';assert.equal(f.auditCriticalProgress(backup).issues[0].path,'appVersion');
+});
+
 test('preview carries findings without changing the archive or current state',async()=>{
  const {f,backup}=await seed();backup.stores.core.state.user.xp_air='bad';
  const original=JSON.stringify(backup);const {checksum,...snapshot}=backup;

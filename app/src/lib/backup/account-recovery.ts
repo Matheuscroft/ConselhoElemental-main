@@ -1,6 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
+import { RECOVERY_PROOF_KEY } from './account-recovery-proof';
+import { PRODUCTION_APP_ORIGIN } from './account-recovery-entry';
 
-export const RECOVERY_PROOF_KEY = 'conselho-elemental-password-recovery-v1';
+export { RECOVERY_PROOF_KEY } from './account-recovery-proof';
 export const RECOVERY_LOCK = 'conselho-elemental-password-recovery-operation-v1';
 const MAX_AGE = 60 * 60 * 1000;
 type StoragePort = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
@@ -75,9 +77,12 @@ export function createPasswordRecovery(options: Options, construct: typeof creat
   return {
     request(email: string) { return exclusive(async () => {
       if (userId) throw new Error('Encerre a conferência atual antes de solicitar outro link.');
+      if (origin.origin !== PRODUCTION_APP_ORIGIN) throw new Error('Continue a recuperação no endereço oficial do app e solicite o link novamente.');
       const address = email.trim();
       if (!address || address.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address)) throw new Error('Informe um e-mail válido.');
-      const redirectTo = new URL('/?progresso=recuperar', origin.origin).href;
+      // Supabase must return to the canonical app domain even when a request
+      // is accidentally initiated from a local dev tab.
+      const redirectTo = `${PRODUCTION_APP_ORIGIN}/?progresso=recuperar`;
       const result = await client.auth.resetPasswordForEmail(address, { redirectTo }); live();
       if (result.error) throw new Error('Não foi possível enviar o link agora. Aguarde e tente novamente.');
       // Generic response avoids disclosing whether this email has an account.
