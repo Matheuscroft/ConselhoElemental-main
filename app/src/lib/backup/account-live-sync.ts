@@ -12,6 +12,7 @@ export interface LiveAccountSession {
   client: AccountRpcClient;
   dispose: () => void;
   userId: string;
+  email?: string;
   bindingRaw: string;
   allProfilesConfirmed: true;
   startRefresh?: (onFailure: () => void) => () => void;
@@ -19,14 +20,15 @@ export interface LiveAccountSession {
   activateResume?: () => void;
   forgetResume?: () => void;
 }
-export type AccountSyncStatus = 'idle' | 'checking' | 'saving' | 'saved' | 'pending' | 'blocked' | 'stopped';
-export interface AccountSyncView { status: AccountSyncStatus; message: string }
+export type AccountSyncStatus = 'idle' | 'offline' | 'checking' | 'saving' | 'saved' | 'pending' | 'blocked' | 'stopped';
+export interface AccountSyncView { status: AccountSyncStatus; message: string; lastSavedAt?: string; email?: string }
 interface Options {
   origin: string;
   storage: RestoreStorage;
   session: LiveAccountSession;
   /** Must remain true only during this document's exclusive progress lease. */
   isExclusive: () => boolean;
+  isOnline?: () => boolean;
 }
 
 /** One in-memory session coordinator. It never reads legacy auth or hydrates a store.
@@ -37,9 +39,9 @@ export function createLiveAccountSync(options: Options) {
   if (session.allProfilesConfirmed !== true || !isExclusive()) throw new Error('Confirme a sessão exclusiva e o envio de todos os perfis.');
   let active = true, generation = 0, bindingRaw = session.bindingRaw;
   let job: Promise<void> | null = null;
-  let view: Readonly<AccountSyncView> = Object.freeze({ status:'idle', message:'Alterações deste navegador serão enviadas integralmente durante esta sessão.' });
+  let view: Readonly<AccountSyncView> = Object.freeze({ status:'idle', message:'Suas alterações serão salvas nesta conta durante o uso.', email:session.email });
   const listeners = new Set<() => void>();
-  const set = (status: AccountSyncStatus, message: string) => { view = Object.freeze({status,message}); for (const notify of listeners) notify(); };
+  const set = (status: AccountSyncStatus, message: string) => { view = Object.freeze({...view,status,message}); for (const notify of listeners) notify(); };
   const current = (token: number) => active && token === generation && isExclusive()
     && storage.getItem(ACCOUNT_RESOLUTION_KEY) === null && storage.getItem(ACCOUNT_BINDING_KEY) === bindingRaw && storage.getItem(RESTORE_JOURNAL_KEY) === null;
   const check = (token: number) => { if (!current(token)) throw new Error('A sessão ou o progresso mudou. Confira a conta antes de continuar.'); };
@@ -62,6 +64,7 @@ export function createLiveAccountSync(options: Options) {
     const token = ++generation;
     try {
       check(token);
+      if (options.isOnline?.() === false) { set('offline','Sem internet. Seu progresso permanece neste aparelho e será conferido quando a conexão voltar.'); return; }
       if (storage.getItem(ACCOUNT_INTENT_KEY) !== null) { set('pending','Uma tentativa aguarda conferência. Nenhum reenvio automático será feito.'); return; }
       const binding = await inspectAccountBinding(bindingRaw,origin); check(token);
       if (binding.userId !== session.userId) throw new Error('A conta não corresponde ao vínculo desta sessão.');
@@ -72,7 +75,7 @@ export function createLiveAccountSync(options: Options) {
       const digest = await accountBaselineDigest(storage); check(token);
       const unchanged = () => storage.getItem(STORE_KEYS.core) === pair.core && storage.getItem(STORE_KEYS.fitness) === pair.fitness;
       if (!unchanged()) { set('idle','Há novas edições locais. Elas serão conferidas no próximo envio.'); return; }
-      if (digest === binding.baselineDigest) { set('saved','A versão conferida está salva na conta.'); return; }
+      if (digest === binding.baselineDigest) { view = Object.freeze({...view,lastSavedAt:binding.createdAt}); set('saved','A versão conferida está salva na conta.'); return; }
       const snapshot = validateStoredProgress(pair,origin);
       if (!snapshot) throw new Error('Não há progresso integral válido para enviar.');
       const archive = await createProgressBackup(snapshot);
@@ -96,6 +99,7 @@ export function createLiveAccountSync(options: Options) {
       // No more awaited work or transport calls after the binding handoff.
       bindingRaw = next;
       write(ACCOUNT_INTENT_KEY,null);
+      view = Object.freeze({...view,lastSavedAt:confirmed.receipt.createdAt});
       set(unchanged()?'saved':'idle',unchanged()?'Progresso integral salvo e recibo conferido.':'A versão enviada foi salva. Edições mais recentes continuam locais até o próximo envio.');
     } catch (error) {
       if (!active) return;

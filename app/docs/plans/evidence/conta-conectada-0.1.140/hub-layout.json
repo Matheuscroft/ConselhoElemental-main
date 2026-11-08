@@ -1,0 +1,38 @@
+{
+  "metrics": [
+    {
+      "viewport": 360,
+      "x": 16,
+      "right": 344,
+      "top": 49.625,
+      "bottom": 850.375,
+      "width": 328,
+      "height": 800.75,
+      "closeWidth": 44,
+      "closeHeight": 44
+    },
+    {
+      "viewport": 390,
+      "x": 16,
+      "right": 374,
+      "top": 83.2265625,
+      "bottom": 816.7734375,
+      "width": 358,
+      "height": 733.546875,
+      "closeWidth": 44,
+      "closeHeight": 44
+    },
+    {
+      "viewport": 768,
+      "x": 160,
+      "right": 608,
+      "top": 83.2265625,
+      "bottom": 816.7734375,
+      "width": 448,
+      "height": 733.546875,
+      "closeWidth": 44,
+      "closeHeight": 44
+    }
+  ],
+  "physicalPhone": false
+}

@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { operationalDateKey, dateToInput } from '@/lib/temporal/recurrence';
 import { TaskCompletionFeedback } from '@/components/rewards/TaskCompletionFeedback';
 import { RitualShowcase } from '@/components/rituals/RitualShowcase';
@@ -101,8 +102,12 @@ export const Rituais: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterElement, setFilterElement] = useState<ElementId | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
-  const [activeTask, setActiveTask] = useState<string | null>(null);
-  const [showTimer, setShowTimer] = useState(false);
+  const [manualActiveTask, setActiveTask] = useState<string | null>(null);
+  const [manualShowTimer, setShowTimer] = useState(false);
+  const returnedTask = questParams.get('cronometro') === '1' && timer.entityType === 'TASK'
+    ? tasks.find(task => task.id === questParams.get('atividade') && task.id === timer.entityId && !task.isCompleted && !task.childItems?.length) : undefined;
+  const activeTask = returnedTask?.id ?? manualActiveTask;
+  const showTimer = manualShowTimer || !!returnedTask;
   const [completedTaskId, setCompletedTaskId] = useState<string | null>(null);
   const [earnedPoints, setEarnedPoints] = useState(0);
   const [newItemTitle, setNewItemTitle] = useState('');
@@ -114,6 +119,8 @@ export const Rituais: React.FC = () => {
   } | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [quickCreateName, setQuickCreateName] = useState('');
+  const [quickElement, setQuickElement] = useState<ElementId>('terra');
+  const [editElement, setEditElement] = useState<ElementId>('terra');
   const [showQuickEdit, setShowQuickEdit] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null); // 🎯 ID do TaskItem sendo editado
@@ -167,7 +174,6 @@ export const Rituais: React.FC = () => {
     
     // Filter by element
     if (filterElement) {
-      if (!task.areaPrimaryId) return false;
       if (task.elementId !== filterElement) return false;
     }
     
@@ -180,10 +186,14 @@ export const Rituais: React.FC = () => {
 
   // Start task timer
   const handleStartTask = (taskId: string) => {
+    const active = useAppStore.getState().timer;
+    if (active.entityId && (active.entityId !== taskId || active.entityType !== 'TASK')) { toast.info('Retome ou conclua o cronômetro atual antes de iniciar outro.'); return; }
     setActiveTask(taskId);
     startTimer(taskId, 'TASK');
     setShowTimer(true);
   };
+
+
 
   // Stop and complete task
   const handleStopAndComplete = () => {
@@ -276,7 +286,7 @@ export const Rituais: React.FC = () => {
       title: quickCreateName.trim(),
       areaPrimaryId: null,
       baseValue: 1,
-      elementId: filterElement || 'terra',
+      elementId: quickElement,
       plannedTimeMinutes: null, // Sem tempo por padrão
     });
     
@@ -339,6 +349,7 @@ export const Rituais: React.FC = () => {
         title: editName.trim(),
         dueDate: plannedDate,
         areaPrimaryId: nextAreaPrimaryId,
+        ...(!hasChildren ? { elementId: editElement } : {}),
         subareaPrimaryId: nextSubareaPrimaryId,
         areaSecondaryId1: nextAreaSecondaryId1,
         areaSecondaryId2: nextAreaSecondaryId2,
@@ -396,6 +407,7 @@ export const Rituais: React.FC = () => {
       updateTaskItem(editingItemTaskId, editingItemId, {
         title: editName.trim(),
         areaPrimaryId: nextAreaPrimaryId,
+        ...(!hasChildren ? { elementId: editElement } : {}),
         subareaPrimaryId: nextSubareaPrimaryId,
         areaSecondaryId1: nextAreaSecondaryId1,
         areaSecondaryId2: nextAreaSecondaryId2,
@@ -436,6 +448,7 @@ export const Rituais: React.FC = () => {
     setEditDueDate(dateToInput(task.dueDate));
     setEditDateError('');
     setEditArea(task.areaPrimaryId || 'none');
+    setEditElement(allAreasForEdit.find(area => area.id === task.areaPrimaryId)?.elementId ?? task.elementId);
     setEditSubarea(task.subareaPrimaryId || 'none');
     const hasSecondary = Boolean(task.areaSecondaryId1);
     const hasTertiary = Boolean(task.areaSecondaryId2);
@@ -478,6 +491,7 @@ export const Rituais: React.FC = () => {
     setEditingItemTaskId(taskId);
     setEditName(item.title);
     setEditArea(item.areaPrimaryId || 'none');
+    setEditElement(allAreasForEdit.find(area => area.id === item.areaPrimaryId)?.elementId ?? item.elementId ?? task.elementId);
     setEditSubarea(item.subareaPrimaryId || 'none');
     const hasSecondary = Boolean(item.areaSecondaryId1);
     const hasTertiary = Boolean(item.areaSecondaryId2);
@@ -609,7 +623,7 @@ export const Rituais: React.FC = () => {
           </p>
         </div>
         <Button 
-          onClick={() => setShowQuickCreate(true)}
+          onClick={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }}
           className="bg-mystic-arcane hover:bg-mystic-arcane/80"
         >
           <Plus className="w-4 h-4 mr-1" />
@@ -748,7 +762,7 @@ export const Rituais: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <EmptyState type="pending" filtered={!!searchQuery || !!filterElement} onClear={() => { setSearchQuery(''); setFilterElement(null); }} onCreate={() => setShowQuickCreate(true)} />
+              <EmptyState type="pending" filtered={!!searchQuery || !!filterElement} onClear={() => { setSearchQuery(''); setFilterElement(null); }} onCreate={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }} />
             )}
           </AnimatePresence>
         </TabsContent>
@@ -786,7 +800,10 @@ export const Rituais: React.FC = () => {
       </>}
 
       {/* Timer Modal */}
-      <Dialog open={showTimer} onOpenChange={setShowTimer}>
+      <Dialog open={showTimer} onOpenChange={open => {
+        setShowTimer(open);
+        if (!open) { setActiveTask(null); const next = new URLSearchParams(questParams); next.delete('cronometro'); setQuestParams(next, { replace: true, preventScrollReset: true }); }
+      }}>
         <DialogContent className="elemental-timer-dialog max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-mystic text-center text-xl">
@@ -802,7 +819,7 @@ export const Rituais: React.FC = () => {
               element={activeTaskData.elementId}
               time={formatTime(timer.elapsedSeconds)}
               running={timer.isRunning}
-              plannedLabel={formatDuration(activeTaskData.plannedTimeMinutes || 30)}
+              plannedLabel={activeTaskData.plannedTimeMinutes && activeTaskData.plannedTimeMinutes > 0 ? formatDuration(activeTaskData.plannedTimeMinutes) : undefined}
               effortLabel={EFFORT_LABELS[activeTaskData.effortLevel || 2].label}
               onToggle={() => timer.isRunning ? useAppStore.getState().pauseTimer() : useAppStore.getState().resumeTimer()}
               onComplete={handleStopAndComplete}
@@ -857,6 +874,8 @@ export const Rituais: React.FC = () => {
               />
             </div>
 
+            <RitualElementChoice value={quickElement} onChange={setQuickElement} />
+            <p className="text-sm text-white/60">O ritual ficará em {ELEMENTS[quickElement].name}. A área pode ser definida depois.</p>
             <div className="flex gap-3">
               <Button 
                 variant="outline" 
@@ -922,6 +941,7 @@ export const Rituais: React.FC = () => {
               {editDateError && <p role="alert" className="text-sm text-red-300">{editDateError}</p>}
             </div>}
 
+            {editArea === 'none' && !isAggregatorLocked && <RitualElementChoice value={editElement} onChange={setEditElement} />}
             {/* Área Primária e Subárea Primária */}
             <div className="grid grid-cols-2 gap-3 pb-4 border-b border-white/10">
               <div>
@@ -930,6 +950,9 @@ export const Rituais: React.FC = () => {
                   value={editArea} 
                   onValueChange={(value) => {
                     setEditArea(value);
+                    const area = allAreasForEdit.find(area => area.id === value);
+                    if (area) setEditElement(area.elementId);
+                    setEditSubarea('none');
                     if (value === 'none') setEditSubarea('none');
                   }}
                   disabled={isAggregatorLocked}
@@ -2061,3 +2084,18 @@ const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate, filtered, onCle
     )}
   </motion.div>
 );
+
+/** Explicit selection, independent of optional life-area categorization. */
+function RitualElementChoice({ value, onChange }: { value: ElementId; onChange: (element: ElementId) => void }) {
+  return <fieldset className="space-y-2">
+    <legend className="text-sm text-white/70">Elemento do ritual</legend>
+    <div className="grid grid-cols-4 gap-2">
+      {(Object.keys(ELEMENTS) as ElementId[]).map(id => <button key={id} type="button"
+        aria-pressed={value === id} onClick={() => onChange(id)}
+        className="min-h-16 rounded-xl border border-white/15 flex flex-col items-center justify-center gap-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold"
+        style={{ color: `var(--element-${id})`, borderColor: value === id ? `var(--element-${id})` : undefined, background: value === id ? 'rgba(213,182,111,.10)' : undefined }}>
+        <ElementIcon element={id} size={24} /><span>{ELEMENTS[id].name}</span>
+      </button>)}
+    </div>
+  </fieldset>;
+}

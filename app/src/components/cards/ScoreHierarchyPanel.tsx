@@ -69,7 +69,8 @@ const sanitizeNonNegativeNumber = (value: unknown): number | null => {
 
 const getHabitBasePoints = (habit: Habit): number => {
   const semanticType = habit.semanticType ?? 'valuable';
-  if (semanticType !== 'valuable') return 0;
+  // The core persists VALUABLE; imported older nodes may use lowercase.
+  if (semanticType !== 'valuable' && semanticType !== 'VALUABLE') return 0;
 
   if (habit.childHabits.length > 0) {
     // Aggregators never contribute direct base points.

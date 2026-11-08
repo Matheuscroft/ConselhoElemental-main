@@ -1,0 +1,7 @@
+{
+  "status": 200,
+  "signupDisabled": false,
+  "emailEnabled": true,
+  "emailAutoconfirm": false,
+  "errorCode": null
+}

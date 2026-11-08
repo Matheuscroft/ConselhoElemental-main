@@ -1,3 +1,57 @@
+- [M08–M09: rituais, cronômetro e Git → Vercel143](MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md)
+
+- [M07 — cronômetro e atualização no celular](MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md)
+- [F6-N12 — pontuação no painel Sua evolução](FECHAMENTO-F6-N12-PAINEL-EVOLUCAO.md)
+[F6-N10 — Minha conta, configuração Vercel e conexão integral —0.1.140](FECHAMENTO-F6-N10-CONTA-CONECTADA.md) — UI e protocolo publicados; SMTP/cadastro real pendentes.
+
+[F6-N09 — quota e retomada da importação —0.1.139](FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md) — correção reproduzida com limite5MiB; acompanhamento no relatório.
+
+[F6-N08 — arquivo + uma confirmação —0.1.138](FECHAMENTO-F6-N08-IMPORTACAO-SIMPLES.md) — publicado e ensaiado; substitui o roteiro manualN07.
+
+[F6-N07 — requisitos da restauração —0.1.137](FECHAMENTO-F6-N07-REQUISITOS-RESTAURACAO.md) — publicada,699testes e percurso Chromium sintético passaram.
+
+[F6-N06 — republicação forçada da136](FECHAMENTO-F6-N06-REPUBLICACAO.md) — READY e HTTP conferidos, armazenamento preservado.
+
+[F6-N05 — importação real e Auth isolado — 0.1.136](FECHAMENTO-F6-N05-ACESSO-E-IMPORTACAO.md) — publicado; transferência no iPhone ainda exige a cópia e confirmação no aparelho.
+
+[F6-N04 — URLs de Auth persistidas](FECHAMENTO-F6-N04-URLS-AUTH.md) — aprovação explícita, readback após reload; cadastro/login e sincronização ainda pendentes.
+
+[F6-N03 — compatibilidade135 instalada com escrita fechada](FECHAMENTO-F6-N03-COMPATIBILIDADE-INSTALADA.md) — próximo Auth/URLs e aceite real.
+
+[F6-N02 — conexão retomada e pacote135 revisado](FECHAMENTO-F6-N02-COMPATIBILIDADE-HOSPEDADA.md) — aguardando autorização de aplicação com escrita desativada.
+
+[F6-N01 — início integral de conta nova 0.1.135](FECHAMENTO-F6-N01-CONTA-NOVA.md) — implementação local; aceite hospedado pendente.
+
+[M06 — importação e navegação mobile 0.1.134](IMPORTACAO-MOBILE-M06-0.1.134.md) — falso positivo de vínculos reproduzido/corrigido; conta F6 como próxima prioridade.
+
+## Ícone de instalação — I05 / 0.1.133
+
+- [Imagem enviada, arquivos mobile e publicação](ICONE-APP-I05-0.1.133.md). Arte preservada; progressos não alterados.
+
+## Transferência guiada e fluxo permanente — P04 / 0.1.132
+
+- [Manual curto, ambiente de testes e evidências](TRANSFERENCIA-GUIADA-P04-0.1.132.md). Publicado no mesmo projeto; conta/sync depois; importação pessoal pendente.
+
+## Importação local publicada — P03 / 0.1.131
+
+- [Fluxo real liberado e limites da transferência](IMPORTACAO-LOCAL-P03-0.1.131.md). Restaurar local true; conta/lembretes false; dados pessoais ainda não importados.
+
+## Projeto separado de testes — V02
+
+- [App completo, endereço fixo e painel Vercel](VERCEL-PROJETO-TESTES-V02.md). Publicado no novo projeto; importação pessoal ainda pendente.
+
+## Transferência pessoal — P02 / aceite no celular pendente
+
+- [Backup salvo e ensaio sintético separado](TRANSFERENCIA-P02-ENSAIO-CELULAR.md). Dados pessoais não importados; gate do produto continua fechado.
+
+## Prévia Vercel — V01 / 0.1.130
+
+- [Deploy para testes no celular, proteção e limites de progresso](VERCEL-PREVIA-0.1.130.md). Preview READY, produção preservada; não equivale a conta/sincronização pronta.
+
+## Biblioteca direta e evolução — T06 / 0.1.130 local
+
+- [Plano, dependências e lote implementado](EVOLUCAO-T06-BIBLIOTECA-0.1.130.md). Sem novo push, ativação de conta ou SQL remoto.
+
 ## Recompensas coloridas e publicação — T05 / 0.1.129
 
 - [Entrega e recebimento em main](XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Publicado em main no commit técnico 3e48d3c; T04 incluída, 674 testes completos, gates fechados, sem deploy/SQL remoto.

@@ -1,0 +1,54 @@
+{
+  "version": "0.1.132",
+  "date": "2026-11-06",
+  "fullSuite": {
+    "passed": 679,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 84163.387083
+  },
+  "targetedWorkspace": {
+    "passed": 13,
+    "durationMs": 1030.691583
+  },
+  "typescript": "passed",
+  "eslint": "passed",
+  "build": {
+    "passed": true,
+    "envDir": false,
+    "seconds": 39.14
+  },
+  "sourceDeltaFrom131": [
+    "RestoreWorkspace.tsx",
+    "restore-workspace.css",
+    "critical-progress.ts producer whitelist"
+  ],
+  "domainEngineChanges": false,
+  "remoteSqlApplied": false,
+  "personalImportPerformed": false,
+  "releaseFlags": {
+    "restore": true,
+    "account": false,
+    "reminders": false
+  },
+  "publication": {
+    "project": "conselho-elemental-testes",
+    "id": "dpl_66XBoXzMsT24Bp6eXgwXML6JZDds",
+    "readyState": "READY",
+    "target": "production",
+    "stableAlias": "https://conselho-elemental-testes.vercel.app",
+    "remoteBuildSeconds": 19.97,
+    "remoteBuildTotalSeconds": 45,
+    "browserInspection": "initial guided screen inspected on immutable deployment in Codex desktop browser",
+    "physicalMobileAcceptance": "pending",
+    "personalDataImported": false
+  },
+  "afterFinalBusyRenderGuard": {
+    "workspaceTestsPassed": 13,
+    "durationMs": 729.009042,
+    "typescript": "passed",
+    "eslint": "passed",
+    "buildSeconds": 8.23,
+    "fullSuiteRepeated": false
+  }
+}

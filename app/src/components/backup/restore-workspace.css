@@ -59,3 +59,10 @@
   .restore-workspace dl > div > dt { flex: 1 1 10rem; }
   .restore-workspace dl > div > dd { max-width: 100%; }
 }
+
+.restore-workspace-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; list-style:none; padding:0; margin:16px 0 24px; }
+.restore-workspace-steps li { display:flex; flex-direction:column; gap:8px; align-items:flex-start; color:#aab4c4; font-size:12px; line-height:1.4; }
+.restore-workspace-steps li>span { display:grid; place-items:center; width:30px; height:30px; border:1px solid #667085; border-radius:50%; font-size:14px; }
+.restore-workspace-steps li[aria-current=step] { color:#dfc17b; }
+.restore-workspace-steps li[aria-current=step]>span { background:#dfc17b; color:#10141d; border-color:#dfc17b; }
+.restore-workspace-help { border-inline-start:3px solid #dfc17b; padding:12px; }

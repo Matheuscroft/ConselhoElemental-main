@@ -1,0 +1,61 @@
+{
+  "date_local": "2026-11-07",
+  "project": "myvxvgeyseoyugskqlqr",
+  "approval": {
+    "answer": "Sim, salvar esses endereços",
+    "scope": "Site URL e os cinco Redirect URLs da proposta; escrita de progresso permanece desativada"
+  },
+  "observed_on_resume": {
+    "site_url": "http://localhost:3000",
+    "redirect_urls": [
+      "https://conselho-elemental-testes.vercel.app/?progresso=conta",
+      "https://conselho-elemental-testes.vercel.app/?progresso=recuperar",
+      "http://127.0.0.1:5173/?progresso=conta",
+      "http://127.0.0.1:5173/?progresso=recuperar",
+      "http://localhost:3000"
+    ],
+    "redirect_save_click_by_agent_observed": false
+  },
+  "agent_action": "Site URL preenchido e Save changes clicado",
+  "dashboard_success_message": "Successfully updated site URL",
+  "readback_after_reload": {
+    "site_url": "https://conselho-elemental-testes.vercel.app",
+    "redirect_urls": [
+      "https://conselho-elemental-testes.vercel.app/?progresso=conta",
+      "https://conselho-elemental-testes.vercel.app/?progresso=recuperar",
+      "http://127.0.0.1:5173/?progresso=conta",
+      "http://127.0.0.1:5173/?progresso=recuperar",
+      "http://localhost:3000"
+    ],
+    "total_urls": 5,
+    "save_changes_disabled": true,
+    "source": "árvore acessível do painel Supabase no navegador interno"
+  },
+  "screenshot": "configuracao-salva.jpg",
+  "local_gates_checked": {
+    "account_transfer": false,
+    "restore": true,
+    "reminders": false
+  },
+  "remote_progress_gate": {
+    "changed": false,
+    "queried_this_completion": false,
+    "last_verified": "F6-N03, false"
+  },
+  "personal_progress_accessed_or_transferred": false,
+  "auth_account_created_or_used": false,
+  "deployment": false,
+  "migration": false,
+  "push": false,
+  "tests_rerun_this_completion": false,
+  "previous_local_tests": {
+    "tests": 15,
+    "duration_ms": 232.336083,
+    "scope": "Auth SDK with substituted fetch; no hosted email/account"
+  },
+  "limits": [
+    "Sem e-mail, login ou recuperação reais",
+    "Aceite de importação pessoal no iPhone ainda pendente",
+    "Captura estreita não mostra lista completa; AX conferiu os valores completos"
+  ]
+}

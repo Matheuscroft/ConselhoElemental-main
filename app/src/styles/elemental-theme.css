@@ -153,3 +153,20 @@ input:focus, textarea:focus { box-shadow: 0 0 0 2px rgb(var(--el-gold) / .4); }
 .elemental-nav-group h3.elemental-nav-trigger { cursor: default; }
 .elemental-nav-group > h3 { margin: 0; }
 .elemental-nav-group[data-revealed="true"] .elemental-reveal-panel { transition: none; }
+
+/* Compact mobile discovery; presentation scoped to the global route sheet. */
+.all-routes-sheet .elemental-nav-group .elemental-nav-trigger { padding:12px; gap:10px; min-height:68px; }
+.all-routes-sheet .elemental-nav-seal { width:36px; height:40px; border-radius:12px; }
+.all-routes-sheet .elemental-nav-seal svg { width:24px; height:24px; }
+.all-routes-sheet .elemental-nav-group-title strong { font-size:16px; }
+.all-routes-sheet .elemental-nav-group-title small { font-family:Inter,system-ui,sans-serif; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.all-routes-sheet .elemental-route-search input { font-size:16px; }
+.all-routes-sheet > button { min-height:44px; min-width:44px; top:8px; right:8px; }
+
+.mobile-quick-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-bottom: 16px; }
+.mobile-quick-actions button { min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d5b66f40; border-radius: 14px; color: #d5b66f; background: #d5b66f0b; font-size: 12px; }
+.mobile-quick-actions button:focus-visible { outline: 2px solid #d5b66f; outline-offset: 3px; }
+.route-page-label { display: grid; gap: 3px; }
+.route-page-label strong { font-weight: 500; }
+.route-page-label small { color: #aeb9c7; font-weight: 400; font-size: 11px; line-height: 1.45; }
+@media(max-width:767px) { .all-routes-sheet input[type="search"] { font-size: 16px; } }

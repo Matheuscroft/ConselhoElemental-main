@@ -90,3 +90,9 @@ test('page lifecycle disposal preserves remembered access; explicit forget and i
  for(const action of ['stop','forgetAccess','invalidate']){const f=await setup();let forgotten=0;f.options.session.forgetResume=()=>{forgotten++;};const live=f.live();live[action]();assert.equal(forgotten,action==='stop'?0:1);assert.equal(f.disposed,1);assert.equal(commits(f),0);}
  const f=await setup();f.options.session.forgetResume=()=>{throw Error('storage denied');};const live=f.live();assert.equal(live.forgetAccess(),false);assert.equal(live.getSnapshot().status,'stopped');assert.equal(f.disposed,1);
 });
+
+test('offline use writes no intent or network request; reconnect saves exact edits and exposes the receipt timestamp',async()=>{
+ const f=await setup();let online=false;const live=f.api.createLiveAccountSync({...f.options,isOnline:()=>online});f.local.core.getState().addDraft('Edição offline preservada','');const before=domain(f);
+ await live.flush();assert.equal(live.getSnapshot().status,'offline');assert.equal(f.calls.length,0);assert.deepEqual(domain(f),before);assert.equal(f.storage.getItem(f.api.ACCOUNT_INTENT_KEY),null);
+ online=true;await live.flush();assert.equal(live.getSnapshot().status,'saved');assert.equal(commits(f),1);assert.ok(Number.isFinite(Date.parse(live.getSnapshot().lastSavedAt)));assert.deepEqual(domain(f),before);live.stop();
+});

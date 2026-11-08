@@ -36,9 +36,9 @@ test('changes to domain data, journal or local mode invalidate asynchronous prep
 test('selected archive and baseline are frozen before asynchronous checks; empty origin needs no previous copy',async()=>{
  const f=await setup(),selected=f.preview.text;const pending=api.prepareConfirmedRestore(f.preview,f.safety.text,f.storage,origin);
  f.preview.text='changed after confirmation';f.preview.baseline.pair.core='changed caller object';
- const prepared=JSON.parse(JSON.parse(await pending).payload);assert.equal(prepared.target.core,JSON.stringify({state:(await f.f.inspectProgressBackup(selected)).backup.stores.core.state,version:(await f.f.inspectProgressBackup(selected)).backup.stores.core.version}));assert.deepEqual(f.writes,[]);
+ const prepared=JSON.parse(await api.decodeRestoreJournalPayload(JSON.parse(await pending).payload));assert.equal(prepared.target.core,JSON.stringify({state:(await f.f.inspectProgressBackup(selected)).backup.stores.core.state,version:(await f.f.inspectProgressBackup(selected)).backup.stores.core.version}));assert.deepEqual(f.writes,[]);
  const empty=await setup(true);await assert.rejects(api.prepareConfirmedRestore(empty.preview,empty.safety.text,empty.storage,origin),/não possuía/);
- const journal=await api.prepareConfirmedRestore(empty.preview,null,empty.storage,origin);assert.equal(JSON.parse(JSON.parse(journal).payload).before.core,null);assert.deepEqual(empty.writes,[]);
+ const journal=await api.prepareConfirmedRestore(empty.preview,null,empty.storage,origin);assert.equal(JSON.parse(await api.decodeRestoreJournalPayload(JSON.parse(journal).payload)).before.core,null);assert.deepEqual(empty.writes,[]);
 });
 
 test('real preview, saved copy, confirmations, application and local handoff preserve the selected data',async()=>{
@@ -58,4 +58,33 @@ test('cancellation while waiting for coordination or crypto rejects before the f
   const pending=api.runExclusiveRestore(context,{mode:'apply',journal,previousBackup:f.safety.text,replacementConfirmed:true});active=false;acquire?.();
   await assert.rejects(pending,/cancelada/);assert.deepEqual(f.writes,[]);
  }
+});
+
+test('one local import prepares its own prior readback and completes under one lease without another file or handoff',async()=>{
+ for(const empty of [false,true]){
+  const f=await setup(empty),before=[...f.memory];const prepared=await api.prepareLocalImport(f.preview,f.storage,origin);
+  assert.deepEqual([...f.memory],before);assert.deepEqual(f.writes,[]);assert.equal(prepared.previousBackup===null,empty);
+  let leases=0;const context={origin,storage:()=>f.storage,otherTabsClosed:true,locks:{request:async(_,options,fn)=>{leases++;return fn({mode:options.mode});}}};
+  assert.equal(await api.runExclusiveRestore(context,{mode:'import-local',...prepared,replacementConfirmed:true}),'local-ready');assert.equal(leases,1);
+  assert.equal(f.memory.has(api.RESTORE_JOURNAL_KEY),false);assert.ok(f.memory.has(mode));
+  const incoming=(await f.f.inspectProgressBackup(f.preview.text)).backup;
+  for(const part of ['core','fitness'])assert.deepEqual(JSON.parse(f.memory.get(f.f.STORE_KEYS[part])).state,incoming.stores[part].state);
+ }
+});
+
+test('simple local import rejects stale data, invalid audit and absent confirmation without progress writes',async()=>{
+ for(const variant of ['stale','invalid']){const f=await setup();const before=[...f.memory];if(variant==='stale')f.memory.set('conselho-elemental-storage','external edit');else f.preview.audit.issues.push({message:'invalid'});
+  await assert.rejects(api.prepareLocalImport(f.preview,f.storage,origin));assert.deepEqual(f.writes,[]);if(variant==='invalid')assert.deepEqual([...f.memory],before);
+ }
+ const f=await setup(),prepared=await api.prepareLocalImport(f.preview,f.storage,origin),before=[...f.memory];await assert.rejects(api.runExclusiveRestore({origin,storage:()=>f.storage,otherTabsClosed:true,locks:{request:async(_,o,fn)=>fn({mode:o.mode})}},{mode:'import-local',...prepared,replacementConfirmed:false}),/Confirme a substituição/);assert.deepEqual([...f.memory],before);assert.deepEqual(f.writes,[]);
+});
+
+test('failed automatic handoff keeps the committed journal for recovery and never associates a cloud account',async()=>{
+ const f=await setup(),prepared=await api.prepareLocalImport(f.preview,f.storage,origin);const storage={...f.storage,setItem(k,v){if(k===mode)throw Error('synthetic interrupted local marker');f.storage.setItem(k,v);}};
+ const context={origin,storage:()=>storage,otherTabsClosed:true,locks:{request:async(_,o,fn)=>fn({mode:o.mode})}};
+ await assert.rejects(api.runExclusiveRestore(context,{mode:'import-local',...prepared,replacementConfirmed:true}),/interrupted|confirmado/);
+ assert.ok(f.memory.has(api.RESTORE_JOURNAL_KEY));assert.equal(f.memory.has(mode),false);
+ const review=await api.reviewPendingRestore(f.storage,origin);assert.equal(review.outcome,'keep-target');
+ assert.equal(await api.runExclusiveRestore({...context,storage:()=>f.storage},{mode:'local',expected:review.baseline,localUseConfirmed:true}),'local-ready');assert.equal(f.memory.has(api.RESTORE_JOURNAL_KEY),false);assert.ok(f.memory.has(mode));
+ assert.ok([...f.memory.keys()].every(k=>!k.includes('account-binding')));
 });

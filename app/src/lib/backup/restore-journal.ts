@@ -2,6 +2,8 @@ import { createProgressBackup, inspectProgressBackup, MAX_BACKUP_BYTES, STORE_KE
 import { auditCriticalProgress } from './critical-progress';
 import { validateStoredProgress } from './stored-progress';
 import { LOCAL_PROGRESS_MODE_KEY, localProgressMode, validateLocalProgressMode } from './progress-mode';
+import { encodeRestoreJournalPayload, decodeRestoreJournalPayload } from './restore-journal-codec';
+export { decodeRestoreJournalPayload } from './restore-journal-codec';
 
 /** Experimental writing protocol, with UI writes behind a static release gate.
  * Review/export remain read-only; continuation requires explicit confirmation.
@@ -57,7 +59,7 @@ async function digest(text: string) {
   return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('');
 }
 async function seal(journal: Journal) {
-  const payload = JSON.stringify(journal);
+  const payload = await encodeRestoreJournalPayload(JSON.stringify(journal));
   const result = JSON.stringify({ payload, checksum: await digest(payload) });
   checkSize(result, MAX_JOURNAL_BYTES);
   return result;
@@ -69,7 +71,7 @@ async function inspect(text: string, origin: string): Promise<Journal> {
   keys(envelope, ['payload', 'checksum']);
   if (typeof envelope.payload !== 'string' || typeof envelope.checksum !== 'string'
     || await digest(envelope.payload) !== envelope.checksum) fail('Integridade do diário inválida.');
-  const value = parseJournal(envelope.payload);
+  const value = parseJournal(await decodeRestoreJournalPayload(envelope.payload));
   if (!object(value)) fail('Diário inválido.');
   keys(value, ['format', 'version', 'origin', 'phase', 'before', 'target']);
   if (value.format !== 'conselho-elemental-restore' || value.version !== 1
@@ -217,7 +219,11 @@ export async function recoverRestoreJournal(storage: RestoreStorage, origin: str
     if (modules.some(part => current[part] !== journal.before[part] && current[part] !== journal.target[part])) {
       fail('Há alterações externas ao diário. Recuperação manual necessária.');
     }
-    for (const part of modules) {
+    // Free space before any growing write, so rollback can also run at quota.
+    const order = [...modules].sort((a, b) =>
+      ((journal.before[a]?.length ?? 0) - (current[a]?.length ?? 0))
+      - ((journal.before[b]?.length ?? 0) - (current[b]?.length ?? 0)));
+    for (const part of order) {
       assertJournal(storage, text);
       if (storage.getItem(STORE_KEYS[part]) !== current[part]) fail('Progresso mudou durante a recuperação.');
       if (current[part] !== journal.before[part]) write(storage, STORE_KEYS[part], journal.before[part]);
@@ -250,4 +256,37 @@ export async function continueRestoreLocally(storage: RestoreStorage, origin: st
   assertJournal(storage, expected.journal);
   if (!same(readPair(storage), journal.target) || storage.getItem(LOCAL_PROGRESS_MODE_KEY) !== marker) fail('O progresso mudou durante a continuação local.');
   write(storage, RESTORE_JOURNAL_KEY, null);
+}
+
+/** Explicitly finish a reviewed interrupted import, including old plain journals.
+ * Compact the recovery artifact BEFORE further writes, freeing the duplicated
+ * snapshots that exhausted localStorage. Unknown edits still fail closed.
+ * Caller holds the same exclusive lease through the local-mode handoff. */
+export async function completePendingRestoreLocally(storage: RestoreStorage, origin: string, reviewed: RecoveryBaseline, assertCurrent: () => void = () => {}): Promise<void> {
+  const expected = copyRecoveryBaseline(reviewed);
+  assertRecoveryBaseline(storage, expected);
+  const journal = await inspect(expected.journal, origin);
+  const current = expected.pair;
+  const conflict = journal.phase === 'committed' ? !same(current, journal.target)
+    : modules.some(part => current[part] !== journal.before[part] && current[part] !== journal.target[part]);
+  if (conflict) fail('Há alterações fora da importação. Preserve os dados e confira a recuperação.');
+  const compact = await seal(journal), committed = await seal({ ...journal, phase: 'committed' });
+  assertCurrent();
+  assertRecoveryBaseline(storage, expected);
+  write(storage, RESTORE_JOURNAL_KEY, compact);
+  const live = { ...current };
+  const order = [...modules].sort((a, b) =>
+    ((journal.target[a]?.length ?? 0) - (current[a]?.length ?? 0))
+    - ((journal.target[b]?.length ?? 0) - (current[b]?.length ?? 0)));
+  for (const part of order) {
+    assertCurrent();
+    assertJournal(storage, compact);
+    if (!same(readPair(storage), live)) fail('O progresso mudou durante a retomada. Preserve a recuperação.');
+    if (live[part] !== journal.target[part]) write(storage, STORE_KEYS[part], journal.target[part]);
+    live[part] = journal.target[part];
+  }
+  if (!same(readPair(storage), journal.target)) fail('Destino não confirmado.');
+  assertJournal(storage, compact);
+  write(storage, RESTORE_JOURNAL_KEY, committed);
+  await continueRestoreLocally(storage, origin, { journal: committed, pair: { ...journal.target }, localMode: expected.localMode ?? null }, assertCurrent);
 }

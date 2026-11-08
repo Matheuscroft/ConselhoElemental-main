@@ -47,3 +47,8 @@ Thumbs.db
 app/.astro-boy/
 app/.env.*
 !app/.env.example
+
+# Shared release checks for the new app repository.
+!/.github/
+!/.github/workflows/
+!/.github/workflows/quality.yml

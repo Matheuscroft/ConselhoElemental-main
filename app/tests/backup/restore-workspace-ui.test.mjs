@@ -7,22 +7,25 @@ const require=createRequire(import.meta.url),flush=()=>new Promise(r=>setImmedia
 const flatten=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flatten):[n,...flatten(n.props?.children)];
 const text=n=>Array.isArray(n)?n.map(text).join(''):typeof n==='object'?text(n?.props?.children):String(n??'');
 const result={baseline:{pair:{},snapshot:{}},summary:{createdAt:'2026-10-28T12:00:00Z',appVersion:'0.1.92',origin:'https://other.test',tasks:0,habits:1,quests:0,projects:0,profiles:1,sessions:2},audit:{issues:[],truncated:false},comparison:{accounts:[{id:'a',name:'Conta A',status:'existing',rows:[{label:'Rascunhos',before:1,after:2,added:1,changed:0,removed:0}],xp:[{label:'Água',before:5,after:2}]}]}};
-function fixture(pending=false){
- let si=0,ri=0,mounted=false,tree,cleanup,stale=false,reloads=0;const slots=[],refs=[],listeners=new Set(),requests=[],copies=[],reviews=[],recoveryCopies=[],urls=[],downloads=[],timers=[];
+function fixture(pending=false,released=false){
+ let si=0,ri=0,mounted=false,tree,cleanup,stale=false,reloads=0;const slots=[],refs=[],listeners=new Set(),requests=[],copies=[],reviews=[],operations=[],navigations=[],recoveryCopies=[],urls=[],downloads=[],timers=[];
  const memory=new Map(pending?[['conselho-elemental-restore-journal-v1','']]:[]);
  const react={useState(v){const i=si++;if(!(i in slots))slots[i]=v;return [slots[i],next=>slots[i]=next];},useRef(v){return refs[ri++]??={current:v};},useEffect(fn){if(!mounted)cleanup=fn();}};
- const window={location:{origin:'http://fixture.test',reload:()=>reloads++},localStorage:{getItem:key=>memory.get(key)??null},addEventListener:(key,fn)=>listeners.add(fn),removeEventListener:(key,fn)=>listeners.delete(fn)};
+ const window={location:{origin:'http://fixture.test',assign:url=>navigations.push(url),reload:()=>reloads++},localStorage:{getItem:key=>memory.get(key)??null},addEventListener:(key,fn)=>listeners.add(fn),removeEventListener:(key,fn)=>listeners.delete(fn)};
  const document={body:{append:()=>{}},createElement(){return {click(){downloads.push(this.download);},remove(){}};}};
  const URL={createObjectURL:()=>{urls.push('created');return 'blob:fixture';},revokeObjectURL:()=>urls.push('revoked')};
  const source=ts.transpileModule(readFileSync('src/components/backup/RestoreWorkspace.tsx','utf8'),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
  const mod={exports:{}};
  new Function('require','module','exports','window','document','URL','setTimeout',source)(id=>{
   if(id==='react')return react;
+  if(id.endsWith('/restore-errors'))return {restoreFailureMessage:e=>e?.message??'import failed'};
   if(id.endsWith('/account-resolution-key'))return {ACCOUNT_RESOLUTION_KEY:'conselho-elemental-account-resolution-v1'};
   if(id.endsWith('/progress-mode'))return {LOCAL_PROGRESS_MODE_KEY:'conselho-elemental-local-progress-mode-v1'};
   if(id.endsWith('/account-intent'))return {ACCOUNT_INTENT_KEY:'conselho-elemental-account-intent-v1'};
   if(id.endsWith('/RestoreActions'))return {RestoreActions:()=>null};
-  if(id.endsWith('/restore-release'))return {RESTORE_WRITES_RELEASED:false};
+  if(id.endsWith('/SimpleImportActions'))return {SimpleImportActions:()=>null};
+  if(id.endsWith('/exclusive-restore'))return {runExclusiveRestore:(context,operation)=>new Promise((resolve,reject)=>operations.push({context,operation,resolve,reject}))};
+  if(id.endsWith('/restore-release'))return {RESTORE_WRITES_RELEASED:released};
   if(id.endsWith('/progress-backup'))return {MAX_BACKUP_BYTES:20*1024*1024,STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}};
   if(id.endsWith('/restore-journal'))return {RESTORE_JOURNAL_KEY:'conselho-elemental-restore-journal-v1',reviewPendingRestore:()=>new Promise((resolve,reject)=>reviews.push({resolve,reject})),assertPendingRestoreReview(){if(stale)throw Error('Recuperação mudou.');},copyRecoveryBaseline:value=>structuredClone(value),createRecoverySafetyCopy:(_,review,side)=>new Promise((resolve,reject)=>recoveryCopies.push({resolve,reject,review,side}))};
   if(id.endsWith('/workspace-preview'))return {prepareWorkspacePreview:file=>new Promise((resolve,reject)=>requests.push({file,resolve,reject})),createWorkspaceSafetyCopy:()=>new Promise((resolve,reject)=>copies.push({resolve,reject})),assertWorkspaceBaseline(){if(stale)throw Error('Progresso mudou.');}};
@@ -31,7 +34,7 @@ function fixture(pending=false){
  function render(){si=ri=0;tree=mod.exports.RestoreWorkspace();mounted=true;}
  render();render();
  const nodes=()=>flatten(tree);
- return {render,requests,copies,reviews,recoveryCopies,urls,downloads,timers,listeners,memory,get reloads(){return reloads;},content:()=>text(tree),nodes,
+ return {render,requests,copies,reviews,operations,navigations,recoveryCopies,urls,downloads,timers,listeners,memory,get reloads(){return reloads;},content:()=>text(tree),nodes,
  select(file={size:10,text:async()=> 'archive'}){const input=nodes().find(n=>n.type==='input');const target={files:[file],value:'selected'};input.props.onChange({target});assert.equal(target.value,'');render();},
  click(label){const b=nodes().find(n=>n.type==='button'&&text(n.props.children)===label);assert.ok(b,label);b.props.onClick?.();render();},
  emit(key){for(const fn of listeners)fn({key});render();},markStale(){stale=true;},unmount(){cleanup();}};
@@ -129,4 +132,28 @@ test('cancelled, stale, externally changed or unmounted recovery copies never re
  }
  const f=await reviewedFixture();f.click('Baixar versão anterior');f.recoveryCopies[0].reject(Error('Versão não disponível'));await flush();f.render();
  assert.match(f.content(),/Versão não disponível/);assert.doesNotMatch(f.content(),/Substituição não confirmada/);assert.equal(f.downloads.length,0);f.unmount();
+});
+
+test('saving the destination safety copy keeps the incoming comparison selected, without rereading the incoming file',async()=>{
+ const f=fixture();f.select();await flush();f.requests[0].resolve(result);await flush();f.render();
+ f.click('Baixar cópia do estado atual');assert.match(f.content(),/Conta A/);assert.ok(!f.nodes().some(n=>n.props?.onComplete));
+ f.copies[0].resolve({text:'synthetic safety archive',baseline:result.baseline});await flush();f.render();
+ assert.match(f.content(),/Conta A/);assert.ok(f.nodes().some(n=>n.props?.onComplete));assert.equal(f.requests.length,1);assert.equal(f.downloads.length,1);assert.match(f.content(),/continua selecionado/);f.unmount();
+});
+
+test('a stale baseline during safety-copy preparation discards the retained comparison and does not download',async()=>{
+ const f=fixture();f.select();await flush();f.requests[0].resolve(result);await flush();f.render();
+ f.click('Baixar cópia do estado atual');f.markStale();f.copies[0].resolve({text:'stale copy',baseline:result.baseline});await flush();f.render();
+ assert.doesNotMatch(f.content(),/Conta A/);assert.equal(f.downloads.length,0);assert.match(f.content(),/Progresso mudou/);f.unmount();
+});
+
+
+test('interrupted import can be reviewed and finished by one action without another file or manual recovery checkboxes',async()=>{
+ const f=fixture(true,true);f.click('Concluir importação');assert.equal(f.reviews.length,1);const review={phase:'prepared',outcome:'rollback',before:result.summary,target:result.summary,baseline:{journal:'reviewed old journal',pair:{core:'old core',fitness:'old fitness'},localMode:null}};
+ f.reviews[0].resolve(review);await flush();f.render();assert.equal(f.operations.length,1);assert.deepEqual(f.operations[0].operation,{mode:'resume-import-local',expected:review.baseline,recoveryConfirmed:true});assert.equal(f.operations[0].context.otherTabsClosed,true);f.operations[0].resolve('local-ready');await flush();assert.deepEqual(f.navigations,['/santuario']);assert.equal(f.copies.length,0);f.unmount();
+});
+
+test('conflicting pending data and a stale resume result cannot open the app or overwrite protected versions',async()=>{
+ const conflict=fixture(true,true);conflict.click('Concluir importação');conflict.reviews[0].resolve({phase:'prepared',outcome:'conflict',before:null,target:result.summary,baseline:{journal:'protected',pair:{}}});await flush();conflict.render();assert.equal(conflict.operations.length,0);assert.match(conflict.content(),/alterações fora da importação/);assert.deepEqual(conflict.navigations,[]);conflict.unmount();
+ const f=fixture(true,true);f.click('Concluir importação');f.reviews[0].resolve({phase:'committed',outcome:'keep-target',before:null,target:result.summary,baseline:{journal:'protected',pair:{}}});await flush();f.emit('conselho-elemental-storage');f.operations[0].resolve('local-ready');await flush();assert.deepEqual(f.navigations,[]);f.unmount();
 });

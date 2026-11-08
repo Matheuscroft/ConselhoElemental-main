@@ -6,13 +6,14 @@ import type { RestoreStorage } from './restore-journal';
 /** Called after identity/binding review. Persistence starts only under the live lease. */
 export async function prepareLiveAccountAccess(owned: ReturnType<typeof createAccountReviewSession>, options: {
   userId: string; bindingRaw: string; origin: string; project: string; storage: RestoreStorage;
+  email?: string;
   remember: boolean; previous?: { raw: string; consentedAt: number };
 }): Promise<LiveAccountSession> {
   const result = options.remember ? await owned.client.auth.getSession() : null;
   if (result && (result.error || !result.data.session || result.data.session.user.id !== options.userId)) throw new Error('Valide o acesso novamente antes de continuar.');
   const control = createTabAccessControl({...options,tokens:result?.data.session ?? undefined});
   return {
-    client:owned.client,userId:options.userId,bindingRaw:options.bindingRaw,allProfilesConfirmed:true,
+    client:owned.client,userId:options.userId,email:options.email,bindingRaw:options.bindingRaw,allProfilesConfirmed:true,
     activateResume:()=>control.activate(),forgetResume:()=>control.forget(),
     dispose:()=>{control.dispose();owned.dispose();},
     startRefresh:invalidate=>owned.startLiveRefresh(document,invalidate),

@@ -1,0 +1,18 @@
+{
+  "version": "0.1.142",
+  "suite": {
+    "tests": 742,
+    "passed": 742,
+    "failed": 0,
+    "durationMs": 85999.383709
+  },
+  "typescript": "passed",
+  "build": "passed",
+  "lint": "passed",
+  "directedTests": 17,
+  "finalPresentationLifecycleTests": 15,
+  "physicalIPhone": false,
+  "newReleaseMetadataInBrowser": "synthetic143, real served142 verified",
+  "personalDataTransferred": false,
+  "productionDeployment": "dpl_JD3uEgJd5c9ifvYMo7pi6cK6qGhy"
+}

@@ -1,0 +1,117 @@
+{
+  "version": "0.1.143",
+  "scope": "local production build, synthetic data, disposable Chromium profile",
+  "saved": [
+    {
+      "title": "Ritual QA Terra",
+      "elementId": "terra"
+    },
+    {
+      "title": "Ritual QA Fogo",
+      "elementId": "fogo"
+    },
+    {
+      "title": "Ritual QA Ar",
+      "elementId": "ar"
+    },
+    {
+      "title": "Ritual QA Água",
+      "elementId": "agua"
+    }
+  ],
+  "metrics": [
+    {
+      "width": 360,
+      "buttons": [
+        {
+          "w": 68.5,
+          "h": 50,
+          "x": 31,
+          "right": 99.5
+        },
+        {
+          "w": 68.5,
+          "h": 50,
+          "x": 107.5,
+          "right": 176
+        },
+        {
+          "w": 68.5,
+          "h": 50,
+          "x": 184,
+          "right": 252.5
+        },
+        {
+          "w": 68.5,
+          "h": 50,
+          "x": 260.5,
+          "right": 329
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "buttons": [
+        {
+          "w": 76,
+          "h": 50,
+          "x": 31,
+          "right": 107
+        },
+        {
+          "w": 76,
+          "h": 50,
+          "x": 115,
+          "right": 191
+        },
+        {
+          "w": 76,
+          "h": 50,
+          "x": 199,
+          "right": 275
+        },
+        {
+          "w": 76,
+          "h": 50,
+          "x": 283,
+          "right": 359
+        }
+      ],
+      "overflow": false
+    },
+    {
+      "width": 768,
+      "buttons": [
+        {
+          "w": 119.5,
+          "h": 50,
+          "x": 133,
+          "right": 252.5
+        },
+        {
+          "w": 119.5,
+          "h": 50,
+          "x": 260.5,
+          "right": 380
+        },
+        {
+          "w": 119.5,
+          "h": 50,
+          "x": 388,
+          "right": 507.5
+        },
+        {
+          "w": 119.5,
+          "h": 50,
+          "x": 515.5,
+          "right": 635
+        }
+      ],
+      "overflow": false
+    }
+  ],
+  "pageErrors": [],
+  "blockedNetwork": [],
+  "physicalPhone": false
+}

@@ -1,0 +1,22 @@
+{
+  "diagnosis": "Exact screenshot values reproduced in isolated SSR before fix",
+  "before": [
+    102,
+    11,
+    0,
+    1
+  ],
+  "coreAndPersonalDataModified": false,
+  "changedPresentationPredicate": "valuable or VALUABLE",
+  "scope": "Pure read-only panel; no XP credit or personal state migration",
+  "compatibility": {
+    "from": 140,
+    "to": 141,
+    "hostedGate": true,
+    "hash": "1e6fb1d65b71b6110ec305b310cfe01c10e627d3d6d6c7fa047f791c18045dda",
+    "integralAccounts": 0,
+    "existingAuthAccounts": 2,
+    "legacyTasks": 5,
+    "legacyHabits": 34
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "date_local": "2026-11-07",
+  "appVersion": "0.1.136",
+  "scope": "Importação compatível e acesso Auth isolado; sem liberação da sincronização",
+  "verification": {
+    "full_tests": 697,
+    "full_tests_duration_ms": 76429.326917,
+    "final_directed_tests": 34,
+    "final_directed_duration_ms": 5903.551625,
+    "typescript": true,
+    "lint": true,
+    "build": true,
+    "local_vite_seconds": 6.61,
+    "remote_vite_seconds": 18.38
+  },
+  "published": {
+    "url": "https://conselho-elemental-testes.vercel.app/?progresso=restaurar",
+    "status": 200,
+    "entry": "/assets/index-DBE-54Kq.js",
+    "entryStatus": 200,
+    "entryContainsVersion136": true,
+    "relatedAssets": [
+      {
+        "path": "/assets/mount-restore-workspace-CVlzVxU4.js",
+        "status": 200,
+        "containsVersion136": false
+      },
+      {
+        "path": "/assets/mount-account-workspace-CiAB2Vjr.js",
+        "status": 200,
+        "containsVersion136": false
+      },
+      {
+        "path": "/assets/mount-reminder-workspace-DkbRKKWs.js",
+        "status": 200,
+        "containsVersion136": false
+      }
+    ],
+    "deployment": {
+      "id": "dpl_Dhxu8RiV7W8acbnqTPcKbJzGtUBB",
+      "state": "READY",
+      "target": "production",
+      "url": "https://conselho-elemental-testes-64dzwzx5n-fr-prodiction.vercel.app",
+      "alias": "https://conselho-elemental-testes.vercel.app"
+    },
+    "browserObserved": [
+      "Importação abriu com seletor de arquivo",
+      "Acesso e campos habilitados; alternância de cadastro mostra confirmação de senha",
+      "Link da conta retornou à importação; sem envio de formulário ou arquivo pessoal"
+    ]
+  },
+  "gates": {
+    "auth_access": true,
+    "local_restore": true,
+    "account_progress_transfer": false,
+    "reminders": false,
+    "remote_progress_gate_changed": false
+  },
+  "privacy": {
+    "personal_backup_in_upload": false,
+    "personal_backup_committed": false,
+    "source_backup_rewritten": false,
+    "private_review_details": "Somente relatório temporário local; nenhum conteúdo/identificador do backup incluído nesta evidência."
+  },
+  "source_stores_unchanged_from_lot_start": true,
+  "physical_phone_import_verified": false,
+  "real_signup_login_email_recovery_verified": false,
+  "sql_candidate_applied": false,
+  "push": false
+}

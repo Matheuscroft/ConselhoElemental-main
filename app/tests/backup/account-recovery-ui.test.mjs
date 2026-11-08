@@ -16,7 +16,7 @@ function fixture({released=true,callback=true}={}){
  const exports={};
  new Function('require','exports','window','navigator',source)(id=>{
   if(id==='react')return react;if(id==='react/jsx-runtime')return {jsx,jsxs:jsx};if(id==='lucide-react')return {ArrowLeft:'icon',KeyRound:'icon'};
-  if(id.endsWith('account-release'))return {ACCOUNT_TRANSFER_WRITES_RELEASED:released};
+  if(id.endsWith('account-access-release'))return {ACCOUNT_ACCESS_RELEASED:released};
   if(id.endsWith('account-recovery'))return {createPasswordRecovery(){constructions++;return controller;}};
   throw Error('Unexpected UI dependency '+id);
  },exports,{location:{origin:'https://app.example.invalid'},localStorage:{}},{locks:{}});

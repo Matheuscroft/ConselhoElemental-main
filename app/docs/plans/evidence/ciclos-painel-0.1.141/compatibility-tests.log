@@ -1,0 +1,16 @@
+✔ reviewed beta activation changes only the owner-controlled release; anonymous and authenticated clients cannot toggle it (6906.779291ms)
+✔ changed validator, direct grants, missing RLS or disabled legacy trigger refuse activation atomically (15658.751833ms)
+✔ hosted column variant installs closed, preserves legacy rows/schema/policies/triggers, and permits integral opt-in only after release (9180.339792ms)
+✔ incompatible owner dependencies or disabled legacy RLS abort before creating integral objects (5396.900667ms)
+✔ reinstallation is refused without resetting release, revision or receipts already present (4717.453666ms)
+✔ missing Auth dependency or conflicting public RPC overload prevents an ambiguous installation (2428.967333ms)
+✔ additive producer141 compatibility keeps active/closed gate, stored bytes and every protocol/grant unchanged (20773.207625ms)
+✔ producer141 refuses an unreviewed validator without changing the gate (1993.723583ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 23055.091709

@@ -1,0 +1,72 @@
+{
+  "version": "0.1.135",
+  "remote_sql_applied": false,
+  "server_producer_version_confirmed": 122,
+  "server_gate": false,
+  "private_tables": {
+    "count": 3,
+    "rls": true,
+    "direct_anon_or_authenticated_access": false
+  },
+  "protocol_functions": 10,
+  "anonymous_rpc": {
+    "status": 401,
+    "code": "42501"
+  },
+  "public_auth": {
+    "status": 200,
+    "signup_enabled": true,
+    "email_enabled": true,
+    "confirmation_required": true
+  },
+  "healthy_metadata_and_hibernated_advisor_observed": true,
+  "sql_recovered_after_public_api_reads": true,
+  "health_advisors_after_recovery": [],
+  "project": "myvxvgeyseoyugskqlqr",
+  "security_advisories_existing": [
+    "rls_enabled_no_policy",
+    "function_search_path_mutable",
+    "auth_leaked_password_protection"
+  ],
+  "local_sql": "supabase/migrations/20261107030703_account_archive_version_135.sql",
+  "local_sql_sha256": "d9f1704ca2e8b8669ab85ebd1469a1c1c0076973d2972b2f44dc225ac6a5d9ba",
+  "validator_before_sha256": "a1673918e5294ced9b1f5e17f2cac08e0bddf681f3a6ba8fed2cc9bf565216cb",
+  "validator_target_sha256": "16bbb83d98310d34e9713aebfb0ba0ef6fe4c1706fdeab59ee89d111b66150d3",
+  "personal_rows_read": false,
+  "secrets_accessed": false,
+  "accounts_created": false,
+  "test_project_deployed": false,
+  "local_checks": {
+    "initial_consolidated_and_sequential_tests": 5,
+    "backup_suite_before_trigger_preflight": 324,
+    "backup_suite_duration_ms": 46166.38575,
+    "final_consolidated_version_new_account_tests": 13,
+    "final_duration_ms": 8450.550625,
+    "eslint": true,
+    "diff_check": true,
+    "app_source_unchanged_from_N01": true,
+    "rls_disabled_case_rejected": true
+  },
+  "hosted_migrations": [
+    {
+      "version": "20261030202517",
+      "name": "progress_account_atomic"
+    },
+    {
+      "version": "20261030204257",
+      "name": "account_archive_version_121"
+    },
+    {
+      "version": "20261030211424",
+      "name": "account_archive_version_122"
+    }
+  ],
+  "legacy_guards_enabled": 10,
+  "candidate_reorganization_preserves_all_bytes": true,
+  "hosted_preflight": {
+    "read_only": true,
+    "result": "preflight_122_to_135_ok",
+    "rolled_back": true,
+    "ddl_executed": false
+  }
+}

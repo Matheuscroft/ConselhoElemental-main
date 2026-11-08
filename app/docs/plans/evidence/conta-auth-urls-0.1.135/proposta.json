@@ -1,0 +1,28 @@
+{
+  "project": "myvxvgeyseoyugskqlqr",
+  "observed": {
+    "site_url": "http://localhost:3000",
+    "redirect_urls": []
+  },
+  "proposed": {
+    "site_url": "https://conselho-elemental-testes.vercel.app",
+    "redirect_urls": [
+      "https://conselho-elemental-testes.vercel.app/?progresso=conta",
+      "https://conselho-elemental-testes.vercel.app/?progresso=recuperar",
+      "http://127.0.0.1:5173/?progresso=conta",
+      "http://127.0.0.1:5173/?progresso=recuperar",
+      "http://localhost:3000"
+    ]
+  },
+  "dashboard_login_confirmed": true,
+  "prepared_in_form": true,
+  "saved": false,
+  "requires_specific_browser_confirmation": true,
+  "progress_write_gate_changed": false,
+  "personal_data_accessed": false,
+  "local_checks": {
+    "tests": 15,
+    "duration_ms": 232.336083,
+    "scope": "Auth SDK with substituted fetch; no hosted email/account"
+  }
+}

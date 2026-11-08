@@ -33,7 +33,10 @@ export async function prepareWorkspacePreview(text: string, storage: PreviewStor
   const comparison = baseline.snapshot ? await compareProgressBackup(text, baseline.snapshot) : null;
   const audit = comparison?.audit ?? auditCriticalProgress(incoming.backup);
   assertWorkspaceBaseline(storage, baseline);
-  return { baseline, summary: incoming.summary, comparison, audit, text };
+  const user = incoming.backup.stores.core.state.user as Record<string, unknown>;
+  const xp = ([['xp_earth', 'Terra'], ['xp_fire', 'Fogo'], ['xp_water', 'Água'], ['xp_air', 'Ar']] as const)
+    .map(([key, label]) => ({ label, value: typeof user[key] === 'number' ? user[key] as number : null }));
+  return { baseline, summary: incoming.summary, comparison, audit, text, xp };
 }
 export async function createWorkspaceSafetyCopy(storage: PreviewStorage, origin: string) {
   const baseline = readWorkspaceBaseline(storage, origin);

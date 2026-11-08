@@ -1,0 +1,20 @@
+✔ feedback consumes real XP once, dismiss resets the burst, Undo removes it and account changes clear it (97.842042ms)
+✔ hydration, opening history and expiry never replay rewards or change XP (7.791875ms)
+✔ daily completion grants the computed reward once, persists it and undoes the original element (16.778333ms)
+✔ all four elements and separate days grant independent rewards; quantities remain informational (8.263333ms)
+✔ small Water and Air rewards without a timer advance balances even before the next mastery level (2.841458ms)
+✔ parent cascade rewards each valuable leaf once in its own element and Undo reverses exact receipts (1.879625ms)
+✔ individual children pay once, parent status pays zero, and partial Undo leaves sibling XP (3.0535ms)
+✔ legacy completions never backfill or debit unrecorded XP and recompute does not erase paid XP (1.652458ms)
+✔ notes and structural checks do not manufacture reward; one atomic update contains receipt and XP (1.263458ms)
+✔ Sua evolução includes existing uppercase Water/Air completions, persists them and reverses only undone points (137.238ms)
+✔ legacy lowercase and absent semantic types stay compatible; structural and note nodes stay zero (16.387375ms)
+✔ completed uppercase leaves roll into the panel without double-counting the aggregate parent (25.989541ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 897.343459

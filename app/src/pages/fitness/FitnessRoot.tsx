@@ -12,6 +12,7 @@ import { getWorkoutPresentation, getExercisePresentation } from '@/lib/workout/w
 import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessHeader, FitnessPageShell, FitnessListRow, SectionHeader } from '@/components/fitness-kit';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SavedWorkoutLibrary } from '@/components/workout/SavedWorkoutLibrary';
 import { NativeTemplateDialog } from '@/components/workout/NativeTemplateDialog';
 import { WorkoutSequenceLibrary } from '@/components/workout/WorkoutSequenceLibrary';
 import { MuscleExerciseCatalog } from '@/components/workout/MuscleExerciseCatalog';
@@ -122,6 +123,7 @@ function FitnessLibraryRoot() {
   const modality = availableModalities.find((item) => item.id === requested);
   const legacyActive = useWorkoutStore.getState().getActiveSession();
   const createButtonRef = useRef<HTMLButtonElement>(null);
+  const modalitiesHeadingRef = useRef<HTMLHeadingElement>(null);
   const [createVisible, setCreateVisible] = useState(false);
   useEffect(() => {
     const node = createButtonRef.current;
@@ -169,7 +171,16 @@ function FitnessLibraryRoot() {
         <TabsContent value="workouts" className="mt-6 space-y-8 pb-12">
             {active && <FitnessCard className="border border-fitness-primary/30 p-5"><div className="flex items-center gap-2 text-fitness-primary"><Play size={17} /><p className="font-medium">Sessão em andamento</p></div><p className="mt-2 break-words text-lg font-semibold">{active.nameSnapshot}</p><FitnessButton size="md" className="mt-4 w-full" onClick={() => navigate(`/fitness/ativo/${active.id}`)}>Retomar treino</FitnessButton></FitnessCard>}
           {legacyActive && <FitnessListRow title={legacyActive.workoutNameSnapshot} subtitle="Sessão em andamento · continuar treino" icon={Play} onClick={() => navigate(`/treinos/ativo/${legacyActive.id}`)} />}
-          {!modality && <FitnessCategoryGrid options={availableModalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} />}
+          {!modality && <>
+            <SavedWorkoutLibrary templates={templates} catalog={catalog} onOpen={(id) => navigate(`/treinos/preview/${id}`)} onExplore={() => {
+              modalitiesHeadingRef.current?.focus({ preventScroll: true });
+              modalitiesHeadingRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+            }} />
+            <section aria-labelledby="fitness-modalities-heading" className="space-y-4">
+              <h2 id="fitness-modalities-heading" ref={modalitiesHeadingRef} tabIndex={-1} className="scroll-mt-6 rounded-lg text-xl outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">Explorar modalidades</h2>
+              <FitnessCategoryGrid options={availableModalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} />
+            </section>
+          </>}
           {modality && <div className="space-y-3">
             <p className="text-center text-sm text-fitness-muted">{modality?.label ?? 'Escolha uma modalidade'} · {selectedCatalog.length} exercícios disponíveis</p>
             <FitnessButton ref={createButtonRef} className="w-full" disabled={!modality} onClick={() => { setPresetId(undefined); setCreateOpen(true); }}>Montar treino</FitnessButton>

@@ -1,3 +1,79 @@
+## Atualização143 — fluxo de entrega e classificação
+
+Rituais agora alinham elemento com área primária ao criar/editar; recibos existentes preservados. Cronômetro é apresentação sobre runtimeM07. Build de produção passa por verify:release (testes+lint) e tipos/build; Git main do repositório Matheus é o destino vigente, Vercel conselho-elemental-main. Configuração/histórico e limites em [M08–M09](plans/MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md). A mudança de domínio exige transferência explícita do progresso; não limpar storage.
+
+## M07 — operação mobile, 0.1.142
+
+[Fluxo, aceite e limitações](plans/MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md). Deploys verificados vão para o mesmo Vercel de testes, sem limpar progresso. Metadados de versão e aviso permitem atualização explícita. Timer por âncora/pausa com recuperação na mesma aba; não é execução nativa com app fechado nem timer sincronizado entre aparelhos. Registro operacional não faz parte do arquivo de progresso. Compatibilidade hospedada142 mantém dados/gate. Não confundir Chromium com teste físico; preservar revisão/recibos e pedir aceite de bloqueio no iPhone.
+
+## F6-N12 — pontuação visual, 0.1.141
+
+[Diagnóstico e limites](plans/FECHAMENTO-F6-N12-PAINEL-EVOLUCAO.md). Painel aceita VALUABLE/valuable como o core existente; sem alterar pontuação ou stores. Banco aceita arquivos141 mantendo gate/versões/dados anteriores. Não confundir ensaio de saldo XP/Grimório com validação de ScoreHierarchyPanel; testar o componente indicado pelo usuário.
+
+## Atualização F6-N10 — 0.1.140
+
+[Conta conectada: contratos, publicação, evidências e limites](plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md). Build Vercel usa Config pública de build, Auth/bootstrap legados permanecem false; cliente integral e gate remoto true. Compatibilidade hospedada140. SMTP e aceite real de conta/associação continuam pendentes. Preservar revisões/CAS/recibos e nunca reenviar tentativa incerta ou limpar o progresso para habilitar login.
+
+## 0.1.139 — artefato de restauração compacto
+
+[F6-N09](plans/FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md): gzip nativo limitado/checksummed somente no journal, legado legível, retomada com uma ação após quota sob o protocolo existente. Stores/arquivo exportado/XP intactos. Publicado no projeto de testes; nuvem de progresso fechada, sem SQL remoto/push. Confirmação pessoal no iPhone ainda pendente.
+
+## Compatibilidade135 instalada — F6-N03
+
+[Instalação e próximos critérios](plans/FECHAMENTO-F6-N03-COMPATIBILIDADE-INSTALADA.md). Migração real20261107042615, conteúdo idêntico ao candidato135 aprovado. Não reaplicar candidato anterior ou intermediários arquivados. Validador aceita120/135 em ensaio puro real; gatefalse e proteções preservados. Próxima etapa Auth requer login no painel para conferir URLs, sem credenciais no chat. Nenhuma conta/progresso pessoal transferido; app135local e Vercel134 continuam separados.
+
+## Compatibilidade hospedada — F6-N02 / 135 preparada
+
+[Pacote e retomada](plans/FECHAMENTO-F6-N02-COMPATIBILIDADE-HOSPEDADA.md). Banco122/gatefalse reconfirmados; preflight real somente leitura passou. Patch135 agora consolidado122→135; intermediários123–134 preservados em review-candidates e usados só no ensaio sequencial. Não usar db push geral nem aplicar arquivos arquivados. Aguardar autorização específica; app135local e Vercel134 preservados, contas não liberadas. Após apply, conferir ID real da migração antes de alinhar filename/loader. Nenhuma conta ou progresso pessoal foi transferido.
+
+## Conta nova — F6-N01 / 0.1.135 local
+
+[Início vazio e preservação do progresso existente](plans/FECHAMENTO-F6-N01-CONTA-NOVA.md). Defaults de personagem/onboarding compartilhados; snapshot vazio inicializa somente quando local e remoto estão vazios e usa journal/intent/CAS/recibo existentes. Falhas retomam pelos mesmos workspaces. 690 testes e checks passaram; conta ainda false. SQL remoto não validado por timeout do conector/CLI sem login; candidato135 local, Vercel134 mantido. Próximo: acesso hospedado e pacote/aceite de liberação em Sol Alto. Não iniciar do zero ao associar o progresso pessoal.
+
+## I05 — imagem de Fábio como ícone do app — 0.1.133 publicada (06/11/2026)
+
+[Assets, instalação e evidências](plans/ICONE-APP-I05-0.1.133.md). Mago_app.jpeg do usuário redimensionado sem recorte/redesenho: Android/manifest 192/512, iPhone 180, favicon 32. URLs por hash e manifest versionado; corrigidas dimensões falsas anteriores, identidade/start_url/scope preservados. Arte PNG 512 inspecionada.
+
+Dimensões/formato/sem EXIF e manifest conferidos; teste SQL local de versão (1, 8,51s), TypeScript/lint/build (10,50s) passaram. Sem suíte global nova para assets. Deployment dpl_AVx2Bgg3uvpFA1zU6RwRx6nQJeaz READY no endereço fixo https://conselho-elemental-testes.vercel.app. HTML/manifest/4 PNGs remotos 200 e SHA iguais aos arquivos locais. Instalação física e atualização de ícone já instalado ainda não verificadas.
+
+Sem dados de progresso alterados, reset do celular, mudança de runtime, SQL remoto ou push. Candidato 133 somente local, flags de liberação preservadas. Custódia concluída e reservas encerradas. Próximo: usuário abrir/instalar pelo endereço fixo e confirmar o ícone; preservar o backup antes de qualquer eventual orientação de reinstalação. Transferência pessoal e conta/sync continuam pendentes conforme decisões anteriores.
+
+## P04 — transferência guiada e ambiente permanente de testes — 0.1.132 (06/11/2026)
+
+[Entrega e combinado de evolução](plans/TRANSFERENCIA-GUIADA-P04-0.1.132.md). Interface em três etapas; seletor como primeira ação. Corrigido reset indevido da comparação ao baixar backup anterior, com revalidação e bloqueio das ações de escrita durante preparo. Cópias/consentimentos/locks/journal/readback preservados; engines/stores/tipos/XP inalterados. Restore true, conta/lembretes false; SQL 132 só local.
+
+679 testes completos passaram antes do último guard de renderização (84,16s). Depois dele, 13 de workspace, TypeScript/lint/build (8,23s) repetidos e aprovados; suíte completa não repetida como evidência nova. Build remoto final 19,97s/45s; deployment dpl_66XBoXzMsT24Bp6eXgwXML6JZDds READY no endereço fixo https://conselho-elemental-testes.vercel.app. Tela inicial guiada inspecionada no navegador interno, sem dados pessoais. Importação pessoal e aceite físico móvel continuam pendentes.
+
+Fábio autorizou neste pedido atualizar esse projeto com melhorias verificadas enquanto usa o celular como testes; manter mesmo projeto/origem, sem publicar fixtures no lugar do app ou limpar storage. Criação de conta/sync ficam para depois. Não inclui outros projetos, GitHub, banco remoto ou mudança de economia. Próximo: importação real pelo usuário no celular, conferência dos registros e recarga; depois melhorias validadas → mesmo ambiente Vercel. Custódia sequencial concluída, reservas encerradas; sem push/SQL remoto/alteração do progresso pessoal.
+
+## P03 — importação local liberada no projeto de testes — 0.1.131 (06/11/2026)
+
+[Entrega, decisão e evidências](plans/IMPORTACAO-LOCAL-P03-0.1.131.md). Grimório com entrada direta Importar progresso neste dispositivo; restauração LOCAL true com cópia anterior/consentimento/locks/journal/readback preservados. Conta online e lembretes false. Versão 131/candidato SQL local; nenhum SQL remoto. 677 testes completos (79,16s), TypeScript/lint/build (41,38s) passaram.
+
+Agente executou restauração sintética completa e recarga no navegador interno, depois conferiu entrada/workspace reais publicados. Downloads automatizados expiraram; cópia anterior sintética foi obtida do seed exato, sem extrair storage pessoal. Não testou celular físico nem importou backup real. Deployment READY dpl_9THEro78eBMRhgaqLSXr4Q7g36Np no domínio https://conselho-elemental-testes.vercel.app, projetos anteriores preservados. Sem push/SQL remoto/dados reais alterados.
+
+Usuário esclareceu que tentou importar no Chrome do computador. Agora orientar mover o JSON privado ao celular e importar nesse dispositivo pelo link real /?progresso=restaurar. Importar no computador não sincroniza telefone; F6 permanece separado. Cópia pessoal confirmada salva; transferência real ainda pendente. Revisão/custódia concluídas, reservas encerradas; seguir conferência de conteúdo e recarga após a importação real, sem declarar concluída antes disso.
+
+## V02 — app completo em projeto de testes próprio — publicado (06/11/2026)
+
+[Destino, acesso e limites](plans/VERCEL-PROJETO-TESTES-V02.md). Criado conselho-elemental-testes / prj_2feHjC8XBOmFRRxbL39qGvTXQb0r em fr-prodiction, conforme pedido explícito. App completo 0.1.130 em https://conselho-elemental-testes.vercel.app. Deployment dpl_5zNwMfwxWzA6p6WdAdAZBsscSfPa READY/production só nesse projeto novo; projetos anteriores preservados. Painel: https://vercel.com/fr-prodiction/conselho-elemental-testes.
+
+Build remoto passou; rotas /, /treinos e /grimorio responderam HTML do SPA com 200 sem login Vercel; entry JS/CSS 200. Sem aceite visual/mobile. Upload isolado não inclui QA, .env, perfis/backup pessoal ou SQL; fonte do app conferida igual ao checkout. Gates false e transferência pessoal ainda pendente. O usuário confirmou backup salvo, mas ficou confuso com o ensaio técnico; priorizar um fluxo compreensível no destino real. Sem novos testes locais, código alterado, push/SQL remoto. Custódia sequencial concluída, reservas encerradas.
+
+## V01 — prévia Vercel publicada — 0.1.130 (06/11/2026)
+
+[Deploy, limites e acesso pelo celular](plans/VERCEL-PREVIA-0.1.130.md). Preview READY dpl_GsC5JLcsiYikFBoECYwdi9Nbdwc8 no projeto dominio-do-mago-app/fr-prodiction. Alias fixo https://dominio-do-mago-testes.vercel.app, produção preservada. Build remoto passou; acesso público redireciona ao login Vercel, proteção mantida. Verificação autenticada incompleta por limitações CLI, detalhadas no relatório; sem aceite visual/mobile.
+
+Upload isolado de código/assets, sem progresso pessoal, arquivos de ambiente ou SQL. A CLI criou automaticamente credencial técnica de acesso durante a tentativa de smoke; valor não lido/exposto/versionado. Gates false, sem SQL remoto/transferência de progresso/push. Conta/F6 permanece pendente; celular e computador têm armazenamento separado. Reservas encerradas. Próximo: teste pelo usuário no celular e evolução do fluxo de Treinos em Sol Médio; Matheus mantém Auth/conta em Sol Alto.
+
+## T06 — biblioteca direta e plano de evolução — 0.1.130 local (06/11/2026)
+
+[Plano, entrega e evidências](plans/EVOLUCAO-T06-BIBLIOTECA-0.1.130.md). Treinos salvos agora na entrada do módulo: busca por nome/modalidade, mais recentes primeiro, seis itens por vez e prévia pelo ID existente. Novo treino leva às modalidades com foco/movimento reduzido; sessão ativa preservada acima da biblioteca. Sem edição de stores/catálogos/cálculos.
+
+677 testes completos passaram (71,86s), 12 direcionados de UI/identidade e um SQL sintético de versão, TypeScript/lint/build envDir:false (31,13s). 83 arquivos protegidos preservados por SHA; gates false, candidato 130 somente local. Servidor 5173 reativado e abertura no painel solicitada (queued); sem inspeção visual por permissão salva/contorno ou aceite mobile. Sem dados pessoais, push/deploy/SQL remoto. Custódia sequencial encerrada e reservas liberadas; aceite visual ainda pendente.
+
+Próximo frontend: prévia → execução → descanso → resumo em Sol Médio. Matheus segue F6/conta e associação pessoal em Sol Alto; GymMane depende de licença/paridade, fragmentos dependem de persistência. Publicação anterior 0.1.129 em main 67bb6e5 permanece distinta deste lote local. Registros abaixo históricos.
+
 ## T05 — repasse atual 0.1.129 publicado na main
 
 [XP/elementos coloridos, T04 incorporada e recebimento por Matheus](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). 674 testes completos, tipos/lint/build passaram. Formatação/ícones de XP alinhados, fórmulas/stores/dados preservados. Publicado: **3e48d3c** em main e integração, fast-forward confirmado; PR #1 MERGED. Gates false, SQL 128/129 somente local, main/integracao sem auto-deploy. Conta/F6, associação pessoal, fragmentos e GymMane pendentes.

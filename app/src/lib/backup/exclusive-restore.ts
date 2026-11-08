@@ -1,7 +1,7 @@
 import { ACCOUNT_RESOLUTION_KEY } from './account-resolution-key';
 import { ACCOUNT_INTENT_KEY } from './account-intent';
 import { inspectProgressBackup, STORE_KEYS } from './progress-backup';
-import { continueRestoreLocally, copyRecoveryBaseline, executePreparedRestore, recoverRestoreJournal, type RecoveryBaseline, type RestoreStorage, type StoredProgress } from './restore-journal';
+import { continueRestoreLocally, completePendingRestoreLocally, copyRecoveryBaseline, executePreparedRestore, recoverRestoreJournal, reviewPendingRestore, type RecoveryBaseline, type RestoreStorage, type StoredProgress } from './restore-journal';
 import { validateStoredProgress } from './stored-progress';
 import { progressFingerprint } from './restore-comparison';
 import { hasProgressAppStarted, PROGRESS_SESSION_LOCK } from './progress-startup';
@@ -10,12 +10,14 @@ interface RestoreContext {
   storage: () => RestoreStorage;
   locks?: Pick<LockManager, 'request'>;
   origin: string;
-  /** Human confirmation required in future UI, not discovery/proof of legacy tabs. */
+  /** Confirmed close-tabs precondition, included in the single local-import
+   * action's notice. Neither a checkbox nor this flag proves legacy tabs absent. */
   otherTabsClosed: boolean;
   isCurrent?: () => boolean;
 }
-type Operation = { mode: 'apply'; journal: string; previousBackup: string | null; replacementConfirmed: boolean }
+type Operation = { mode: 'apply' | 'import-local'; journal: string; previousBackup: string | null; replacementConfirmed: boolean }
   | { mode: 'recover'; expected: RecoveryBaseline; recoveryConfirmed: boolean }
+  | { mode: 'resume-import-local'; expected: RecoveryBaseline; recoveryConfirmed: boolean }
   | { mode: 'local'; expected: RecoveryBaseline; localUseConfirmed: boolean };
 
 /** Isolated pre-bootstrap coordinator. UI caller remains behind a static release gate.
@@ -36,7 +38,7 @@ export async function runExclusiveRestore(inputContext: RestoreContext, inputOpe
     if (context.isCurrent?.() === false) throw new Error('Operação cancelada ou desatualizada. Nenhuma gravação foi iniciada.');
   };
   preflight();
-  if (operation.mode === 'recover') {
+  if (operation.mode === 'recover' || operation.mode === 'resume-import-local') {
     if (operation.recoveryConfirmed !== true) throw new Error('Confirme a recuperação da versão conferida antes de continuar.');
     operation.expected = copyRecoveryBaseline(operation.expected);
   }
@@ -51,6 +53,10 @@ export async function runExclusiveRestore(inputContext: RestoreContext, inputOpe
     preflight();
     const storage = leaseStorage;
     if (operation.mode === 'recover') return recoverRestoreJournal(storage, context.origin, operation.expected, preflight);
+    if (operation.mode === 'resume-import-local') {
+      await completePendingRestoreLocally(storage, context.origin, operation.expected, preflight);
+      return 'local-ready';
+    }
     if (operation.mode === 'local') {
       await continueRestoreLocally(storage, context.origin, operation.expected, preflight);
       return 'local-ready';
@@ -69,6 +75,16 @@ export async function runExclusiveRestore(inputContext: RestoreContext, inputOpe
     // executePreparedRestore revalidates journal and compares bytes after the await above.
     // Never import stores, dispatch completion commands, or initialize auth here.
     await executePreparedRestore(storage, operation.journal, context.origin, preflight);
+    if (operation.mode === 'import-local') {
+      // The single import action explicitly includes local use. Keep the same
+      // exclusive lease through readback and the local marker handoff. Any
+      // interruption retains the existing journal for reviewed recovery.
+      const review = await reviewPendingRestore(storage, context.origin);
+      if (!review || review.outcome !== 'keep-target') throw new Error('Confira a recuperação da importação antes de abrir o app.');
+      preflight();
+      await continueRestoreLocally(storage, context.origin, review.baseline, preflight);
+      return 'local-ready';
+    }
     return 'applied';
   });
 }

@@ -7,6 +7,7 @@ import { loadComponent } from './load-component.mjs';
 
 function component(file, name) { return loadComponent(`src/components/elemental/${file}.tsx`)[name]; }
 const ElementalTimer = await component('ElementalTimer', 'ElementalTimer');
+const TimerControls = await component('ElementalTimer', 'TimerControls');
 const ShowcaseCard = await component('ShowcaseCard', 'ShowcaseCard');
 const ExpandedElements = await component('ExpandedElements', 'ExpandedElements');
 function nodes(element, type) {
@@ -17,7 +18,7 @@ function nodes(element, type) {
 test('timer exposes the supplied time and passes controls to their existing owners once', () => {
   let toggle = 0; let complete = 0;
   const props = { title: 'Ritual de teste', element: 'agua', time: '01:02:03', running: true, onToggle: () => toggle++, onComplete: () => complete++ };
-  const tree = ElementalTimer(props);
+  const tree = TimerControls(props);
   const buttons = nodes(tree, 'button');
   assert.equal(buttons.length, 2);
   buttons[0].props.onClick(); buttons[1].props.onClick();

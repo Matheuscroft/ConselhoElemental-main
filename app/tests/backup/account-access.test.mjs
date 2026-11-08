@@ -73,3 +73,9 @@ test('confirmation tokens at fallback root or other routes are discarded, not ad
 test('ordinary navigation and a distinct calendar OAuth callback are untouched',()=>{
  for(const url of [origin+'/ciclos?data=2026-10-30',origin+'/?progresso=conta',origin+'/integrations/google-calendar/callback?code=synthetic'])assert.equal(captureAccountReturn(url,()=>{throw Error('must not replace');}),'none');
 });
+
+
+test('email configuration and rate limits have actionable messages while opaque errors remain private',()=>{
+ const message=module.exports.accountAccessFailure;
+ assert.match(message({code:'email_address_not_authorized'},'generic'),/novos testadores/);assert.match(message({code:'over_email_send_rate_limit'},'generic'),/Aguarde/);assert.equal(message({message:'private raw value'},'generic'),'generic');
+});

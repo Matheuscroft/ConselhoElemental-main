@@ -38,7 +38,7 @@ async function confirmed(f){await verified(f);f.toggle(0);f.toggle(1);}
 test('static release gate and unchecked consent prevent execution even if disabled handlers are called',async()=>{
  const f=fixture({released:false});await confirmed(f);assert.ok(f.nodes().filter(n=>n.type==='button').at(-1).props.disabled);f.click();assert.equal(f.prepares.length,0);assert.equal(f.operations.length,0);assert.match(f.content(),/gravação permanece bloqueada/);f.unmount();
  const active=fixture();await verified(active);for(const pair of [[false,false],[true,false],[false,true]]){active.toggle(0,pair[0]);active.toggle(1,pair[1]);active.click();assert.equal(active.prepares.length,0);}active.unmount();
- assert.match(readFileSync('src/lib/backup/restore-release.ts','utf8'),/RESTORE_WRITES_RELEASED = false;/);
+ assert.match(readFileSync('src/lib/backup/restore-release.ts','utf8'),/RESTORE_WRITES_RELEASED = true;/);
 });
 
 test('restoration requires the saved file, binds reviewed bytes and suppresses duplicate submission',async()=>{
@@ -87,4 +87,19 @@ test('partial failure requires recovery review and blocks retry before a full re
  const f=fixture();await confirmed(f);f.click();f.prepares[0].resolve('journal');await flush();f.markPending();f.operations[0].reject(Error('Gravação interrompida'));await flush();f.render();
  assert.match(f.content(),/operação para conferir/);const restore=f.nodes().find(n=>n.type==='button'&&text(n.props.children)==='Restaurar esta cópia');assert.equal(restore.props.disabled,true);restore.props.onClick();assert.equal(f.prepares.length,1);
  f.click();assert.equal(f.reloads,1);f.unmount();
+});
+
+test('disabled restore explains the exact outstanding steps and distinguishes safety copy from incoming progress',async()=>{
+ const f=fixture();const button=()=>f.nodes().find(n=>n.type==='button'&&text(n.props.children)==='Restaurar esta cópia');
+ assert.equal(button().props.disabled,true);assert.equal(button().props['aria-describedby'],'restore-missing-steps');
+ assert.match(f.content(),/Baixar o arquivo não faz essa conferência/);assert.match(f.content(),/primeira confirmação/);assert.match(f.content(),/Marque a confirmação de substituição/);
+ f.toggle(0);f.toggle(1);assert.equal(button().props.disabled,true);assert.match(f.content(),/Conferir cópia anterior salva/);assert.doesNotMatch(f.content(),/primeira confirmação|Marque a confirmação de substituição/);
+ await verified(f);assert.equal(button().props.disabled,false);assert.match(f.content(),/Segurança deste aparelho conferida/);assert.match(f.content(),/Tudo conferido/);assert.doesNotMatch(f.content(),/Baixar o arquivo não faz essa conferência/);assert.equal(f.prepares.length,0);assert.equal(f.operations.length,0);
+ f.emit('conselho-elemental-storage');assert.equal(button().props.disabled,true);assert.match(f.content(),/Baixar o arquivo não faz essa conferência/);f.unmount();
+});
+
+test('an empty destination needs only confirmations while audit and recovery blockers are explicitly named',async()=>{
+ const empty=fixture({incoming:{...preview(),baseline:{...preview().baseline,snapshot:null}}});assert.doesNotMatch(empty.content(),/Baixar o arquivo não faz essa conferência/);empty.toggle(0);empty.toggle(1);assert.match(empty.content(),/Tudo conferido/);empty.unmount();
+ const invalid=fixture({incoming:{...preview(),audit:{issues:[{message:'Synthetic invalid link'}],truncated:false}}});assert.match(invalid.content(),/Resolva os avisos/);invalid.unmount();
+ const recovery=fixture({incoming:null,recovery:{outcome:'conflict',baseline:{}}});assert.match(recovery.content(),/versões da recuperação precisam de revisão/);recovery.unmount();
 });

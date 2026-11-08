@@ -121,7 +121,7 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 export const Ciclos: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [destinyParams] = useSearchParams();
+  const [destinyParams, setDestinyParams] = useSearchParams();
   const destinyAccountId = useAppStore(state => state.currentAccountId);
   const [appliedDestinyIntent, setAppliedDestinyIntent] = useState<string | null>(null);
   const insightsRef = useRef<HTMLDetailsElement>(null);
@@ -172,8 +172,13 @@ export const Ciclos: React.FC = () => {
 
   const [selectedDate, setSelectedDate] = useState(() => normalizeDate(new Date()));
   const [visibleDaysCenterDate, setVisibleDaysCenterDate] = useState(() => normalizeDate(new Date()));
-  const [activeHabit, setActiveHabit] = useState<string | null>(null);
-  const [showTimer, setShowTimer] = useState(false);
+  const [manualActiveHabit, setActiveHabit] = useState<string | null>(null);
+  const [manualShowTimer, setShowTimer] = useState(false);
+  const returnHabit = destinyParams.get('cronometro') === '1' && timer.entityType === 'HABIT'
+    ? findHabitById(habits, destinyParams.get('atividade') ?? '') : undefined;
+  const resumedHabit = returnHabit?.id === timer.entityId && returnHabit?.childHabits.length === 0 ? returnHabit : undefined;
+  const activeHabit = resumedHabit?.id ?? manualActiveHabit;
+  const showTimer = manualShowTimer || !!resumedHabit;
   const [showExecutionMode, setShowExecutionMode] = useState(false);
   const [executionCurrentIndex, setExecutionCurrentIndex] = useState(0);
   const [newChildHabitName, setNewChildHabitName] = useState('');
@@ -644,6 +649,8 @@ export const Ciclos: React.FC = () => {
 
   // Start habit timer
   const handleStartHabit = (habitId: string) => {
+    const active = useAppStore.getState().timer;
+    if (active.entityId && (active.entityId !== habitId || active.entityType !== 'HABIT')) { toast.info('Retome ou conclua o cronômetro atual antes de iniciar outro.'); return; }
     const targetHabit = findHabitById(habits, habitId);
     if (!targetHabit) return;
 
@@ -660,9 +667,9 @@ export const Ciclos: React.FC = () => {
 
       setActiveHabit(habitId);
       setExecutionCurrentIndex(initialIndex);
-      startTimer(habitId, 'HABIT');
+      startTimer(habitId, 'HABIT', selectedDate);
       const initialTask = actionable[initialIndex] ?? null;
-      beginExecutionTaskTracking(initialTask, 0);
+      beginExecutionTaskTracking(initialTask, useAppStore.getState().timer.elapsedSeconds);
       setExecutionTimings({});
       executionEarnedPointsRef.current = 0;
       setShowExecutionMode(true);
@@ -671,22 +678,19 @@ export const Ciclos: React.FC = () => {
     }
 
     // Caso 1: ciclo sem filhos mantém fluxo simples atual.
-    if (activeHabit === habitId && showTimer) {
-      stopTimer();
-      setShowTimer(false);
-      setActiveHabit(null);
-      return;
-    }
+
 
     if (activeHabit && activeHabit !== habitId) {
       stopTimer();
     }
 
     setActiveHabit(habitId);
-    startTimer(habitId, 'HABIT');
+    startTimer(habitId, 'HABIT', selectedDate);
     setShowTimer(true);
     setShowExecutionMode(false);
   };
+
+
 
   const closeExecutionMode = useCallback(() => {
     setShowExecutionMode(false);
@@ -827,10 +831,7 @@ export const Ciclos: React.FC = () => {
   };
 
   const handleTimerModalChange = (open: boolean) => {
-    if (!open && activeHabit) {
-      stopTimer();
-      setActiveHabit(null);
-    }
+    if (!open) { setActiveHabit(null); const next = new URLSearchParams(destinyParams); next.delete('cronometro'); setDestinyParams(next, { replace: true, preventScrollReset: true, state: location.state }); }
     setShowTimer(open);
   };
 
@@ -2366,7 +2367,7 @@ export const Ciclos: React.FC = () => {
             <DialogTitle id="cycles-timer-title" className="font-mystic text-center text-xl">
               Ciclo em Andamento
             </DialogTitle>
-          <DialogDescription id="cycles-timer-description">Acompanhe o tempo e conclua quando terminar o ciclo.</DialogDescription>
+          <DialogDescription id="cycles-timer-description">Fechar mantém a contagem. Use Pausar para interromper ou Concluir quando terminar.</DialogDescription>
           </DialogHeader>
           
           {activeHabitData && <ElementalTimer
@@ -2374,7 +2375,7 @@ export const Ciclos: React.FC = () => {
               element={activeHabitData.elementId}
               time={formatTime(timer.elapsedSeconds)}
               running={timer.isRunning}
-              plannedLabel={formatDuration(activeHabitData.plannedTimeMinutes)}
+              plannedLabel={activeHabitData.plannedTimeMinutes > 0 ? formatDuration(activeHabitData.plannedTimeMinutes) : undefined}
               onToggle={() => timer.isRunning ? useAppStore.getState().pauseTimer() : useAppStore.getState().resumeTimer()}
               onComplete={handleStopAndComplete}
             />}

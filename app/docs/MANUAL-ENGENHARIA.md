@@ -1,3 +1,45 @@
+## Atualização143 — fluxo de entrega e classificação
+
+Rituais agora alinham elemento com área primária ao criar/editar; recibos existentes preservados. Cronômetro é apresentação sobre runtimeM07. Build de produção passa por verify:release (testes+lint) e tipos/build; Git main do repositório Matheus é o destino vigente, Vercel conselho-elemental-main. Configuração/histórico e limites em [M08–M09](plans/MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md). A mudança de domínio exige transferência explícita do progresso; não limpar storage.
+
+## M07 — operação mobile, 0.1.142
+
+[Fluxo, aceite e limitações](plans/MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md). Deploys verificados vão para o mesmo Vercel de testes, sem limpar progresso. Metadados de versão e aviso permitem atualização explícita. Timer por âncora/pausa com recuperação na mesma aba; não é execução nativa com app fechado nem timer sincronizado entre aparelhos. Registro operacional não faz parte do arquivo de progresso. Compatibilidade hospedada142 mantém dados/gate. Não confundir Chromium com teste físico; preservar revisão/recibos e pedir aceite de bloqueio no iPhone.
+
+## F6-N12 — pontuação visual, 0.1.141
+
+[Diagnóstico e limites](plans/FECHAMENTO-F6-N12-PAINEL-EVOLUCAO.md). Painel aceita VALUABLE/valuable como o core existente; sem alterar pontuação ou stores. Banco aceita arquivos141 mantendo gate/versões/dados anteriores. Não confundir ensaio de saldo XP/Grimório com validação de ScoreHierarchyPanel; testar o componente indicado pelo usuário.
+
+## Atualização F6-N10 — 0.1.140
+
+[Conta conectada: contratos, publicação, evidências e limites](plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md). Build Vercel usa Config pública de build, Auth/bootstrap legados permanecem false; cliente integral e gate remoto true. Compatibilidade hospedada140. SMTP e aceite real de conta/associação continuam pendentes. Preservar revisões/CAS/recibos e nunca reenviar tentativa incerta ou limpar o progresso para habilitar login.
+
+## Importação e quota — F6-N09 / 0.1.139
+
+[Contrato e evidências](plans/FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md). Ao medir quota, contabilize UTF16 de todas as chaves/valores mais before/target no journal e as stores durante a gravação. `restore-journal-codec` compacta só o artefato, com limite de expansão e legado. Não usar JSON.parse direto no payload: valide pelo journal, ou decoder nos testes. Retomada pendente exige coordenador exclusivo e revisão exata; nunca remover o journal/limpar dados para liberar. Testes: `node --test tests/backup/restore-quota.test.mjs tests/backup/restore-journal-codec.test.mjs tests/backup/document-lifecycle.test.mjs tests/backup/recovery-review.test.mjs`. Público139 testado em Chromium com limite5MiB simulado; aceite físicoiPhone pendente. Não confundir importação local com sync online.
+
+## Compatibilidade135 instalada — F6-N03
+
+[Instalação e próximos critérios](plans/FECHAMENTO-F6-N03-COMPATIBILIDADE-INSTALADA.md). Migração real20261107042615, conteúdo idêntico ao candidato135 aprovado. Não reaplicar candidato anterior ou intermediários arquivados. Validador aceita120/135 em ensaio puro real; gatefalse e proteções preservados. Próxima etapa Auth requer login no painel para conferir URLs, sem credenciais no chat. Nenhuma conta/progresso pessoal transferido; app135local e Vercel134 continuam separados.
+
+## Compatibilidade hospedada — F6-N02 / 135 preparada
+
+[Pacote e retomada](plans/FECHAMENTO-F6-N02-COMPATIBILIDADE-HOSPEDADA.md). Banco122/gatefalse reconfirmados; preflight real somente leitura passou. Patch135 agora consolidado122→135; intermediários123–134 preservados em review-candidates e usados só no ensaio sequencial. Não usar db push geral nem aplicar arquivos arquivados. Aguardar autorização específica; app135local e Vercel134 preservados, contas não liberadas. Após apply, conferir ID real da migração antes de alinhar filename/loader. Nenhuma conta ou progresso pessoal foi transferido.
+
+## Conta nova — F6-N01 / 0.1.135 local
+
+[Início vazio e preservação do progresso existente](plans/FECHAMENTO-F6-N01-CONTA-NOVA.md). Defaults de personagem/onboarding compartilhados; snapshot vazio inicializa somente quando local e remoto estão vazios e usa journal/intent/CAS/recibo existentes. Falhas retomam pelos mesmos workspaces. 690 testes e checks passaram; conta ainda false. SQL remoto não validado por timeout do conector/CLI sem login; candidato135 local, Vercel134 mantido. Próximo: acesso hospedado e pacote/aceite de liberação em Sol Alto. Não iniciar do zero ao associar o progresso pessoal.
+
+## Ambiente de testes permanente e transferência guiada — P04
+
+Fábio autorizou publicar atualizações verificadas no projeto conselho-elemental-testes / fr-prodiction. Usar sempre https://conselho-elemental-testes.vercel.app para conservar a origem. Não publicar fixtures no lugar do app, limpar storage ou incluir backup pessoal no build. Conta/sync ficam para etapa posterior; GitHub/banco/projetos antigos exigem seu escopo. [Decisão e manual curto](plans/TRANSFERENCIA-GUIADA-P04-0.1.132.md).
+
+Download de cópia anterior durante uma comparação retém o preview somente enquanto o baseline continua igual; falhas e concorrência o invalidam. Não retirar verifyPreviousSafetyCopy, consentimentos, locks, journal ou readback para simplificar apresentação.
+
+## Biblioteca direta de Treinos — T06 / 0.1.130
+
+SavedWorkoutLibrary recebe templates/catálogo existentes e callbacks; não lê ou escreve storage nem inicia sessão. onOpen mantém o ID existente para a prévia; onExplore move foco ao título das modalidades e respeita movimento reduzido. Ordenar cópia, nunca o array do store. Busca/paginação não precisam de persistência. [Plano e retomada](plans/EVOLUCAO-T06-BIBLIOTECA-0.1.130.md). Compatibilidade 130 somente local; gates preservados.
+
 ## XP/elementos — T05 / 0.1.129
 
 Usar ElementalXpBadge com valor já formatado pelo chamador, elemento e tamanho; não calcular/conceder XP no componente. ExperienceIcon e ColoredElementIcon usam IDs próprios via useId; testes de painéis devem distinguir IDs de gradientes de aria-controls, mantendo unicidade global. ElementIcon usa cor por padrão e tone=outline para compatibilidade. Rodapé/main e estimativa/recibo mantêm funções separadas. [Recebimento e evidências](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Main e branch de integração com auto-deploy desativado; futura release requer escopo explícito. Candidatos 128/129 locais, gates false.

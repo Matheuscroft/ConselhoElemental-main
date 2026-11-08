@@ -1,3 +1,100 @@
+## 0.1.143 — 07/11/2026
+
+- Corrigidos elemento/classificação dos rituais e subitens, filtros sem área, seleção explícita na criação rápida e fallback de área em Invocar. Recibos históricos/XP preservados.
+- Preparados checks Git/build e publicação main no destino de Matheus informado por Fábio; nenhum commit/staging automático ou migração SQL por CI.
+
+- Cronômetros refinados: Terra com relevo/topografia e massa estável; Água com ondulações discretas; Fogo com calor/brasas; Ar com correntes suaves. Eliminados cristais flutuantes, anéis redundantes e miniícones duplicados. Arte original preservada, tempo e ações em primeiro plano, efeitos pausáveis/reduced motion.
+- Metas ausentes deixam de aparecer como0s ou30min fictícios na apresentação do relógio; sem alterar planejamento armazenado/cálculo. Legibilidade e composição mais compactas para celular.
+- Compatibilidade aditiva143 para manter backup/conta ao publicar, preservando dados e liberação atuais.
+
+## 0.1.142 — 07/11/2026
+
+- Cronômetro de rituais/ciclos calcula tempo por âncora, incluindo suspensão/bloqueio, com pausa e parada atualizadas no instante da ação. Recuperação operacional por aba/perfil, retorno à atividade e proteção contra reinício acidental; fórmulas/conversões/recompensas preservadas.
+- Quatro efeitos elementais no relógio, interação de toque, pausa visual e movimento reduzido. Faixa de atividade atual acompanha a navegação.
+- Metadados públicos de versão e aviso de atualização com escolha explícita, conferência do salvamento e preservação do endereço/dados. Headers HTML/metadados revalidam no mesmo Vercel; sem reload forçado de formulários.
+- Menu mobile com atalhos cotidianos e explicações dos destinos. Timer não agenda rechecagem da conta a cada segundo.
+- Compatibilidade aditiva142 preserva arquivos, gate e dados existentes.
+
+## 0.1.141 — 07/11/2026
+
+- Corrigido painel Sua evolução: ciclos VALUABLE já aceitos pelo core agora entram na pontuação por elemento, área e subárea. Mesmas fórmulas, dados e XP; sem crédito duplicado ou migração pessoal.
+- Compatibilidade aditiva de arquivos141 preserva versões anteriores, gate e contratos de conta.
+
+## 0.1.140 — F6-N10: Minha conta e jornada conectada (07/11/2026)
+
+- Conta pessoal separada dos perfis locais, com acesso direto ao cadastro/login, estado de conexão e última versão salva. Preferências e integrações ficam agrupadas; controles mobile com alvo mínimo44px.
+- Uma ação conecta a jornada atual com cópia/readback internos, recibo e vínculo existentes; retoma envio confirmado e recebe a versão online por escolha explícita. Sem segundo arquivo manual ou soma/replay de XP.
+- Sync existente recebe estado offline, retorno online e informação do último recibo; preserva tentativas sem confirmação. Retomada de acesso nesta aba limitada12h, conforme contrato atual.
+- Intent e resolução de conta usam codec de recuperação compacto já existente para não repetir QuotaExceeded. Formatos de arquivo/stores/motores intactos.
+- Configuração pública do Supabase migrada de runtime-only para Configs de build na Vercel; build hospedado agora recusa conexão vazia/chave privada/escritor legado ativo. Serviços de Matheus e contas antigas preservados.
+- Compatibilidade140 instalada e gate owner-bound de conta ativado após preflight/testes. Cadastro público por e-mail ainda depende de SMTP: confirmação obrigatória, SMTPcustomfalse, Googlefalse verificados. Sem criar contas, e-mails, credenciais ou enviar dados pessoais pelo agente.
+
+## 0.1.139 — F6-N09: correção da quota na importação (07/11/2026)
+
+- Journal de recuperação compactado com gzip nativo, checksum e leitura limitada; cópias JSON e projeções das stores mantêm o formato existente. Diários antigos continuam legíveis.
+- “Concluir importação” retoma uma tentativa interrompida, compactando a proteção antiga antes de gravar, sem outro arquivo ou checklists. Guarda exclusividade, consentimento, readback e marcador local antes de abrir o Santuário.
+- Recuperação grava primeiro a parte que reduz armazenamento. Quota recebe mensagem útil em português, sem orientar limpar dados. Conflitos, corrupção e interrupções preservam a recuperação.
+- Sem mudar XP, motores, stores, Auth ou gates; candidato de compatibilidade139 somente local/PGlite, banco hospedado permanece135. Evidências e publicação em [F6-N09](../../plans/FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md).
+
+## 0.1.138 — F6-N08: importar com uma confirmação (07/11/2026)
+
+- Escolher o JSON, conferir atividades/XP e tocar em Importar e usar neste aparelho; sem segundo arquivo nem checkboxes no percurso normal.
+- Segurança anterior preparada e conferida internamente; mesmo journal/lease/readback, com continuação local sob a mesma exclusividade e abertura direta do Santuário. Interrupções mantêm recuperação durável.
+- Exportação extra do destino opcional, XP recebido visível na conferência e controles bloqueados durante a importação. Sem recalcular recompensas, abrir sincronização ou alterar dados antes da confirmação.
+- Mudança de confirmação explicitamente autorizada pelo usuário na conversa de voz. Produtor138 revisado somente local/PGlite, banco remoto permanece135.
+
+## 0.1.137 — F6-N07: explicação para confirmar restauração (07/11/2026)
+
+- Botão Restaurar esta cópia agora tem uma lista acessível dos requisitos pendentes: revisão, segurança anterior conferida, outras abas fechadas e consentimento de substituição.
+- Diferencia o JSON de progresso do computador da segurança do destino, que precisa ser baixada e conferida no próprio aparelho da importação. Confirma explicitamente quando a segurança passou.
+- Guards, journal/readback, dados, XP e gates preservados. Compatibilidade137 somente local, sem aplicação no banco.
+
+## 0.1.136 — F6-N05: acesso à conta separado do progresso (07/11/2026)
+
+- Corrigida importação de cópias reais com raízes canônicas e vínculos nativos em jornadas/missões; exige confirmação nas duas representações nativas, preservando bytes, XP e conflitos reais.
+- Cadastro, login, reenvio de confirmação e recuperação liberados somente no documento Auth isolado, com sessão transitória e validação de identidade existentes.
+- Transferência, início de jornada, vínculo e sincronização continuam sob o gate próprio fechado; autenticar não envia/substitui dados nem credita XP.
+- Atalho de importação completa neste aparelho informa o caminho já disponível para receber atividades, histórico e XP; aceite pessoal no celular ainda pendente.
+- Compatibilidade de produtor136 preparada somente localmente. Banco hospedado aceita até135; não liberar envios136 antes da compatibilidade e do aceite hospedado.
+
+## 0.1.135 — F6-N01: início seguro de conta nova (07/11/2026)
+
+- F6-N03: compatibilidade135 aplicada no banco em20261107042615; escrita desativada, hash/grants/RLS/gatilhos e envelopes sintéticos120/135 conferidos. Sem mudança adicional de código da aplicação ou versão.
+- F6-N02: conexão hospedada retomada e preflight somente leitura aprovado; patch135 consolidado122→135, candidatos123–134 arquivados sem alteração de conteúdo. Aplicação ainda não autorizada, escrita fechada. Sem nova alteração em fonte/versão da UI.
+- Defaults de personagem/onboarding extraídos sem mudança de valores; fluxo vazio usa as projeções existentes.
+- Conta e aparelho comprovadamente vazios iniciam pelo journal e pipeline integral de intent/CAS/recibo; dados prévios impedem o início do zero.
+- Workspace com consentimento próprio e handoff para sincronização existente. 690 testes/checks aprovados; gate de conta permanece fechado, candidato SQL135 somente local e sem deploy.
+
+## 0.1.134 — M06: importação e navegação mobile (06/11/2026)
+
+- Auditoria reconhece o pai implícito de TaskItem direto criado pelo app, preservando arquivo, IDs, XP e bloqueio de conflitos reais.
+- Menu de páginas compacto, descrições legíveis e altura ajustada ao teclado; abertura foca o título em vez de abrir o teclado automaticamente.
+- Compatibilidade de produtor 134 revisada em teste SQL local; candidato não aplicado remotamente. Conta/sync seguem separados da importação local.
+
+## 0.1.133 — 06/11/2026 · ícone do app instalado
+
+- Arte Mago_app.jpeg enviada por Fábio aplicada aos ícones Android/manifest (192/512), iPhone (180) e favicon (32), com dimensões reais e URLs por hash.
+- Arte integral preservada por redimensionamento; corrigidas declarações antigas de dimensões e retirado propósito maskable não preparado para recorte.
+- Manifest e identidade/start_url mantidos, sem mudança de dados/runtime. Compatibilidade 133 em candidato SQL somente local.
+
+## 0.1.132 — 06/11/2026 · transferência guiada
+
+- Importação organizada em Escolher arquivo → Conferir progresso → Usar neste aparelho.
+- Salvar a cópia de segurança do destino conserva a comparação do arquivo selecionado; alterações externas invalidam a comparação antes de baixar ou restaurar.
+- Destino permanente de testes documentado; conta/sincronização continuam para etapa posterior. Compatibilidade 132 somente local, sem mudança de esquema/fórmula/gates.
+
+## 0.1.131 — 06/11/2026 · importação local do progresso
+
+- Restauração local liberada com as proteções existentes: cópia anterior conferida, consentimento explícito, isolamento, exclusividade, journal e readback. Sem ativar conta/sincronização/lembretes.
+- Grimório com entrada direta “Importar progresso neste dispositivo”, distinta de conferir arquivo sem importar.
+- Compatibilidade de produtor 131 em candidato SQL somente local; histórico e fórmulas preservados. Evidência de navegador sintético e limites de aceite físico no relatório P03.
+
+## 0.1.130 — 06/11/2026 · biblioteca direta de Treinos
+
+- Treinos salvos acessíveis na entrada do módulo, sem escolher modalidade; busca por nome/modalidade e seis itens por vez, mais recentes primeiro.
+- Cada item abre a prévia pelo ID existente e mantém o ícone contextual. Atalho Novo treino leva às modalidades com foco e movimento reduzido; sessão ativa permanece acima da biblioteca.
+- Dados/cálculos/stores preservados. Compatibilidade de produtor 130 em candidato SQL somente local, gates fechados. Verificações e plano em [T06](../../plans/EVOLUCAO-T06-BIBLIOTECA-0.1.130.md).
+
 ## 0.1.129 — 06/11/2026 · XP e elementos coloridos
 
 - Medalhão original de XP e Terra/Fogo/Água/Ar coloridos, com SVGs vetoriais, gradientes próprios e nomes acessíveis.

@@ -1,0 +1,11 @@
+.account-workspace .account-journey { border-color: #766644; background: radial-gradient(ellipse at 100% 0, #d5b66f0d, transparent 65%), #101721; }
+.account-journey-heading { display: flex; align-items: center; gap: .8rem; color: #d5b66f; }
+.account-journey-heading h2 { margin: 0; color: #eceae3; }
+.account-journey-heading svg { flex: 0 0 auto; }
+.account-journey-ledger { margin-block: 1.2rem; padding-block: .6rem; border-block: 1px solid #303b49; }
+.account-journey-ledger dd { display: inline-flex; align-items: center; gap: .5rem; color: #dfc17b; font-weight: 600; }
+.account-journey-online { margin-top: 1rem; padding: 1rem; border: 1px solid #6b9f90; border-radius: .8rem; background: #a9dec908; }
+.account-journey small { display: block; margin-top: 1rem; }
+.account-advanced { margin-top: 1.5rem; border-top: 1px solid #303b49; }
+.account-advanced > summary { color: #adb8c8; }
+.account-workspace [hidden] { display: none !important; }

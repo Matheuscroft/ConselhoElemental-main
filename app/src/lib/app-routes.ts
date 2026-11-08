@@ -24,8 +24,8 @@ export interface AppRoute {
 /** Single source of truth for navigable pages (menus and the page map read from here). */
 export const APP_ROUTES: AppRoute[] = [
   { id: 'santuario', label: 'Santuário', path: '/santuario', group: 'Núcleo', icon: Sparkles, description: 'Painel principal e avatar', sidebar: true, mobile: 'bar' },
-  { id: 'rituais', label: 'Rituais', path: '/rituais', group: 'Núcleo', icon: CheckSquare, description: 'Tarefas e hábitos do dia', sidebar: true, mobile: 'bar' },
-  { id: 'invocar', label: 'Invocar', path: '/invocar', group: 'Núcleo', icon: Plus, description: 'Criação rápida', sidebar: true, mobile: 'bar' },
+  { id: 'rituais', label: 'Rituais', path: '/rituais', group: 'Núcleo', icon: CheckSquare, description: 'Atividades que você faz uma vez', sidebar: true, mobile: 'bar' },
+  { id: 'invocar', label: 'Invocar', path: '/invocar', group: 'Núcleo', icon: Plus, description: 'Criar atividade, hábito ou projeto', sidebar: true, mobile: 'bar' },
   { id: 'grimorio', label: 'Grimório', path: '/grimorio', group: 'Núcleo', icon: Library, description: 'Registro e conhecimento', sidebar: true, mobile: 'bar' },
   { id: 'forja', label: 'Forja', path: '/forja', group: 'Núcleo', icon: Bot, description: 'Assistente e criação', sidebar: true, mobile: 'more' },
   { id: 'pilares', label: 'Pilares', path: '/pilares', group: 'Núcleo', icon: Shield, description: 'Pilares elementais', sidebar: true, mobile: 'more' },

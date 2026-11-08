@@ -1,3 +1,4 @@
-/** Static release: real-browser/hosted acceptance and complete online bootstrap
- * are still pending. No URL, env or storage preference can enable UI writes. */
-export const ACCOUNT_TRANSFER_WRITES_RELEASED = false;
+/** Personal-account beta, explicitly requested in F6-N10. Hosted writes still
+ * require its owner-controlled release, verified identity, CAS and consent.
+ * No URL, env or storage preference can change this client release. */
+export const ACCOUNT_TRANSFER_WRITES_RELEASED = true;

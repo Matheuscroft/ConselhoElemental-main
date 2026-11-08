@@ -19,7 +19,7 @@ async function setup(){
  return {f,before,current,journal,memory,writes,storage};
 }
 async function resign(journal,change){
- const envelope=JSON.parse(journal),value=JSON.parse(envelope.payload);change(value);
+ const envelope=JSON.parse(journal),value=JSON.parse(await mod.exports.decodeRestoreJournalPayload(envelope.payload));change(value);
  const payload=JSON.stringify(value),checksum=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(payload))).toString('hex');
  return JSON.stringify({payload,checksum});
 }
@@ -89,4 +89,56 @@ test('long flat parent chains are checked without recursive parent walking or mu
  b.stores.core.state.tasks=Array.from({length:10000},(_,i)=>({id:'node-'+i,parentId:i===9999?null:'node-'+(i+1),children:[]}));
  assert.equal(f.auditCriticalProgress(b).issues.length,0);
  b.stores.core.state.tasks[9999].parentId='node-0';assert.ok(f.auditCriticalProgress(b).issues.some(i=>i.message.includes('circular')));
+});
+
+test('a real app-created task with direct and nested legacy items restores without changing projections or XP',async()=>{
+ const f=fixture();const task=f.core.getState().addTask({title:'Sintético'});
+ f.core.getState().addTaskItem(task.id,{title:'Direto'});
+ const child=f.core.getState().tasks[0].childItems[0];f.core.getState().addTaskItem(task.id,{title:'Neto'},child.id);
+ const habit=f.core.getState().addHabit({name:'Prática sintética',elementId:'ar',plannedTimeMinutes:5,plannedPoints:2});
+ f.core.getState().completeHabit(habit.id,5,new Date(2026,9,28,12));
+ const snapshot=JSON.parse(JSON.stringify(f.captureProgress(origin))),before=JSON.stringify(snapshot);
+ snapshot.appVersion='0.1.130'; // Same producer as the phone screenshot; archive remains untouched by import.
+ const original=JSON.stringify(snapshot);
+ assert.deepEqual(f.auditCriticalProgress(snapshot).issues,[]);
+ const archive=await f.createProgressBackup(snapshot);const checked=await f.prepareWorkspacePreview(archive,{getItem:()=>null},origin);
+ assert.deepEqual(checked.audit.issues,[]);assert.equal(JSON.stringify(snapshot),original);assert.equal(JSON.parse(before).stores.core.state.user.xp_air,snapshot.stores.core.state.user.xp_air);
+ assert.equal(snapshot.stores.core.state.tasks[0].childItems[0].parentId,null);
+ const memory=new Map(),storage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
+ const journal=await prepareRestoreJournal({core:null,fitness:null},archive,origin);
+ await executePreparedRestore(storage,journal,origin);
+ for(const part of ['core','fitness'])assert.deepEqual(JSON.parse(storage.getItem(f.STORE_KEYS[part])).state,snapshot.stores[part].state);
+ const restored=fixture([],memory);assert.deepEqual(restored.core.getState().user,snapshot.stores.core.state.user);
+ assert.ok(snapshot.stores.core.state.user.xp_air>0);
+ assert.equal(restored.core.getState().tasks[0].childItems[0].id,child.id);
+
+ const bad=structuredClone(snapshot);bad.stores.core.state.actions.find(a=>a.id===child.id).parentId='another-parent';
+ assert.ok(f.auditCriticalProgress(bad).issues.some(i=>i.message.includes('projeções')));
+ const badOwner=structuredClone(snapshot);badOwner.stores.core.state.tasks[0].childItems[0].taskId='wrong-root';
+ assert.ok(f.auditCriticalProgress(badOwner).issues.some(i=>i.message.includes('projeções')));
+});
+
+test('app-created quest and mission tasks/habits retain canonical roots and contextual native links through import and hydration',async()=>{
+ const f=fixture(),s=f.core.getState();const project=s.addProject({title:'Projeto sintético'});s.addMissionToProject(project.id,{title:'Missão sintética'});
+ const mission=f.core.getState().projects[0].missions[0];const quest=s.addQuest({title:'Jornada sintética'});
+ for(const [addTask,addHabit] of [[data=>s.addTaskToQuest(quest.id,data),data=>s.addHabitToQuest(quest.id,data)],[data=>s.addTaskToMission(project.id,mission.id,data),data=>s.addHabitToMission(project.id,mission.id,data)]]){
+  addTask({title:'Ritual sintético'});addHabit({name:'Ciclo sintético',elementId:'ar',plannedTimeMinutes:5,plannedPoints:2});
+ }
+ s.completeHabit(f.core.getState().habits[0].id,5,new Date(2026,10,6,12));
+ const snapshot=JSON.parse(JSON.stringify(f.captureProgress(origin)));snapshot.appVersion='0.1.130';const original=JSON.stringify(snapshot);
+ assert.deepEqual(f.auditCriticalProgress(snapshot).issues,[]);
+ const archive=await f.createProgressBackup(snapshot),checked=await f.prepareWorkspacePreview(archive,{getItem:()=>null},origin);assert.deepEqual(checked.audit.issues,[]);assert.equal(JSON.stringify(snapshot),original);
+ const memory=new Map(),storage={getItem:k=>memory.get(k)??null,setItem:(k,v)=>memory.set(k,v),removeItem:k=>memory.delete(k)};
+ await executePreparedRestore(storage,await prepareRestoreJournal({core:null,fitness:null},archive,origin),origin);
+ for(const part of ['core','fitness'])assert.deepEqual(JSON.parse(storage.getItem(f.STORE_KEYS[part])).state,snapshot.stores[part].state);
+ const reloaded=fixture([],memory);assert.deepEqual(reloaded.core.getState().user,snapshot.stores.core.state.user);assert.ok(reloaded.core.getState().user.xp_air>0);
+ const badVariants=[
+  b=>{b.stores.core.state.actions[0].parentId='wrong-explicit-parent';},
+  b=>{b.stores.core.state.tasks[0].parentId=quest.id;},
+  b=>{b.stores.core.state.projects[0].missions[0].tasks[0].parentId=quest.id;},
+  b=>{b.stores.core.state.quests[0].tasks.push({...b.stores.core.state.tasks[0],parentId:quest.id});},
+  b=>{b.stores.core.state.tasks=[];},
+  b=>{b.stores.core.state.projects[0].missions[0].tasks=[];},
+ ];
+ for(const change of badVariants){const b=structuredClone(snapshot);change(b);assert.ok(f.auditCriticalProgress(b).issues.some(i=>i.message.includes('projeções')));}
 });

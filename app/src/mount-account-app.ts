@@ -5,7 +5,7 @@ import { isRestoredLocalDocument, markLiveAccountDocument } from './lib/backup/p
 /** Only imported from the explicit workspace handoff under an exclusive lease. */
 export async function mountAccountApp(root: HTMLElement, session: LiveAccountSession) {
   if (!hasExclusiveProgressSession() || !isRestoredLocalDocument()) throw new Error('Reabra a conferência da conta antes de sincronizar.');
-  const sync = createLiveAccountSync({origin:window.location.origin,storage:window.localStorage,session,isExclusive:hasExclusiveProgressSession});
+  const sync = createLiveAccountSync({origin:window.location.origin,storage:window.localStorage,session,isExclusive:hasExclusiveProgressSession,isOnline:()=>navigator.onLine});
   let detach: (()=>void) | undefined;
   let stopRefresh: (()=>void) | undefined;
   // Auth callback only invalidates; it never awaits another Auth method.

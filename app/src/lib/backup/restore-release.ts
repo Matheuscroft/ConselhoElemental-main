@@ -1,5 +1,6 @@
-/** Release remains closed until real-browser interruption/reload/mobile acceptance.
- * No URL, localStorage, session or environment switch can enable this release.
- * Tests replace this module, without enabling writes in the distributed app.
+/** Local archive restoration is released with confirmed replacement/local use,
+ * internal safety readback, pre-bootstrap isolation, exclusive lease and journal.
+ * Account transfer and reminder writes have separate, still closed releases.
+ * No URL, env or preference can toggle this static release.
  */
-export const RESTORE_WRITES_RELEASED = false;
+export const RESTORE_WRITES_RELEASED = true;

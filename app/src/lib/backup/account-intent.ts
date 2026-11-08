@@ -1,3 +1,4 @@
+import { encodeRestoreJournalPayload, decodeRestoreJournalPayload } from './restore-journal-codec';
 import { inspectProgressBackup, STORE_KEYS } from './progress-backup';
 import { auditCriticalProgress } from './critical-progress';
 import { validateLocalProgressMode } from './progress-mode';
@@ -23,7 +24,7 @@ export async function inspectAccountIntent(raw: string, origin: string): Promise
   const envelope = parse(raw);
   if (!object(envelope) || Object.keys(envelope).length !== 2 || typeof envelope.payload !== 'string' || typeof envelope.checksum !== 'string') invalid();
   if (await accountDigest(envelope.payload) !== envelope.checksum) invalid();
-  const v = parse(envelope.payload);
+  const v = parse(await decodeRestoreJournalPayload(envelope.payload));
   const fields = ['format','version','phase','origin','userId','operationId','expectedRevision','archive','archiveSha256','baselineDigest','localMode'];
   if (!object(v) || Object.keys(v).length !== fields.length || fields.some(k => !Object.hasOwn(v,k))
     || v.format !== 'conselho-elemental-account-intent' || v.version !== 1 || (v.phase !== 'pending' && v.phase !== 'paused')
@@ -38,6 +39,6 @@ export async function inspectAccountIntent(raw: string, origin: string): Promise
   return Object.freeze(v as unknown as AccountIntent);
 }
 export async function sealAccountIntent(value: AccountIntent): Promise<string> {
-  const payload = JSON.stringify(value), raw = JSON.stringify({ payload, checksum: await accountDigest(payload) });
+  const payload = await encodeRestoreJournalPayload(JSON.stringify(value)), raw = JSON.stringify({ payload, checksum: await accountDigest(payload) });
   await inspectAccountIntent(raw, value.origin); return raw;
 }

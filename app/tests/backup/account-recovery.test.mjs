@@ -91,8 +91,8 @@ test('unconfirmed password response is not retried and logout failure is disting
  const g=fixture();try{const b=await recovered(g);g.logoutFailure();assert.deepEqual(await b.update('synthetic password'),{logoutConfirmed:false});}finally{g.close();}
 });
 
-test('recovery bootstrap imports no stores/global Auth and preserves the closed release',()=>{
+test('recovery bootstrap imports no stores/global Auth and never activates progress transfer',()=>{
  const main=readFileSync('src/main.tsx','utf8');assert.ok(main.indexOf('captureRecoveryEntry(window.location.href')<main.indexOf("import('./mount-account-recovery')"));
  for(const path of ['src/lib/backup/account-recovery.ts','src/lib/backup/account-recovery-entry.ts','src/mount-account-recovery.tsx','src/components/backup/AccountRecoveryWorkspace.tsx'])assert.doesNotMatch(readFileSync(path,'utf8'),/from ['"][^'"]*(?:stores\/|services\/|lib\/supabase['"])/);
- assert.match(readFileSync('src/lib/backup/account-release.ts','utf8'),/ACCOUNT_TRANSFER_WRITES_RELEASED = false/);
+ assert.doesNotMatch(readFileSync('src/components/backup/AccountRecoveryWorkspace.tsx','utf8'),/connectCurrentAccountProgress|beginAccountTransfer|startNewAccountProgress/);
 });

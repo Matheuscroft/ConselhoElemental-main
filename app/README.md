@@ -1,3 +1,9 @@
+> **Conta pessoal —0.1.143:** [conexão integral e revisão do cadastro existente](docs/plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md). A importação no celular foi confirmada pelo usuário. Configuração Vercel corrigida e beta de progresso owner-bound ativado; cadastro externo ainda depende de SMTP.
+
+> **Testes no celular — 0.1.132:** [ambiente fixo e transferência guiada](docs/plans/TRANSFERENCIA-GUIADA-P04-0.1.132.md). Conta/sincronização ficam para a etapa seguinte; dados pessoais não são enviados pelo deploy.
+
+> **Lote local 0.1.130:** [biblioteca direta de Treinos e plano de evolução](docs/plans/EVOLUCAO-T06-BIBLIOTECA-0.1.130.md). Main permanece na publicação 0.1.129.
+
 <p align="center">
 
 > **Repasse 0.1.129 / main:** [XP/elementos coloridos, superfícies de Treinos e próximos lotes backend](docs/plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Conta/F6 e associação pessoal continuam pendentes, gates fechados.
@@ -64,7 +70,17 @@ npm ci
 npm run dev
 ```
 
-### Supabase Auth (Opcional)
+### Conta pessoal e ambiente de testes
+
+No projeto `conselho-elemental-testes`, URL/chave publicável e flags são Configs de build na Vercel (produção/preview). O cliente de conta pessoal é isolado: mantenha `VITE_ENABLE_SUPABASE_AUTH=false` e `VITE_FORCE_BOOTSTRAP_CLOUD_SYNC=false` para não iniciar o escritor parcial legado. `/?progresso=conta` e o botão Minha conta conduzem cadastro/login e conexão explícita. Não copiar tokens ou progresso para variáveis públicas.
+
+Não executar todas as migrações ou o init antigo em banco já existente. Compatibilidade140 está instalada; candidatos136–139 são históricos locais, não migrações remotas a repetir. Consulte o pacoteF6-N10 para SMTP, aceite real e rollback não destrutivo.
+
+### Referência do Auth legado (implementação anterior)
+
+As instruções abaixo descrevem o caminho anterior. Não são o roteiro de ativação do beta integral com o progresso importado.
+
+
 
 1. Copie `.env.example` para `.env`:
 ```bash

@@ -37,7 +37,7 @@ export async function resumeAccountSession(options: {
     if(identity.error || identity.data.user?.id!==saved.userId)throw new Error('Não foi possível validar a conta salva.');
     const transport=createAccountTransport(owned.client,{expectedUserId:saved.userId,currentUserId:()=>active?saved.userId:null,isCurrent:current});
     await reviewAccountBinding(bindingRaw,origin,transport,storage);check();
-    const handoff=await prepareLiveAccountAccess(owned,{userId:saved.userId,bindingRaw,origin,project:options.config.url,storage:accessStorage,remember:true,previous:{raw,consentedAt:saved.consentedAt}});check();
+    const handoff=await prepareLiveAccountAccess(owned,{userId:saved.userId,bindingRaw,origin,project:options.config.url,storage:accessStorage,remember:true,email:identity.data.user.email,previous:{raw,consentedAt:saved.consentedAt}});check();
     active=false;return handoff;
   }catch(error){active=false;owned.dispose();throw error;}
 }

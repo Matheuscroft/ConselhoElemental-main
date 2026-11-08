@@ -1,0 +1,16 @@
+{
+  "/app-version.json": {
+    "status": 200,
+    "cacheControl": "no-store, no-cache, must-revalidate",
+    "release": {
+      "format": "conselho-release",
+      "version": "0.1.142"
+    }
+  },
+  "/ciclos?atualizar=142": {
+    "status": 200,
+    "cacheControl": "no-store, no-cache, must-revalidate",
+    "entryVersion142": true
+  },
+  "deployment": "dpl_JD3uEgJd5c9ifvYMo7pi6cK6qGhy"
+}

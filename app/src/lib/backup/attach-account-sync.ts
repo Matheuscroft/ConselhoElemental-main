@@ -17,7 +17,11 @@ export function attachAccountSync(sync: LiveAccountSync, surface: Window = windo
     if (disposed || ['pending','blocked','stopped'].includes(sync.getSnapshot().status)) return;
     clear(); timer = setTimeout(() => { timer = undefined; void sync.flush(); },900);
   };
-  const uncore = useAppStore.subscribe(schedule), unfitness = useWorkoutStore.subscribe(schedule);
+  const uncore = useAppStore.subscribe((next, before) => {
+    // Runtime ticks are excluded from the archive: do not debounce/recheck the
+    // whole account every second while a user is concentrating.
+    if (Object.entries(next).some(([key, value]) => key !== 'timer' && value !== before[key as keyof typeof before])) schedule();
+  }), unfitness = useWorkoutStore.subscribe(schedule);
   const unstatus = sync.subscribe(() => {
     const status = sync.getSnapshot().status;
     if (['pending','blocked','stopped'].includes(status)) clear();
@@ -31,13 +35,13 @@ export function attachAccountSync(sync: LiveAccountSync, surface: Window = windo
   const focus = () => { void sync.flush(); };
   const visibility = () => { if (surface.document.visibilityState === 'visible') focus(); };
   const pagehide = () => { dispose(); };
-  surface.addEventListener('storage',external); surface.addEventListener('focus',focus); surface.addEventListener('pagehide',pagehide);
+  surface.addEventListener('storage',external); surface.addEventListener('focus',focus); surface.addEventListener('online',focus); surface.addEventListener('pagehide',pagehide);
   surface.document.addEventListener('visibilitychange',visibility);
   // Store persist wrappers may notify before writing; the debounce reads only later.
   schedule();
   function dispose() {
     if (disposed) return; disposed = true; clear(); uncore(); unfitness(); unstatus();
-    surface.removeEventListener('storage',external); surface.removeEventListener('focus',focus); surface.removeEventListener('pagehide',pagehide);
+    surface.removeEventListener('storage',external); surface.removeEventListener('focus',focus); surface.removeEventListener('online',focus); surface.removeEventListener('pagehide',pagehide);
     surface.document.removeEventListener('visibilitychange',visibility); sync.stop();
   }
   return dispose;

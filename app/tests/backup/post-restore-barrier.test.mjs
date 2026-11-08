@@ -11,7 +11,7 @@ async function setup(){
  const f=fixture();f.core.getState().addDraft('Anterior','');const snapshot=f.captureProgress(origin),previousBackup=await f.createProgressBackup(snapshot);
  const before=Object.fromEntries(Object.entries(snapshot.stores).map(([part,data])=>[part,JSON.stringify({state:data.state,version:data.version})]));
  f.core.getState().addDraft('Importado','');f.core.getState().addElementExperience('ar',7);f.fitness.getState().addBodyMeasurement({weightKg:70});const targetBackup=await f.createProgressBackup(f.captureProgress(origin));
- const m=realm(),journal=await m.prepareRestoreJournal(before,targetBackup,origin),target=JSON.parse(JSON.parse(journal).payload).target;
+ const m=realm(),journal=await m.prepareRestoreJournal(before,targetBackup,origin),target=JSON.parse(await m.decodeRestoreJournalPayload(JSON.parse(journal).payload)).target;
  const memory=new Map(Object.entries(before).map(([part,value])=>[f.STORE_KEYS[part],value])),writes=[];let hook=()=>{};
  const storage={getItem:key=>memory.get(key)??null,setItem:(key,value)=>{hook('before',key);memory.set(key,value);writes.push([key,value]);hook('after',key);},removeItem:key=>{hook('before',key);memory.delete(key);writes.push([key,null]);hook('after',key);}};
  const context={origin,otherTabsClosed:true,storage:()=>storage,locks:{request:async(_,options,fn)=>fn({mode:options.mode})}};
@@ -26,7 +26,7 @@ async function attemptNormalStartup(storage){
 
 test('confirmed restore retains its barrier across reload before auth initialization without changing backend behavior',async()=>{
  const f=await setup();assert.equal(await f.m.runExclusiveRestore(f.context,f.operation),'applied');
- const raw=f.storage.getItem(f.m.RESTORE_JOURNAL_KEY);assert.equal(JSON.parse(JSON.parse(raw).payload).phase,'committed');
+ const raw=f.storage.getItem(f.m.RESTORE_JOURNAL_KEY);assert.equal(JSON.parse(await f.m.decodeRestoreJournalPayload(JSON.parse(raw).payload)).phase,'committed');
  const before=[...f.memory],count=f.writes.length;
  for(let reload=0;reload<3;reload++){
   const app=await attemptNormalStartup(f.storage);assert.deepEqual(app.blocked,['pending-restore']);assert.equal(app.auth,undefined);assert.equal(app.m.hasProgressAppStarted(),false);

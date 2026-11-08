@@ -1,0 +1,32 @@
+{
+  "version": "0.1.140",
+  "browser": "Chromium390x844, disposable profiles; layout360/390/768",
+  "data": "synthetic only",
+  "auth": "real installed SDK with intercepted synthetic responses",
+  "rpc": "real owner-bound SQL in isolated PGlite; no hosted Auth or data writes",
+  "screens": [
+    {
+      "width": 360,
+      "accountOverflow": false
+    },
+    {
+      "width": 390,
+      "accountOverflow": false
+    },
+    {
+      "width": 768,
+      "accountOverflow": false
+    }
+  ],
+  "oneActionConnect": true,
+  "noManualSafetyFile": true,
+  "automaticSaveAfterRealUIAction": true,
+  "resumeAfterReload": true,
+  "secondDeviceReceivesExactProgress": true,
+  "syntheticXP": 7,
+  "notesAfterUIAction": 36,
+  "errors": 0,
+  "physicalPhone": false,
+  "hostedEmailVerified": false,
+  "commits": 3
+}

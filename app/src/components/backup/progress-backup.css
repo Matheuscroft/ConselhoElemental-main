@@ -8,7 +8,7 @@
 .progress-backup button { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgb(var(--el-gold) / .35); color: rgb(var(--el-gold)); }
 .progress-backup-actions > button:first-child { background: rgb(var(--el-gold)); color: #10141d; font-weight: 600; }
 .progress-backup button:disabled { opacity: .5; cursor: wait; }
-.progress-backup :is(button,summary):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+.progress-backup :is(button,summary,a):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
 .progress-backup summary { cursor: pointer; color: rgb(var(--el-gold)); }
 .progress-backup-preview { padding-block: 16px; border-block: 1px solid var(--grimoire-line); margin-block: 14px; }
 .progress-backup-preview dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-block: 16px; }
@@ -46,3 +46,5 @@
 .account-preparation-review dd { margin: 4px 0 0; font-size: 20px; color: rgb(var(--el-gold)); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .account-preparation .account-preparation-close { border-color: var(--grimoire-line); color: rgb(var(--el-text)); }
 @media (min-width: 600px) { .account-preparation-review .account-preparation-xp { grid-template-columns: repeat(4,minmax(0,1fr)); } }
+
+.progress-backup .progress-backup-import { display:flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px; border-radius:12px; background:rgb(var(--el-gold)); color:#10141d; font-weight:600; text-align:center; text-decoration:none; }

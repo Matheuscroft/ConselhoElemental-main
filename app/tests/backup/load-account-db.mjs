@@ -3,15 +3,32 @@ import {readFileSync} from 'node:fs';
 export const installedMigration=readFileSync('supabase/migrations/20261030202517_progress_account_atomic.sql','utf8');
 export const archiveVersionMigration=readFileSync('supabase/migrations/20261030204257_account_archive_version_121.sql','utf8');
 export const accessVersionMigration=readFileSync('supabase/migrations/20261030211424_account_archive_version_122.sql','utf8');
-export const mergeVersionMigration=readFileSync('supabase/migrations/20261106022901_account_archive_version_123.sql','utf8');
-export const fitnessIdentityVersionMigration=readFileSync('supabase/migrations/20261106031901_account_archive_version_124.sql','utf8');
-export const intuitiveIconsVersionMigration=readFileSync('supabase/migrations/20261106033034_account_archive_version_125.sql','utf8');
-export const catalogueVersionMigration=readFileSync('supabase/migrations/20261106033906_account_archive_version_126.sql','utf8');
-export const handoffVersionMigration=readFileSync('supabase/migrations/20261106034829_account_archive_version_127.sql','utf8');
-export const auxiliaryUiVersionMigration=readFileSync('supabase/migrations/20261106041510_account_archive_version_128.sql','utf8');
-export const colouredRewardsVersionMigration=readFileSync('supabase/migrations/20261106172724_account_archive_version_129.sql','utf8');
+export const mergeVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106022901_account_archive_version_123.sql','utf8');
+export const fitnessIdentityVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106031901_account_archive_version_124.sql','utf8');
+export const intuitiveIconsVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106033034_account_archive_version_125.sql','utf8');
+export const catalogueVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106033906_account_archive_version_126.sql','utf8');
+export const handoffVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106034829_account_archive_version_127.sql','utf8');
+export const auxiliaryUiVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106041510_account_archive_version_128.sql','utf8');
+export const colouredRewardsVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106172724_account_archive_version_129.sql','utf8');
+export const savedLibraryVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106180121_account_archive_version_130.sql','utf8');
+export const localRestoreVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106190306_account_archive_version_131.sql','utf8');
+export const guidedTransferVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106191318_account_archive_version_132.sql','utf8');
+export const appIconVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261106192643_account_archive_version_133.sql','utf8');
+export const mobileImportVersionMigration=readFileSync('supabase/review-candidates/producer-versions/20261107024439_account_archive_version_134.sql','utf8');
+export const newJourneyVersionMigration=readFileSync('supabase/migrations/20261107042615_account_archive_version_135.sql','utf8');
+export const authOnlyVersionMigration=readFileSync('supabase/migrations/20261107045407_account_archive_version_136.sql','utf8');
+export const restoreHelpVersionMigration=readFileSync('supabase/migrations/20261107180106_account_archive_version_137.sql','utf8');
+export const simpleImportVersionMigration=readFileSync('supabase/migrations/20261107181632_account_archive_version_138.sql','utf8');
+export const quotaVersionMigration=readFileSync('supabase/migrations/20261107183833_account_archive_version_139.sql','utf8');
+export const connectionVersionMigration=readFileSync('supabase/migrations/20261107192045_account_archive_version_140.sql','utf8');
+export const scorePanelVersionMigration=readFileSync('supabase/migrations/20261107213207_account_archive_version_141.sql','utf8');
+export const mobileTimerVersionMigration=readFileSync('supabase/migrations/20261107215418_account_archive_version_142.sql','utf8');
+export const refinedTimerVersionMigration=readFileSync('supabase/migrations/20261108003620_account_archive_version_143.sql','utf8');
 // Integration fixtures exercise the complete LOCAL candidate, not hosted state.
-export const migration=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+mergeVersionMigration+'\n'+fitnessIdentityVersionMigration+'\n'+intuitiveIconsVersionMigration+'\n'+catalogueVersionMigration+'\n'+handoffVersionMigration+'\n'+auxiliaryUiVersionMigration+'\n'+colouredRewardsVersionMigration;
+const migration140=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+newJourneyVersionMigration+'\n'+authOnlyVersionMigration+'\n'+restoreHelpVersionMigration+'\n'+simpleImportVersionMigration+'\n'+quotaVersionMigration+'\n'+connectionVersionMigration;
+const migration141=migration140+'\n'+scorePanelVersionMigration;
+const migration142=migration141+'\n'+mobileTimerVersionMigration;
+export const migration=migration142+'\n'+refinedTimerVersionMigration;
 export async function createLegacyDatabase(){
  const db=new PGlite();
  // Isolated in-memory PostgreSQL. No network, server connection, env or real Auth.
@@ -25,10 +42,10 @@ export async function createLegacyDatabase(){
  await db.exec(`grant select,insert,update,delete on all tables in schema public to authenticated;`);
  return db;
 }
-export async function createAccountDatabase({release=true}={}){
+export async function createAccountDatabase({release=true,producerVersion=143}={}){
  const db=await createLegacyDatabase();
  try{
-  await db.exec(migration);
+  await db.exec(producerVersion>=143?migration:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140);
   if(release)await db.exec('update progress_private.release_gate set writes_enabled=true where singleton'); // test-only postgres owner
   return db;
  }catch(error){await db.close();throw error;}

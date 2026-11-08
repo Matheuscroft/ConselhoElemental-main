@@ -1,7 +1,7 @@
 import { inspectProgressBackup } from './progress-backup';
 import { progressFingerprint } from './restore-comparison';
 import { prepareRestoreJournal } from './restore-journal';
-import { assertWorkspaceBaseline, type PreviewStorage, type WorkspaceBaseline, prepareWorkspacePreview } from './workspace-preview';
+import { assertWorkspaceBaseline, createWorkspaceSafetyCopy, type PreviewStorage, type WorkspaceBaseline, prepareWorkspacePreview } from './workspace-preview';
 
 export type WorkspacePreview = Awaited<ReturnType<typeof prepareWorkspacePreview>>;
 /** Readback of the saved safety file, matched to the exact current projection. */
@@ -25,4 +25,17 @@ export async function prepareConfirmedRestore(preview: WorkspacePreview, previou
   const journal = await prepareRestoreJournal(baseline.pair, text, origin);
   assertWorkspaceBaseline(storage, baseline);
   return journal;
+}
+
+/** User-confirmed local import. Prepare/read back the current projection internally;
+ * the journal retains both versions during the write. No second file picker,
+ * download, Auth or domain command is required. Success intentionally replaces
+ * the old destination; this is not a permanent backup retained after completion. */
+export async function prepareLocalImport(preview: WorkspacePreview, storage: PreviewStorage, origin: string): Promise<{ journal: string; previousBackup: string | null }> {
+  const selected = { ...preview, baseline: { ...preview.baseline, pair: { ...preview.baseline.pair } } };
+  assertWorkspaceBaseline(storage, selected.baseline);
+  const previousBackup = selected.baseline.snapshot ? (await createWorkspaceSafetyCopy(storage, origin)).text : null;
+  const journal = await prepareConfirmedRestore(selected, previousBackup, storage, origin);
+  assertWorkspaceBaseline(storage, selected.baseline);
+  return { journal, previousBackup };
 }

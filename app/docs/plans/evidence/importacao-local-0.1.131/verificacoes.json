@@ -1,0 +1,45 @@
+{
+  "version": "0.1.131",
+  "date": "2026-11-06",
+  "automated": {
+    "tests": 677,
+    "failures": 0,
+    "skipped": 0,
+    "durationMs": 79157.349125,
+    "typescript": "passed",
+    "eslint": "passed",
+    "build": {
+      "passed": true,
+      "envDir": false,
+      "seconds": 41.38
+    }
+  },
+  "realBrowser": {
+    "environment": "Codex in-app browser on desktop",
+    "site": "isolated synthetic QA",
+    "selectedSyntheticFile": true,
+    "previousSafetyFileVerified": true,
+    "explicitConsents": true,
+    "writeReloadAndLocalContinuation": true,
+    "secondReloadPreservedBothDrafts": true,
+    "physicalMobile": "not tested",
+    "realPersonalBackup": "not accessed or imported",
+    "downloadAutomation": "timed out; exact synthetic baseline rebuilt offline",
+    "interruptionVisualThisRound": "not executed; automated recovery tests passed"
+  },
+  "releaseFlags": {
+    "restore": true,
+    "account": false,
+    "reminders": false
+  },
+  "remoteSqlApplied": false,
+  "publication": {
+    "id": "dpl_9THEro78eBMRhgaqLSXr4Q7g36Np",
+    "readyState": "READY",
+    "target": "production",
+    "project": "conselho-elemental-testes",
+    "version": "0.1.131",
+    "realImportPageInspected": true,
+    "personalImportExecuted": false
+  }
+}

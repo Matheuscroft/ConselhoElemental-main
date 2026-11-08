@@ -1,0 +1,19 @@
+{
+  "project": "conselho-elemental-testes",
+  "environments": [
+    "production",
+    "preview"
+  ],
+  "type": "Config",
+  "names": [
+    "VITE_SUPABASE_URL",
+    "VITE_SUPABASE_ANON_KEY",
+    "VITE_ENABLE_SUPABASE_AUTH",
+    "VITE_FORCE_BOOTSTRAP_CLOUD_SYNC",
+    "VITE_ENABLE_GOOGLE_CALENDAR",
+    "VITE_ENABLE_LOCAL_IMPORT"
+  ],
+  "legacyAuth": false,
+  "legacyBootstrap": false,
+  "newSecrets": false
+}

@@ -33,6 +33,29 @@ test('all four elements and separate days grant independent rewards; quantities 
   }
 });
 
+test('small Water and Air rewards without a timer advance balances even before the next mastery level', async () => {
+  const {store} = fixture();
+  for (const [elementId, key, points, initial] of [['agua', 'xp_water', 2, 51], ['ar', 'xp_air', 5, 93]]) {
+    store.getState().addExperience(initial, elementId);
+    const habit = store.getState().addHabit({ name: `Constância de ${elementId}`, elementId, plannedPoints: points, plannedTimeMinutes: 0 });
+    const beforeScore = store.getState().getElementScores().find(item => item.elementId === elementId).score;
+    const beforeLevel = store.getState().getMasteryProgress()[elementId].level;
+    store.getState().completeHabit(habit.id, 0, day);
+    const receipt = store.getState().habits.find(item => item.id === habit.id).completions[0];
+    assert.equal(receipt.xpAwarded, points);
+    assert.equal(receipt.xpElementId, elementId);
+    assert.equal(store.getState().user[key], initial + points);
+    assert.equal(store.getState().getElementScores().find(item => item.elementId === elementId).score, beforeScore + points);
+    assert.equal(store.getState().getMasteryProgress()[elementId].level, beforeLevel);
+    await store.persist.rehydrate();
+    assert.equal(store.getState().user[key], initial + points);
+    store.getState().completeHabit(habit.id, 0, day);
+    assert.equal(store.getState().user[key], initial + points);
+    store.getState().uncompleteHabit(habit.id, day);
+    assert.equal(store.getState().user[key], initial);
+  }
+});
+
 test('parent cascade rewards each valuable leaf once in its own element and Undo reverses exact receipts', () => {
   const {store}=fixture(); const root=add(store);
   store.getState().addHabitChild(root.id,{name:'Ler',elementId:'ar',plannedPoints:2});

@@ -182,7 +182,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
           const habit = addHabit({
             name: title.trim(),
             description: description.trim(),
-            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            areaId: selectedArea === 'none' ? filteredAreas[0].id : selectedArea,
             elementId: selectedElement,
             plannedTimeMinutes: plannedTime,
             plannedPoints: effortLevel * 5,
@@ -196,7 +196,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
           const quest = addQuest({
             title: title.trim(),
             description: description.trim(),
-            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            areaId: selectedArea === 'none' ? filteredAreas[0].id : selectedArea,
             elementId: selectedElement,
             status: 'active',
             dueDate: dateFromInput(dueDate),
@@ -210,7 +210,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
           const project = addProject({
             title: title.trim(),
             description: description.trim(),
-            areaId: selectedArea === 'none' ? AREAS[0].id : selectedArea,
+            areaId: selectedArea === 'none' ? filteredAreas[0].id : selectedArea,
             elementId: selectedElement,
             status: 'active',
             dueDate: dateFromInput(dueDate),

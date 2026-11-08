@@ -1,0 +1,27 @@
+{
+  "version": "0.1.140",
+  "scope": "published app, disposable Chromium390x844, synthetic store API-created IDs only; no personal browser or hosted writes",
+  "results": [
+    {
+      "element": "agua",
+      "points": 2,
+      "before": 51,
+      "after": 53,
+      "receiptXP": 2,
+      "feedback": true
+    },
+    {
+      "element": "ar",
+      "points": 5,
+      "before": 93,
+      "after": 98,
+      "receiptXP": 5,
+      "feedback": true
+    }
+  ],
+  "reloadPreserved": true,
+  "grimoireAccurate": true,
+  "pageErrors": [],
+  "blockedNetwork": [],
+  "physicalPhone": false
+}

@@ -1,0 +1,10 @@
+{
+  "migration": "20261108003620_account_archive_version_143",
+  "validatorSha256": "35514778593a6cd20ec4c73cab93f7604f7f58b6711d30e5e1a28eff5efbceb6",
+  "writesEnabledBefore": true,
+  "writesEnabledAfter": true,
+  "integralAccountsBefore": 0,
+  "integralAccountsAfter": 0,
+  "advisors": "same warnings: public.touch_updated_at search_path; leaked password protection; 3 private RLS tables without direct policies (RPC only)",
+  "privateDataReadOrChanged": false
+}

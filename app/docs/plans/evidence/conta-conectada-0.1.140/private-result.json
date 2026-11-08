@@ -1,0 +1,10 @@
+{
+  "scope": "personal backup, isolated Node and in-memory PGlite only; never hosted or browser",
+  "rawStatesUnchanged": true,
+  "completeArchiveSaved": true,
+  "allXPAndIDsPreserved": true,
+  "originalFileUnchanged": true,
+  "quotaBytes": 5242880,
+  "peakBytes": 2654230,
+  "hostedWrites": 0
+}

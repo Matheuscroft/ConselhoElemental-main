@@ -1,0 +1,114 @@
+{
+  "dateLocal": "2026-11-07",
+  "version": "0.1.139",
+  "checks": {
+    "suiteFiles": 117,
+    "tests": 716,
+    "fail": 0,
+    "skipped": 0,
+    "durationMs": 63881.452041,
+    "typescript": true,
+    "lint": true,
+    "viteBuildSeconds": 24.59,
+    "preexistingLargeChunkWarning": true
+  },
+  "privateOriginalIsolated": {
+    "scope": "private original backup, in-memory only; no browser or upload",
+    "sourceVersion": "0.1.130",
+    "quotaBytes": 5242880,
+    "oldFailureReproduced": true,
+    "newImportComplete": true,
+    "oldPendingResumeComplete": true,
+    "rawStoreStatesExact": true,
+    "peakNewBytes": 2697202,
+    "peakIncludingOldPendingBytes": 5058416,
+    "compressedJournalBytes": 415640,
+    "oldJournalBytes": 3969010,
+    "originalFileUnchanged": true,
+    "elementalXPAfterHydrationPreserved": true
+  },
+  "browser": {
+    "version": "0.1.139",
+    "browser": "Chromium headless390x844, disposable profiles",
+    "syntheticDataOnly": true,
+    "physicalPhone": false,
+    "scenarios": [
+      {
+        "mode": "fresh-import",
+        "quotaBytes": 5242880,
+        "quota": "Storage.setItem size wrapper in disposable Chromium origin; not physical Safari",
+        "oldFailureReproduced": null,
+        "confirmActions": 1,
+        "directSanctuary": true,
+        "notesPreserved": 35,
+        "syntheticXP": 4,
+        "preservedAfterReload": true,
+        "journalClearedAfterLocalMarker": true,
+        "peakObservedBytes": 2499602,
+        "progressNetworkRequests": 0,
+        "pageErrors": 0
+      },
+      {
+        "mode": "legacy-quota-resume",
+        "quotaBytes": 5242880,
+        "quota": "Storage.setItem size wrapper in disposable Chromium origin; not physical Safari",
+        "oldFailureReproduced": true,
+        "confirmActions": 1,
+        "directSanctuary": true,
+        "notesPreserved": 35,
+        "syntheticXP": 4,
+        "preservedAfterReload": true,
+        "journalClearedAfterLocalMarker": true,
+        "peakObservedBytes": 4418620,
+        "progressNetworkRequests": 0,
+        "pageErrors": 0
+      }
+    ]
+  },
+  "published": {
+    "url": "https://conselho-elemental-testes.vercel.app/?progresso=restaurar&atualizar=139",
+    "status": 200,
+    "cacheControl": "no-store, no-cache, must-revalidate",
+    "entry": "/assets/index-fh6sDLH_.js",
+    "entryStatus": 200,
+    "entryVersion139": true,
+    "deployment": {
+      "id": "dpl_3EACSrNL5zvLQDz1svUvKFa8iJ3E",
+      "url": "https://conselho-elemental-testes-debx1ph3z-fr-prodiction.vercel.app",
+      "productionUrl": "https://conselho-elemental-testes.vercel.app",
+      "readyState": "READY",
+      "target": "production"
+    }
+  },
+  "upload": {
+    "files": 512,
+    "sourceSHAStillMatches": true,
+    "personalData": false,
+    "envFiles": false,
+    "sqlOrQA": false
+  },
+  "changedSourceSinceLotStart": [
+    "src/lib/backup/restore-journal.ts",
+    "src/lib/backup/exclusive-restore.ts",
+    "src/lib/backup/critical-progress.ts",
+    "src/components/backup/SimpleImportActions.tsx",
+    "src/components/backup/RestoreWorkspace.tsx",
+    "package.json",
+    "package-lock.json"
+  ],
+  "newSource": [
+    "src/lib/backup/restore-journal-codec.ts",
+    "src/lib/backup/restore-errors.ts"
+  ],
+  "gates": {
+    "restore": true,
+    "accountAccess": true,
+    "accountProgressTransfer": false,
+    "reminders": false
+  },
+  "remoteSQLApplied": false,
+  "remoteSQLQueriedThisLot": false,
+  "push": false,
+  "personalPhoneImportConfirmed": false,
+  "originalDataNotModifiedByAgent": true
+}

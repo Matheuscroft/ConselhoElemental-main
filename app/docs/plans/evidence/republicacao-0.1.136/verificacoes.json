@@ -1,0 +1,28 @@
+{
+  "date_local": "2026-11-07",
+  "version": "0.1.136",
+  "forcedBuild": true,
+  "buildLogConfirmsSkippingCache": true,
+  "deployment": {
+    "id": "dpl_5JhuMc8JBJouBGUmPmpJkFKVek6Z",
+    "state": "READY",
+    "url": "https://conselho-elemental-testes-a40brxn18-fr-prodiction.vercel.app",
+    "alias": "https://conselho-elemental-testes.vercel.app"
+  },
+  "publicCheck": {
+    "url": "https://conselho-elemental-testes.vercel.app/?progresso=restaurar&atualizar=136",
+    "status": 200,
+    "cacheControl": "no-store, no-cache, must-revalidate",
+    "entry": "/assets/index-DBE-54Kq.js",
+    "entryStatus": 200,
+    "version136": true
+  },
+  "previousIncompleteAttempt": {
+    "id": "dpl_HRLkqCqRDpMKfz11pE5zNGbtcSe5",
+    "state": "ERROR",
+    "accepted": false
+  },
+  "codeOrGatesChanged": false,
+  "personalDataInUpload": false,
+  "phoneUpdatedOrImportedVerified": false
+}

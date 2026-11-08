@@ -438,6 +438,8 @@ export interface TimerState {
   isRunning: boolean;
   elapsedSeconds: number;
   startedAt: Date | null;
+  /** Local selected day; operational timer metadata, excluded from backups. */
+  activityDate?: string;
 }
 
 // ============================================

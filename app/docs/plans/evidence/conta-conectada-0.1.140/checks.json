@@ -1,0 +1,22 @@
+{
+  "suite": {
+    "passed": 727,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 88713.002625,
+    "scope": "all MJS tests before final CSS-only hitbox/fade refinement"
+  },
+  "afterFinalCSS": {
+    "typescript": "passed",
+    "build": "passed",
+    "lint": "passed before CSS-only refinement",
+    "dialog360390768": "passed"
+  },
+  "cyclesAdditional": {
+    "passed": 9,
+    "failed": 0,
+    "includesNewLowWaterAirRegression": true
+  },
+  "physicalPhone": false,
+  "realEmailOrHostedJWT": false
+}

@@ -1,3 +1,5 @@
+import { elapsedTimerSeconds } from '@/lib/timer/clock';
+import { createInitialUser, createInitialOnboarding } from '@/lib/initial-character';
 import { mutateProfileReminders, type ProfileReminders, type ReminderMutation } from '@/lib/reminders/profile-reminders';
 import { recurrenceMatchesDate, defaultRecurrenceConfig, operationalDateKey } from '@/lib/temporal/recurrence';
 import { achievementPlan, achievementXpKeys, type AchievementKind } from '@/lib/achievement-completion';
@@ -47,29 +49,11 @@ import { LevelingCalculatorService } from '@/services/leveling-calculator';
 // ESTADO INICIAL
 // ============================================
 
-const initialUser: User = {
-  pranaLevel: 100,
-  id: crypto.randomUUID(),
-  name: 'Mago Iniciante',
-  avatar: AVATARS[0],
-  xp_fire: 0,
-  xp_earth: 0,
-  xp_water: 0,
-  xp_air: 0,
-  totalScore: 0,
-  streak: 0,
-  longestStreak: 0,
-  joinedAt: new Date(),
-};
+const initialUser = createInitialUser();
 
 const ELEMENT_XP_KEY = { terra: 'xp_earth', fogo: 'xp_fire', agua: 'xp_water', ar: 'xp_air' } as const;
 
-const initialOnboarding: OnboardingState = {
-  step: 0,
-  selectedAreas: [],
-  avatar: AVATARS[0],
-  isComplete: false,
-};
+const initialOnboarding = createInitialOnboarding();
 
 const initialTimer: TimerState = {
   entityId: null,
@@ -581,7 +565,7 @@ interface AppState {
   
   // ========== TIMER ==========
   timer: TimerState;
-  startTimer: (entityId: string, entityType: 'TASK' | 'HABIT') => void;
+  startTimer: (entityId: string, entityType: 'TASK' | 'HABIT', activityDate?: Date) => void;
   pauseTimer: () => void;
   resumeTimer: () => void;
   stopTimer: () => number; // retorna segundos decorridos
@@ -1129,7 +1113,7 @@ export const useAppStore = create<AppState>()(
           subareaPrimaryId: taskData.subareaPrimaryId || null,
           subareaSecondaryId1: taskData.subareaSecondaryId1 || null,
           subareaSecondaryId2: taskData.subareaSecondaryId2 || null,
-          elementId: taskData.elementId || 'terra',
+          elementId: [...AREAS, ...state.customAreas].find(area => area.id === taskData.areaPrimaryId)?.elementId ?? taskData.elementId ?? 'terra',
           isCompleted: false,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -1151,6 +1135,12 @@ export const useAppStore = create<AppState>()(
       
       updateTask: (taskId, updates) => {
         if ('dueDate' in updates) updates = { ...updates, dueDate: operationalDateKey(updates.dueDate) };
+        // An explicitly changed primary area and its element describe the same classification.
+        // Keep the chosen element when removing a category; never rewrite historical XP receipts.
+        if (updates.areaPrimaryId) {
+          const area = [...AREAS, ...get().customAreas].find(area => area.id === updates.areaPrimaryId);
+          if (area) updates = { ...updates, elementId: area.elementId };
+        }
         set((state) => ({
           actions: state.actions.map((action) => action.id === taskId ? { ...action, ...updates, updatedAt: new Date() } : action),
           tasks: state.tasks.map((task) => task.id === taskId ? { ...task, ...updates, updatedAt: new Date() } : task),
@@ -1758,7 +1748,7 @@ export const useAppStore = create<AppState>()(
           plannedTimeMinutes: itemData.plannedTimeMinutes ?? null,
           actualTimeMinutes: null,
           effortLevel: null,
-          elementId: task?.elementId ?? parentItem?.elementId ?? 'terra',
+          elementId: [...AREAS, ...state.customAreas].find(area => area.id === (itemData.areaPrimaryId ?? parentItem?.areaPrimaryId ?? task?.areaPrimaryId))?.elementId ?? itemData.elementId ?? parentItem?.elementId ?? task?.elementId ?? 'terra',
           isInProgress: false,
           elapsedSeconds: 0,
           lastStartedAt: null,
@@ -1840,6 +1830,10 @@ export const useAppStore = create<AppState>()(
       },
       
       updateTaskItem: (taskId, itemId, updates) => {
+        if (updates.areaPrimaryId) {
+          const area = [...AREAS, ...get().customAreas].find(area => area.id === updates.areaPrimaryId);
+          if (area) updates = { ...updates, elementId: area.elementId };
+        }
         // Função auxiliar para atualizar item recursivamente
         const updateItemRecursively = (items: TaskItem[]): TaskItem[] => {
           return items.map(item => {
@@ -4525,7 +4519,8 @@ export const useAppStore = create<AppState>()(
       // ========== TIMER ==========
       timer: initialTimer,
       
-      startTimer: (entityId, entityType) => {
+      startTimer: (entityId, entityType, activityDate = new Date()) => {
+        if (get().timer.entityId !== null) return;
         set(() => ({
           timer: {
             entityId,
@@ -4533,6 +4528,7 @@ export const useAppStore = create<AppState>()(
             isRunning: true,
             elapsedSeconds: 0,
             startedAt: new Date(),
+            activityDate: dailyDateKey(activityDate),
           },
         }));
         
@@ -4558,19 +4554,19 @@ export const useAppStore = create<AppState>()(
       
       pauseTimer: () => {
         set((state) => ({
-          timer: { ...state.timer, isRunning: false },
+          timer: { ...state.timer, elapsedSeconds: elapsedTimerSeconds(state.timer), isRunning: false },
         }));
       },
       
       resumeTimer: () => {
         set((state) => ({
-          timer: { ...state.timer, isRunning: true },
+          timer: state.timer.entityId && !state.timer.isRunning ? { ...state.timer, isRunning: true, startedAt: new Date(Date.now() - state.timer.elapsedSeconds * 1000) } : state.timer,
         }));
       },
       
       stopTimer: () => {
         const { timer } = get();
-        const elapsedSeconds = timer.elapsedSeconds;
+        const elapsedSeconds = elapsedTimerSeconds(timer);
         
         set((state) => ({
           timer: initialTimer,
@@ -4592,7 +4588,7 @@ export const useAppStore = create<AppState>()(
       tickTimer: () => {
         set((state) => ({
           timer: state.timer.isRunning
-            ? { ...state.timer, elapsedSeconds: state.timer.elapsedSeconds + 1 }
+            ? { ...state.timer, elapsedSeconds: elapsedTimerSeconds(state.timer) }
             : state.timer,
         }));
       },

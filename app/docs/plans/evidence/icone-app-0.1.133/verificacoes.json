@@ -1,0 +1,78 @@
+{
+  "version": "0.1.133",
+  "date": "2026-11-06",
+  "source": "user-provided Mago_app.jpeg",
+  "sourceHashPrefix": "1140369d90",
+  "processing": "resize/PNG only; no crop or redraw",
+  "icons": [
+    {
+      "path": "icons/mago-32-1140369d90.png",
+      "size": 32,
+      "sha256": "b0d4516f9b05eb376c361c9bd829238523e4ee4e73d896a96b2ddd951cac7131"
+    },
+    {
+      "path": "icons/mago-180-1140369d90.png",
+      "size": 180,
+      "sha256": "07a5fdda5a9beb57444c1039ccd1bc8493ccf06016b744bc13f0de864c1fd1f5"
+    },
+    {
+      "path": "icons/mago-192-1140369d90.png",
+      "size": 192,
+      "sha256": "44e1a2084a157cdb1c0d7b222bb532548e780606c01db403b1cd615ddeb20986"
+    },
+    {
+      "path": "icons/mago-512-1140369d90.png",
+      "size": 512,
+      "sha256": "d1979d4ddcd20a94cc1042ac48d9348fb833a33bdd48f442b01a42e1517e7df6"
+    }
+  ],
+  "checks": {
+    "actualDimensions": "passed",
+    "pngFormat": "passed",
+    "noExif": "passed",
+    "manifestDimensionsMatch": "passed",
+    "visual512": "inspected",
+    "localVersionSqlTest": {
+      "passed": 1,
+      "durationMs": 8510.221292
+    },
+    "typescript": "passed",
+    "eslint": "passed",
+    "buildSeconds": 10.5,
+    "fullSuiteRun": false,
+    "physicalDeviceInstallation": "not verified"
+  },
+  "remoteSqlApplied": false,
+  "personalProgressChanged": false,
+  "publication": {
+    "project": "conselho-elemental-testes",
+    "id": "dpl_AVx2Bgg3uvpFA1zU6RwRx6nQJeaz",
+    "readyState": "READY",
+    "target": "production",
+    "stableAlias": "https://conselho-elemental-testes.vercel.app",
+    "remoteManifestMatches": true,
+    "remoteIcons": [
+      {
+        "size": 32,
+        "http": 200,
+        "shaMatches": true
+      },
+      {
+        "size": 180,
+        "http": 200,
+        "shaMatches": true
+      },
+      {
+        "size": 192,
+        "http": 200,
+        "shaMatches": true
+      },
+      {
+        "size": 512,
+        "http": 200,
+        "shaMatches": true
+      }
+    ],
+    "appleTouch180Linked": true
+  }
+}

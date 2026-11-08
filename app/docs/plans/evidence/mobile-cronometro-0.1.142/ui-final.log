@@ -1,0 +1,23 @@
+✔ both real adapter subscriptions debounce changes, pause on pending, and release all handlers on pagehide (84.720959ms)
+✔ foreign storage mutation stops the session; unrelated keys and stopped timers cannot save (13.551875ms)
+✔ status panel presents explicit sync state, a manual check, and stops before leaving the document (43.22825ms)
+✔ online mount requires isolation/exclusive lease; identity loss during lazy import never mounts the application (57.6955ms)
+✔ accepted online mount subscribes only after preflight and drops its identity watch when stopped (9.738208ms)
+✔ timer-only renders do not queue another whole-account check (6.347167ms)
+✔ elapsed time survives omitted callbacks, pause, resume and stop without manufacturing completion or XP (42.434833ms)
+✔ visibility wake-up and reload recover a running local timer in the same tab, with no domain/XP transfer (27.797084ms)
+✔ paused timer survives reload, owner mismatch and missing activity refuse recovery; malformed storage never alters domain (31.727417ms)
+✔ reopening cannot reset a current timer, and device clock rollback never decreases displayed seconds (7.570583ms)
+✔ completion elsewhere removes the operational timer without paying twice; unavailable session storage never blocks the clock (8.1645ms)
+✔ timer exposes the supplied time and passes controls to their existing owners once (10.764583ms)
+✔ showcase keeps metadata, supplied progress and the detail callback without completing anything (2.66575ms)
+✔ expanded rail exposes four real buttons and collapsed destination previews in server markup (7.370041ms)
+✔ all four elemental clocks keep exact supplied time, labelled interaction and working pause/completion affordances (32.77425ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 815.916542

@@ -1,0 +1,15 @@
+{
+  "version": "0.1.141",
+  "fullSuite": {
+    "tests": 733,
+    "passed": 733,
+    "failed": 0,
+    "durationMs": 71325.556333
+  },
+  "build": "passed",
+  "typescript": "passed via build",
+  "lint": "passed",
+  "panelRegressions": 12,
+  "compatibilityAndInstallationTests": 8,
+  "physicalPhone": false
+}

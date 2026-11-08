@@ -25,7 +25,7 @@ async function setup(beforeOverride) {
   target.stores.fitness.state.nativeDataById.local={nativeCatalog:[],templates:[],sequences:[],nativeCheckins:{},activeNativeSession:null,nativeHistory:[{id:'00000000-0000-4000-8000-000000000001',nameSnapshot:'Sessão sintética',status:'completed',startedAt:'2026-10-28T12:00:00Z',completedAt:'2026-10-28T12:01:00Z',durationSeconds:60,totalER:0,exerciseResults:[]}]};
   const backup=await f.createProgressBackup(target);
   const text=await prepareRestoreJournal(before,backup,origin);
-  const expected=JSON.parse(JSON.parse(text).payload).target;
+  const expected=JSON.parse(await mod.exports.decodeRestoreJournalPayload(JSON.parse(text).payload)).target;
   return {f,before,backup,text,expected,store:storage(before)};
 }
 const stop=()=>{throw new Error('simulated interruption/quota');};
@@ -108,7 +108,7 @@ test('unexpected edits block recovery of BOTH modules and retain journal',async(
 
 test('corrupt and unsupported journal, denied read, tampered backup all fail without writes',async()=>{
   const {store,text,before,backup}=await setup();
-  const envelope=JSON.parse(text),payload=JSON.parse(envelope.payload);payload.version=2;
+  const envelope=JSON.parse(text),payload=JSON.parse(await mod.exports.decodeRestoreJournalPayload(envelope.payload));payload.version=2;
   const changed=JSON.stringify(payload);
   const checksum=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(changed))).toString('hex');
   for(const bad of ['{',JSON.stringify({...envelope,checksum:'wrong'}),JSON.stringify({payload:changed,checksum})]){
@@ -133,7 +133,7 @@ test('silent ignored writes are detected; recovery never removes journal without
 test('snapshot preparation freezes before values and pending recovery detects journal replacement',async()=>{
   const {before,backup,text,store}=await setup();const baseline={...before};
   const pending=prepareRestoreJournal(before,backup,origin);before.core='later';
-  assert.deepEqual(JSON.parse(JSON.parse(await pending).payload).before,baseline);
+  assert.deepEqual(JSON.parse(await mod.exports.decodeRestoreJournalPayload(JSON.parse(await pending).payload)).before,baseline);
   store.memory.set(J,text);const recovery=recoverRestoreJournal(store,origin);store.memory.set(J,'another operation');
   await assert.rejects(recovery,/Diário mudou/);assert.equal(store.mutations.length,0);
 });
@@ -152,7 +152,7 @@ test('committed synthetic data hydrates the real stores without replaying XP',as
 test('strict journal schema rejects rehashed invalid phases, extra keys and incomplete destinations',async()=>{
   const {store,text}=await setup();
   for(const change of [j=>{j.phase=['prepared'];},j=>{j.target.core=null;},j=>{j.before.other='extra';},j=>{j.extra=true;}]){
-    const j=JSON.parse(JSON.parse(text).payload);change(j);const payload=JSON.stringify(j);
+    const j=JSON.parse(await mod.exports.decodeRestoreJournalPayload(JSON.parse(text).payload));change(j);const payload=JSON.stringify(j);
     const checksum=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(payload))).toString('hex');
     store.memory.set(J,JSON.stringify({payload,checksum}));const baseline=[...store.memory];
     await assert.rejects(recoverRestoreJournal(store,origin));assert.deepEqual([...store.memory],baseline);assert.equal(store.mutations.length,0);

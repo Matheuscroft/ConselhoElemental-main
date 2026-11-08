@@ -1,0 +1,52 @@
+{
+  "version": "0.1.142",
+  "scope": "published app, Chromium disposable profile, synthetic data/API-created IDs, no personal profile or hosted writes",
+  "background": "real background tab and focus return for 3.1 seconds; unit tests cover long skipped callbacks",
+  "pauseSurvivesReload": true,
+  "runningSurvivesManualUpdate": true,
+  "updateNotice": "synthetic newer release metadata; explicit reload only; same origin/path maintained",
+  "fourElementEffects": [
+    {
+      "element": "fogo",
+      "animation": "timer-embers"
+    },
+    {
+      "element": "agua",
+      "animation": "timer-ripple"
+    },
+    {
+      "element": "ar",
+      "animation": "timer-current"
+    },
+    {
+      "element": "terra",
+      "animation": "timer-crystal"
+    }
+  ],
+  "reducedMotion": true,
+  "effectsPauseIndependent": true,
+  "metrics": [
+    {
+      "width": 360,
+      "w": 150,
+      "h": 48
+    },
+    {
+      "width": 390,
+      "w": 162,
+      "h": 48
+    },
+    {
+      "width": 768,
+      "w": 162,
+      "h": 48
+    }
+  ],
+  "menuQuickActions": 3,
+  "menuDescriptions": true,
+  "menuDoesNotOpenKeyboard": true,
+  "clockOnlyExplicitCompletion": true,
+  "pageErrors": [],
+  "blockedNetwork": [],
+  "physicalPhone": false
+}

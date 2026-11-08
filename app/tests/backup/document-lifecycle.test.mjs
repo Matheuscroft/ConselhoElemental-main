@@ -38,7 +38,7 @@ async function setup(){
  core.getState().addDraft('Ideia adicionada pela cópia','');
  w.getState().addBodyMeasurement({weightKg:70}); // Change both envelopes so rollback has two actual writes.
  const target=producer.captureProgress(origin),backup=await producer.createProgressBackup(target),m=realm();
- const journal=await m.prepareRestoreJournal(before,backup,origin),destination=JSON.parse(JSON.parse(journal).payload).target;
+ const journal=await m.prepareRestoreJournal(before,backup,origin),destination=JSON.parse(await m.decodeRestoreJournalPayload(JSON.parse(journal).payload)).target;
  const memory=new Map(Object.entries(before).map(([part,value])=>[producer.STORE_KEYS[part],value]));memory.set('unrelated-preference','preserved');
  const manager=lockManager(),writes=[];let boundary=0,stopAt=0;
  const readOnly={getItem:key=>memory.get(key)??null};

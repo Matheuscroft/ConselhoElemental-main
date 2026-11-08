@@ -1,0 +1,52 @@
+[
+  {
+    "relname": "custom_areas",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "custom_subareas",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "cycle_sequences",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "drafts",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "habits",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "profiles",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "projects",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "quests",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "sequence_memberships",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  },
+  {
+    "relname": "tasks",
+    "tgname": "progress_account_write_guard",
+    "tgenabled": "O"
+  }
+]

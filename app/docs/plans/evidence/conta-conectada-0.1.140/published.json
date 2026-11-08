@@ -1,0 +1,14 @@
+{
+  "url": "https://conselho-elemental-testes.vercel.app/?progresso=conta&atualizar=140",
+  "status": 200,
+  "cacheControl": "no-store, no-cache, must-revalidate",
+  "entry": "/assets/index-ai_ikg7B.js",
+  "entryStatus": 200,
+  "entryVersion140": true,
+  "deployment": {
+    "id": "dpl_99BnsuDSywCwPFg2DrfG9z6u6b4n",
+    "url": "https://conselho-elemental-testes-d8wa8e1ba-fr-prodiction.vercel.app",
+    "productionUrl": "https://conselho-elemental-testes.vercel.app",
+    "readyState": "READY"
+  }
+}

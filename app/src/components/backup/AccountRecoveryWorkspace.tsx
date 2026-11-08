@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, KeyRound } from 'lucide-react';
 import type { RecoveryEntry } from '@/lib/backup/account-recovery-entry';
 import type { createPasswordRecovery } from '@/lib/backup/account-recovery';
-import { ACCOUNT_TRANSFER_WRITES_RELEASED } from '@/lib/backup/account-release';
+import { ACCOUNT_ACCESS_RELEASED } from '@/lib/backup/account-access-release';
 
 export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [confirm, setConfirm] = useState('');
@@ -11,7 +11,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const session = useRef<ReturnType<typeof createPasswordRecovery> | null>(null), working = useRef(false), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { alive.current = true; heading.current?.focus({ preventScroll: true }); return () => { alive.current = false; session.current?.dispose(); session.current = null; }; }, []);
   async function run(action: () => Promise<void>) {
-    if (!ACCOUNT_TRANSFER_WRITES_RELEASED || working.current) return;
+    if (!ACCOUNT_ACCESS_RELEASED || working.current) return;
     working.current = true; setBusy(true); setError(''); setMessage('');
     try { await action(); } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : 'Não foi possível conferir o acesso.'); }
     finally { working.current = false; if (alive.current) setBusy(false); }
@@ -48,20 +48,20 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     <a className="restore-workspace-back" href="/?progresso=conta"><ArrowLeft size={20} aria-hidden="true" />Voltar ao acesso da conta</a>
     <header><KeyRound size={32} aria-hidden="true" /><div><p>Conselho Elemental</p><h1 id="recovery-title" ref={heading} tabIndex={-1}>Recupere seu acesso</h1></div></header>
     <p>Definir outra senha não recria seu personagem nem substitui atividades, XP ou Treinos. Este formulário não abre a sincronização do app.</p>
-    {!ACCOUNT_TRANSFER_WRITES_RELEASED && <p role="status">O acesso online ainda está em preparação. A recuperação será liberada junto da conta integral.</p>}
+    {!ACCOUNT_ACCESS_RELEASED && <p role="status">O acesso online ainda está em preparação. A recuperação será liberada após a revisão do acesso.</p>}
     {!done && (verified ? <section><h2>Defina sua nova senha</h2><p>Conta conferida: {verified.email || 'e-mail validado no servidor'}.</p>
       <form onSubmit={event => { event.preventDefault(); update(); }}>
-        <label>Nova senha<input type="password" autoComplete="new-password" minLength={8} required value={password} disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED} onChange={event => setPassword(event.target.value)} /></label>
-        <label>Confirme a nova senha<input type="password" autoComplete="new-password" minLength={8} required value={confirm} disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED} onChange={event => setConfirm(event.target.value)} /></label>
+        <label>Nova senha<input type="password" autoComplete="new-password" minLength={8} required value={password} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setPassword(event.target.value)} /></label>
+        <label>Confirme a nova senha<input type="password" autoComplete="new-password" minLength={8} required value={confirm} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setConfirm(event.target.value)} /></label>
         <small>Use pelo menos 8 caracteres. A política de senha do servidor também será aplicada.</small>
         {confirm && password !== confirm && <small role="status">As senhas ainda não coincidem.</small>}
-        <button type="submit" disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED || password.length < 8 || password !== confirm}>Salvar nova senha</button>
+        <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || password.length < 8 || password !== confirm}>Salvar nova senha</button>
       </form></section> : <>
-      {entry.kind === 'callback' && <section><h2>Confira o link recebido</h2><p>O código foi removido do endereço. Valide-o antes de definir sua senha. O link precisa ter sido solicitado neste navegador.</p><button type="button" disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED} onClick={exchange}>Validar meu link</button></section>}
+      {entry.kind === 'callback' && <section><h2>Confira o link recebido</h2><p>O código foi removido do endereço. Valide-o antes de definir sua senha. O link precisa ter sido solicitado neste navegador.</p><button type="button" disabled={busy || !ACCOUNT_ACCESS_RELEASED} onClick={exchange}>Validar meu link</button></section>}
       {entry.kind === 'invalid' && <p role="alert">Este link não pôde ser aceito. Solicite outro abaixo.</p>}
       <section><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
-        <label>E-mail da conta<input type="email" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
-        <button type="submit" disabled={busy || !ACCOUNT_TRANSFER_WRITES_RELEASED || !email.trim()}>Enviar link de recuperação</button>
+        <label>E-mail da conta<input type="email" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
+        <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>Enviar link de recuperação</button>
       </form></section>
     </>)}
     {done && <a className="restore-workspace-back" href="/?progresso=conta">Entrar com a nova senha</a>}

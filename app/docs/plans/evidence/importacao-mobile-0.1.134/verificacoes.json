@@ -1,0 +1,69 @@
+{
+  "version": "0.1.134",
+  "deployment": {
+    "id": "dpl_8D6uVVJ7Jceatavv2THJPbBseT8N",
+    "url": "conselho-elemental-testes-4dk9bcohx-fr-prodiction.vercel.app",
+    "readyState": "READY",
+    "target": "production"
+  },
+  "stable_url": "https://conselho-elemental-testes.vercel.app",
+  "http": {
+    "html_status": 200,
+    "entry": "/assets/index-CLLI1ks3.js",
+    "entry_status": 200,
+    "entry_contains_version": true
+  },
+  "tests": {
+    "full": 680,
+    "full_duration_ms": 90246.248208,
+    "targeted_before_regression_extension": 21,
+    "compatibility_after_extension": 7,
+    "types": true,
+    "lint": true,
+    "build": true,
+    "build_seconds": 49.46
+  },
+  "browser": {
+    "synthetic_archive_version": "0.1.130",
+    "synthetic_air_xp": 4,
+    "restore_completed": true,
+    "xp_and_ritual_after_reload": true,
+    "viewports": [
+      [
+        390,
+        844
+      ],
+      [
+        360,
+        800
+      ],
+      [
+        390,
+        460
+      ],
+      [
+        768,
+        1024
+      ]
+    ],
+    "search_and_navigation": true,
+    "close_target": [
+      44,
+      44
+    ],
+    "native_phone_keyboard": false,
+    "personal_backup_import": false
+  },
+  "source_delta_vs_133": [
+    "src/styles/elemental-theme.css",
+    "src/lib/backup/progress-links.ts",
+    "src/lib/backup/critical-progress.ts",
+    "src/components/layout/AllRoutesSheet.tsx"
+  ],
+  "gates": {
+    "local_restore": true,
+    "account": false,
+    "reminders": false
+  },
+  "remote_sql_applied": false
+}

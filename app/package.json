@@ -1,7 +1,7 @@
 {
   "name": "my-app",
   "private": true,
-  "version": "0.1.129",
+  "version": "0.1.143",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -14,7 +14,9 @@
     "astro:welcome": "node scripts/astro-boy.mjs welcome",
     "astro:ack": "node scripts/astro-boy.mjs ack",
     "astro:test": "node --test scripts/astro-boy.test.mjs",
-    "astro:audit": "node scripts/project-audit.mjs"
+    "astro:audit": "node scripts/project-audit.mjs",
+    "verify:release": "node scripts/verify-release.mjs",
+    "publish:main": "node scripts/publish-main.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

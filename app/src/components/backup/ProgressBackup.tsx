@@ -63,8 +63,9 @@ export function ProgressBackup() {
     <div className="progress-backup-heading"><ShieldCheck size={28} aria-hidden="true" /><div><h2 id="progress-backup-heading">Guarde sua jornada</h2><p>Uma cópia do progresso local para guardar com você.</p></div></div>
     <p>Inclui personagem, atividades, conclusões, conquistas e os dados de Treinos de todas as contas locais deste app.</p>
     <div className="progress-backup-actions">
+      <a className="progress-backup-import" href="/?progresso=restaurar"><FileCheck2 size={20} aria-hidden="true" />Importar progresso neste dispositivo</a>
       <button type="button" onClick={download} disabled={busy}><Download size={20} aria-hidden="true" />Baixar cópia do progresso</button>
-      <button type="button" onClick={() => fileInput.current?.click()} disabled={busy}><FileCheck2 size={20} aria-hidden="true" />Conferir arquivo salvo</button>
+      <button type="button" onClick={() => fileInput.current?.click()} disabled={busy}><FileCheck2 size={20} aria-hidden="true" />Conferir arquivo sem importar</button>
       <input ref={fileInput} type="file" accept="application/json,.json" hidden aria-label="Arquivo de backup" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) inspect(file); }} />
     </div>
     {busy && <div className="progress-backup-pending"><span role="status">Preparando e conferindo o arquivo…</span><button type="button" onClick={cancel}>Cancelar</button></div>}
@@ -79,7 +80,7 @@ export function ProgressBackup() {
     </div>}
     {fileText && <RestoreComparison fileText={fileText} />}
     <AccountPreparation />
-    <p><a className="progress-backup-restore-link" href="/?progresso=restaurar">Conferir restauração com o app pausado</a></p>
-    <details className="progress-backup-details"><summary>O que fica de fora e como guardar</summary><p>Guarde o arquivo em um lugar privado: ele contém seus registros pessoais. Senhas e sessões de acesso não entram na cópia, nem formulários não salvos, cronômetro de ritual em andamento, preferências de calendário/localização ou arquivos de mídia externos.</p><p>A conferência verifica integridade e estrutura, não a autenticidade do arquivo nem toda regra de domínio. A restauração e a transferência para uma conta online ainda estão em preparação. Esta cópia não ativa sincronização.</p></details>
+    <p><a className="progress-backup-restore-link" href="/?progresso=restaurar">Abrir importação com o app pausado</a></p>
+    <details className="progress-backup-details"><summary>O que fica de fora e como guardar</summary><p>Guarde o arquivo em um lugar privado: ele contém seus registros pessoais. Senhas e sessões de acesso não entram na cópia, nem formulários não salvos, cronômetro de ritual em andamento, preferências de calendário/localização ou arquivos de mídia externos.</p><p>A conferência verifica integridade e estrutura, não a autenticidade do arquivo nem toda regra de domínio. A importação substitui os dados locais deste navegador após conferência e confirmação. A conta online e a sincronização entre dispositivos continuam em preparação.</p></details>
   </section>;
 }

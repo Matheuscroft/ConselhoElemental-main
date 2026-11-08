@@ -1,0 +1,71 @@
+✖ Sua evolução includes existing uppercase Water/Air completions, persists them and reverses only undone points (61.525625ms)
+✔ legacy lowercase and absent semantic types stay compatible; structural and note nodes stay zero (16.456417ms)
+✖ completed uppercase leaves roll into the panel without double-counting the aggregate parent (19.549ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 1
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 581.837292
+
+✖ failing tests:
+
+test at tests/cycles/score-hierarchy.test.mjs:19:1
+✖ Sua evolução includes existing uppercase Water/Air completions, persists them and reverses only undone points (61.525625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+      0,
+      0,
+  +   0,
+  +   0
+  -   2,
+  -   5
+    ]
+
+      at TestContext.<anonymous> (file:///Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/tests/cycles/score-hierarchy.test.mjs:23:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 0, 0, 0, 0 ],
+    expected: [ 0, 0, 2, 5 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests/cycles/score-hierarchy.test.mjs:43:1
+✖ completed uppercase leaves roll into the panel without double-counting the aggregate parent (19.549ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+
+    [
+      0,
+      0,
+  +   0,
+  +   0
+  -   2,
+  -   2
+    ]
+
+      at TestContext.<anonymous> (file:///Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/tests/cycles/score-hierarchy.test.mjs:47:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ 0, 0, 0, 0 ],
+    expected: [ 0, 0, 2, 2 ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

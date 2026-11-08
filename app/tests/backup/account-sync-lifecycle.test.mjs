@@ -13,7 +13,7 @@ function fixture(){
  return id.endsWith('account-resolution-key')?{ACCOUNT_RESOLUTION_KEY:'resolution'}:id.endsWith('progress-backup')?{STORE_KEYS:{core:'core',fitness:'fitness'}}:id.endsWith('account-binding')?{ACCOUNT_BINDING_KEY:'binding'}:id.endsWith('account-intent')?{ACCOUNT_INTENT_KEY:'intent'}:id.endsWith('progress-mode')?{LOCAL_PROGRESS_MODE_KEY:'mode'}:{RESTORE_JOURNAL_KEY:'journal'};
  },mod,mod.exports,fn=>{const id=++next;timers.set(id,fn);return id;},id=>timers.delete(id));
  const detach=mod.exports.attachAccountSync(sync,surface);
- return {core,fitness,status,events,docEvents,timers,detach,get flushes(){return flushes;},get stops(){return stops;},change(){for(const fn of core)fn();for(const fn of fitness)fn();},setPhase(v){phase=v;for(const fn of status)fn();},async tick(){for(const [id,fn]of [...timers]){timers.delete(id);await fn();}},emit(k,event={}){for(const fn of events.get(k)??[])fn(event);}};
+ return {core,fitness,status,events,docEvents,timers,detach,get flushes(){return flushes;},get stops(){return stops;},change(){for(const fn of core)fn({tasks:[1]},{tasks:[]});for(const fn of fitness)fn();},setPhase(v){phase=v;for(const fn of status)fn();},async tick(){for(const [id,fn]of [...timers]){timers.delete(id);await fn();}},emit(k,event={}){for(const fn of events.get(k)??[])fn(event);}};
 }
 test('both real adapter subscriptions debounce changes, pause on pending, and release all handlers on pagehide',async()=>{
  const f=fixture();assert.equal(f.timers.size,1);f.change();f.change();assert.equal(f.timers.size,1);assert.equal(f.flushes,0);await f.tick();assert.equal(f.flushes,1);
@@ -49,4 +49,11 @@ test('online mount requires isolation/exclusive lease; identity loss during lazy
 });
 test('accepted online mount subscribes only after preflight and drops its identity watch when stopped',async()=>{
  const f=mountFixture(),close=await f.start();assert.deepEqual(f.calls,['controller','check','bootstrap-import','live-document','mount','attach']);f.invalidate();await new Promise(r=>setImmediate(r));assert.ok(f.calls.includes('unwatch'));close();assert.ok(f.calls.includes('detach'));
+});
+
+
+test('timer-only renders do not queue another whole-account check',async()=>{
+ const f=fixture();await f.tick();assert.equal(f.flushes,1);
+ const tasks=[];for(const fn of f.core)fn({tasks,timer:{elapsedSeconds:42}},{tasks,timer:{elapsedSeconds:41}});
+ assert.equal(f.timers.size,0);f.change();assert.equal(f.timers.size,1);f.detach();
 });

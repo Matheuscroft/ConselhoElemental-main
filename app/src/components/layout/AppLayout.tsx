@@ -1,5 +1,5 @@
 import { TemporalReturnLink } from '@/components/temporal/TemporalReturnLink';
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense } from 'react';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,7 +31,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   const location = useLocation();
   const reducedMotion = useMotionPreference();
-  const { timer, tickTimer, user, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
+  const { user, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
 
   const habitsToday = getCompletedHabitsToday();
@@ -47,11 +47,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const pranaLevel = resourceSnapshot.currentPrana;
   const renderAura = showAura ?? AURA_ROUTES.includes(location.pathname);
 
-  useEffect(() => {
-    if (!timer.isRunning) return;
-    const interval = setInterval(tickTimer, 1000);
-    return () => clearInterval(interval);
-  }, [timer.isRunning, tickTimer]);
+
 
   return (
     <div className="min-h-screen text-fg-primary bg-transparent overflow-x-hidden selection:bg-mystic-arcane/40">

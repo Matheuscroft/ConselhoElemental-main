@@ -1,3 +1,31 @@
+- [M08–M09: rituais, cronômetro e Git → Vercel143](plans/MOBILE-M08-M09-RITUAIS-E-PUBLICACAO.md)
+
+- [M07 — cronômetro e atualização no celular](plans/MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md)
+- [F6-N12 — correção do painel Sua evolução](plans/FECHAMENTO-F6-N12-PAINEL-EVOLUCAO.md)
+[F6-N10 — conta conectada e revisão do Auth existente —0.1.140](plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md).
+
+[F6-N09 — quota na importação e retomada —0.1.139](plans/FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md).
+
+[F6-N08 — importação simples —138](plans/FECHAMENTO-F6-N08-IMPORTACAO-SIMPLES.md): selecionar apenas o JSON e uma confirmação, sem segunda cópia/checklists no percurso normal.
+
+[F6-N07 — motivo do botão bloqueado e ensaio real —137](plans/FECHAMENTO-F6-N07-REQUISITOS-RESTAURACAO.md); iPhone pessoal ainda a conferir.
+
+[F6-N06 —136 republicada sem cache](plans/FECHAMENTO-F6-N06-REPUBLICACAO.md); usuário identificou o arquivo correto, importação no celular ainda a confirmar.
+
+[F6-N05 — importação real e acesso Auth publicados em136](plans/FECHAMENTO-F6-N05-ACESSO-E-IMPORTACAO.md); aceite pessoal no celular e sincronização continuam pendentes.
+
+[F6-N04 — retornos de autenticação salvos e conferidos](plans/FECHAMENTO-F6-N04-URLS-AUTH.md); próximo F6-N05: aceite real de Auth em Sol Alto, escrita de progresso ainda fechada.
+
+[F6-N03 — compatibilidade135 instalada](plans/FECHAMENTO-F6-N03-COMPATIBILIDADE-INSTALADA.md), Auth/contas ainda em preparação.
+
+[F6-N02 — compatibilidade hospedada135 pronta para revisão](plans/FECHAMENTO-F6-N02-COMPATIBILIDADE-HOSPEDADA.md). Banco reconfirmado122/gatefalse; nenhum SQL aplicado nesta retomada.
+
+[F6-N01 — início de conta nova e próximo aceite hospedado](plans/FECHAMENTO-F6-N01-CONTA-NOVA.md), 0.1.135 local.
+
+[M06 — importação e menu mobile 0.1.134](plans/IMPORTACAO-MOBILE-M06-0.1.134.md). Retomar pela continuidade e fila; arquivo pessoal ainda depende de reteste no celular.
+
+> **0.1.130 — T06 local:** [biblioteca direta e plano de evolução](plans/EVOLUCAO-T06-BIBLIOTECA-0.1.130.md). Publicação anterior em main: 0.1.129. Conta/F6 permanece pendente.
+
 > **0.1.129 — T05/main:** [XP e elementos coloridos, validação e repasse para Matheus](plans/XP-ELEMENTOS-PUBLICACAO-0.1.129.md). Inclui a rodada local 0.1.128. 674 testes/checks; pendências de conta e limites visuais explícitos.
 
 > **0.1.128 — T04 local:** [fichas, editor, diálogos e componentes auxiliares de Treinos modernizados](plans/TREINOS-SUPERFICIES-0.1.128.md). 670 testes e checks locais; aceite visual pendente. Posterior ao PR #1/0.1.127, sem novo push.

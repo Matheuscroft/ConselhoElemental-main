@@ -12,6 +12,10 @@ Fábio autorizou explicitamente que Astro Boy implemente a integração de conta
 
 Após revisar o pacote F3, Fábio autorizou explicitamente “Sim, aplicar somente essa migração com escrita desativada”. Aplicação concluída no DominioDoMagoDB, histórico/local 20261030202517_progress_account_atomic, mesmo conteúdo/hash do arquivo original 20261029182304. Gate permanece false e catálogo/permissões conferidos. Essa autorização adicional não ativa conta, transfere progresso pessoal, cria usuários ou publica Vercel. [Evidências e próximos critérios](../plans/FECHAMENTO-F3-INSTALACAO-INTEGRAL.md). A descrição da autorização de código local acima é histórica e não substitui este escopo restrito.
 
+## Aplicação de compatibilidade135 — 07/11/2026
+
+Após pergunta específica de compatibilidade122→135 com escrita desativada, usuário instruiu continuar. Executado somente o pacote revisado SHA d9f1704ca2e8b8669ab85ebd1469a1c1c0076973d2972b2f44dc225ac6a5d9ba no projeto correto. Migração real20261107042615, gatefalse e protocolos/permissões preservados. [F6-N03](../plans/FECHAMENTO-F6-N03-COMPATIBILIDADE-INSTALADA.md). Não autoriza abrir escrita, criar usuário, enviar progresso pessoal ou publicar app. Auth/aceite integral seguem separados.
+
 ## Problema
 
 O sync legado persiste parte do core em tabelas com payload, mas não o conjunto de XP/recursos, histórico, perfis e Fitness do backup. Reaplicar conclusões para recompor o saldo muda fatos históricos; manter dois escritores ativos produz divergência. Login cloud-first atual tampouco é uma migração integral segura.
@@ -84,3 +88,37 @@ PKCE/usuário verificado/senha/logout temporário em documento isolado, sem stor
 ## Complemento 0.1.122 — autenticar separado de transferir
 
 Arquivo deixa de ser pré-requisito do login/cadastro explícito, mas permanece obrigatório no envio/recebimento com os consentimentos/readback anteriores. Inspeção inicial de contexto precisa terminar antes de ações. Signup não adota sessão; confirmação de URL é só aviso, seguido de login/getUser consistente com identidade e tentativas. Retorno Auth inclusive na raiz não carrega o legado; callback Google separado preservado. Revisão privada de compatibilidade 122 aplicada sobre hash anterior conferido e gate false, sem reescrever migrações/arquivos anteriores. [Decisões e evidências](../plans/FECHAMENTO-F5-CADASTRO-CONFIRMACAO.md). Retomada persistida, conta vazia e aceite real ainda pendentes.
+
+
+## Complemento 0.1.136 — acesso isolado antes de enviar progresso
+
+F6-N05 separa ACCOUNT_ACCESS_RELEASED do gate estático de transferência. Acesso habilitado permite somente Auth explícito com os clientes/Map existentes; não monta App, não grava arquivo, não associa conta ou inicia sync. Guards de transferência e gate do servidor continuam fechados. Signup ainda pede confirmação/login e nenhuma sessão é adotada automaticamente. Compatibilidade local136 não amplia o validador hospedado135; candidato SQL separado, não aplicado. [Evidência e limites](../plans/FECHAMENTO-F6-N05-ACESSO-E-IMPORTACAO.md).
+
+
+## Complemento 0.1.138 — confirmação única da importação local, autorizada pelo usuário
+
+No pedido em voz de07/11/2026, usuário exigiu importar apenas o arquivo com seu progresso/XP, sem segundo JSON ou checklists, antes de criar conta. Esse pedido substitui a exigência de exportação/readback MANUAL de segurança no percurso local normal. Não altera os requisitos de associação/sync online. O cliente prepara/confere internamente a projeção anterior, mantém before/target no journal durante a operação e só conclui uso local após readback sob a mesma exclusividade. Uma única ação, com aviso de substituição/fechamento de outras abas/uso local, abrange os consentimentos manuais anteriores. Não prova ausência de clientes legados; lease real continua obrigatório. A segurança anterior é temporária durante a importação; exportar arquivo separado é opcional. [F6-N08](../plans/FECHAMENTO-F6-N08-IMPORTACAO-SIMPLES.md) distingue percurso real testado, limitações e aceite pessoal pendente.
+
+
+## Complemento 0.1.139 — compactação do artefato de recuperação e retomada
+
+F6-N09 reproduziu QuotaExceededError com o arquivo correto: before/target completos no journal e as stores simultâneas excediam5MiB. O journal conserva formato lógico1 e envelope payload/checksum, mas o payload admite `gzip-v1:` com gzip/base64, SHA sobre o texto codificado e expansão limitada100MiB. Leitor aceita JSON legado; escritor mantém texto simples quando a API nativa não existe ou a compactação não reduz o tamanho. O JSON exportado e as stores não mudam. Não há dependência adicional, descarte de dados ou compressão do progresso ativo.
+
+A confirmação única autorizada emN08 agora cobre também concluir a cópia já selecionada numa tentativa pendente: revisão do baseline, validação integral, mesma exclusividade, substituição do journal antigo por compacto, gravação/readback do destino, commit e continuação somente local. Consentimento é uma ação explícita; nada é aplicado no mount. Conflito externo não permite concluir. Rollback e retomada priorizam partes que reduzem o uso para não estourar a quota no estado intermediário. A proteção permanece em falhas, inclusive no marcador local. O limite físico continua existindo: um destino que por si só não cabe é recusado e permite recuperação, não limpeza automática. [Relatório e limites](../plans/FECHAMENTO-F6-N09-QUOTA-IMPORTACAO.md).
+
+
+## Complemento 0.1.140 — conexão simples autorizada e beta owner-bound
+
+Após confirmar sucesso da importação no celular, usuário autorizou evoluir Conta ativa para cadastro pessoal, salvar a jornada atual e permitir contas de testadores com sincronização diária. Essa instrução amplia a autorização anterior restrita: cliente de transferência passa a true e gate do servidor é ativado por owner após compatibilidade140/preflight/testes, sem alterar grants, política de propriedade ou dados. [F6-N10](../plans/FECHAMENTO-F6-N10-CONTA-CONECTADA.md) registra evidências e limitações.
+
+A confirmação de conexão passa a ser uma ação explícita com aviso adjacente sobre todos os perfis, próximas alterações e retomada12h nesta aba. Cópia/readback anteriores são preparados internamente; begin/finish/recibo/CAS existentes permanecem autoridade. Primeiro envio aceita somente conta online vazia, sem conversão automática das duas contas legadas encontradas. Vínculo existente exige revisão; receber progresso requer escolha explícita da versão online e fenceCAS do resolver. Tentativa com recibo pode ser concluída sem reenvio; sem recibo, a UI pede conferência. Intent/resolution comprimem só artefato de proteção, aceitam payloads JSON antigos e não mudam archive/schema/store/XP. Não são criados motores ou persistência de domínio paralelos.
+
+Retomada continua opcional/consentida por12h na aba, sem senha salva. O botão direto inclui esse consentimento no aviso; o caminho avançado preserva a escolha anterior. Não foi adicionada sessão persistente entre fechamento de abas nem execução com o app fechado. Saves após alterações, focus/visibilidade e retorno online usam o coordenador existente; offline não cria intent nem faz I/O, e ACK desconhecido permanece protegido. Conflitos entre dispositivos exigem escolha, sem merge automático.
+
+A configuração URL/chave publicável só em vercel.json.env não chegou ao bundleVite hospedado: reproduzido no SDK real antes de Auth. Movida para seis variáveis Config do projeto, em produção/preview, removida declaração runtime-only. Vite falha no build hospedado se faltarem URL/chave pública ou se escritor/bootstrap legado estiverem habilitados. Nenhum secret foi lido/criado. Auth legado e serviço de Matheus permanecem no código; beta usa cliente transitório/documento isolado para preservar o arquivo integral.
+
+Signup/login existiam e duas contas/dados legados hospedados comprovam uso anterior. Isso não comprova cadastro aberto a qualquer e-mail: settings público confirmou mailer_autoconfirmfalse/external.emailtrue/Googlefalse e painel SMTPcustomfalse. Usuário não possui domínio e relatou problema no Gmail; alternativa é provedor com verificação individual de remetente para beta, sem desligar confirmação. Configuração SMTP, e-mail real/JWT e associação pessoal continuam pendentes. Não declarar lançamento público pronto apenas por ativar o gate de persistência.
+
+## Complemento0.1.142 — cronômetro operacional e atualização do app
+
+Fábio autorizou tempo correto em segundo plano/bloqueio e novas publicações verificadas no mesmo Vercel para seu uso diário. M07 mantém fórmulas/recibos e projeções de progresso; tempo passa a usar âncora e a pausa exclui o intervalo pausado. A recuperação do cronômetro é metadado por aba/perfil em sessionStorage e não integra backup/conta nem cria saldo/histórico paralelo. Compatibilidade142 amplia só a allowlist do arquivo sobre hash141 exato, sem tocar gate/dados/permissões. Avisos de atualização não substituem consentimento de troca do progresso e não aplicam reload com intent/resolução/journal pendentes. [Evidência e limites](../plans/MOBILE-M07-CRONOMETRO-E-ATUALIZACOES.md).

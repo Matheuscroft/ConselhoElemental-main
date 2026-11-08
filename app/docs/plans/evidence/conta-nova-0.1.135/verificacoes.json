@@ -1,0 +1,56 @@
+{
+  "version": "0.1.135",
+  "published": false,
+  "public_test_version": "0.1.134",
+  "tests": {
+    "targeted_initial": 28,
+    "new_account_final": 8,
+    "full": 690,
+    "full_duration_ms": 59377.579834,
+    "typescript": true,
+    "eslint": true,
+    "vite_build": true,
+    "build_seconds": 13.38
+  },
+  "scope": [
+    "shared initial character defaults without changing values",
+    "existing journal and restore handoff",
+    "existing account intent/CAS/receipt",
+    "empty browser and empty online account only",
+    "explicit consent and live-session handoff"
+  ],
+  "hosted": {
+    "project": "DominioDoMagoDB",
+    "ref": "myvxvgeyseoyugskqlqr",
+    "listed_status": "ACTIVE_HEALTHY",
+    "sql_read_attempts": 2,
+    "sql_read_result": "connection timeout",
+    "cli_management_query": "no CLI login available",
+    "state_changed": false,
+    "auth_signup_login_tested": false,
+    "personal_progress_transferred": false
+  },
+  "gates": {
+    "local_restore": true,
+    "account": false,
+    "reminders": false
+  },
+  "sql_candidate": "20261107030703_account_archive_version_135.sql",
+  "sql_candidate_applied_remotely": false,
+  "source_delta_vs_published_134": [
+    "src/stores/appStore.ts",
+    "src/lib/initial-character.ts",
+    "src/lib/backup/new-account-progress.ts",
+    "src/lib/backup/critical-progress.ts",
+    "src/components/backup/AccountWorkspace.tsx"
+  ],
+  "source_sha256": {
+    "src/stores/appStore.ts": "0e058e4197437d64f9d565b7bffae2e42ce1e956c02f8aade3756aadadaa0358",
+    "src/lib/initial-character.ts": "2f8b51f7d128fb39f8fc04b2a7692295495efd4ad8cc0be2ea0a8725b1a20780",
+    "src/lib/backup/new-account-progress.ts": "86d241809d741c0d1f3c33faa35b1856bc8eb0672f5ba4e52282d3d898a122e0",
+    "src/lib/backup/critical-progress.ts": "88dadf22a7ce849698b7c92a18f762033ff73a45368ac40be6a292cf65a7cb23",
+    "src/components/backup/AccountWorkspace.tsx": "759ac7ea0eb76b9ee24e33ddae6db63060d0695fa635bf70dabd941106d027bc"
+  },
+  "diff_check": true,
+  "evidence_links_exist": true
+}

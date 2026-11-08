@@ -1,3 +1,5 @@
+import { AppUpdateNotice } from '@/components/updates/AppUpdateNotice';
+import { ActiveTimerBar } from '@/components/elemental/ActiveTimerBar';
 import { FitnessRoot } from '@/pages/fitness/FitnessRoot';
 import { ActiveFitnessSession } from '@/pages/fitness/ActiveFitnessSession';
 import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
@@ -118,6 +120,8 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ActiveTimerBar />
+      <AppUpdateNotice />
       <RestoredLocalNotice />
       <AnimatePresence mode="wait">
         <Routes>

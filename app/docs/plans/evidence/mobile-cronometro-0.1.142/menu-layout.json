@@ -1,0 +1,39 @@
+{
+  "metrics": [
+    {
+      "width": 360,
+      "x": 0,
+      "y": 51.16864013671875,
+      "right": 360,
+      "bottom": 844.5280151367188,
+      "buttonWidth": 104,
+      "buttonHeight": 76,
+      "inputFont": "16px",
+      "keyboardRequested": false
+    },
+    {
+      "width": 390,
+      "x": 0,
+      "y": 50.625,
+      "right": 390,
+      "bottom": 843.984375,
+      "buttonWidth": 114,
+      "buttonHeight": 76,
+      "inputFont": "16px",
+      "keyboardRequested": false
+    },
+    {
+      "width": 768,
+      "x": 0,
+      "y": 50.625,
+      "right": 768,
+      "bottom": 843.984375,
+      "buttonWidth": 240,
+      "buttonHeight": 76,
+      "inputFont": "16px",
+      "keyboardRequested": false
+    }
+  ],
+  "scope": "public Chromium, fresh disposable empty profile; no physical keyboard or phone",
+  "physicalPhone": false
+}

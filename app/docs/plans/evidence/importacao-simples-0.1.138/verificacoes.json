@@ -1,0 +1,58 @@
+{
+  "date_local": "2026-11-07",
+  "version": "0.1.138",
+  "userAuthorizedSimplification": true,
+  "checks": {
+    "globalTestsBeforeFinalUiGuard": 705,
+    "globalDurationMs": 84817.167125,
+    "directedFinalTests": 25,
+    "directedFinalDurationMs": 2006.5585,
+    "typescript": true,
+    "lint": true,
+    "viteLocalSeconds": 8.34
+  },
+  "browser": {
+    "browser": "Chromium headless390x844, disposable profile",
+    "syntheticDataOnly": true,
+    "initializedEmptyDestination": true,
+    "sourceProducer": "0.1.130",
+    "filePickers": 1,
+    "checkboxes": 0,
+    "manualSafetyFiles": 0,
+    "confirmActions": 1,
+    "directSanctuary": true,
+    "syntheticXP": 4,
+    "taskAndXPPreservedAfterReload": true,
+    "journalClearedAfterVerifiedLocalHandoff": true,
+    "progressNetworkRequests": 0,
+    "physicalPhone": false
+  },
+  "realCopyIsolatedCheck": {
+    "oneActionProtocol": true,
+    "personalCopyValidatedInMemoryOnly": true,
+    "bothStatesExact": true,
+    "allElementalXPPreservedAfterHydration": true,
+    "sourceFileUnchanged": true,
+    "cloudRequests": 0,
+    "phoneVerified": false
+  },
+  "published": {
+    "version": "0.1.138",
+    "deployment": {
+      "id": "dpl_ARSSySgzYScP839SXfBb7GfHJZgH",
+      "state": "READY",
+      "url": "https://conselho-elemental-testes-e3462cx7d-fr-prodiction.vercel.app",
+      "alias": "https://conselho-elemental-testes.vercel.app"
+    },
+    "url": "https://conselho-elemental-testes.vercel.app/?progresso=restaurar&atualizar=138",
+    "status": 200,
+    "cacheControl": "no-store, no-cache, must-revalidate",
+    "entry": "/assets/index-CHm73Bvk.js",
+    "entryStatus": 200
+  },
+  "cloudProgressWritesReleased": false,
+  "sqlAppliedRemotely": false,
+  "phoneImportConfirmed": false,
+  "personalDataInUpload": false,
+  "push": false
+}

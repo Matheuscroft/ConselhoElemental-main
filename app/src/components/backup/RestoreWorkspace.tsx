@@ -7,13 +7,17 @@ import { RESTORE_JOURNAL_KEY, reviewPendingRestore, assertPendingRestoreReview, 
 import { prepareWorkspacePreview, createWorkspaceSafetyCopy, assertWorkspaceBaseline } from '@/lib/backup/workspace-preview';
 import { LOCAL_PROGRESS_MODE_KEY } from '@/lib/backup/progress-mode';
 import { RestoreActions } from './RestoreActions';
+import { SimpleImportActions } from './SimpleImportActions';
 import { RESTORE_WRITES_RELEASED } from '@/lib/backup/restore-release';
+import { runExclusiveRestore } from '@/lib/backup/exclusive-restore';
+import { restoreFailureMessage } from '@/lib/backup/restore-errors';
 
 type Preview = Awaited<ReturnType<typeof prepareWorkspacePreview>>;
 
-/** Mounted in a separate document before App/stores/auth are imported. Read-only release. */
+/** Mounted in a separate document before App/stores/auth are imported. */
 export function RestoreWorkspace() {
   const [busy, setBusy] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [message, setMessage] = useState('Escolha a cópia que deseja conferir. Nenhum dado será substituído nesta etapa.');
   const [error, setError] = useState('');
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -40,7 +44,7 @@ export function RestoreWorkspace() {
     const invalidate = (event: StorageEvent) => {
       if (event.key !== null && !new Set<string>([STORE_KEYS.core, STORE_KEYS.fitness, RESTORE_JOURNAL_KEY, LOCAL_PROGRESS_MODE_KEY, ACCOUNT_INTENT_KEY, ACCOUNT_RESOLUTION_KEY]).has(event.key)) return;
       token.current++; working.current = false;
-      setPreview(null); setRecovery(null); setBusy(false); setError('');
+      setPreview(null); setRecovery(null); setBusy(false); setImporting(false); setError('');
       setMessage('O progresso mudou em outra aba. Escolha o arquivo novamente para atualizar a conferência.');
       checkPending();
     };
@@ -51,14 +55,14 @@ export function RestoreWorkspace() {
     generation.current++; working.current = false;
     setPreview(null); setRecovery(null); setBusy(false); setError(''); setMessage('Conferência cancelada. Seu progresso foi preservado.');
   }
-  async function run(action: (current: () => boolean) => Promise<void>, retainedRecovery: PendingRestoreReview | null = null) {
+  async function run(action: (current: () => boolean) => Promise<void>, retainedRecovery: PendingRestoreReview | null = null, retainedPreview: Preview | null = null) {
     if (working.current) return;
     working.current = true;
     const id = ++generation.current;
-    setBusy(true); setPreview(null); setRecovery(retainedRecovery); setError(''); setMessage('Conferindo os arquivos…');
+    setBusy(true); setPreview(retainedPreview); setRecovery(retainedRecovery); setError(''); setMessage('Conferindo os arquivos…');
     const current = () => generation.current === id;
     try { await action(current); }
-    catch (reason) { if (current()) { setRecovery(null); setMessage(''); setError(reason instanceof Error ? reason.message : 'Não foi possível conferir. Seu progresso foi preservado.'); } }
+    catch (reason) { if (current()) { setPreview(null); setRecovery(null); setMessage(''); setError(restoreFailureMessage(reason)); } }
     finally { if (current()) { working.current = false; setBusy(false); } }
   }
   function select(input: File) {
@@ -77,9 +81,10 @@ export function RestoreWorkspace() {
       const result = await createWorkspaceSafetyCopy(window.localStorage, window.location.origin);
       if (!current()) return;
       assertWorkspaceBaseline(window.localStorage, result.baseline);
+      if (preview) assertWorkspaceBaseline(window.localStorage, preview.baseline);
       download(result.text, 'conselho-antes-da-restauracao');
-      setMessage('Download solicitado. Confira se a cópia foi salva em Arquivos ou Downloads.');
-    });
+      setMessage('Download solicitado. Confira se a cópia foi salva em Arquivos ou Downloads. O arquivo para importar continua selecionado.');
+    }, null, preview);
   }
   function download(text: string, name: string) {
     const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
@@ -108,22 +113,38 @@ export function RestoreWorkspace() {
       setRecovery(result); setMessage('Versões conferidas. Nenhuma recuperação foi executada.');
     });
   }
+  function finishPendingImport() {
+    if (!RESTORE_WRITES_RELEASED || working.current || recovery?.outcome === 'conflict') return;
+    void run(async current => {
+      const review = await reviewPendingRestore(window.localStorage, window.location.origin);
+      if (!current()) return;
+      if (!review) throw new Error('A importação pendente não está mais disponível. Recarregue esta página.');
+      if (review.outcome === 'conflict') { setRecovery(review); setError('Há alterações fora da importação. Preserve as versões e confira a recuperação.'); return; }
+      const result = await runExclusiveRestore({ storage: () => window.localStorage, locks: navigator.locks, origin: window.location.origin, otherTabsClosed: true, isCurrent: current },
+        { mode: 'resume-import-local', expected: review.baseline, recoveryConfirmed: true });
+      if (result !== 'local-ready') throw new Error('A importação precisa de revisão antes de abrir o app.');
+      if (current()) window.location.assign('/santuario');
+    }, recovery);
+  }
   return <main className="restore-workspace" aria-labelledby="restore-workspace-heading">
-    {pendingRestore ? <button type="button" className="restore-workspace-secondary" onClick={() => window.location.reload()}>Recarregar conferência</button> : <a className="restore-workspace-back" href="/grimorio#grimoire-backup"><ArrowLeft size={20} aria-hidden="true" />Voltar ao Grimório</a>}
-    <header><ShieldCheck size={32} aria-hidden="true" /><div><p>Conselho Elemental</p><h1 id="restore-workspace-heading" ref={heading} tabIndex={-1}>Confira sua jornada</h1></div></header>
-    <p>O app está pausado nesta página. Compare uma cópia com o progresso salvo antes de decidir sobre uma restauração.</p>
-    <section aria-labelledby="restore-workspace-files"><h2 id="restore-workspace-files">Suas cópias de segurança</h2>
+    {pendingRestore ? <button type="button" className="restore-workspace-secondary" onClick={() => window.location.reload()}>Recarregar conferência</button> : <a className="restore-workspace-back" href="/grimorio#grimoire-backup" aria-disabled={importing} onClick={event => { if (importing) event.preventDefault(); }}><ArrowLeft size={20} aria-hidden="true" />Voltar ao Grimório</a>}
+    <ol className="restore-workspace-steps" aria-label="Etapas da importação">{['Escolher arquivo', 'Conferir progresso', 'Usar neste aparelho'].map((label,index) => <li key={label} aria-current={(pendingRestore ? 2 : preview ? 1 : 0) === index ? 'step' : undefined}><span aria-hidden="true">{index+1}</span>{label}</li>)}</ol>
+    <header><ShieldCheck size={32} aria-hidden="true" /><div><p>Conselho Elemental</p><h1 id="restore-workspace-heading" ref={heading} tabIndex={-1}>{pendingRestore ? 'Finalize a importação' : 'Importe seu progresso'}</h1></div></header>
+    <p>Escolha o JSON com seu progresso, confira os totais e toque em importar. A importação é neste aparelho; sua conta pode ser criada depois.</p>
+    <section aria-labelledby="restore-workspace-files"><h2 id="restore-workspace-files">Seu arquivo de progresso</h2>
       <div className="restore-workspace-actions">
-        <button type="button" disabled={busy || pendingRestore} onClick={safetyCopy}><Download size={20} aria-hidden="true" />Baixar cópia do estado atual</button>
-        <button type="button" disabled={busy || pendingRestore} onClick={() => file.current?.click()}><FileCheck2 size={20} aria-hidden="true" />Escolher arquivo para conferir</button>
+        <button type="button" disabled={busy || importing || pendingRestore} onClick={() => file.current?.click()}><FileCheck2 size={20} aria-hidden="true" />Escolher arquivo para conferir</button>
+        <details><summary>Cópia extra do aparelho (opcional)</summary><p>Se quiser guardar também um arquivo separado dos dados atuais, você pode baixá-lo. Não é necessário para importar.</p><button type="button" disabled={busy || importing || pendingRestore} onClick={safetyCopy}><Download size={20} aria-hidden="true" />Baixar cópia do estado atual</button></details>
         <input ref={file} type="file" accept="application/json,.json" hidden aria-label="Cópia para restauração" onChange={event => { const selected = event.target.files?.[0]; event.target.value = ''; if (selected) select(selected); }} />
       </div>
       {busy && <button type="button" className="restore-workspace-secondary" onClick={cancel}>Cancelar conferência</button>}
       <p role="status" aria-live="polite">{message}</p>
       {error && <p role="alert" className="restore-workspace-error">{error}</p>}
     </section>
-    {pendingRestore && <section aria-labelledby="restore-workspace-recovery"><h2 id="restore-workspace-recovery">Proteja sua jornada</h2>
-      <p>Há uma operação pendente no progresso salvo. Confira as versões guardadas antes de retomar o app.</p>
+    {pendingRestore && <section aria-labelledby="restore-workspace-recovery"><h2 id="restore-workspace-recovery">Conclua sua importação</h2>
+      <p id="restore-resume-consent">A tentativa anterior está guardada neste aparelho. Feche outras abas do app. Ao concluir, você confirma importar a cópia já escolhida e usá-la aqui, sem criar uma conta online.</p>
+      <button type="button" aria-describedby="restore-resume-consent" disabled={!RESTORE_WRITES_RELEASED || busy || recovery?.outcome === 'conflict'} onClick={finishPendingImport}>{busy ? 'Concluindo…' : 'Concluir importação'}</button>
+      <details><summary>Ver versões e opções de recuperação</summary>
       <button type="button" disabled={busy} onClick={reviewRecovery}><ShieldCheck size={20} aria-hidden="true" />Conferir recuperação pendente</button>
       {recovery && <>
         <h3>{recovery.phase === 'prepared' ? 'Substituição não confirmada' : 'Substituição já confirmada'}</h3>
@@ -143,24 +164,27 @@ export function RestoreWorkspace() {
           : 'Seu progresso continua protegido nesta página. A execução da recuperação depende da validação final de isolamento entre abas e recarga.'}</p>
         {!RESTORE_WRITES_RELEASED && <button type="button" disabled aria-describedby="restore-workspace-recovery-release">{recovery.outcome === 'keep-target' ? 'Abertura da cópia ainda indisponível' : 'Recuperação ainda indisponível'}</button>}
       </>}
+      </details>
     </section>}
-    {preview && <section aria-labelledby="restore-workspace-result"><h2 id="restore-workspace-result">O que mudaria</h2>
-      <p>Cópia de {new Date(preview.summary.createdAt).toLocaleString('pt-BR')} · App {preview.summary.appVersion}</p>
+    {preview && <section aria-labelledby="restore-workspace-result"><h2 id="restore-workspace-result">Seu progresso nesta cópia</h2>
+      <p>Cópia de {new Date(preview.summary.createdAt).toLocaleString('pt-BR')} · Versão do arquivo {preview.summary.appVersion}</p>
       <dl aria-label="Conteúdo da cópia selecionada"><div><dt>Rituais principais</dt><dd>{preview.summary.tasks}</dd></div><div><dt>Ciclos principais</dt><dd>{preview.summary.habits}</dd></div><div><dt>Jornadas e obras</dt><dd>{preview.summary.quests + preview.summary.projects}</dd></div><div><dt>Perfis cadastrados</dt><dd>{preview.summary.profiles}</dd></div><div><dt>Sessões de treino salvas</dt><dd>{preview.summary.sessions}</dd></div></dl>
       <p>A restauração substituiria os dados locais de todos os perfis, incluindo Treinos. O XP não seria somado ao saldo atual.</p>
+      {preview.xp?.length > 0 && <><h3>XP que será importado</h3><dl aria-label="XP da cópia selecionada">{preview.xp.map(item => <div key={item.label}><dt>{item.label}</dt><dd>{item.value ?? 'Revisar arquivo'}</dd></div>)}</dl></>}
       {!preview.comparison && <p>Este navegador não tem progresso salvo nesta origem. A cópia entraria como progresso inicial.</p>}
-      {preview.summary.origin !== window.location.origin && <p>Esta cópia veio de outro endereço. Isso não comprova que pertença à mesma conta online.</p>}
+      {preview.summary.origin !== window.location.origin && <p>Esta cópia veio de outro endereço do app. Ela pode ser importada neste aparelho sem criar uma conta online.</p>}
       {preview.audit.issues.length > 0 && <div role="alert" className="restore-workspace-error"><h3>A cópia precisa de revisão</h3><ul>{[...new Set(preview.audit.issues.map(issue => issue.message))].map(text => <li key={text}>{text}</li>)}</ul>{preview.audit.truncated && <p>Há mais registros para conferir. Guarde o arquivo original.</p>}</div>}
       {preview.comparison?.accounts.map(account => <details key={account.id} className="restore-workspace-profile"><summary>{account.name}<span>{account.status === 'added' ? 'Entraria na cópia local' : account.status === 'removed' ? 'Sairia da cópia local' : 'Ver mudanças'}</span></summary>
         <ul>{account.rows.filter(row => row.before || row.after).map(row => <li key={row.label}><strong>{row.label}</strong><span>{row.before} agora → {row.after} na cópia</span><small>{row.added} novos · {row.changed} alterados · {row.removed} removidos</small></li>)}</ul>
         <h3>XP registrado</h3><dl>{account.xp.map(xp => <div key={xp.label}><dt>{xp.label}</dt><dd>{xp.before ?? 'Não disponível'} → {xp.after ?? 'Não disponível'}</dd></div>)}</dl>
       </details>)}
-      <button type="button" className="restore-workspace-secondary" onClick={cancel}>Fechar comparação</button>
+      <button type="button" className="restore-workspace-secondary" disabled={importing} onClick={cancel}>Fechar comparação</button>
     </section>}
-    <RestoreActions preview={preview} recovery={recovery} onComplete={result => {
+    {!busy && preview && <SimpleImportActions preview={preview} onBusyChange={setImporting} onComplete={() => window.location.assign('/santuario')} />}
+    {!busy && !preview && <details hidden={!recovery}><summary>Outras opções para a versão anterior</summary><RestoreActions preview={null} recovery={recovery} onComplete={result => {
       if (result === 'local-ready') window.location.assign('/santuario');
       else window.location.reload();
-    }} />
+    }} /></details>}
     {!RESTORE_WRITES_RELEASED && <section className="restore-workspace-confirmation" aria-labelledby="restore-workspace-confirmation"><h2 id="restore-workspace-confirmation">Antes de confirmar</h2>
       <ol><li>Guarde e confira a cópia do progresso atual.</li><li>Revise as mudanças de todos os perfis.</li><li>Feche as outras abas do app antes de uma futura substituição.</li></ol>
       <p id="restore-workspace-release">A aplicação da restauração ainda não está liberada. A conferência desta página preserva seu progresso; a gravação depende da validação final de recuperação e recarga.</p>

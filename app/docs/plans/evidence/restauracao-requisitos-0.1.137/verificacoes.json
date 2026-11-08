@@ -1,0 +1,45 @@
+{
+  "date_local": "2026-11-07",
+  "version": "0.1.137",
+  "checks": {
+    "fullTests": 699,
+    "durationMs": 88630.769917,
+    "initialDirectedUiTests": 23,
+    "typescript": true,
+    "lint": true,
+    "build": true,
+    "viteLocalSeconds": 32.72
+  },
+  "browser": {
+    "viewport": "390x844 Chromium headless emulation",
+    "syntheticDataOnly": true,
+    "bothCheckboxesWithoutSafetyStillBlocked": true,
+    "reasonExplained": true,
+    "buttonEnabledAfterSafety": true,
+    "restoreAndLocalContinuation": true,
+    "syntheticXP": 4,
+    "taskAndXPPreservedAfterReload": true,
+    "progressNetworkRequests": 0,
+    "physicalPhone": false
+  },
+  "published": {
+    "deployment": {
+      "id": "dpl_GWu8NzntTZHWCPQJnZH2B2USZnxq",
+      "state": "READY",
+      "url": "https://conselho-elemental-testes-q74l90gdw-fr-prodiction.vercel.app",
+      "alias": "https://conselho-elemental-testes.vercel.app"
+    },
+    "url": "https://conselho-elemental-testes.vercel.app/?progresso=restaurar&atualizar=137",
+    "status": 200,
+    "entry": "/assets/index-Ci8v30tS.js",
+    "entryStatus": 200,
+    "version137": true,
+    "cacheControl": "no-store, no-cache, must-revalidate"
+  },
+  "phoneProblemStillUnconfirmed": true,
+  "userReportedPreviousCopyVerifiedAndBothConsentsChecked": true,
+  "gatesChanged": false,
+  "sqlAppliedRemotely": false,
+  "personalProgressReadOrWrittenThisLot": false,
+  "push": false
+}

@@ -1,0 +1,16 @@
+{
+  "migrations": [
+    {
+      "version": "20261030202517",
+      "name": "progress_account_atomic"
+    },
+    {
+      "version": "20261030204257",
+      "name": "account_archive_version_121"
+    },
+    {
+      "version": "20261030211424",
+      "name": "account_archive_version_122"
+    }
+  ]
+}

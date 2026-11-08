@@ -1,0 +1,5 @@
+{
+  "status": 401,
+  "code": "42501",
+  "message": "permission denied for function progress_account_read"
+}

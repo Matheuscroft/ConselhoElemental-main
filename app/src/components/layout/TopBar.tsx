@@ -1,3 +1,6 @@
+import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
+import { AccountConnectionCard } from '@/components/backup/AccountConnectionCard';
+import { UserRound } from 'lucide-react';
 import React from 'react';
 import { ElementalTopBar, AccountSeal } from './ElementalTopBar';
 import { AllRoutesSheet } from './AllRoutesSheet';
@@ -38,6 +41,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   showBackButton = false,
   rightAction,
 }) => {
+  const sync = React.useContext(AccountConnectionContext);
   const navigate = useNavigate();
   const location = useLocation();
   const { accounts, currentAccountId, createAccount, switchAccount } = useAppStore();
@@ -203,15 +207,17 @@ export const TopBar: React.FC<TopBarProps> = ({
       </>}
 
       <Dialog open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen}>
-        <DialogContent className="max-w-md border-white/20 bg-void/95 text-white backdrop-blur-xl">
+        <DialogContent className="account-hub-dialog">
           <DialogHeader>
-            <DialogTitle>Conta ativa</DialogTitle>
+            <DialogTitle>Minha conta</DialogTitle>
             <DialogDescription>
-              {activeAccount ? `Atual: ${activeAccount.name}` : 'Modo local sem conta ativa'}
+              Conta pessoal e preferências da sua jornada.
             </DialogDescription>
           </DialogHeader>
 
-          {isSupabaseAuthEnabled && (
+          <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />
+
+          {isSupabaseAuthEnabled && authUser && (
             <div className="space-y-2 rounded-lg border border-white/15 p-3">
               <p className="text-sm font-medium text-white">Sessao Supabase</p>
               <p className="text-xs text-white/70">
@@ -246,6 +252,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
           )}
 
+          <details><summary>Perfis neste aparelho</summary><p className="mb-3 text-sm text-white/60">Perfis organizam jornadas dentro deste aparelho. Eles não são contas de acesso online.</p>
           <div className="space-y-2">
             {accounts.length === 0 ? (
               <p className="text-sm text-white/70">Nenhuma conta criada ainda.</p>
@@ -261,13 +268,37 @@ export const TopBar: React.FC<TopBarProps> = ({
                       : 'border-white/15 hover:border-white/30 hover:bg-white/5'
                   }`}
                 >
-                  <span className="mr-2">{account.avatar}</span>
+                  <UserRound size={18} aria-hidden="true" className="mr-2 inline-block" />
                   <span className="font-medium">{account.name}</span>
                 </button>
               ))
             )}
           </div>
 
+          <div className="space-y-3 rounded-lg border border-white/15 p-3">
+            <Label htmlFor="new-account-name">Novo perfil local</Label>
+            <Input
+              id="new-account-name"
+              value={newAccountName}
+              onChange={(event) => setNewAccountName(event.target.value)}
+              placeholder="Nome do perfil"
+              className="border-white/20 bg-white/5"
+            />
+            <Button
+              type="button"
+              className="w-full"
+              onClick={() => {
+                if (!newAccountName.trim()) return;
+                createAccount(newAccountName, false);
+                setNewAccountName('');
+              }}
+            >
+              Criar e ativar perfil
+            </Button>
+          </div>
+
+          </details>
+          <details><summary>Preferências e integrações</summary>
           <div className="space-y-3 rounded-lg border border-white/15 p-3">
             <p className="text-sm font-medium text-white">Início da semana</p>
             <div className="inline-flex rounded-lg border border-white/20 bg-white/5 p-1 text-xs">
@@ -323,36 +354,16 @@ export const TopBar: React.FC<TopBarProps> = ({
             </div>
             {!googleConnectUrl ? (
               <p className="text-[11px] text-white/55">
-                Defina VITE_GOOGLE_CALENDAR_CONNECT_URL para ativar o botao de conexao.
+                A conexão com a agenda ainda não está disponível neste ambiente.
               </p>
             ) : null}
           </div>
 
-          <div className="space-y-3 rounded-lg border border-white/15 p-3">
-            <Label htmlFor="new-account-name">Nova conta</Label>
-            <Input
-              id="new-account-name"
-              value={newAccountName}
-              onChange={(event) => setNewAccountName(event.target.value)}
-              placeholder="Nome da conta"
-              className="border-white/20 bg-white/5"
-            />
-            <Button
-              type="button"
-              className="w-full"
-              onClick={() => {
-                if (!newAccountName.trim()) return;
-                createAccount(newAccountName, false);
-                setNewAccountName('');
-              }}
-            >
-              Criar e ativar conta
-            </Button>
-          </div>
 
+          </details>
           <DialogFooter>
             <Button type="button" variant="secondary" onClick={() => navigate('/grimorio')}>
-              Abrir Grimorio
+              Abrir Grimório
             </Button>
           </DialogFooter>
         </DialogContent>

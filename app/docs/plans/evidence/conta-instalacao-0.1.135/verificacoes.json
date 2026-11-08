@@ -1,0 +1,191 @@
+{
+  "version": "0.1.135",
+  "project": "myvxvgeyseoyugskqlqr",
+  "authorization": "Continuação do usuário em resposta à pergunta específica de atualização122→135, mantendo escrita desativada.",
+  "migration": {
+    "version": "20261107042615",
+    "name": "account_archive_version_135"
+  },
+  "migration_source": "supabase/migrations/20261107042615_account_archive_version_135.sql",
+  "original_candidate_id": "20261107030703",
+  "sql_sha256": "d9f1704ca2e8b8669ab85ebd1469a1c1c0076973d2972b2f44dc225ac6a5d9ba",
+  "apply": {
+    "success": true
+  },
+  "post": {
+    "gate": {
+      "rows": 1,
+      "writes_enabled": false
+    },
+    "tables": [
+      {
+        "relname": "account_receipts",
+        "anon_access": false,
+        "relrowsecurity": true,
+        "authenticated_access": false
+      },
+      {
+        "relname": "account_state",
+        "anon_access": false,
+        "relrowsecurity": true,
+        "authenticated_access": false
+      },
+      {
+        "relname": "release_gate",
+        "anon_access": false,
+        "relrowsecurity": true,
+        "authenticated_access": false
+      }
+    ],
+    "functions": [
+      {
+        "schema": "progress_private",
+        "proname": "commit_account",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": true,
+        "body_sha256": "5ca23de1ce879c2f7156dcc053c22513f0ae036096c2afe9f9d4a55f6911f3b2",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "schema": "progress_private",
+        "proname": "compact_json",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "4a3082acc8ceb282c55db4fc439d9b145da49524921f939abdd970788b30c3a1",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "schema": "progress_private",
+        "proname": "guard_legacy_write",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": true,
+        "body_sha256": "98e6780038307408ceba29fcfd2346ec3d88953ae0247220fa64cda3cc0ac4c9",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "schema": "progress_private",
+        "proname": "legacy_has_data",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "9070bf147d76b11128dca8e7f613297582cb8a5046d272b51a4abfc96e3f5cc2",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "schema": "progress_private",
+        "proname": "read_account",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": true,
+        "body_sha256": "197508415352ad2cee5b5552d62a171af0fdad4cba6dcd267867d06deda3b7f1",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "schema": "progress_private",
+        "proname": "receipt",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": true,
+        "body_sha256": "3f1391bc263d433c2d9d5cf872cd0150a613438d5f2a6caf2544e50d5e17e0e4",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "schema": "progress_private",
+        "proname": "validate_archive",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "16bbb83d98310d34e9713aebfb0ba0ef6fe4c1706fdeab59ee89d111b66150d3",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": false
+      },
+      {
+        "schema": "public",
+        "proname": "progress_account_commit",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "b08e3296f15abebb58ff652e7f5e5021fa527b08a80d093eca7c78ea4bae016e",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "schema": "public",
+        "proname": "progress_account_read",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "c2e9ab2de8fea49c37dc4cefe1af46f810fde233d9f7d9646e4f1f05d58d9491",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      },
+      {
+        "schema": "public",
+        "proname": "progress_account_receipt",
+        "proconfig": [
+          "search_path=\"\""
+        ],
+        "prosecdef": false,
+        "body_sha256": "9e284feaf600a0735622b3349ad34952e51bc84adbf3b556c9ffab95bf9bf122",
+        "anon_execute": false,
+        "public_execute": false,
+        "authenticated_execute": true
+      }
+    ],
+    "legacy_guards": 10
+  },
+  "synthetic_pure_validation": {
+    "passed": true,
+    "versions": [
+      120,
+      135
+    ],
+    "hashes": {
+      "hash_135": "507ee9ae14a57dbcdcb66b5b7864f15b95fdb29a950120befd879e3fe9ede002",
+      "hash_120": "c5b93fb8b1b347b4639cf1e5d1a8ed2009b26d749003e49721f6edc286aeab28"
+    },
+    "archive_stored": false
+  },
+  "nine_other_bodies_and_all_permissions_preserved": true,
+  "personal_progress_read_or_transferred": false,
+  "accounts_created": false,
+  "secrets_accessed": false,
+  "deploy": false,
+  "local_checks": {
+    "targeted_tests": 13,
+    "duration_ms": 10645.449625,
+    "loader_aligned_with_hosted_id": true,
+    "diff_check": true
+  },
+  "auth_url_configuration": {
+    "inspected": false,
+    "dashboard_login_required": true
+  }
+}

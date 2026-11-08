@@ -5,7 +5,7 @@ import {webcrypto} from 'node:crypto';
 import {fixture} from './load-progress.mjs';
 const bundled=await build({entryPoints:['src/lib/backup/restore-journal.ts'],bundle:true,platform:'node',format:'cjs',write:false,metafile:true,logLevel:'silent'});
 const mod={exports:{}};new Function('module','exports','crypto',bundled.outputFiles[0].text)(mod,mod.exports,webcrypto);
-const {prepareRestoreJournal,executePreparedRestore,recoverRestoreJournal,reviewPendingRestore,assertPendingRestoreReview,createRecoverySafetyCopy,RESTORE_JOURNAL_KEY:J}=mod.exports;
+const {prepareRestoreJournal,executePreparedRestore,recoverRestoreJournal,reviewPendingRestore,assertPendingRestoreReview,createRecoverySafetyCopy,decodeRestoreJournalPayload,RESTORE_JOURNAL_KEY:J}=mod.exports;
 const origin='http://fixture.test';
 async function setup(empty=false){
  const f=fixture();f.core.getState().addDraft('Registro sintético','');
@@ -69,7 +69,7 @@ test('corrupt journals, wrong origin and denied reads fail with no writes or pri
  }
  f.memory.set(J,f.journal);await assert.rejects(reviewPendingRestore(f.storage,'https://other.test'),/origem/);
  for(const side of ['before','target']){
-  const journal=JSON.parse(JSON.parse(f.journal).payload),core=JSON.parse(journal[side].core);core.state.user.xp_earth=-1;journal[side].core=JSON.stringify(core);
+  const journal=JSON.parse(await decodeRestoreJournalPayload(JSON.parse(f.journal).payload)),core=JSON.parse(journal[side].core);core.state.user.xp_earth=-1;journal[side].core=JSON.stringify(core);
   const payload=JSON.stringify(journal),checksum=Buffer.from(await webcrypto.subtle.digest('SHA-256',new TextEncoder().encode(payload))).toString('hex');
   f.memory.set(J,JSON.stringify({payload,checksum}));const before=[...f.memory];await assert.rejects(reviewPendingRestore(f.storage,origin),/precisam de revisão/);assert.deepEqual([...f.memory],before);
  }
@@ -79,7 +79,7 @@ test('corrupt journals, wrong origin and denied reads fail with no writes or pri
 test('copies export each protected pair exactly, preserving XP and IDs instead of exporting mixed current keys',async()=>{
  const f=await setup();f.interruptAt(3);await assert.rejects(executePreparedRestore(f.storage,f.journal,origin));
  f.memory.set('private-auth-session','synthetic-auth-secret');const review=await reviewPendingRestore(f.storage,origin),before=[...f.memory],count=f.writes.length;
- const journal=JSON.parse(JSON.parse(f.journal).payload);
+ const journal=JSON.parse(await decodeRestoreJournalPayload(JSON.parse(f.journal).payload));
  for(const side of ['before','target']){
   const text=await createRecoverySafetyCopy(f.storage,review,side,origin),{backup}=await f.f.inspectProgressBackup(text);
   for(const part of ['core','fitness'])assert.deepEqual(backup.stores[part],{key:f.f.STORE_KEYS[part],...JSON.parse(journal[side][part])});

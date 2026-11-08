@@ -103,7 +103,7 @@ test('reviewed bytes are required even if changed values could otherwise be reco
  for(const key of ['journal','core','removed-journal']){
   const a=await pendingRecovery();
   if(key==='journal')a.memory.set(a.m.RESTORE_JOURNAL_KEY,JSON.stringify(JSON.parse(a.operation.journal),null,2));
-  if(key==='core')a.memory.set(a.f.STORE_KEYS.core,JSON.parse(JSON.parse(a.operation.journal).payload).before.core);
+  if(key==='core')a.memory.set(a.f.STORE_KEYS.core,JSON.parse(await a.m.decodeRestoreJournalPayload(JSON.parse(a.operation.journal).payload)).before.core);
   if(key==='removed-journal')a.memory.delete(a.m.RESTORE_JOURNAL_KEY);
   const before=[...a.memory];await assert.rejects(a.m.runExclusiveRestore(a.context,a.recovery),/mudou|confer/);assert.deepEqual([...a.memory],before);assert.equal(a.writes.length,0);
  }
@@ -115,7 +115,7 @@ test('recovery binds nested reviewed bytes before a delayed lock and rechecks th
  const result=a.m.runExclusiveRestore(a.context,a.recovery);
  a.recovery.expected.journal='changed';a.recovery.expected.pair.core='changed';a.recovery.recoveryConfirmed=false;gate.resolve();
  assert.equal(await result,'rolled-back');assert.equal(a.memory.has(a.m.RESTORE_JOURNAL_KEY),false);
- const b=await pendingRecovery();const pending=b.m.runExclusiveRestore(b.context,b.recovery);
- b.memory.set(b.f.STORE_KEYS.core,JSON.parse(JSON.parse(b.operation.journal).payload).before.core);
+ const b=await pendingRecovery();const beforeCore=JSON.parse(await b.m.decodeRestoreJournalPayload(JSON.parse(b.operation.journal).payload)).before.core;const pending=b.m.runExclusiveRestore(b.context,b.recovery);
+ b.memory.set(b.f.STORE_KEYS.core,beforeCore);
  const before=[...b.memory];await assert.rejects(pending,/mudou/);assert.deepEqual([...b.memory],before);assert.equal(b.writes.length,0);assert.equal(b.manager.exclusive,false);
 });

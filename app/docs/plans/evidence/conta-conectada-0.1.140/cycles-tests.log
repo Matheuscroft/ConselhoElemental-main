@@ -1,0 +1,17 @@
+✔ feedback consumes real XP once, dismiss resets the burst, Undo removes it and account changes clear it (76.894042ms)
+✔ hydration, opening history and expiry never replay rewards or change XP (7.913167ms)
+✔ daily completion grants the computed reward once, persists it and undoes the original element (19.408333ms)
+✔ all four elements and separate days grant independent rewards; quantities remain informational (3.057625ms)
+✔ small Water and Air rewards without a timer advance balances even before the next mastery level (2.168458ms)
+✔ parent cascade rewards each valuable leaf once in its own element and Undo reverses exact receipts (1.642042ms)
+✔ individual children pay once, parent status pays zero, and partial Undo leaves sibling XP (1.883875ms)
+✔ legacy completions never backfill or debit unrecorded XP and recompute does not erase paid XP (1.959292ms)
+✔ notes and structural checks do not manufacture reward; one atomic update contains receipt and XP (1.008208ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 399.875167

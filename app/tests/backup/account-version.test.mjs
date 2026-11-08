@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHash,randomUUID} from 'node:crypto';
-import {createLegacyDatabase,installedMigration,archiveVersionMigration,accessVersionMigration,mergeVersionMigration,fitnessIdentityVersionMigration,intuitiveIconsVersionMigration,catalogueVersionMigration,handoffVersionMigration,auxiliaryUiVersionMigration,colouredRewardsVersionMigration} from './load-account-db.mjs';
+import {createLegacyDatabase,installedMigration,archiveVersionMigration,accessVersionMigration,mergeVersionMigration,fitnessIdentityVersionMigration,intuitiveIconsVersionMigration,catalogueVersionMigration,handoffVersionMigration,auxiliaryUiVersionMigration,colouredRewardsVersionMigration,savedLibraryVersionMigration,localRestoreVersionMigration,guidedTransferVersionMigration,appIconVersionMigration,mobileImportVersionMigration,newJourneyVersionMigration,authOnlyVersionMigration,restoreHelpVersionMigration,simpleImportVersionMigration,quotaVersionMigration,connectionVersionMigration} from './load-account-db.mjs';
 import {fixture} from './load-progress.mjs';
 
 test('separate producer-version revision preserves the installed SQL, stored bytes and closed gate',async()=>{
@@ -9,7 +9,7 @@ test('separate producer-version revision preserves the installed SQL, stored byt
  const db=await createLegacyDatabase();
  try{
   await db.exec(installedMigration);
-  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.129');
+  const f=fixture(),captured=f.captureProgress('http://fixture.test'),snapshot={...captured,appVersion:'0.1.121'};assert.equal(captured.appVersion,'0.1.143');
   const archive=await f.createProgressBackup(snapshot);
   await assert.rejects(db.query('select progress_private.validate_archive($1)',[archive]),/progress_invalid_archive/);
   const previous=await f.createProgressBackup({...snapshot,appVersion:'0.1.120'}),user=randomUUID();
@@ -55,9 +55,45 @@ test('separate producer-version revision preserves the installed SQL, stored byt
   assert.equal((await db.query('select progress_private.validate_archive($1) as value',[auxiliary])).rows[0].value,createHash('sha256').update(auxiliary).digest('hex'));
   assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
   assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
-  const coloured=await f.createProgressBackup(captured);await assert.rejects(db.query('select progress_private.validate_archive($1)',[coloured]),/progress_invalid_archive/);
+  const coloured=await f.createProgressBackup({...captured,appVersion:'0.1.129'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[coloured]),/progress_invalid_archive/);
   await db.exec(colouredRewardsVersionMigration);
   assert.equal((await db.query('select progress_private.validate_archive($1) as value',[coloured])).rows[0].value,createHash('sha256').update(coloured).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const library=await f.createProgressBackup({...captured,appVersion:'0.1.130'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[library]),/progress_invalid_archive/);
+  await db.exec(savedLibraryVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[library])).rows[0].value,createHash('sha256').update(library).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const localRestore=await f.createProgressBackup({...captured,appVersion:'0.1.131'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[localRestore]),/progress_invalid_archive/);
+  await db.exec(localRestoreVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[localRestore])).rows[0].value,createHash('sha256').update(localRestore).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const guided=await f.createProgressBackup({...captured,appVersion:'0.1.132'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[guided]),/progress_invalid_archive/);
+  await db.exec(guidedTransferVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[guided])).rows[0].value,createHash('sha256').update(guided).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const icon=await f.createProgressBackup({...captured,appVersion:'0.1.133'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[icon]),/progress_invalid_archive/);
+  await db.exec(appIconVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[icon])).rows[0].value,createHash('sha256').update(icon).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const mobile=await f.createProgressBackup({...captured,appVersion:'0.1.134'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[mobile]),/progress_invalid_archive/);
+  await db.exec(mobileImportVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[mobile])).rows[0].value,createHash('sha256').update(mobile).digest('hex'));
+  assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
+  assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
+  const journey=await f.createProgressBackup({...captured,appVersion:'0.1.135'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[journey]),/progress_invalid_archive/);
+  await db.exec(newJourneyVersionMigration);
+  assert.equal((await db.query('select progress_private.validate_archive($1) as value',[journey])).rows[0].value,createHash('sha256').update(journey).digest('hex'));
+  const authOnly=await f.createProgressBackup({...captured,appVersion:'0.1.136'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[authOnly]),/progress_invalid_archive/);
+  await db.exec(authOnlyVersionMigration);assert.equal((await db.query('select progress_private.validate_archive($1) as value',[authOnly])).rows[0].value,createHash('sha256').update(authOnly).digest('hex'));
+  const help=await f.createProgressBackup({...captured,appVersion:'0.1.137'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[help]),/progress_invalid_archive/);await db.exec(restoreHelpVersionMigration);assert.equal((await db.query('select progress_private.validate_archive($1) as value',[help])).rows[0].value,createHash('sha256').update(help).digest('hex'));
+  const simple=await f.createProgressBackup({...captured,appVersion:'0.1.138'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[simple]),/progress_invalid_archive/);await db.exec(simpleImportVersionMigration);assert.equal((await db.query('select progress_private.validate_archive($1) as value',[simple])).rows[0].value,createHash('sha256').update(simple).digest('hex'));
+  const quota=await f.createProgressBackup({...captured,appVersion:'0.1.139'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[quota]),/progress_invalid_archive/);await db.exec(quotaVersionMigration);assert.equal((await db.query('select progress_private.validate_archive($1) as value',[quota])).rows[0].value,createHash('sha256').update(quota).digest('hex'));
+  const connected=await f.createProgressBackup({...captured,appVersion:'0.1.140'});await assert.rejects(db.query('select progress_private.validate_archive($1)',[connected]),/progress_invalid_archive/);await db.exec(connectionVersionMigration);assert.equal((await db.query('select progress_private.validate_archive($1) as value',[connected])).rows[0].value,createHash('sha256').update(connected).digest('hex'));
   assert.equal((await db.query('select archive from progress_private.account_state where user_id=$1',[user])).rows[0].archive,previous);
   assert.equal((await db.query('select writes_enabled from progress_private.release_gate')).rows[0].writes_enabled,false);
  }finally{await db.close();}
