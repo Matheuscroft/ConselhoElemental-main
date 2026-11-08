@@ -1,0 +1,453 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="780" height="1688">
+  <title>Conceito B v4 — Despertar Elemental (final de tarde, sol e lua opostos)</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0.2" y2="1">
+      <stop offset="0" stop-color="#0a0f2e"/>
+      <stop offset="0.22" stop-color="#1d2254"/>
+      <stop offset="0.42" stop-color="#453a7e"/>
+      <stop offset="0.58" stop-color="#8a5a8e"/>
+      <stop offset="0.72" stop-color="#d4788a"/>
+      <stop offset="0.85" stop-color="#f3a877"/>
+      <stop offset="1" stop-color="#ffd79a"/>
+    </linearGradient>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6d5f8f"/>
+      <stop offset="0.18" stop-color="#3a3a64"/>
+      <stop offset="0.55" stop-color="#1a2342"/>
+      <stop offset="1" stop-color="#070b12"/>
+    </linearGradient>
+    <linearGradient id="stone" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#070b0f"/>
+      <stop offset="0.3" stop-color="#232e37"/>
+      <stop offset="0.55" stop-color="#36444e"/>
+      <stop offset="0.8" stop-color="#1b242b"/>
+      <stop offset="1" stop-color="#0a0f14"/>
+    </linearGradient>
+    <linearGradient id="stepTop" x1="0" y1="0" x2="1" y2="0.4">
+      <stop offset="0" stop-color="#1e272e"/>
+      <stop offset="0.45" stop-color="#3d4b55"/>
+      <stop offset="1" stop-color="#19222a"/>
+    </linearGradient>
+    <linearGradient id="stepSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b363f"/>
+      <stop offset="1" stop-color="#0c1217"/>
+    </linearGradient>
+    <linearGradient id="robe" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#3a5ea8"/>
+      <stop offset="0.35" stop-color="#23407f"/>
+      <stop offset="0.75" stop-color="#13244c"/>
+      <stop offset="1" stop-color="#0c1430"/>
+    </linearGradient>
+    <linearGradient id="robeDeep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4a6fb8"/>
+      <stop offset="0.3" stop-color="#22407e"/>
+      <stop offset="0.7" stop-color="#15274f"/>
+      <stop offset="1" stop-color="#2c4a86"/>
+    </linearGradient>
+    <linearGradient id="hat" x1="0" y1="1" x2="0.4" y2="0">
+      <stop offset="0" stop-color="#7a86c8"/>
+      <stop offset="0.45" stop-color="#4b3f90"/>
+      <stop offset="0.75" stop-color="#6b4aa0"/>
+      <stop offset="1" stop-color="#9f6bc0"/>
+    </linearGradient>
+    <linearGradient id="brim" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5f6f9e"/>
+      <stop offset="0.45" stop-color="#a7bbe4"/>
+      <stop offset="1" stop-color="#55648f"/>
+    </linearGradient>
+    <linearGradient id="skinG" x1="0" y1="0" x2="1" y2="0.6">
+      <stop offset="0" stop-color="#e0a87c"/>
+      <stop offset="0.55" stop-color="#c98f6b"/>
+      <stop offset="1" stop-color="#8e5c45"/>
+    </linearGradient>
+    <linearGradient id="beardG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5a4030"/>
+      <stop offset="0.5" stop-color="#3b2a20"/>
+      <stop offset="1" stop-color="#241812"/>
+    </linearGradient>
+    <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#070b12" stop-opacity="0"/>
+      <stop offset="0.55" stop-color="#070b12" stop-opacity="0.72"/>
+      <stop offset="1" stop-color="#070b12" stop-opacity="0.98"/>
+    </linearGradient>
+    <linearGradient id="gemFire" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#fff0c0"/><stop offset="0.3" stop-color="#ff9a4a"/>
+      <stop offset="0.68" stop-color="#e03a1e"/><stop offset="1" stop-color="#6d1410"/>
+    </linearGradient>
+    <linearGradient id="gemWater" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#f2feff"/><stop offset="0.32" stop-color="#8fe0f7"/>
+      <stop offset="0.7" stop-color="#2d86c8"/><stop offset="1" stop-color="#113a68"/>
+    </linearGradient>
+    <linearGradient id="gemEarth" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#e2ffc4"/><stop offset="0.33" stop-color="#7fd86a"/>
+      <stop offset="0.7" stop-color="#2f9140"/><stop offset="1" stop-color="#0e3f20"/>
+    </linearGradient>
+    <linearGradient id="gemAir" x1="0.1" y1="0" x2="0.9" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.4" stop-color="#dff0f8"/>
+      <stop offset="0.72" stop-color="#9ab9cc"/><stop offset="1" stop-color="#4e6f87"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fffaf0"/><stop offset="0.12" stop-color="#ffe6a8"/>
+      <stop offset="0.38" stop-color="#ffb268" stop-opacity="0.72"/><stop offset="1" stop-color="#ff7a3c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f2f6ff" stop-opacity="0.95"/>
+      <stop offset="0.3" stop-color="#cdd9ff" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#8fa8ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="moonBody" cx="0.36" cy="0.32" r="0.72">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#e3e8f5"/><stop offset="1" stop-color="#a7b0c8"/>
+    </radialGradient>
+    <radialGradient id="fireG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fff0bd" stop-opacity="0.95"/><stop offset="0.35" stop-color="#ff9a52" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#e0502a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="waterG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#e6fbff" stop-opacity="0.9"/><stop offset="0.38" stop-color="#6fc5ea" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#2f6fa8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="earthG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#d6ffb4" stop-opacity="0.9"/><stop offset="0.38" stop-color="#78cf6a" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#2f7a40" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="airG" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.85"/><stop offset="0.38" stop-color="#d7eef8" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#9fc4d6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="mist" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffdcc0" stop-opacity="0.5"/><stop offset="1" stop-color="#ffdcc0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.46" r="0.78">
+      <stop offset="0.45" stop-color="#000" stop-opacity="0"/>
+      <stop offset="0.8" stop-color="#000" stop-opacity="0.34"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.72"/>
+    </radialGradient>
+    <radialGradient id="altarGlow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffd98a" stop-opacity="0.5"/><stop offset="1" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85 0.14" numOctaves="4" seed="7" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.82  0 0 0 0 0.87  0 0 0 0 0.93  0 0 0 0.95 -0.4"/>
+    </filter>
+    <filter id="rock" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05 0.08" numOctaves="4" seed="11" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="cloudF" x="-20%" y="-50%" width="140%" height="200%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="4" seed="3" result="t"/>
+      <feDisplacementMap in="SourceGraphic" in2="t" scale="26" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <filter id="blur10"><feGaussianBlur stdDeviation="10"/></filter>
+    <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
+    <filter id="blur3"><feGaussianBlur stdDeviation="3"/></filter>
+    <filter id="blur1"><feGaussianBlur stdDeviation="1.2"/></filter>
+    <clipPath id="skyClip"><rect width="390" height="524"/></clipPath>
+    <clipPath id="waterClip"><rect y="508" width="390" height="336"/></clipPath>
+  </defs>
+
+  <!-- CAMADA 1 · céu (no app: Sol, Lua e estação calculados pela cidade) -->
+  <g id="ceu" clip-path="url(#skyClip)">
+    <rect width="390" height="524" fill="url(#sky)"/>
+    <g fill="#fff">
+      <circle cx="36" cy="34" r="1.1" opacity="0.9"/><circle cx="118" cy="62" r="0.8" opacity="0.7"/>
+      <circle cx="206" cy="26" r="1.3" opacity="0.95"/><circle cx="296" cy="72" r="0.9" opacity="0.8"/>
+      <circle cx="352" cy="30" r="1.1" opacity="0.85"/><circle cx="168" cy="104" r="0.7" opacity="0.6"/>
+      <circle cx="74" cy="128" r="0.9" opacity="0.65"/><circle cx="252" cy="118" r="0.8" opacity="0.6"/>
+      <circle cx="330" cy="150" r="0.7" opacity="0.5"/><circle cx="140" cy="172" r="0.6" opacity="0.45"/>
+      <circle cx="206" cy="26" r="3.4" opacity="0.25"/><circle cx="352" cy="30" r="3" opacity="0.2"/>
+    </g>
+    <!-- raios de sol -->
+    <g opacity="0.3" filter="url(#blur6)">
+      <path d="M118 438 L-40 300 L10 286 Z" fill="#ffd79a"/>
+      <path d="M118 438 L10 240 L70 236 Z" fill="#ffe3b5"/>
+      <path d="M118 438 L130 230 L180 262 Z" fill="#ffd79a" opacity="0.7"/>
+      <path d="M118 438 L250 320 L262 360 Z" fill="#ffc98a" opacity="0.6"/>
+    </g>
+    <!-- sol baixo, à esquerda -->
+    <circle cx="118" cy="438" r="160" fill="url(#sun)"/>
+    <circle cx="118" cy="438" r="30" fill="#fffaf0"/>
+    <circle cx="118" cy="438" r="40" fill="#ffe6a8" opacity="0.6" filter="url(#blur3)"/>
+    <ellipse cx="118" cy="438" rx="86" ry="5" fill="#ffe6a8" opacity="0.45" filter="url(#blur3)"/>
+    <!-- lua nascendo, à direita (posição encenada) -->
+    <circle cx="302" cy="420" r="86" fill="url(#moonGlow)"/>
+    <circle cx="302" cy="420" r="27" fill="url(#moonBody)"/>
+    <g fill="#b9c2d8" opacity="0.65">
+      <circle cx="294" cy="413" r="5.5"/><circle cx="311" cy="427" r="4.2"/>
+      <circle cx="305" cy="408" r="2.6"/><circle cx="292" cy="430" r="3"/>
+    </g>
+    <circle cx="302" cy="420" r="27" fill="none" stroke="#fff" stroke-opacity="0.5" stroke-width="0.8"/>
+    <!-- nuvens em camadas -->
+    <g filter="url(#cloudF)">
+      <ellipse cx="190" cy="268" rx="150" ry="13" fill="#6a5a8e" opacity="0.5"/>
+      <ellipse cx="86" cy="330" rx="112" ry="11" fill="#e39a86" opacity="0.42"/>
+      <ellipse cx="300" cy="306" rx="96" ry="9" fill="#c88aa0" opacity="0.4"/>
+      <ellipse cx="200" cy="384" rx="170" ry="12" fill="#f2b088" opacity="0.4"/>
+      <ellipse cx="110" cy="420" rx="120" ry="9" fill="#ffc89a" opacity="0.38"/>
+    </g>
+    <!-- montanhas distantes e próximas -->
+    <path d="M0 474 L46 442 L92 466 L148 426 L208 468 L268 436 L330 462 L390 430 L390 500 L0 500Z" fill="#4a3a6e" opacity="0.55" filter="url(#blur1)"/>
+    <path d="M0 478 L50 448 L96 470 L152 432 L212 472 L272 442 L334 466 L390 436 L390 505 L0 505Z" fill="#3d2f62" opacity="0.85"/>
+    <path d="M0 496 L70 474 L130 492 L200 464 L280 494 L350 474 L390 488 L390 524 L0 524Z" fill="#261f45"/>
+    <ellipse cx="195" cy="500" rx="260" ry="20" fill="url(#mist)"/>
+  </g>
+
+  <!-- CAMADA 2 · água e reflexos -->
+  <g id="agua" clip-path="url(#waterClip)">
+    <rect y="508" width="390" height="336" fill="url(#water)"/>
+    <ellipse cx="118" cy="560" rx="34" ry="86" fill="#ffc98a" opacity="0.34" filter="url(#blur10)"/>
+    <ellipse cx="302" cy="552" rx="26" ry="72" fill="#cfe0ff" opacity="0.3" filter="url(#blur10)"/>
+    <g stroke="#ffd9a0" stroke-width="1.1" opacity="0.4" stroke-linecap="round">
+      <path d="M64 524h48M54 540h68M70 557h40M58 574h58M74 590h34"/>
+    </g>
+    <g stroke="#dfe8ff" stroke-width="1" opacity="0.32" stroke-linecap="round">
+      <path d="M284 524h38M274 540h56M286 556h32M276 572h46"/>
+    </g>
+    <ellipse cx="195" cy="516" rx="260" ry="16" fill="url(#mist)"/>
+  </g>
+
+  <!-- CAMADA 3 · colunas e arco -->
+  <g id="arcos">
+    <path d="M90 524V474q24 -30 48 0V524Z" fill="#1d1738" opacity="0.75"/>
+    <path d="M256 524V476q24 -30 48 0V524Z" fill="#1d1738" opacity="0.75"/>
+    <g filter="url(#rock)">
+      <path d="M-12 0 H44 V568 H-12Z" fill="url(#stone)"/>
+      <path d="M346 0 H402 V568 H346Z" fill="url(#stone)"/>
+    </g>
+    <path d="M44 0 H346 V46 Q195 -16 44 46Z" fill="#141c23"/>
+    <rect x="0" y="0" width="44" height="568" filter="url(#grain)" opacity="0.26"/>
+    <rect x="346" y="0" width="44" height="568" filter="url(#grain)" opacity="0.26"/>
+    <g stroke="#0a0f14" stroke-width="0.9" opacity="0.55">
+      <path d="M0 112h44M0 248h44M0 384h44M0 500h44M346 142h44M346 278h44M346 414h44M346 522h44"/>
+    </g>
+    <g stroke="#d5b66f" stroke-width="1.5" fill="none" opacity="0.9">
+      <path d="M18 24V544M372 24V544"/>
+      <circle cx="18" cy="196" r="9"/><circle cx="372" cy="196" r="9"/>
+      <path d="M44 46 Q195 -16 346 46"/>
+    </g>
+    <g stroke="#ffd79a" stroke-width="0.9" fill="none" opacity="0.4" filter="url(#blur1)">
+      <path d="M40 0V560"/>
+    </g>
+    <g fill="#4e7a46" opacity="0.85">
+      <path d="M-6 84 q22 16 16 44 q-20 -12 -16 -44z"/><path d="M2 286 q24 12 20 40 q-20 -10 -20 -40z"/>
+      <path d="M-4 452 q22 14 18 40 q-20 -10 -18 -40z"/>
+      <path d="M396 104 q-24 16 -18 42 q20 -12 18 -42z"/><path d="M390 316 q-26 10 -20 38 q22 -10 20 -38z"/>
+      <path d="M394 470 q-24 14 -18 40 q20 -12 18 -40z"/>
+    </g>
+  </g>
+
+  <!-- CAMADA 4 · altar com degraus e runas -->
+  <g id="altar">
+    <ellipse cx="195" cy="680" rx="190" ry="48" fill="#05090d" opacity="0.65" filter="url(#blur10)"/>
+    <ellipse cx="195" cy="652" rx="196" ry="40" fill="url(#altarGlow)"/>
+    <!-- degrau inferior -->
+    <path d="M18 680 A177 44 0 0 0 372 680 V706 A177 44 0 0 1 18 706Z" fill="url(#stepSide)"/>
+    <ellipse cx="195" cy="680" rx="177" ry="44" fill="url(#stepTop)"/>
+    <ellipse cx="195" cy="680" rx="177" ry="44" filter="url(#grain)" opacity="0.2"/>
+    <!-- degrau médio -->
+    <path d="M48 650 A147 37 0 0 0 342 650 V674 A147 37 0 0 1 48 674Z" fill="url(#stepSide)"/>
+    <ellipse cx="195" cy="650" rx="147" ry="37" fill="url(#stepTop)"/>
+    <ellipse cx="195" cy="650" rx="147" ry="37" filter="url(#grain)" opacity="0.18"/>
+    <!-- plataforma superior -->
+    <path d="M77 622 A118 30 0 0 0 313 622 V644 A118 30 0 0 1 77 644Z" fill="url(#stepSide)"/>
+    <ellipse cx="195" cy="622" rx="118" ry="30" fill="url(#stepTop)"/>
+    <ellipse cx="195" cy="622" rx="118" ry="30" filter="url(#grain)" opacity="0.16"/>
+    <!-- anéis e runas douradas acesas -->
+    <g filter="url(#blur3)" opacity="0.75">
+      <ellipse cx="195" cy="622" rx="100" ry="25" fill="none" stroke="#ffd98a" stroke-width="3"/>
+      <ellipse cx="195" cy="650" rx="130" ry="32" fill="none" stroke="#ffd98a" stroke-width="2"/>
+    </g>
+    <ellipse cx="195" cy="622" rx="100" ry="25" fill="none" stroke="#f3dca6" stroke-width="1.5"/>
+    <ellipse cx="195" cy="622" rx="72" ry="18" fill="none" stroke="#d5b66f" stroke-width="1" opacity="0.8"/>
+    <ellipse cx="195" cy="650" rx="130" ry="32" fill="none" stroke="#d5b66f" stroke-width="1.2" opacity="0.85"/>
+    <ellipse cx="195" cy="680" rx="160" ry="39" fill="none" stroke="#d5b66f" stroke-width="1" opacity="0.6"/>
+    <g stroke="#ffe3ad" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.95">
+      <path d="M100 622 l6 -6 l6 6 M106 616 v-7"/>
+      <path d="M278 622 l6 -6 l6 6 M284 616 v-7"/>
+      <path d="M186 600 h18 M195 594 v12"/>
+      <path d="M186 646 h18 M190 641 l10 10"/>
+    </g>
+    <g fill="#ffd98a"><circle cx="106" cy="622" r="2.4"/><circle cx="284" cy="622" r="2.4"/><circle cx="195" cy="600" r="2.4"/><circle cx="195" cy="646" r="2.4"/></g>
+    <ellipse cx="195" cy="712" rx="150" ry="22" fill="#8bcee3" opacity="0.12" filter="url(#blur6)"/>
+  </g>
+
+  <!-- CAMADA 5 · elementos: cristais facetados com halo e partículas -->
+  <g id="elementos">
+    <!-- fogo · alto-esquerda -->
+    <circle cx="74" cy="296" r="80" fill="url(#fireG)"/>
+    <path d="M74 232 C96 254 108 274 98 294 C92 282 84 278 80 270 C76 258 74 244 74 232Z" fill="#ffb26b" opacity="0.95"/>
+    <path d="M50 258 C58 272 60 284 52 296 C42 284 42 270 50 258Z" fill="#ff9a52" opacity="0.85"/>
+    <path d="M98 250 C108 266 108 280 98 292 C90 280 92 264 98 250Z" fill="#ffd27a" opacity="0.8"/>
+    <polygon points="74,266 97,282 91,318 74,332 57,318 51,282" fill="url(#gemFire)" stroke="#ffe9b8" stroke-opacity="0.75" stroke-width="1"/>
+    <path d="M74 266 L80 300 L97 282 M80 300 L74 332 M80 300 L57 318 M80 300 L51 282" stroke="#fff" stroke-opacity="0.5" stroke-width="0.8" fill="none"/>
+    <path d="M66 276 L72 296" stroke="#fff6dc" stroke-width="2.4" stroke-linecap="round" opacity="0.8"/>
+    <g fill="#ffcf8a"><circle cx="42" cy="268" r="1.8"/><circle cx="112" cy="282" r="1.5"/><circle cx="92" cy="230" r="1.7"/><circle cx="38" cy="312" r="1.4"/><circle cx="110" cy="330" r="1.3"/><circle cx="60" cy="226" r="1.2"/></g>
+    <!-- água · alto-direita -->
+    <circle cx="316" cy="300" r="80" fill="url(#waterG)"/>
+    <path d="M268 300 C274 266 320 254 344 272 C362 286 358 318 336 328" stroke="#bfeeff" stroke-width="2.6" fill="none" opacity="0.85" stroke-linecap="round"/>
+    <path d="M278 324 C294 344 332 346 348 332" stroke="#e4f9ff" stroke-width="1.8" fill="none" opacity="0.7" stroke-linecap="round"/>
+    <polygon points="316,266 340,284 334,320 316,334 298,320 292,284" fill="url(#gemWater)" stroke="#e9fbff" stroke-opacity="0.8" stroke-width="1"/>
+    <path d="M316 266 L322 302 L340 284 M322 302 L316 334 M322 302 L298 320 M322 302 L292 284" stroke="#fff" stroke-opacity="0.5" stroke-width="0.8" fill="none"/>
+    <path d="M307 278 L313 298" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
+    <ellipse cx="316" cy="340" rx="52" ry="9" fill="none" stroke="#bfeeff" stroke-width="1.2" opacity="0.6"/>
+    <g fill="#d6f6ff"><circle cx="268" cy="282" r="2.3"/><circle cx="358" cy="272" r="2.5"/><circle cx="352" cy="334" r="1.8"/><circle cx="274" cy="334" r="1.7"/><circle cx="330" cy="248" r="1.6"/></g>
+    <!-- terra · baixo-esquerda --><g transform="translate(-10,54)">
+    <circle cx="66" cy="488" r="76" fill="url(#earthG)"/>
+    <g filter="url(#rock)">
+      <path d="M26 504 L42 480 L76 474 L104 492 L98 518 L62 528 L32 518Z" fill="#35422f"/>
+    </g>
+    <path d="M26 504 L42 480 L76 474 L86 482 L50 490 L34 510Z" fill="#6b9a52"/>
+    <g fill="#8fc96a" opacity="0.9"><ellipse cx="44" cy="482" rx="10" ry="4"/><ellipse cx="72" cy="476" rx="9" ry="3.5"/></g>
+    <polygon points="66,440 88,456 82,490 66,502 50,490 44,456" fill="url(#gemEarth)" stroke="#e6ffcf" stroke-opacity="0.75" stroke-width="1"/>
+    <path d="M66 440 L72 472 L88 456 M72 472 L66 502 M72 472 L50 490 M72 472 L44 456" stroke="#fff" stroke-opacity="0.45" stroke-width="0.8" fill="none"/>
+    <path d="M58 450 L64 468" stroke="#f0ffe0" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+    <g stroke="#6fbf5a" stroke-width="1.4" fill="none" stroke-linecap="round">
+      <path d="M46 470 C34 460 32 446 40 438"/><path d="M88 468 C100 458 102 444 94 436"/><path d="M66 432 C62 418 70 410 78 408"/>
+    </g>
+    <g fill="#4e5c46"><rect x="20" y="536" width="7" height="7" transform="rotate(22 23 539)"/><rect x="108" y="522" width="6" height="6" transform="rotate(-16 111 525)"/><rect x="46" y="548" width="5" height="5" transform="rotate(10 48 550)"/></g>
+    </g><!-- ar · baixo-direita --><g transform="translate(10,42)">
+    <circle cx="324" cy="488" r="78" fill="url(#airG)"/>
+    <g fill="none" stroke="#f4fffa" stroke-linecap="round">
+      <path d="M268 492 C290 458 358 458 378 492" stroke-width="3.4" opacity="0.95"/>
+      <path d="M276 512 C298 482 350 482 366 512" stroke-width="2.6" opacity="0.8"/>
+      <path d="M288 472 C306 452 342 454 354 472" stroke-width="2" opacity="0.7"/>
+      <path d="M264 532 C282 512 312 510 328 524" stroke-width="1.7" opacity="0.6"/>
+    </g>
+    <polygon points="324,446 346,462 340,494 324,506 308,494 302,462" fill="url(#gemAir)" stroke="#ffffff" stroke-opacity="0.85" stroke-width="1"/>
+    <path d="M324 446 L330 476 L346 462 M330 476 L324 506 M330 476 L308 494 M330 476 L302 462" stroke="#fff" stroke-opacity="0.6" stroke-width="0.8" fill="none"/>
+    <path d="M316 456 L322 474" stroke="#fff" stroke-width="2.3" stroke-linecap="round" opacity="0.9"/>
+    <g fill="#9fe08a"><path d="M264 456 q7 -5 9 2 q-7 5 -9 -2z"/><path d="M372 476 q7 -5 9 2 q-7 5 -9 -2z"/><path d="M290 538 q6 -4 8 2 q-6 4 -8 -2z"/></g>
+    </g><!-- arcos de energia das mãos aos cristais -->
+    <g fill="none" stroke-width="1.6" opacity="0.6" stroke-linecap="round">
+      <path d="M126 492 C106 430 88 360 76 330" stroke="#ffb26b"/>
+      <path d="M264 492 C286 430 304 360 316 334" stroke="#8bcee3"/>
+      <path d="M124 506 C106 522 86 538 66 548" stroke="#a3ce9b"/>
+      <path d="M266 506 C288 518 310 528 332 534" stroke="#d2e6df"/>
+    </g>
+  </g>
+
+  <!-- CAMADA 6 · personagem maior e mais próximo -->
+  <g id="personagem">
+    <ellipse cx="195" cy="624" rx="64" ry="13" fill="#05090d" opacity="0.6" filter="url(#blur3)"/>
+    <!-- manto -->
+    <path d="M150 452 C128 500 104 578 98 626 C140 642 250 642 292 626 C286 578 262 500 240 452Z" fill="url(#robe)"/>
+    <path d="M150 452 C136 496 118 566 112 618 C140 628 170 632 195 632 C195 560 180 498 170 452Z" fill="url(#robeDeep)" opacity="0.55"/>
+    <path d="M232 456 C248 502 268 578 276 624 C258 630 232 634 210 634 C214 562 226 500 232 456Z" fill="#0f1c3e" opacity="0.5"/>
+    <!-- dobras -->
+    <g stroke="#0d1733" stroke-width="2.2" opacity="0.5" fill="none" stroke-linecap="round">
+      <path d="M160 500 C154 548 146 594 142 626"/>
+      <path d="M232 500 C240 548 248 594 252 626"/>
+      <path d="M195 540 V632"/>
+    </g>
+    <g stroke="#5b85cc" stroke-width="1.4" opacity="0.35" fill="none" stroke-linecap="round">
+      <path d="M176 510 C170 556 166 598 164 628"/>
+      <path d="M216 510 C222 556 226 598 228 628"/>
+    </g>
+    <!-- gola em V dourada -->
+    <path d="M158 462 L195 516 L232 462" stroke="#d5b66f" stroke-width="3" fill="none" stroke-linejoin="round"/>
+    <path d="M166 466 L195 508 L224 466" stroke="#f3dca6" stroke-width="1.2" fill="none" opacity="0.8"/>
+    <path d="M195 516 V560" stroke="#d5b66f" stroke-width="2.4"/>
+    <!-- faixa marrom -->
+    <path d="M132 556 C166 570 224 570 258 556 L262 582 C224 596 166 596 128 582Z" fill="#4a3322"/>
+    <path d="M132 556 C166 570 224 570 258 556 L259 564 C224 578 166 578 131 564Z" fill="#6b4a30" opacity="0.8"/>
+    <path d="M176 574 L170 632 M214 574 L220 632" stroke="#16264f" stroke-width="4" opacity="0.6"/>
+    <path d="M100 624 C140 642 250 642 290 624" stroke="#d5b66f" stroke-width="1.4" fill="none" opacity="0.9"/>
+    <!-- mangas largas -->
+    <path d="M156 460 C128 468 104 482 84 494 L72 524 C104 514 136 504 160 500Z" fill="#23407f"/>
+    <path d="M234 460 C262 468 286 482 306 494 L318 524 C286 514 254 504 230 500Z" fill="#1c3570"/>
+    <path d="M156 460 C132 468 112 480 94 492 L88 506 C116 496 142 488 160 484Z" fill="#3a5ea8" opacity="0.6"/>
+    <path d="M84 494 L72 524 M306 494 L318 524" stroke="#d5b66f" stroke-width="2"/>
+    <path d="M72 524 C86 528 100 526 110 520" stroke="#d5b66f" stroke-width="1.6" fill="none"/>
+    <path d="M318 524 C304 528 290 526 280 520" stroke="#d5b66f" stroke-width="1.6" fill="none"/>
+    <!-- runas ciano nas mangas -->
+    <g fill="#6ff0ff" opacity="0.22" filter="url(#blur3)"><circle cx="112" cy="494" r="14"/><circle cx="278" cy="494" r="14"/></g>
+    <g stroke="#6ff0ff" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.95">
+      <path d="M104 494 l6 -8 l6 8 M110 494 v10"/><path d="M124 490 l5 -7 l5 7 M129 490 v9"/>
+      <path d="M270 494 l6 -8 l6 8 M276 494 v10"/><path d="M256 490 l5 -7 l5 7 M261 490 v9"/>
+    </g>
+    <!-- mãos abertas -->
+    <g>
+      <ellipse cx="78" cy="512" rx="12" ry="14" fill="url(#skinG)" transform="rotate(-18 78 512)"/>
+      <path d="M68 502 C62 496 58 490 60 484 C66 484 72 490 76 496" fill="#d9a079"/>
+      <path d="M72 522 C64 522 58 518 56 512 C62 508 70 510 76 514" fill="#c98f6b"/>
+    </g>
+    <g>
+      <ellipse cx="312" cy="512" rx="12" ry="14" fill="url(#skinG)" transform="rotate(18 312 512)"/>
+      <path d="M322 502 C328 496 332 490 330 484 C324 484 318 490 314 496" fill="#d9a079"/>
+      <path d="M318 522 C326 522 332 518 334 512 C328 508 320 510 314 514" fill="#c98f6b"/>
+    </g>
+    <!-- ombros e capuz -->
+    <path d="M146 460 C154 426 172 410 195 416 C218 410 236 426 244 460 C226 444 210 438 195 442 C180 438 164 444 146 460Z" fill="#2d4a8a"/>
+    <path d="M146 460 C154 426 172 410 195 416 C218 410 236 426 244 460" stroke="#d5b66f" stroke-width="2" fill="none"/>
+    <path d="M160 440 C170 424 182 418 195 420 C208 418 220 424 230 440" stroke="#4e7ad0" stroke-width="1.4" fill="none" opacity="0.6"/>
+    <!-- pescoço -->
+    <path d="M181 424 H209 V442 Q195 448 181 442Z" fill="#9c6a4e"/>
+    <!-- rosto -->
+    <path d="M169 384 Q195 374 221 384 L221 412 Q212 434 195 440 Q178 434 169 412Z" fill="url(#skinG)"/>
+    <path d="M169 390 Q174 408 181 416 Q172 412 169 400Z" fill="#8e5c45" opacity="0.5"/>
+    <!-- sombra da aba do chapéu -->
+    <path d="M169 384 Q195 374 221 384 L221 394 Q195 388 169 394Z" fill="#5c3a2c" opacity="0.55"/>
+    <!-- sobrancelhas -->
+    <path d="M174 394 Q182 389 190 393" stroke="#2a1d16" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M200 393 Q208 389 216 394" stroke="#2a1d16" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- olhos turquesa -->
+    <ellipse cx="183" cy="401" rx="5" ry="3.4" fill="#f4ece2"/>
+    <ellipse cx="207" cy="401" rx="5" ry="3.4" fill="#f4ece2"/>
+    <circle cx="183" cy="401" r="2.6" fill="#3fb8c9"/><circle cx="207" cy="401" r="2.6" fill="#3fb8c9"/>
+    <circle cx="183" cy="401" r="1.2" fill="#0d2a33"/><circle cx="207" cy="401" r="1.2" fill="#0d2a33"/>
+    <circle cx="184.4" cy="399.6" r="0.9" fill="#fff"/><circle cx="208.4" cy="399.6" r="0.9" fill="#fff"/>
+    <g fill="#6fd6e0" opacity="0.22" filter="url(#blur1)"><circle cx="183" cy="401" r="7"/><circle cx="207" cy="401" r="7"/></g>
+    <!-- nariz -->
+    <path d="M195 403 L192 414 Q195 417 198 414Z" fill="#a9705a" opacity="0.8"/>
+    <!-- bigode e barba -->
+    <path d="M181 416 Q188 412 195 415 Q202 412 209 416 Q204 424 195 423 Q186 424 181 416Z" fill="#4a3528"/>
+    <path d="M172 410 Q176 444 195 452 Q214 444 218 410 Q212 430 195 432 Q178 430 172 410Z" fill="url(#beardG)"/>
+    <g stroke="#5a4030" stroke-width="0.9" opacity="0.6" fill="none">
+      <path d="M182 424 Q186 440 195 446"/><path d="M208 424 Q204 440 195 446"/>
+    </g>
+    <path d="M191 424 Q195 427 199 424" stroke="#8d4a42" stroke-width="1.4" fill="none" opacity="0.8"/>
+    <!-- chapéu: aba larga e copa estrelada -->
+    <ellipse cx="195" cy="382" rx="62" ry="13" fill="#4d5a82"/>
+    <ellipse cx="195" cy="379" rx="62" ry="12" fill="url(#brim)"/>
+    <ellipse cx="195" cy="377" rx="44" ry="8" fill="#8ea2d0"/>
+    <path d="M166 376 Q180 320 198 262 Q212 236 206 272 Q216 326 226 376Z" fill="url(#hat)"/>
+    <path d="M166 376 Q178 326 194 274 Q190 330 184 376Z" fill="#8b7ad0" opacity="0.28"/>
+    <path d="M168 372 Q195 382 224 372 L224 360 Q195 370 168 360Z" fill="#a9bde8"/>
+    <path d="M168 372 Q195 382 224 372 L224 368 Q195 378 168 368Z" fill="#7d90c4"/>
+    <g fill="#fff">
+      <circle cx="188" cy="340" r="1.1"/><circle cx="200" cy="320" r="1"/><circle cx="208" cy="350" r="1.2"/>
+      <circle cx="196" cy="300" r="0.9"/><circle cx="180" cy="358" r="0.9"/><circle cx="204" cy="292" r="0.8"/>
+      <circle cx="214" cy="366" r="0.8"/><circle cx="174" cy="372" r="0.7"/>
+    </g>
+    <circle cx="198" cy="330" r="7" fill="#ff9ad0" opacity="0.3" filter="url(#blur3)"/>
+    <circle cx="186" cy="356" r="5" fill="#6ff0ff" opacity="0.25" filter="url(#blur3)"/>
+    <!-- luz de contorno: quente à esquerda, fria à direita -->
+    <path d="M150 452 C128 500 104 578 98 626" stroke="#ffcf8a" stroke-width="2" fill="none" opacity="0.75"/>
+    <path d="M240 452 C262 500 286 578 292 626" stroke="#bcd2ff" stroke-width="2" fill="none" opacity="0.75"/>
+    <path d="M166 376 Q180 320 198 262" stroke="#ffd79a" stroke-width="1.4" fill="none" opacity="0.5"/>
+    <path d="M206 272 Q216 326 226 376" stroke="#cfe0ff" stroke-width="1.4" fill="none" opacity="0.5"/>
+  </g>
+
+  <!-- CAMADA 7 · partículas da estação (trocam por estação no app) -->
+  <g id="particulas" opacity="0.9">
+    <g fill="#e8a25a">
+      <path d="M142 352 q9 -6 11 2 q-9 7 -11 -2z"/><path d="M252 396 q9 -6 11 2 q-9 7 -11 -2z"/>
+      <path d="M206 316 q7 -5 9 2 q-7 5 -9 -2z"/><path d="M118 418 q9 -6 11 2 q-9 7 -11 -2z"/>
+      <path d="M276 440 q7 -5 9 2 q-7 5 -9 -2z"/>
+    </g>
+    <g fill="#ffdfc0" opacity="0.7">
+      <circle cx="164" cy="372" r="1.5"/><circle cx="232" cy="344" r="1.3"/><circle cx="262" cy="420" r="1.5"/>
+      <circle cx="132" cy="300" r="1.2"/><circle cx="296" cy="368" r="1.3"/>
+    </g>
+  </g>
+
+  <!-- CAMADA 8 · primeiro plano, vinheta e faixa de controles -->
+  <g id="frente">
+    <path d="M0 742 Q100 718 200 738 T390 730 V844 H0Z" fill="#0b1117"/>
+    <path d="M0 742 Q100 718 200 738 T390 730" stroke="#2b3740" stroke-width="2" fill="none"/>
+    <path d="M0 742 Q100 718 200 738 T390 730 V756 Q200 748 0 762Z" fill="#131c23" opacity="0.8"/>
+    <g fill="#415f3e" opacity="0.8"><ellipse cx="26" cy="736" rx="24" ry="5"/><ellipse cx="356" cy="730" rx="28" ry="5"/><ellipse cx="190" cy="740" rx="20" ry="4"/></g>
+    <rect y="636" width="390" height="208" fill="url(#fade)"/>
+    <rect width="390" height="844" fill="url(#vignette)"/>
+  </g>
+</svg>

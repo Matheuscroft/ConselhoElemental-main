@@ -1,0 +1,127 @@
+{
+  "versao": 1,
+  "lote": "M11-B",
+  "gerado_em": "2026-11-08",
+  "descricao": "Camadas de produção do Despertar Elemental. A placa-base é o cenário sem Sol e sem Lua; o app desenha Sol e Lua por cima, nas posições calculadas para a cidade e o horário.",
+  "origem": {
+    "arte": "conceito C, composição sobre o conceito A",
+    "script_composicao": "../conceito-c-composicao.sh",
+    "script_camadas": "lote-b-camadas.sh",
+    "script_exportacao": "lote-b-exportar.sh",
+    "geracao_nova": false
+  },
+  "base": {
+    "largura": 1024,
+    "altura": 1536,
+    "proporcao": "2:3",
+    "nota": "Todas as coordenadas e raios abaixo são frações. As coordenadas x e y são frações da largura e da altura. Os raios são frações da LARGURA: para medir distância, normalize dx e dy pela largura, para o círculo não virar elipse."
+  },
+  "camadas": [
+    {
+      "id": "placa-base",
+      "arquivo": "placa-base-{390,780,1024}w.{avif,webp}",
+      "tipo": "raster",
+      "blend": "normal",
+      "parallax": 0.012,
+      "descricao": "Céu, ruínas, altar, personagem e os quatro elementos, já com grade, vinheta e escurecimento inferior. Camada única."
+    },
+    {
+      "id": "lua",
+      "arquivo": "sprite-lua.webp",
+      "tipo": "sprite aditivo",
+      "blend": "screen",
+      "parallax": 0.006,
+      "largura_relativa": 0.166,
+      "ancora": { "x": 0.396, "y": 0.075 },
+      "descricao": "Lua com halo, recortada da arte original, já com queda radial para preto. A âncora é o ponto padrão; o app a reposiciona pela posição real da Lua. Só desenhar quando a Lua estiver acima do horizonte."
+    },
+    {
+      "id": "sol",
+      "arquivo": null,
+      "tipo": "procedural",
+      "blend": "screen",
+      "parallax": 0.006,
+      "ancora": { "x": 0.835, "y": 0.411 },
+      "descricao": "Desenhado em tempo de execução, sem asset. A âncora é o ponto padrão do fim de tarde; o app a reposiciona pela posição real do Sol."
+    },
+    {
+      "id": "brilhos-elementais",
+      "arquivo": null,
+      "tipo": "procedural",
+      "blend": "screen",
+      "parallax": 0.012,
+      "descricao": "Pulso radial por elemento, desenhado sobre a placa na posição de cada um, para o despertar e a resposta ao toque."
+    }
+  ],
+  "sol_procedural": {
+    "blend": "screen",
+    "distancia": "d = hypot(x - cx, y - cy), com x, y, cx e cy em frações da largura",
+    "nucleo": { "raio": 0.0225, "borda": 0.0049 },
+    "brilho_interno": { "sigma": 0.0859, "peso_r": 0.85, "peso_g": 0.66, "peso_b": 0.32 },
+    "brilho_externo": { "sigma": 0.2246, "peso_r": 0.34, "peso_g": 0.22, "peso_b": 0.09 },
+    "peso_nucleo": { "r": 1.0, "g": 0.97, "b": 0.88 },
+    "formula": "canal = 255 * min(1, peso_nucleo * clip((raio_nucleo - d) / borda, 0, 1) + peso_interno * exp(-(d/sigma_interno)^2) + peso_externo * exp(-(d/sigma_externo)^2))",
+    "equivalente_em_css": "radial-gradient com as mesmas paradas, ou um canvas 2D com composite 'screen'"
+  },
+  "elementos": [
+    {
+      "id": "fogo",
+      "centro": { "x": 0.252, "y": 0.370 },
+      "raio_toque": 0.107,
+      "raio_brilho": 0.085,
+      "cor_amostrada": "#ce7927",
+      "cor_emissiva": "#f5ad83"
+    },
+    {
+      "id": "terra",
+      "centro": { "x": 0.313, "y": 0.192 },
+      "raio_toque": 0.135,
+      "raio_brilho": 0.120,
+      "cor_amostrada": "#404b32",
+      "cor_emissiva": "#a3ce9b"
+    },
+    {
+      "id": "agua",
+      "centro": { "x": 0.674, "y": 0.199 },
+      "raio_toque": 0.107,
+      "raio_brilho": 0.090,
+      "cor_amostrada": "#26537d",
+      "cor_emissiva": "#8bcee3"
+    },
+    {
+      "id": "ar",
+      "centro": { "x": 0.744, "y": 0.372 },
+      "raio_toque": 0.112,
+      "raio_brilho": 0.100,
+      "cor_amostrada": "#969aa2",
+      "cor_emissiva": "#d2e6df"
+    }
+  ],
+  "ancoras": {
+    "altar_centro": { "x": 0.5, "y": 0.573 },
+    "personagem": { "x": 0.5, "y_topo": 0.241, "y_base": 0.566 },
+    "horizonte": { "y": 0.470 }
+  },
+  "faixa_controles": {
+    "y_inicio": 0.768,
+    "descricao": "A partir daqui a placa já está escurecida pelo degradê; é a faixa reservada aos controles, respeitando a safe-area."
+  },
+  "densidades": {
+    "1x": { "largura": 390, "arquivo": "placa-base-390w" },
+    "2x": { "largura": 780, "arquivo": "placa-base-780w" },
+    "nativo": { "largura": 1024, "arquivo": "placa-base-1024w" },
+    "3x": null,
+    "nota_3x": "1170 px (3x) não foi exportado: a arte-base tem 1024 px de largura e ampliar não cria detalhe. Para 3x é preciso gerar a arte final com pelo menos 1170 px de largura."
+  },
+  "reserva_estatica": {
+    "arquivos": ["reserva-390w.webp", "reserva-780w.webp", "reserva-390w.jpg", "reserva-780w.jpg"],
+    "descricao": "Conceito C inteiro, já com Sol e Lua embutidos. Para o carregamento, a falha de WebGL e a preferência por movimento reduzido. O JPEG é a reserva para navegadores sem WebP."
+  },
+  "limites": [
+    "A arte é composição sobre o conceito A, não geração nova.",
+    "O personagem ainda é o encapuzado sem rosto do conceito A, não o mago barbudo da referência.",
+    "A placa é uma camada única: fundo, altar, personagem e elementos não estão separados em profundidade. Parallax real por camada exigiria a arte gerada já em camadas ou um passe de recorte.",
+    "Resta um clarão suave onde ficava a Lua original, por volta de (0.69, 0.06); lê como nuvem.",
+    "As posições padrão de Sol e Lua são encenadas; as reais vêm do cálculo por cidade no lote C."
+  ]
+}
