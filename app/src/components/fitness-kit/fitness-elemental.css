@@ -40,7 +40,7 @@ button:hover > .fitness-elemental-card,
   min-height: 44px; max-width: 100%; padding: 8px 10px;
   border: 1px solid rgb(var(--el-muted) / .2); border-radius: 12px;
   color: rgb(var(--el-muted)); background: rgb(var(--el-canvas) / .3);
-  font-size: 12px; line-height: 1.35; overflow-wrap: anywhere;
+  font-size: var(--ds-text-micro); line-height: 1.35; overflow-wrap: anywhere;
   transition: border-color 160ms, background-color 160ms, color 160ms;
 }
 .fitness-filter-chip[aria-pressed="true"] {
@@ -53,9 +53,9 @@ button:hover > .fitness-elemental-card,
 .fitness-catalog-refinements > summary:focus-visible {
   outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px;
 }
-.fitness-filter-reset { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding: 0 8px; border-radius: 10px; color: rgb(var(--el-gold)); font-size: 12px; }
+.fitness-filter-reset { display: inline-flex; min-height: 44px; align-items: center; gap: 6px; padding: 0 8px; border-radius: 10px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); }
 .fitness-catalog-refinements { border: 1px solid rgb(var(--el-muted) / .18); border-radius: 14px; background: rgb(var(--el-surface) / .55); }
-.fitness-catalog-refinements > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 10px 12px; border-radius: 14px; cursor: pointer; font-size: 13px; color: rgb(var(--el-gold)); }
+.fitness-catalog-refinements > summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; min-height: 48px; padding: 10px 12px; border-radius: 14px; cursor: pointer; font-size: var(--ds-text-micro); color: rgb(var(--el-gold)); }
 .fitness-catalog-refinements > summary::-webkit-details-marker { display: none; }
 .fitness-catalog-refinements[open] > summary { margin-bottom: 8px; border-bottom: 1px solid rgb(var(--el-muted) / .12); border-radius: 14px 14px 0 0; }
 @media (min-width: 480px) { .fitness-region-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
@@ -67,7 +67,7 @@ button:hover > .fitness-elemental-card,
 }
 
 /* Anatomical filters keep context visible rather than shrinking into a rune. */
-.fitness-region-grid .fitness-filter-chip { flex-direction: column; gap: 4px; min-height: 72px; padding: 8px 6px; font-size: 12px; }
+.fitness-region-grid .fitness-filter-chip { flex-direction: column; gap: 4px; min-height: 72px; padding: 8px 6px; font-size: var(--ds-text-micro); }
 .fitness-region-grid .fitness-filter-chip:first-child { grid-column: 1 / -1; flex-direction: row; min-height: 44px; }
 
 /* Catalogue navigation: closed groups first, direct results while searching. */
@@ -77,21 +77,21 @@ button:hover > .fitness-elemental-card,
   background: rgb(var(--el-canvas) / .7); color: rgb(var(--el-muted));
 }
 .fitness-catalog-search:focus-within { border-color: rgb(var(--el-gold)); outline: 2px solid rgb(var(--el-gold) / .2); outline-offset: 2px; }
-.fitness-catalog-search input { min-width: 0; flex: 1; width: 100%; min-height: 44px; background: transparent; border: 0; outline: none; font-size: 16px; color: rgb(var(--el-text)); }
+.fitness-catalog-search input { min-width: 0; flex: 1; width: 100%; min-height: 44px; background: transparent; border: 0; outline: none; font-size: var(--ds-text-body); color: rgb(var(--el-text)); }
 .fitness-catalog-search input::placeholder { color: rgb(var(--el-muted)); opacity: 1; }
 .fitness-catalog-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
 .fitness-catalog-search button { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
 .fitness-catalog-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 12px; min-height: 44px; }
-.fitness-catalog-toolbar > p { font-size: 12px; color: rgb(var(--el-muted)); }
+.fitness-catalog-toolbar > p { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
 .fitness-catalog-groups { display: grid; gap: 12px; }
 .fitness-catalog-group { overflow: hidden; border: 1px solid rgb(var(--el-muted) / .22); border-radius: 20px; background: linear-gradient(135deg, rgb(var(--el-surface) / .95), rgb(var(--el-canvas) / .7)); }
 .fitness-catalog-group[data-expanded="true"] { border-color: rgb(var(--el-gold) / .45); }
 .fitness-catalog-group-toggle { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 96px; padding: 16px; text-align: left; color: rgb(var(--el-gold)); }
-.fitness-catalog-group-count { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 10px; background: rgb(var(--el-gold) / .09); font-size: 13px; font-variant-numeric: tabular-nums; }
+.fitness-catalog-group-count { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 10px; background: rgb(var(--el-gold) / .09); font-size: var(--ds-text-micro); font-variant-numeric: tabular-nums; }
 .fitness-catalog-group-content { display: grid; gap: 8px; padding: 12px; border-top: 1px solid rgb(var(--el-gold) / .15); background: rgb(var(--el-canvas) / .25); }
 .fitness-catalog-group-content .fitness-elemental-row { border-radius: 14px; box-shadow: none; padding: 12px; }
-.fitness-catalog-more { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid rgb(var(--el-gold) / .4); border-radius: 12px; color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / .07); font-size: 13px; }
-.fitness-catalog-collapse { min-height: 44px; border-radius: 10px; font-size: 12px; color: rgb(var(--el-muted)); }
+.fitness-catalog-more { width: 100%; min-height: 48px; padding: 10px 12px; border: 1px solid rgb(var(--el-gold) / .4); border-radius: 12px; color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / .07); font-size: var(--ds-text-micro); }
+.fitness-catalog-collapse { min-height: 44px; border-radius: 10px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
 .fitness-catalog-group-toggle:focus-visible, .fitness-catalog-more:focus-visible, .fitness-catalog-collapse:focus-visible, .fitness-catalog-search button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: -3px; }
 @media (max-width: 380px) {
   .fitness-catalog-group-toggle { gap: 8px; padding: 12px; }

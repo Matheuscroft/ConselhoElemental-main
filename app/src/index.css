@@ -119,8 +119,8 @@
 }
 .fitness-dialog :is([data-slot="dialog-title"], [data-slot="alert-dialog-title"], .font-mystic) { font-family: Cinzel, Georgia, serif; font-weight: 500; color: rgb(var(--el-text)); }
 .fitness-dialog :is([data-slot="dialog-description"], [data-slot="alert-dialog-description"]) { color: rgb(var(--el-muted)); line-height: 1.6; }
-.fitness-dialog :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { min-height: 44px; min-width: 0; font-size: 16px; background: rgb(var(--el-canvas) / .5); border: 1px solid rgb(var(--el-muted) / .25); border-radius: 12px; color: rgb(var(--el-text)); }
-.fitness-dialog label > span { font-size: 13px; color: rgb(var(--el-muted)); margin-bottom: 6px; }
+.fitness-dialog :is(input:not([type="checkbox"]):not([type="radio"]), textarea, select) { min-height: 44px; min-width: 0; font-size: var(--ds-text-body); background: rgb(var(--el-canvas) / .5); border: 1px solid rgb(var(--el-muted) / .25); border-radius: 12px; color: rgb(var(--el-text)); }
+.fitness-dialog label > span { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); margin-bottom: 6px; }
 .fitness-dialog button { min-height: 44px; }
 .fitness-dialog button.bg-mystic-arcane { background: rgb(var(--el-gold)); color: rgb(var(--el-canvas)); border-radius: 12px; }
 .fitness-dialog .text-mystic-arcane { color: rgb(var(--el-gold)); }

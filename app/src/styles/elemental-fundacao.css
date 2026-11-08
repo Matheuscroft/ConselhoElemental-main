@@ -23,14 +23,19 @@
    *
    * 12px is the floor. Below it the app was unreadable on a phone at arm's
    * length, and 10px and 11px together appeared 66 times.
+   *
+   * In rem, not px: the root size is never overridden, so rem follows the
+   * size a person chose in their browser and px quietly ignores it. The app
+   * mixed both for the same purpose, which meant half the interface honoured
+   * that choice and half did not.
    */
-  --ds-text-micro: 12px;
-  --ds-text-small: 14px;
-  --ds-text-body: 16px;
-  --ds-text-lead: 18px;
-  --ds-text-title: 22px;
-  --ds-text-display: 28px;
-  --ds-text-hero: 36px;
+  --ds-text-micro: 0.75rem;   /* 12px */
+  --ds-text-small: 0.875rem;  /* 14px */
+  --ds-text-body: 1rem;       /* 16px */
+  --ds-text-lead: 1.125rem;   /* 18px */
+  --ds-text-title: 1.375rem;  /* 22px */
+  --ds-text-display: 1.75rem; /* 28px */
+  --ds-text-hero: 2.25rem;    /* 36px */
 
   /* Cinzel is a display serif and tightens as it grows; Inter carries the
      reading, and reading wants air. */

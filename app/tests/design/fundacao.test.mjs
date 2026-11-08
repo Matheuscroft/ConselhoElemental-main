@@ -55,33 +55,49 @@ test('each role keeps its own colours, and covers all four elements', () => {
   }
 });
 
-test('the type scale climbs, and never goes below what a phone can read', () => {
-  const escala = [...fundacao.matchAll(/--ds-text-([a-z]+):\s*(\d+)px/g)].map(([, nome, px]) => [nome, Number(px)]);
+test('the type scale climbs, honours the reader, and never goes unreadable', () => {
+  const escala = [...fundacao.matchAll(/--ds-text-([a-z]+):\s*([\d.]+)rem/g)]
+    .map(([, nome, rem]) => [nome, Number(rem)]);
   const ordem = escala.map(([nome]) => nome);
 
   assert.deepEqual(ordem, ['micro', 'small', 'body', 'lead', 'title', 'display', 'hero']);
   for (let i = 1; i < escala.length; i += 1) {
     assert.ok(escala[i][1] > escala[i - 1][1], `${ordem[i]} must be larger than ${ordem[i - 1]}`);
   }
-  assert.equal(escala[0][1], 12, 'the floor is 12px: 10px and 11px were unreadable at arm\'s length');
-  assert.equal(escala.find(([nome]) => nome === 'body')[1], 16,
-    'body stays 16px, which is also what keeps iOS from zooming a focused field');
+
+  // rem, never px: the root size is never overridden, so rem follows the size
+  // a person chose in their browser. A scale in px would ignore it.
+  assert.equal(/--ds-text-[a-z]+:\s*\d+px/.test(fundacao), false, 'no step may be written in px');
+
+  const px = (rem) => rem * 16;
+  assert.equal(px(escala[0][1]), 12, "the floor is 12px: 10px and 11px were unreadable at arm's length");
+  assert.equal(px(escala.find(([nome]) => nome === 'body')[1]), 16,
+    'body is 1rem, which at the default root is the 16px that keeps iOS from zooming a focused field');
 });
 
 /**
- * A ratchet, not a rule. The app carries 69 different font sizes, in px, rem
- * and clamp(), including .78rem, .82rem, .83rem and .88rem. Re-typesetting
- * all of them blind -- with no way to see the result on a real screen --
- * would be reckless. This stops the bleeding instead: the number may fall,
- * never rise. Lower the ceiling whenever you remove one.
+ * A ratchet, not a rule. It counts literals still written by hand; a
+ * reference to the scale is not one.
+ *
+ * It started at 69. Every literal within 2px of a step was snapped to that
+ * step -- 602 declarations across 32 files -- which left 27: five discrete
+ * sizes genuinely far from any step (25px, 40px, 44px, 1.55rem, 1.6rem) and
+ * twenty-two clamp() expressions, which are fluid type and need a treatment
+ * of their own rather than a step.
+ *
+ * The number may fall, never rise. Lower the ceiling whenever you remove one.
  */
-const TETO_TAMANHOS = 69;
+const TETO_TAMANHOS = 27;
 
 test('the number of distinct font sizes never grows', () => {
+  // A reference to the scale is not a value: it is the opposite of one. The
+  // count is of literals still written by hand, which is the thing that has
+  // to come down.
   const valores = new Set(
     walk(src, '.css')
       .flatMap((path) => [...readFileSync(path, 'utf8').matchAll(/font-size:\s*([^;}]+)/g)])
-      .map(([, valor]) => valor.trim()),
+      .map(([, valor]) => valor.trim())
+      .filter((valor) => !valor.startsWith('var(--ds-text-')),
   );
 
   assert.ok(

@@ -49,7 +49,7 @@
   border: 1px solid rgb(244 236 224 / 20%);
   border-radius: 999px;
   color: rgb(244 236 224 / 78%);
-  font-size: 16px;
+  font-size: var(--ds-text-body);
 }
 
 .boas-corpo {
@@ -69,7 +69,7 @@
 .boas-saudacao {
   margin: 0;
   color: rgb(214 182 111 / 88%);
-  font-size: 17px;
+  font-size: var(--ds-text-lead);
 }
 
 .boas-corpo h1 {
@@ -85,7 +85,7 @@
   margin: 0;
   max-inline-size: 38ch;
   color: rgb(244 236 224 / 70%);
-  font-size: 17px;
+  font-size: var(--ds-text-lead);
   line-height: 1.45;
 }
 
@@ -102,7 +102,7 @@
   display: flex;
   align-items: baseline;
   gap: 7px;
-  font-size: 15px;
+  font-size: var(--ds-text-body);
 }
 
 .boas-elementos strong {
@@ -127,7 +127,7 @@
   justify-content: center;
   min-block-size: 54px;
   border-radius: 999px;
-  font-size: 17px;
+  font-size: var(--ds-text-lead);
 }
 
 .boas-primaria {
@@ -143,7 +143,7 @@
 
 .boas-nota {
   color: rgb(244 236 224 / 48%);
-  font-size: 14px;
+  font-size: var(--ds-text-small);
   line-height: 1.4;
 }
 
@@ -160,7 +160,7 @@
   align-items: center;
   min-block-size: 44px;
   color: rgb(244 236 224 / 62%);
-  font-size: 15px;
+  font-size: var(--ds-text-body);
 }
 
 .boas-entrar:focus-visible,

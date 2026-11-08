@@ -13,34 +13,34 @@
 }
 .fitness-exercise-detail-header { display: flex; flex-shrink: 0; align-items: center; gap: 12px; padding: 22px 68px 20px 18px; border-bottom: 1px solid rgb(var(--el-gold) / .16); background: radial-gradient(ellipse at 0 0, rgb(var(--el-gold) / .07), transparent 80%); }
 .fitness-exercise-symbol { display: grid; place-items: center; width: 48px; height: 52px; flex-shrink: 0; border: 1px solid rgb(var(--el-gold) / .25); border-radius: 15px; background: rgb(var(--el-gold) / .06); color: rgb(var(--el-gold)); }
-.fitness-exercise-title { font-family: Cinzel, Georgia, serif; font-size: 21px; font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; color: rgb(var(--el-text)); }
-.fitness-exercise-eyebrow { margin-bottom: 4px; font-size: 12px; color: rgb(var(--el-gold)); }
-.fitness-exercise-alternate { margin-top: 4px; font-size: 12px; color: rgb(var(--el-muted)); }
-.fitness-exercise-detail-body { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 20px 18px; font-size: 14px; line-height: 1.65; scrollbar-width: thin; }
+.fitness-exercise-title { font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-title); font-weight: 500; line-height: 1.4; overflow-wrap: anywhere; color: rgb(var(--el-text)); }
+.fitness-exercise-eyebrow { margin-bottom: 4px; font-size: var(--ds-text-micro); color: rgb(var(--el-gold)); }
+.fitness-exercise-alternate { margin-top: 4px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.fitness-exercise-detail-body { min-height: 0; flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 20px 18px; font-size: var(--ds-text-small); line-height: 1.65; scrollbar-width: thin; }
 .fitness-exercise-description, .fitness-exercise-focus { color: rgb(var(--el-muted)); overflow-wrap: anywhere; }
-.fitness-exercise-focus { margin-top: 8px; font-size: 12px; }
+.fitness-exercise-focus { margin-top: 8px; font-size: var(--ds-text-micro); }
 .fitness-exercise-tags { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0 20px; }
-.fitness-exercise-tags span { border: 1px solid rgb(var(--el-gold) / .2); background: rgb(var(--el-gold) / .055); color: rgb(var(--el-gold)); padding: 5px 10px; border-radius: 9px; font-size: 12px; }
-.fitness-exercise-detail h3 { display: flex; align-items: center; gap: 8px; font-family: Cinzel, Georgia, serif; font-size: 15px; font-weight: 500; margin-bottom: 12px; color: rgb(var(--el-text)); }
+.fitness-exercise-tags span { border: 1px solid rgb(var(--el-gold) / .2); background: rgb(var(--el-gold) / .055); color: rgb(var(--el-gold)); padding: 5px 10px; border-radius: 9px; font-size: var(--ds-text-micro); }
+.fitness-exercise-detail h3 { display: flex; align-items: center; gap: 8px; font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-body); font-weight: 500; margin-bottom: 12px; color: rgb(var(--el-text)); }
 .fitness-exercise-detail h3 > svg { color: rgb(var(--el-gold)); flex-shrink: 0; }
 .fitness-exercise-detail section { margin-bottom: 20px; }
 .fitness-exercise-instructions { padding: 16px 14px; border: 1px solid rgb(var(--el-muted) / .17); border-radius: 16px; background: rgb(var(--el-canvas) / .35); }
 .fitness-exercise-detail ol { display: flex; flex-direction: column; gap: 14px; }
 .fitness-exercise-detail ol li { display: flex; align-items: flex-start; gap: 10px; color: rgb(var(--el-muted)); }
-.fitness-exercise-detail ol li > span { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; border: 1px solid rgb(var(--el-gold) / .2); border-radius: 9px; color: rgb(var(--el-gold)); font-size: 12px; font-variant-numeric: tabular-nums; }
+.fitness-exercise-detail ol li > span { display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; border: 1px solid rgb(var(--el-gold) / .2); border-radius: 9px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); font-variant-numeric: tabular-nums; }
 .fitness-exercise-detail ol li > p { min-width: 0; }
 .fitness-exercise-detail details { border-top: 1px solid rgb(var(--el-muted) / .18); padding: 6px 0; }
 .fitness-exercise-detail summary { min-height: 48px; display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: rgb(var(--el-text)); list-style: none; }
 .fitness-exercise-detail summary::-webkit-details-marker { display: none; }
-.fitness-exercise-detail summary::after { content: '+'; margin-left: auto; color: rgb(var(--el-gold)); font-size: 20px; padding-left: 8px; }
+.fitness-exercise-detail summary::after { content: '+'; margin-left: auto; color: rgb(var(--el-gold)); font-size: var(--ds-text-lead); padding-left: 8px; }
 .fitness-exercise-detail details[open] > summary::after { content: '−'; }
-.fitness-exercise-detail details p, .fitness-exercise-detail ul { color: rgb(var(--el-muted)); font-size: 13px; margin: 6px 0 14px; }
+.fitness-exercise-detail details p, .fitness-exercise-detail ul { color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); margin: 6px 0 14px; }
 .fitness-exercise-detail ul { list-style: disc; padding-left: 20px; }
 .fitness-exercise-detail ul li + li { margin-top: 8px; }
 .fitness-exercise-detail .fitness-exercise-cautions > summary, .fitness-exercise-detail .fitness-exercise-cautions > summary::after { color: #f5c689; }
 .fitness-exercise-detail-footer { flex-shrink: 0; padding: 14px 18px max(16px, env(safe-area-inset-bottom)); border-top: 1px solid rgb(var(--el-gold) / .18); background: rgb(var(--el-canvas) / .6); }
 .fitness-exercise-add { width: 100%; min-height: 48px; }
 .fitness-exercise-detail :is(button, summary, a):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: -3px; border-radius: 10px; }
-@media (max-width: 380px) { .fitness-exercise-detail-header { gap: 10px; padding-left: 14px; } .fitness-exercise-title { font-size: 19px; } .fitness-exercise-detail-body { padding: 16px 14px; } }
+@media (max-width: 380px) { .fitness-exercise-detail-header { gap: 10px; padding-left: 14px; } .fitness-exercise-title { font-size: var(--ds-text-lead); } .fitness-exercise-detail-body { padding: 16px 14px; } }
 @media (prefers-reduced-motion: reduce) { .fitness-exercise-detail { animation: none; transition: none; } }
 @media (forced-colors: active) { .fitness-exercise-symbol, .fitness-exercise-tags span { border-color: CanvasText; } }

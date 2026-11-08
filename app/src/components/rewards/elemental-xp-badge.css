@@ -7,13 +7,13 @@
   vertical-align: middle;
 }
 .elemental-xp-badge-value, .elemental-xp-badge-element { display: inline-flex; align-items: center; gap: 7px; min-width: 0; }
-.elemental-xp-badge-value strong { overflow-wrap: anywhere; font-size: 17px; font-weight: 650; }
-.elemental-xp-badge-value strong > span { color: rgb(var(--el-gold)); font-size: 12px; font-weight: 600; }
-.elemental-xp-badge-element { padding-left: 9px; border-left: 1px solid rgb(var(--el-gold) / .22); color: rgb(var(--xp-element)); font-size: 12px; }
-.elemental-xp-badge--sm { gap: 5px; padding: 4px 6px; border-radius: 11px; font-size: 12px; }
+.elemental-xp-badge-value strong { overflow-wrap: anywhere; font-size: var(--ds-text-lead); font-weight: 650; }
+.elemental-xp-badge-value strong > span { color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); font-weight: 600; }
+.elemental-xp-badge-element { padding-left: 9px; border-left: 1px solid rgb(var(--el-gold) / .22); color: rgb(var(--xp-element)); font-size: var(--ds-text-micro); }
+.elemental-xp-badge--sm { gap: 5px; padding: 4px 6px; border-radius: 11px; font-size: var(--ds-text-micro); }
 .elemental-xp-badge--sm .elemental-xp-badge-value { gap: 4px; }
-.elemental-xp-badge--sm .elemental-xp-badge-value strong { font-size: 12px; }
-.elemental-xp-badge--sm .elemental-xp-badge-value strong > span { font-size: 10px; }
+.elemental-xp-badge--sm .elemental-xp-badge-value strong { font-size: var(--ds-text-micro); }
+.elemental-xp-badge--sm .elemental-xp-badge-value strong > span { font-size: var(--ds-text-micro); }
 .elemental-xp-badge--sm .elemental-xp-badge-element { padding-left: 5px; }
 .elemental-xp-badge svg { flex-shrink: 0; }
 @media (forced-colors: active) { .elemental-xp-badge { border-color: CanvasText; } }

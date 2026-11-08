@@ -68,3 +68,48 @@ número que veio de uma contagem no shell diferente da que o teste faz. O teste
 conta 69. Teto corrigido, violação reproduzida, guarda confirmado.
 
 Testes: `app/tests/design/fundacao.test.mjs`, 5 casos.
+
+## A migração dos tamanhos (08/11/2026)
+
+### A escala virou rem no meio do caminho
+
+Parei a migração para corrigir a escala antes de 67 call sites encostarem no
+lugar errado: ela estava em px, e px ignora quem aumenta a fonte do navegador.
+A raiz do app nunca é sobrescrita, então rem acompanha essa escolha e px não.
+O app misturava as duas unidades para a mesma finalidade, o que significava
+que metade da interface respeitava a preferência da pessoa e metade não.
+
+A escala agora é `0.75rem` a `2.25rem`, com o px equivalente em comentário, e
+o teste recusa qualquer degrau escrito em px. O corpo em `1rem` continua
+dando 16px na raiz padrão, que é o que impede o iOS de dar zoom num campo com
+foco.
+
+### A regra de encaixe
+
+Só encostei um literal no degrau quando a diferença era de **no máximo 2px**.
+Empate fica com o degrau menor, que nunca estoura layout. Isso é prudência
+deliberada: o resto precisa de alguém olhando, não de um script.
+
+**602 declarações em 32 arquivos.** Os literais caíram de 67 para 27.
+
+Ficaram de fora, por estarem genuinamente longe de qualquer degrau: 25px,
+40px, 44px, 1.55rem e 1.6rem. E os 22 `clamp()`, que são tipografia fluida —
+uma técnica legítima que precisa de degraus fluidos próprios, não de um valor
+fixo.
+
+### A métrica estava errada e foi corrigida
+
+Depois da primeira leva, a catraca não se mexeu: ela contava
+`var(--ds-text-body)` como mais um valor, então trocar `15px` por um token
+dava empate. Uma referência à escala é o oposto de um valor avulso. A
+contagem agora ignora `var(--ds-text-*)`, que é o que ela sempre quis medir.
+
+### Conferência
+
+Zero estouro horizontal em `/santuario`, `/ciclos`, `/grimorio`, `/pilares`,
+`/mapa`, `/treinos`, `/temporal` e `/forja`, a 390px — medido no navegador,
+não observado de relance. Ciclos, a tela mais densa, com 96 declarações, lê
+melhor do que antes: a mistura de 11, 12 e 13px virou 12 e 14, e a hierarquia
+ficou visível.
+
+Ainda assim: nada em WebKit nem em aparelho real.

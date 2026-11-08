@@ -1,7 +1,7 @@
 .app-update-notice { position: fixed; z-index: 80; top: calc(12px + env(safe-area-inset-top)); left: 12px; right: 12px; max-width: 460px; margin: auto; display: flex; align-items: flex-start; gap: 12px; padding: 16px; color: #f0eee8; background: #101923; border: 1px solid #d5b66f88; border-radius: 18px; box-shadow: 0 12px 40px #0009; }
 .app-update-notice > svg { color: #d5b66f; margin-top: 3px; flex-shrink: 0; }
-.app-update-notice strong { font-size: 15px; }
-.app-update-notice p { margin-block: 6px 12px; color: #b4c0ce; font-size: 13px; }
+.app-update-notice strong { font-size: var(--ds-text-body); }
+.app-update-notice p { margin-block: 6px 12px; color: #b4c0ce; font-size: var(--ds-text-micro); }
 .app-update-notice button { min-height: 44px; padding: 10px 14px; border-radius: 10px; background: #d5b66f; color: #10131a; font-weight: 600; }
 .app-update-notice .app-update-later { background: transparent; color: #b4c0ce; min-width: 44px; margin: -6px -8px 0 0; padding: 10px; }
 .app-update-notice button:focus-visible { outline: 2px solid #f0eee8; outline-offset: 3px; }

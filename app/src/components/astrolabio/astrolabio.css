@@ -8,40 +8,40 @@
 .astrolabe-heading > a:hover, .astrolabe-completions > a:hover, .astrolabe-element-detail a:hover { text-decoration: underline; }
 .astrolabe-workspace h2 { font: 500 1.2rem/1.5 var(--ds-font-heading); }
 .astrolabe-overview { margin-bottom: 28px; }
-.astrolabe-overview > p { color: rgb(var(--el-muted)); font-size: .85rem; margin-top: 4px; }
+.astrolabe-overview > p { color: rgb(var(--el-muted)); font-size: var(--ds-text-small); margin-top: 4px; }
 .astrolabe-overview dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid rgb(var(--el-muted) / .22); background: linear-gradient(120deg, rgb(var(--el-raised) / .6), rgb(var(--el-surface) / .6)); border-radius: 24px; overflow: hidden; margin-top: 16px; }
 .astrolabe-overview dl > div { padding: 22px 18px; min-width: 0; }
 .astrolabe-overview dl > div:nth-child(odd) { border-right: 1px solid rgb(var(--el-muted) / .15); }
 .astrolabe-overview dl > div:nth-child(-n+2) { border-bottom: 1px solid rgb(var(--el-muted) / .15); }
-.astrolabe-overview dt { display: flex; align-items: center; gap: 8px; color: rgb(var(--el-muted)); font-size: .85rem; }
+.astrolabe-overview dt { display: flex; align-items: center; gap: 8px; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); }
 .astrolabe-overview dt svg { color: rgb(var(--el-gold)); }
 .astrolabe-overview dd { margin: 12px 0 0; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.3; color: rgb(var(--el-text)); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .astrolabe-overview dd small { display: block; font: 400 .75rem/1.5 var(--ds-font-body); color: rgb(var(--el-muted)); margin-top: 6px; }
 .astrolabe-tabs [role="tablist"] { width: 100%; height: auto; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: rgb(var(--el-surface)); padding: 5px; border: 1px solid rgb(var(--el-muted) / .2); border-radius: 16px; }
-.astrolabe-tabs [role="tab"] { min-height: 48px; border-radius: 11px; font-size: .88rem; color: rgb(var(--el-muted)); }
+.astrolabe-tabs [role="tab"] { min-height: 48px; border-radius: 11px; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
 .astrolabe-tabs [role="tab"][data-state="active"] { color: rgb(var(--el-gold)); border-color: rgb(var(--el-gold) / .35); background: rgb(var(--el-gold) / .1); box-shadow: none; }
 .astrolabe-tabs [role="tabpanel"] { margin-top: 16px; min-width: 0; }
 .astrolabe-panel { padding: 24px; border: 1px solid rgb(var(--el-muted) / .22); border-radius: 24px; background: rgb(var(--el-surface) / .65); }
 .astrolabe-panel-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; }
-.astrolabe-panel-heading p { font-size: .85rem; color: rgb(var(--el-muted)); margin-top: 6px; }
+.astrolabe-panel-heading p { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); margin-top: 6px; }
 .astrolabe-period { display: flex; gap: 4px; padding: 4px; border: 1px solid rgb(var(--el-muted) / .2); border-radius: 13px; }
-.astrolabe-period button { min-height: 44px; padding: 8px 14px; border-radius: 9px; color: rgb(var(--el-muted)); font-size: .82rem; }
+.astrolabe-period button { min-height: 44px; padding: 8px 14px; border-radius: 9px; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); }
 .astrolabe-period button[aria-pressed="true"] { background: rgb(var(--el-gold) / .16); color: rgb(var(--el-gold)); box-shadow: inset 0 -2px rgb(var(--el-gold)); }
-.astrolabe-period-caption { font-size: .78rem; color: rgb(var(--el-muted)); margin-top: 18px; line-height: 1.6; }
+.astrolabe-period-caption { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); margin-top: 18px; line-height: 1.6; }
 .astrolabe-chart { height: 280px; margin-top: 16px; width: 100%; min-width: 0; }
-.astrolabe-note { font-size: .83rem; line-height: 1.7; color: rgb(var(--el-muted)); margin-top: 12px; max-width: 76ch; }
+.astrolabe-note { font-size: var(--ds-text-small); line-height: 1.7; color: rgb(var(--el-muted)); margin-top: 12px; max-width: 76ch; }
 .astrolabe-empty { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 40px 0; }
 .astrolabe-empty > svg { color: rgb(var(--el-gold)); }
 .astrolabe-empty h3 { font: 500 1.15rem/1.5 var(--ds-font-heading); }
-.astrolabe-empty p { max-width: 380px; font-size: .9rem; line-height: 1.7; color: rgb(var(--el-muted)); }
+.astrolabe-empty p { max-width: 380px; font-size: var(--ds-text-small); line-height: 1.7; color: rgb(var(--el-muted)); }
 .astrolabe-empty a { display: inline-flex; align-items: center; justify-content: center; }
 .astrolabe-records { border-top: 1px solid rgb(var(--el-muted) / .2); }
-.astrolabe-records summary { cursor: pointer; min-height: 52px; display: flex; justify-content: space-between; align-items: center; gap: 12px; color: rgb(var(--el-gold)); font-size: .88rem; list-style: none; }
+.astrolabe-records summary { cursor: pointer; min-height: 52px; display: flex; justify-content: space-between; align-items: center; gap: 12px; color: rgb(var(--el-gold)); font-size: var(--ds-text-small); list-style: none; }
 .astrolabe-records summary::-webkit-details-marker, .astrolabe-element summary::-webkit-details-marker { display: none; }
 .astrolabe-records summary svg, .astrolabe-element summary > svg { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
 .astrolabe-records[open] summary svg, .astrolabe-element[open] summary > svg { transform: rotate(180deg); }
 .astrolabe-table-scroll { max-height: 320px; overflow: auto; border-radius: 10px; border: 1px solid rgb(var(--el-muted) / .2); margin: 8px 0; }
-.astrolabe-table-scroll table { width: 100%; border-collapse: collapse; font-size: .85rem; font-variant-numeric: tabular-nums; }
+.astrolabe-table-scroll table { width: 100%; border-collapse: collapse; font-size: var(--ds-text-small); font-variant-numeric: tabular-nums; }
 .astrolabe-table-scroll caption { padding: 12px; color: rgb(var(--el-muted)); text-align: left; }
 .astrolabe-table-scroll th, .astrolabe-table-scroll td { padding: 12px; text-align: left; border-bottom: 1px solid rgb(var(--el-muted) / .15); }
 .astrolabe-table-scroll tbody th { font-weight: 400; }
@@ -49,7 +49,7 @@
 .astrolabe-table-scroll thead { background: rgb(var(--el-raised)); }
 .astrolabe-balance { display: grid; gap: 12px; align-items: center; margin-top: 16px; }
 .astrolabe-donut { height: 240px; min-width: 0; }
-.astrolabe-balance-empty { min-height: 200px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; color: rgb(var(--el-muted)); font-size: .9rem; line-height: 1.6; }
+.astrolabe-balance-empty { min-height: 200px; display: grid; place-content: center; justify-items: center; gap: 16px; text-align: center; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); line-height: 1.6; }
 .astrolabe-balance-empty svg { color: rgb(var(--el-gold)); }
 .astrolabe-legend { display: grid; gap: 4px; }
 .astrolabe-legend > div { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgb(var(--el-muted) / .15); }
@@ -63,16 +63,16 @@
 .astrolabe-element-art img { object-fit: contain; filter: drop-shadow(0 6px 14px rgb(0 0 0 / .3)); }
 .astrolabe-element summary > span:nth-child(2) { flex: 1; min-width: 0; }
 .astrolabe-element summary strong { display: block; font: 500 1.2rem/1.4 var(--ds-font-heading); }
-.astrolabe-element summary span > span { display: block; margin-top: 8px; font-size: .95rem; overflow-wrap: anywhere; }
-.astrolabe-element summary small { display: block; margin-top: 5px; color: rgb(var(--el-muted)); font-size: .75rem; }
+.astrolabe-element summary span > span { display: block; margin-top: 8px; font-size: var(--ds-text-body); overflow-wrap: anywhere; }
+.astrolabe-element summary small { display: block; margin-top: 5px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); }
 .astrolabe-element summary > svg { flex-shrink: 0; color: rgb(var(--el-muted)); }
 .astrolabe-element-detail { padding: 0 24px 16px; }
-.astrolabe-element-detail p { font-size: .88rem; color: rgb(var(--el-muted)); line-height: 1.7; }
+.astrolabe-element-detail p { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); line-height: 1.7; }
 .astrolabe-element-detail .astrolabe-element-domain { color: rgb(var(--el-text)); margin-bottom: 8px; }
 .astrolabe-meter { height: 6px; background: rgb(var(--el-canvas)); border-radius: 4px; overflow: hidden; margin: 20px 0 10px; }
 .astrolabe-meter > span { display: block; height: 100%; background: var(--reading-color); }
 .astrolabe-completions { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgb(var(--el-muted) / .25); }
-.astrolabe-completions p { font-size: .85rem; color: rgb(var(--el-muted)); line-height: 1.6; margin-top: 6px; max-width: 65ch; }
+.astrolabe-completions p { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); line-height: 1.6; margin-top: 6px; max-width: 65ch; }
 .astrolabe-completions ul { display: grid; gap: 16px; margin: 24px 0 12px; padding: 0; list-style: none; }
 .astrolabe-completions li { display: grid; grid-template-columns: 24px 1fr auto; align-items: center; gap: 8px 12px; }
 .astrolabe-completions strong { font-weight: 500; font-variant-numeric: tabular-nums; }

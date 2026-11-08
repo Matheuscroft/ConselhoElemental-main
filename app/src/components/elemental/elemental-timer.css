@@ -1,7 +1,7 @@
 /* A quiet instrument, with each material carrying its own motion. */
 .elemental-timer { --scene-ink: var(--timer-accent); }
-.elemental-timer .elemental-timer-status { margin: 0 0 5px; font-size: 12px; }
-.elemental-timer h3 { margin: 0 auto; max-width: 340px; font-size: 18px; line-height: 1.5; }
+.elemental-timer .elemental-timer-status { margin: 0 0 5px; font-size: var(--ds-text-micro); }
+.elemental-timer h3 { margin: 0 auto; max-width: 340px; font-size: var(--ds-text-lead); line-height: 1.5; }
 .elemental-timer .elemental-timer-dial { position: relative; display: block; isolation: isolate; width: min(100%,280px); aspect-ratio: 1; margin: 16px auto 2px; border: 1px solid #d5b66f1f; border-radius: 50%; background: radial-gradient(ellipse at 50% 30%,#17232b 0,#101722 57%,#0b111b 100%); box-shadow: none; overflow: hidden; }
 .elemental-timer .elemental-timer-time { position: absolute; top: 61%; left: 3%; width: 94%; max-width: none; font: 400 clamp(38px,11vw,48px)/1.2 Inter,sans-serif; font-variant-numeric: tabular-nums; letter-spacing: -.025em; color: #f0eee8; z-index: 2; }
 .elemental-timer .elemental-timer-caption { position: absolute; top: 84%; left: 0; width: 100%; margin: 0; font: 11px/1.4 Inter,sans-serif; color: #9daab8; z-index: 2; }
@@ -46,8 +46,8 @@
 @keyframes timer-touch-light { 0% { opacity: 0; transform: scale(.85); } 25% { opacity: .3; } 100% { opacity: 0; transform: scale(1.15); } }
 .active-timer-bar { position: fixed; z-index: 40; left: 12px; right: 12px; bottom: calc(4.5rem + env(safe-area-inset-bottom)); display: flex; align-items: center; gap: 10px; max-width: 560px; margin-inline: auto; padding: 8px 10px; border: 1px solid #d5b66f65; border-radius: 16px; background: #0b111bf5; box-shadow: 0 8px 28px #0008; color: #f0eee8; }
 .active-timer-bar > a:first-of-type { display: grid; flex: 1; min-width: 0; }
-.active-timer-bar strong { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.active-timer-bar span { font-size: 12px; color: #d5b66f; font-variant-numeric: tabular-nums; }
+.active-timer-bar strong { font-size: var(--ds-text-micro); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.active-timer-bar span { font-size: var(--ds-text-micro); color: #d5b66f; font-variant-numeric: tabular-nums; }
 .active-timer-bar :is(button,.active-timer-open) { flex-shrink: 0; display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #d5b66f35; border-radius: 12px; background: #d5b66f0d; }
 .active-timer-bar small { position: absolute; bottom: 100%; left: 0; right: 0; padding: 8px; background: #0b111b; }
 .active-timer-bar :is(a,button):focus-visible { outline: 2px solid #d5b66f; outline-offset: 3px; }

@@ -3,12 +3,12 @@
 .account-connection-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: .8rem 1rem; padding-block: .6rem; }
 .account-connection-seal { display: grid; place-items: center; align-self: start; width: 54px; height: 62px; border: 1px solid #d5b66f70; border-radius: 1.1rem 1.1rem 1.5rem 1.5rem; background: #d5b66f0d; color: #d5b66f; }
 .account-connection-seal[data-connected=true] { color: #a9dec9; border-color: #a9dec960; }
-.account-connection-card h2 { margin: 0; font-size: 1.2rem; line-height: 1.4; }
+.account-connection-card h2 { margin: 0; font-size: var(--ds-text-lead); line-height: 1.4; }
 .account-connection-card > :not(.account-connection-seal):not(:nth-child(2)) { grid-column: 1 / -1; }
 .account-connection-card p, .account-connection-card small { margin: 0; line-height: 1.6; color: #adb8c8; overflow-wrap: anywhere; }
-.account-connection-profile { font-size: .8rem; margin-bottom: .3rem !important; color: #d5b66f !important; }
+.account-connection-profile { font-size: var(--ds-text-micro); margin-bottom: .3rem !important; color: #d5b66f !important; }
 .account-connection-card .account-connection-email { color: #eceae3; }
-.account-connection-state { display: flex; align-items: flex-start; gap: .6rem; padding-block: .7rem; border-block: 1px solid #303b49; font-size: .9rem; color: #dfc17b; }
+.account-connection-state { display: flex; align-items: flex-start; gap: .6rem; padding-block: .7rem; border-block: 1px solid #303b49; font-size: var(--ds-text-small); color: #dfc17b; }
 .account-connection-state svg { flex: 0 0 auto; margin-top: .15rem; }
 .account-connection-state[data-saved=true] { color: #a9dec9; }
 .account-connection-primary, .account-connection-link { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 48px; padding: .7rem 1rem; border-radius: .8rem; font: inherit; text-align: center; touch-action: manipulation; }

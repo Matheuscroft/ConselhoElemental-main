@@ -4,7 +4,7 @@
   block-size: 100dvh;
   background: #070b12;
   color: rgb(244 236 224 / 70%);
-  font-size: 16px;
+  font-size: var(--ds-text-body);
 }
 
 .pesquisa {
@@ -38,7 +38,7 @@
 .pesquisa-eyebrow {
   margin: 0;
   color: rgb(214 182 111 / 85%);
-  font-size: 15px;
+  font-size: var(--ds-text-body);
 }
 
 .pesquisa-cartao h1 {
@@ -54,7 +54,7 @@
 .pesquisa-ajuda {
   margin: 0;
   color: rgb(244 236 224 / 68%);
-  font-size: 16px;
+  font-size: var(--ds-text-body);
   line-height: 1.45;
 }
 
@@ -71,7 +71,7 @@
 .pesquisa-campo legend {
   padding: 0;
   color: #f4ece0;
-  font-size: 17px;
+  font-size: var(--ds-text-lead);
 }
 
 .pesquisa-campo input {
@@ -82,7 +82,7 @@
   background: rgb(255 255 255 / 4%);
   color: #f4ece0;
   /* 16px keeps iOS from zooming the page when the field takes focus. */
-  font-size: 16px;
+  font-size: var(--ds-text-body);
 }
 
 .pesquisa-campo input::placeholder {
@@ -111,7 +111,7 @@
   border-radius: 14px;
   background: rgb(255 255 255 / 4%);
   color: rgb(244 236 224 / 78%);
-  font-size: 16px;
+  font-size: var(--ds-text-body);
   cursor: pointer;
   transition:
     border-color 220ms ease,
@@ -136,7 +136,7 @@
 .pesquisa-secundaria {
   min-block-size: 52px;
   border-radius: 999px;
-  font-size: 17px;
+  font-size: var(--ds-text-lead);
   cursor: pointer;
 }
 
@@ -184,7 +184,7 @@
   margin: 0;
   min-block-size: 22px;
   color: rgb(214 182 111 / 88%);
-  font-size: 15px;
+  font-size: var(--ds-text-body);
 }
 
 .pesquisa-campo input[type='date'] {

@@ -8,8 +8,8 @@
 .restore-workspace header > svg { flex-shrink: 0; }
 .restore-workspace header p { margin: 0 0 .4rem; font-family: 'Cinzel', Georgia, serif; }
 .restore-workspace h1 { font-size: clamp(1.6rem, 6vw, 2.3rem); line-height: 1.25; margin: 0; color: #eceae3; }
-.restore-workspace h2 { font-size: 1.2rem; margin-bottom: 1rem; }
-.restore-workspace h3 { font-size: 1rem; margin: 1rem 0 .5rem; }
+.restore-workspace h2 { font-size: var(--ds-text-lead); margin-bottom: 1rem; }
+.restore-workspace h3 { font-size: var(--ds-text-body); margin: 1rem 0 .5rem; }
 .restore-workspace p, .restore-workspace li { line-height: 1.65; }
 .restore-workspace > p, .restore-workspace section > p, .restore-workspace small { color: #adb8c8; }
 .restore-workspace section { margin-top: 1.5rem; padding: 1.25rem; background: #101721; border: 1px solid #303b49; border-radius: 1.2rem; }
@@ -44,13 +44,13 @@
 .restore-workspace-consent input[type="checkbox"] { width: 22px; height: 22px; margin-top: .2rem; flex-shrink: 0; accent-color: #d5b66f; }
 .account-workspace form { display: grid; gap: 1rem; }
 .account-workspace form label { display: grid; gap: .5rem; color: #adb8c8; }
-.account-workspace form input { min-height: 48px; width: 100%; box-sizing: border-box; padding: .75rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: 1rem; }
+.account-workspace form input { min-height: 48px; width: 100%; box-sizing: border-box; padding: .75rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: var(--ds-text-body); }
 .account-workspace form input:focus-visible { outline: 2px solid #d5b66f; outline-offset: 3px; }
 .account-workspace-release { padding: 1rem; border-inline-start: 2px solid #d5b66f; background: #101721; }
 
 /* Native file controls need their own row; never inherit checkbox dimensions. */
 .restore-workspace-file { display: grid; gap: .65rem; padding-block: .9rem; min-width: 0; color: #adb8c8; line-height: 1.6; }
-.restore-workspace-file input[type="file"] { display: block; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: .5rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: 1rem; }
+.restore-workspace-file input[type="file"] { display: block; box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; min-height: 48px; padding: .5rem; border: 1px solid #596779; border-radius: .8rem; background: #0c111a; color: #eceae3; font: inherit; font-size: var(--ds-text-body); }
 .restore-workspace-file input::file-selector-button { min-height: 36px; margin-inline-end: .65rem; padding: .35rem .65rem; border: 1px solid #596779; border-radius: .45rem; background: #202b3a; color: #eceae3; font: inherit; cursor: pointer; }
 .restore-workspace :is(button, a, summary, input, label) { scroll-margin-block: 1rem; }
 @media (max-width: 480px) {
@@ -61,8 +61,8 @@
 }
 
 .restore-workspace-steps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; list-style:none; padding:0; margin:16px 0 24px; }
-.restore-workspace-steps li { display:flex; flex-direction:column; gap:8px; align-items:flex-start; color:#aab4c4; font-size:12px; line-height:1.4; }
-.restore-workspace-steps li>span { display:grid; place-items:center; width:30px; height:30px; border:1px solid #667085; border-radius:50%; font-size:14px; }
+.restore-workspace-steps li { display:flex; flex-direction:column; gap:8px; align-items:flex-start; color:#aab4c4; font-size: var(--ds-text-micro); line-height:1.4; }
+.restore-workspace-steps li>span { display:grid; place-items:center; width:30px; height:30px; border:1px solid #667085; border-radius:50%; font-size: var(--ds-text-small); }
 .restore-workspace-steps li[aria-current=step] { color:#dfc17b; }
 .restore-workspace-steps li[aria-current=step]>span { background:#dfc17b; color:#10141d; border-color:#dfc17b; }
 .restore-workspace-help { border-inline-start:3px solid #dfc17b; padding:12px; }

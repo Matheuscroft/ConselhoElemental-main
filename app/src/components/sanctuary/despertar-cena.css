@@ -264,7 +264,7 @@
   align-items: center;
   min-block-size: 44px;
   border-radius: 999px;
-  font-size: 15px;
+  font-size: var(--ds-text-body);
   cursor: pointer;
   transition:
     color 240ms ease,
@@ -311,7 +311,7 @@
 .despertar-legenda {
   margin: 0;
   color: rgb(244 236 224 / 80%);
-  font-size: 16px;
+  font-size: var(--ds-text-body);
   line-height: 1.4;
   text-align: center;
   text-wrap: balance;
