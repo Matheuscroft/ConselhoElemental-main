@@ -1,8 +1,8 @@
-## M11 — núcleo de céu e cidade entregue (08/11/2026)
+## M11 — Despertar publicado (08/11/2026)
 
-Lote C em produção: cidade entre Olinda e Recife como preferência local e cálculo de Sol, Lua e estação por cidade, com 9 testes novos. 760 testes, lint, tipos e build passam. Sem push e sem publicação.
+Abertura do app refeita: Despertar no primeiro acesso, duas perguntas, entrada redesenhada; cidade e rever introdução em Preferências. Lotes C a G em produção. 798 testes, lint, tipos e build passam; main em 9506d94, CI verde, Vercel 0.1.145.
 
-[Plano e lotes](plans/MOBILE-M11-DESPERTAR-CINEMATICO.md). Conceito C aprovado por Fábio e fatiado em camadas no lote B, com placa-base sem Sol e sem Lua, sprite da Lua e Sol procedural. Coreografia dos 28s prototipada em Remotion, fora de `app/` para não quebrar o CI, com MP4 de referência. Vinte skills instaladas e documentadas, fora do Git. Geração nova no Higgsfield bloqueada no plano gratuito; personagem definitivo depende disso. Próximo: lote D, a cena 2.5D.
+[Plano e lotes](plans/MOBILE-M11-DESPERTAR-CINEMATICO.md). Falta aparelho real e a identidade final do personagem, que depende de geração paga. Próximo: lote H, verificação em aparelho físico.
 
 ## F6-N14 — reenvio de recuperação e Vite local — publicado; aceite pessoal pendente
 
