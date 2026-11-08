@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { PRODUCTION_APP_ORIGIN } from './account-recovery-entry';
 
 export type AccountAccessMode = 'login' | 'signup';
 export function validAccountEmail(email: string) {
@@ -12,7 +13,7 @@ export function validAccountAccess(mode: AccountAccessMode, email: string, passw
 export function accountConfirmationRedirect(origin: string) {
   const url = new URL(origin);
   if (url.username || url.password || url.origin !== origin || (url.protocol !== 'https:' && !(url.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname)))) throw new Error('A origem do acesso precisa de revisão.');
-  return new URL('/?progresso=conta', url.origin).href;
+  return `${PRODUCTION_APP_ORIGIN}/?progresso=conta`;
 }
 /** Known operational failures only; never show opaque server messages or credentials. */
 export function accountAccessFailure(error: unknown, fallback: string): string {

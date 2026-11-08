@@ -56,15 +56,15 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     const raw=window.localStorage.getItem(ACCOUNT_INTENT_KEY);
     if(raw!==null){const intent=await inspectAccountIntent(raw,window.location.origin);const changed=await accountBaselineDigest(window.localStorage)!==intent.baselineDigest;if(isCurrent(token)){setPending({raw,intent});setBaseline(null);setLocalChanged(changed);}}
     else if(isCurrent(token)){setPending(null);setBaseline(resolutionRaw!==null?null:readWorkspaceBaseline(window.localStorage,window.location.origin));}
-    if(isCurrent(token))setReady(true);
+    if(isCurrent(token)){setBlocked(false);setReady(true);}
   }
   useEffect(()=>{
     const ref=generation;alive.current=true;setReady(false);const token=++ref.current;
-    void refresh(token).catch(()=>{if(ref.current===token){setBlocked(true);setError('Há uma conferência pendente que precisa de revisão. Preserve os dados deste navegador.');}});
+    void refresh(token).catch(()=>{if(ref.current===token){setReady(true);setBlocked(true);setError('Há uma conferência pendente que precisa de revisão. Seus dados continuam preservados neste navegador; você ainda pode entrar na conta abaixo.');}});
     const changed=(event:StorageEvent)=>{
       if(event.key!==null&&![STORE_KEYS.core,STORE_KEYS.fitness,ACCOUNT_INTENT_KEY,ACCOUNT_BINDING_KEY,ACCOUNT_RESOLUTION_KEY,RESTORE_JOURNAL_KEY,LOCAL_PROGRESS_MODE_KEY].includes(event.key))return;
       const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setRememberAccess(false);setNewJourneyConsent(false);setVersions(null);setMessage('O progresso mudou. Refaça a conferência.');
-      void refresh(next).catch(()=>{if(ref.current===next){setBlocked(true);setError('Preserve os dados e recarregue a conferência.');}});
+      void refresh(next).catch(()=>{if(ref.current===next){setReady(true);setBlocked(true);setError('A conferência dos dados permanece pausada. Seus dados continuam preservados e o acesso à conta segue disponível.');}});
     };
     window.addEventListener('storage',changed);
     return()=>{ref.current++;alive.current=false;session.current?.dispose();session.current=null;identity.current=null;window.removeEventListener('storage',changed);};
@@ -96,7 +96,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     generation.current++;clearAccess();setAuthFeedback('Acesso encerrado nesta conferência. O progresso local e as tentativas continuam preservados.');
   }
   function authenticate(kind:AccountAccessMode){
-    if(!ACCOUNT_ACCESS_RELEASED||!ready||blocked||userId||!validAccountAccess(kind,email,password,confirmation))return;
+    if(!ACCOUNT_ACCESS_RELEASED||!ready||userId||!validAccountAccess(kind,email,password,confirmation))return;
     const input={mode:kind,email,password,confirmation,origin:window.location.origin};
     void run(async token=>{
       clearAccess();
@@ -112,7 +112,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     },true);
   }
   function resend() {
-    if(!ACCOUNT_ACCESS_RELEASED||!ready||blocked||userId||!validAccountEmail(email))return;
+    if(!ACCOUNT_ACCESS_RELEASED||!ready||userId||!validAccountEmail(email))return;
     const address=email;
     void run(async token=>{
       clearAccess();
@@ -228,21 +228,21 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       <h2 id="account-access">{userId ? 'Acesso confirmado' : 'Acesso à conta'}</h2>
       <div className="account-access-modes" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={accessMode==='login'} disabled={!ready||busy||!!userId} onClick={()=>changeAccess('login')}>Já tenho conta</button><button type="button" aria-pressed={accessMode==='signup'} disabled={!ready||busy||!!userId} onClick={()=>changeAccess('signup')}>Criar conta</button></div>
       <div hidden={!!userId}><form aria-busy={busy} onSubmit={event=>{event.preventDefault();authenticate(accessMode);}}>
-        <label htmlFor="entry-email">E-mail<input id="entry-email" enterKeyHint="next" type="email" name="account-email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" required value={email} aria-describedby={authError ? 'entry-auth-error' : undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||blocked||!!userId} onChange={event=>setEmail(event.target.value)}/></label>
-        <div><label htmlFor="entry-password">Senha</label><div className="entry-password"><input id="entry-password" enterKeyHint={accessMode==='signup'?'next':'go'} autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showPassword ? 'text' : 'password'} name="account-password" autoComplete={accessMode==='signup'?'new-password':'current-password'} required minLength={accessMode==='signup'?8:undefined} value={password} aria-describedby={accessMode==='signup'?'entry-password-help':undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||blocked||!!userId} onChange={event=>setPassword(event.target.value)}/><button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} disabled={busy} onClick={()=>setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
+        <label htmlFor="entry-email">E-mail<input id="entry-email" enterKeyHint="next" type="email" name="account-email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" required value={email} aria-describedby={authError ? 'entry-auth-error' : undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onChange={event=>setEmail(event.target.value)}/></label>
+        <div><label htmlFor="entry-password">Senha</label><div className="entry-password"><input id="entry-password" enterKeyHint={accessMode==='signup'?'next':'go'} autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showPassword ? 'text' : 'password'} name="account-password" autoComplete={accessMode==='signup'?'new-password':'current-password'} required minLength={accessMode==='signup'?8:undefined} value={password} aria-describedby={accessMode==='signup'?'entry-password-help':undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onChange={event=>setPassword(event.target.value)}/><button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} disabled={busy} onClick={()=>setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
         {accessMode==='signup'&&<>
-          <div><label htmlFor="entry-confirmation">Confirme a senha</label><div className="entry-password"><input id="entry-confirmation" enterKeyHint="done" autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showConfirmation ? 'text' : 'password'} name="account-password-confirmation" autoComplete="new-password" required minLength={8} value={confirmation} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||blocked} onChange={event=>setConfirmation(event.target.value)}/><button type="button" aria-label={showConfirmation ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'} disabled={busy} onClick={()=>setShowConfirmation(!showConfirmation)}>{showConfirmation ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
+          <div><label htmlFor="entry-confirmation">Confirme a senha</label><div className="entry-password"><input id="entry-confirmation" enterKeyHint="done" autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showConfirmation ? 'text' : 'password'} name="account-password-confirmation" autoComplete="new-password" required minLength={8} value={confirmation} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy} onChange={event=>setConfirmation(event.target.value)}/><button type="button" aria-label={showConfirmation ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'} disabled={busy} onClick={()=>setShowConfirmation(!showConfirmation)}>{showConfirmation ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
           <small id="entry-password-help">Use pelo menos 8 caracteres. Você pode colar uma senha do seu gerenciador.</small>{confirmation&&confirmation!==password&&<small role="status">As senhas ainda não coincidem.</small>}
         </>}
         {accessMode==='login'&&<a className="restore-workspace-back entry-recovery-link" href="/?progresso=recuperar">Esqueci minha senha</a>}
-        <button type="submit" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||blocked||!!userId||!validAccountAccess(accessMode,email,password,confirmation)}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{!ready ? 'Preparando acesso…' : busy ? 'Aguarde…' : accessMode==='signup'?'Criar minha conta':'Entrar'}</button>
+        <button type="submit" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountAccess(accessMode,email,password,confirmation)}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{!ready ? 'Preparando acesso…' : busy ? 'Aguarde…' : accessMode==='signup'?'Criar minha conta':'Entrar'}</button>
       </form>
-      <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||blocked||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
+      <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
       {userId&&<><p>Conta validada nesta conferência. Escolha abaixo a jornada que deseja conectar.</p><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Trocar acesso</button></>}
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}</p>}
     </section>
     {!userId && <><p className="entry-local-note"><ShieldCheck size={18} aria-hidden="true" /><span>{baseline?.snapshot ? 'O progresso deste aparelho continua protegido. Depois de entrar, você escolhe qual jornada conectar.' : 'Já usa o app em outro aparelho? Você pode trazer sua jornada antes de conectar a conta.'}</span></p><div className="entry-import"><FileUp size={18} aria-hidden="true" /><a href="/?progresso=restaurar">Importar meu progresso</a></div></>}
-    {ready && !!userId && !pending && !resolution && <section className="account-journey" aria-labelledby="account-journey-title">
+    {ready && !!userId && !blocked && !pending && !resolution && <section className="account-journey" aria-labelledby="account-journey-title">
       <div className="account-journey-heading"><UserRoundCheck size={28} aria-hidden="true" /><h2 id="account-journey-title">{userId ? 'Conecte sua jornada' : 'Seu progresso continua aqui'}</h2></div>
       <p>{userId ? 'Acesso validado. Salve o progresso deste aparelho na sua conta para continuar com sincronização.' : 'Entrar ou criar uma conta não apaga o que você já fez. Depois de entrar, você escolhe qual progresso usar.'}</p>
       {baseline?.snapshot && <dl className="account-journey-ledger" aria-label="Progresso neste aparelho"><div><dt>Rituais</dt><dd>{count(core?.tasks)}</dd></div><div><dt>Ciclos</dt><dd>{count(core?.habits)}</dd></div><div><dt>XP elemental</dt><dd><Sparkles size={16} aria-hidden="true" />{localXP}</dd></div></dl>}
