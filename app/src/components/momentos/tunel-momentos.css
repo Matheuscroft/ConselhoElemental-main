@@ -1,0 +1,152 @@
+/*
+ * A corridor of days flying toward a point of light.
+ *
+ * The flying is a native scroller: a tall empty column inside, with the
+ * corridor sticky over it. Momentum, keyboard and the browser's own sense of
+ * how far a flick carries all come free.
+ */
+.tunel-momentos {
+  /* One height for the window and the stage: the stage has to fill the
+     scroller so a percentage inside it means something, and it must not add
+     to the scroll length, which is what the negative margin undoes. */
+  --tunel-altura: min(62vh, 460px);
+  position: relative;
+  margin-top: 12px;
+  border: var(--ds-edge);
+  border-radius: 24px;
+  overflow: clip;
+  background: #05070c;
+  box-shadow: var(--ds-rim);
+}
+
+/* The light of the day you are on, behind everything. */
+.tunel-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.tunel-fundo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  filter: blur(26px) saturate(1.2);
+  scale: 1.18;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+
+/* The vanishing point: where the corridor ends and the light begins. */
+.tunel-fundo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 46%, rgb(214 182 111 / 22%) 0%, transparent 38%),
+    linear-gradient(to bottom, rgb(5 7 12 / 72%), rgb(5 7 12 / 92%));
+}
+
+.tunel-voo {
+  position: relative;
+  z-index: 1;
+  block-size: var(--tunel-altura);
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tunel-voo::-webkit-scrollbar { display: none; }
+
+.tunel-voo:focus-visible {
+  outline: 2px solid rgb(var(--el-gold));
+  outline-offset: -3px;
+}
+
+.tunel-palco {
+  position: sticky;
+  inset-block-start: 0;
+  block-size: var(--tunel-altura);
+  margin-block-end: calc(var(--tunel-altura) * -1);
+  perspective: 900px;
+  perspective-origin: 50% 46%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+
+.tunel-quadro {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 46%;
+  inline-size: 46%;
+  margin: 0;
+  aspect-ratio: 3 / 4;
+  overflow: clip;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 14px;
+  background: rgb(var(--el-surface) / 70%);
+  /* transform, opacity and filter are written per frame, never here. */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.tunel-quadro img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.tunel-sem-foto {
+  display: grid;
+  place-items: center;
+  block-size: 100%;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+}
+
+.tunel-nome {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 14px 18px 18px;
+  text-align: center;
+  background: linear-gradient(to top, #05070c, rgb(5 7 12 / 0%));
+}
+
+.tunel-nome strong {
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-body);
+  font-weight: 500;
+}
+
+.tunel-nome small {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+}
+
+/* Asked for less movement: the corridor flattens into a plain list of days,
+   which is the same information without flying anyone anywhere. */
+.tunel-momentos[data-parado='true'] .tunel-palco {
+  position: static;
+  block-size: auto;
+  perspective: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+}
+
+.tunel-momentos[data-parado='true'] .tunel-quadro {
+  position: relative;
+  inset: auto;
+  inline-size: 100%;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
+  visibility: visible !important;
+  will-change: auto;
+}
+
+.tunel-momentos[data-parado='true'] .tunel-trilha { display: none; }
+.tunel-momentos[data-parado='true'] .tunel-fundo img { filter: blur(18px); }

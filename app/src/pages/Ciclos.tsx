@@ -1,6 +1,7 @@
 import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/cycle-date-navigation';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
+import { TunelMomentos } from '@/components/momentos/TunelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
 import { beatUnless, stagger } from '@/lib/motion/motion';
 import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
@@ -125,7 +126,7 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 export const Ciclos: React.FC = () => {
   const reducedMotion = useMotionPreference();
   /** Two ways to look at the same days: the calendar, or the moments kept in them. */
-  const [vistaDosDias, setVistaDosDias] = useState<'calendario' | 'momentos'>('calendario');
+  const [vistaDosDias, setVistaDosDias] = useState<'calendario' | 'momentos' | 'tunel'>('calendario');
   const navigate = useNavigate();
   const location = useLocation();
   const [destinyParams, setDestinyParams] = useSearchParams();
@@ -1671,7 +1672,7 @@ export const Ciclos: React.FC = () => {
           onSelect={date => selectCalendarDate(date)} />
 
         <div className="cycle-vista" role="group" aria-label="Como ver os dias">
-          {([['calendario', 'Calendário'], ['momentos', 'Momentos']] as const).map(([chave, rotulo]) => (
+          {([['calendario', 'Calendário'], ['momentos', 'Momentos'], ['tunel', 'Túnel']] as const).map(([chave, rotulo]) => (
             <button
               key={chave}
               type="button"
@@ -1683,19 +1684,20 @@ export const Ciclos: React.FC = () => {
           ))}
         </div>
 
-        {vistaDosDias === 'momentos' ? (
-          <ReelMomentos
-            dias={dayShortcuts.map((offset) => {
-              const date = new Date(visibleDaysCenterDate);
-              date.setDate(date.getDate() + offset);
-              return {
-                dia: chaveDoDia(date),
-                titulo: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }),
-                detalhe: date.toLocaleDateString('pt-BR', { weekday: 'long' }),
-              };
-            })}
-          />
-        ) : null}
+        {vistaDosDias !== 'calendario' ? (() => {
+          const diasDoMomento = dayShortcuts.map((offset) => {
+            const date = new Date(visibleDaysCenterDate);
+            date.setDate(date.getDate() + offset);
+            return {
+              dia: chaveDoDia(date),
+              titulo: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }),
+              detalhe: date.toLocaleDateString('pt-BR', { weekday: 'long' }),
+            };
+          });
+          return vistaDosDias === 'momentos'
+            ? <ReelMomentos dias={diasDoMomento} />
+            : <TunelMomentos dias={diasDoMomento} />;
+        })() : null}
 
         {/* Day shortcuts + full date picker */}
         <div
@@ -1703,7 +1705,7 @@ export const Ciclos: React.FC = () => {
           className="cycle-calendar-rail"
           role="group"
           aria-label="Dias do calendário: selecione para expandir"
-          hidden={vistaDosDias === 'momentos'}
+          hidden={vistaDosDias !== 'calendario'}
         >
           {dayShortcuts.map((offset) => {
             const date = new Date(visibleDaysCenterDate);

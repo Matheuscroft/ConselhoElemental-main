@@ -57,3 +57,37 @@ a menos que o app esteja instalado na tela de início. Para um diário de fotos
 isso não é detalhe: vale avisar quem usa, e vale empurrar a instalação.
 
 Testes: 12 casos novos — 5 em `momento.test.mjs` e 7 em `reel.test.mjs`.
+
+## O túnel (08/11/2026)
+
+A terceira visão dos mesmos dias: um corredor que se atravessa voando, rumo a
+um ponto de fuga de luz.
+
+`tunel.ts` guarda a geometria, pura e testada. Os dias penduram em **paredes
+alternadas**, cada um virado para o meio — é isso que faz um corredor, e não
+uma coluna de fotos vindo na direção de quem olha. Um dia já ultrapassado é
+solto em vez de desenhado atrás da câmera, e nada é desenhado além do
+alcance, por mais longo que o corredor fique.
+
+O voo é mais um rolador nativo: uma coluna alta e vazia cuja `scrollTop` é a
+distância percorrida, com o corredor grudado por cima. Momentum, teclado,
+barra de rolagem e o senso que o navegador tem de quanto um impulso deve
+carregar — nada disso vale reescrever.
+
+**A foto do dia em foco fica atrás de tudo**, ampliada e desfocada, então
+atravessar os dias é também atravessar a luz deles. Era o que Fábio descreveu.
+
+Com movimento reduzido o corredor **achata numa grade** de dois por dois: a
+mesma informação, sem voar ninguém a lugar nenhum.
+
+### Dois defeitos encontrados na tela
+
+O palco grudado tinha altura zero, então o `46%` que posiciona cada quadro
+resolvia para zero e todos ficavam cortados no topo. Agora ele tem a altura da
+janela e uma margem negativa de mesmo tamanho, para não somar à rolagem.
+
+E o trilho de dias continuava aparecendo sob a outra visão: o atributo
+`hidden` estava no elemento, mas o `display: flex` da folha vence a regra do
+agente de usuário. Uma linha resolveu, e vale lembrar da armadilha.
+
+Testes: mais 7 casos em `tunel.test.mjs`.

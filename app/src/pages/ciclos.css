@@ -470,3 +470,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) { .cycle-vista button { transition: none; } }
+
+/* An explicit display beats the user agent's rule for [hidden], so the rail
+   stayed on screen while another view was showing. */
+.cycle-calendar-rail[hidden] { display: none; }
