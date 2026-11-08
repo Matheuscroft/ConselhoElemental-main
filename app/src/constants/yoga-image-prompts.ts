@@ -81,10 +81,6 @@ export const getYogaIllustrationFullSrc = (poseId: string): string => {
   return `/yoga/poses/full/${poseId}.webp`;
 };
 
-export const getYogaIllustrationFallbackSrc = (poseId: string): string => {
-  return `/yoga/poses/${poseId}.png`;
-};
-
 export const getYogaIllustrationPrompts = (poseId: string): { prompt: string; negativePrompt: string } | undefined => {
   return YOGA_ILLUSTRATION_PROMPTS_BY_ID[poseId];
 };
