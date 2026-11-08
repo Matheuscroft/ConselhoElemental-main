@@ -46,7 +46,7 @@ export async function createLegacyDatabase(){
  await db.exec(`grant select,insert,update,delete on all tables in schema public to authenticated;`);
  return db;
 }
-export async function createAccountDatabase({release=true,producerVersion=144}={}){
+export async function createAccountDatabase({release=true,producerVersion=145}={}){
  const db=await createLegacyDatabase();
  try{
   await db.exec(producerVersion>=145?migration145:producerVersion>=144?migration:producerVersion>=143?migration143:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140);
