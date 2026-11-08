@@ -175,3 +175,28 @@ test('the scene names the season and the moon phase of the chosen city once it i
 
   assert.ok(markup.includes('Inverno em Olinda'), 'southern winter in the chosen city');
 });
+
+// --- lua real (lote F) -----------------------------------------------------
+
+const renderAt = (iso, reduced = true) => {
+  const { DespertarCena } = load('src/components/sanctuary/DespertarCena.tsx');
+  return withWindow(reduced, () =>
+    renderToStaticMarkup(React.createElement(DespertarCena, { at: new Date(iso), cityId: 'recife' })),
+  );
+};
+
+test('at dusk with the Moon up the scene reaches for the real Moon, not the flat sprite', () => {
+  const markup = renderAt('2026-11-08T07:47:00Z');
+  assert.ok(markup.includes('despertar-lua-3d'), 'the 3D container should be mounted');
+});
+
+test('in full daylight the Moon stays a sprite, so three.js is never fetched', () => {
+  const markup = renderAt('2026-11-02T14:00:00Z');
+  assert.ok(!markup.includes('despertar-lua-3d'), 'no 3D container in daylight');
+  assert.ok(markup.includes('sprite-lua.webp'), 'the flat sprite is enough by day');
+});
+
+test('a new Moon lights the altar so the scene stays readable; a full one does not', () => {
+  assert.ok(renderAt('2026-11-08T07:47:00Z').includes('despertar-realce'), 'new moon needs the highlight');
+  assert.ok(!renderAt('2026-11-24T23:00:00Z').includes('despertar-realce'), 'a full moon lights itself');
+});

@@ -52,9 +52,53 @@
 }
 
 .despertar-sol,
-.despertar-lua {
+.despertar-lua,
+.despertar-lua-3d {
   position: absolute;
   pointer-events: none;
+}
+
+/*
+ * The real Moon, from the same component the lunar page uses. Its own styles
+ * live in a page stylesheet, so the few rules it needs are repeated here
+ * rather than pulling an unrelated page's CSS into the intro.
+ */
+.despertar-lua-3d .celestial-moon-render {
+  position: relative;
+  inline-size: 100%;
+  aspect-ratio: 1;
+}
+
+.despertar-lua-3d .celestial-moon-render canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  opacity: 0;
+}
+
+.despertar-lua-3d .celestial-moon-render[data-mode='3d'] canvas {
+  opacity: 1;
+}
+
+.despertar-lua-3d .celestial-moon-fallback {
+  position: absolute;
+  inset: 0;
+}
+
+.despertar-lua-3d .celestial-render-status {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* A new Moon gives the scene almost no light; this keeps the altar readable. */
+.despertar-realce {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .despertar-sol {
@@ -93,7 +137,51 @@
 
 .despertar-brilho[data-aceso='true'] {
   opacity: 1;
-  scale: 1;
+  /* A touch past 1 and back: the element answers rather than just appearing. */
+  animation: despertar-acender 1100ms cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
+}
+
+/* The breathing only runs while the scene is playing, so a paused or finished
+   scene is still, and a hidden tab animates nothing. */
+.despertar-brilho[data-respirando='true'] {
+  animation:
+    despertar-acender 1100ms cubic-bezier(0.22, 1.4, 0.36, 1) forwards,
+    despertar-respirar 5200ms ease-in-out 1100ms infinite;
+}
+
+@keyframes despertar-acender {
+  from { scale: 0.7; opacity: 0; }
+  to { scale: 1; opacity: 1; }
+}
+
+@keyframes despertar-respirar {
+  0%, 100% { scale: 1; opacity: 1; }
+  50% { scale: 1.07; opacity: 0.82; }
+}
+
+/* One quiet bloom when the fourth element answers. */
+.despertar-conclusao {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: despertar-florescer 1800ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes despertar-florescer {
+  0% { opacity: 0; }
+  28% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+
+.despertar-cena {
+  animation: despertar-entrada 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes despertar-entrada {
+  from { opacity: 0; filter: brightness(0.35); }
+  to { opacity: 1; filter: brightness(1); }
 }
 
 /* Invisible targets: the artwork already shows where each element is. */
@@ -144,6 +232,7 @@
 
 .despertar-legenda {
   position: absolute;
+  transition: opacity 420ms ease;
   inset-inline: 20px;
   inset-block-end: max(24px, env(safe-area-inset-bottom));
   z-index: 2;
@@ -155,8 +244,18 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .despertar-brilho {
+  .despertar-cena,
+  .despertar-conclusao,
+  .despertar-brilho,
+  .despertar-brilho[data-aceso='true'],
+  .despertar-brilho[data-respirando='true'] {
+    animation: none;
     transition: none;
+  }
+
+  .despertar-brilho[data-aceso='true'] {
+    opacity: 1;
+    scale: 1;
   }
 
   .despertar-palco {

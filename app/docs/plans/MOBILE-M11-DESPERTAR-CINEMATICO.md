@@ -270,3 +270,31 @@ A cena ganhou a rota pública `/despertar` em `App.tsx`, carregada por `lazy`. N
 Montada no app de verdade, a cena apareceu com **altura zero**. A causa: `block-size: 100%` só resolve quando o pai tem altura definida, e o elemento da rota não tem; de quebra, isso zerava as unidades de contêiner com que a placa é dimensionada. Passou a `100dvh`, com `100vh` antes como reserva. A página de teste estática não pegaria isso, porque lá o `body` tinha altura.
 
 Depois da correção, no app em 390x844: palco 580x869 e os quatro alvos dentro da tela, nas mesmas posições medidas no teste estático. Fábio exercitou a cena no navegador interno: os toques acenderam os elementos em ordem livre, a fase chegou a `done` e a legenda fechou com a estação e a fase lunar reais da cidade.
+
+## Lote F — Lua 3D noturna e luz de destaque (08/11/2026)
+
+A Lua da cena passou a ser a `MoonScene` que a página da Lua já usa: esfera com os mapas LRO da NASA, relevo em bump e iluminação derivada da fase real, com `MoonDisc` como reserva quando o WebGL cai ou a textura falha. Nenhum componente novo foi criado e nenhum renderizador concorrente entrou na cena.
+
+Carga sob demanda: `MoonScene` entra por `lazy`, então o three.js e os dois mapas (570 KB) só são buscados quando o céu tem Lua para mostrar. Em pleno dia a Lua continua sendo o sprite achatado e o three nunca é baixado. Enquanto o módulo chega, o `Suspense` mostra o próprio sprite, que é também o que um navegador sem WebGL mantém.
+
+A `MoonScene` renderiza uma vez por mudança de tempo, orientação ou tamanho, sem laço de animação, então ela não briga com o movimento reduzido nem com a pausa em segundo plano.
+
+Os estilos dela moram numa folha de página; em vez de puxar o CSS de uma página inteira para a introdução, as poucas regras necessárias foram repetidas com escopo em `.despertar-lua-3d`. O texto de status da `MoonScene` fica oculto aqui, porque na cena a Lua é decorativa.
+
+**Luz de destaque na lua nova.** Abaixo de 8% iluminada, a Lua não dá luz nenhuma à cena, e era justamente o caso pedido no plano. Entra então um realce quente e suave sobre o altar, em blend screen, só para o personagem e os controles continuarem legíveis.
+
+Verificado no app, em Recife às 4h47: a Lua estava a 9,7° de altitude com 1,1% iluminada. O contêiner 3D montou, o canvas chegou a `data-mode="3d"`, e o realce ativou. E a Lua, de fato, não se vê — um disco não iluminado contra o céu escuro é invisível, que é o certo.
+
+Testes: mais 3 casos em `awakening-scene.test.mjs`, com momentos fixos. Ao crepúsculo com a Lua acima do horizonte, o contêiner 3D é montado; em pleno dia, fica o sprite e o three não é buscado; na lua nova o realce aparece, na lua cheia não.
+
+Limite: a Lua segue a posição real, então às vezes fica na borda do enquadramento, metade cortada. É honesto, e não foi corrigido para não inventar posição.
+
+## Fluidez — parallax fora do React e movimento da cena (08/11/2026)
+
+O parallax guardava a inclinação em estado do React, então cada movimento do ponteiro provocava um render inteiro da cena, com canvas e tudo. Agora a inclinação vive numa variável do efeito e é escrita direto no `style.translate` das duas camadas, dentro de um laço de `requestAnimationFrame` que também interpola em direção ao alvo. Isso tira o render do caminho e faz a deriva ler como câmera, não como cursor. O laço para quando a aba fica oculta.
+
+Movimento acrescentado: a cena entra com um clarear de 1,4 s; cada elemento acende com uma curva que passa um pouco de 1 e volta, para parecer resposta e não aparição; depois do acender, o brilho respira em ciclo de 5,2 s, e a respiração só roda enquanto a fase é `running`, então cena pausada, concluída ou em aba oculta fica parada; a conclusão dá um florescer único sobre o altar; a legenda troca com transição.
+
+Movimento reduzido desliga tudo isso de uma vez, incluindo a entrada e o florescer, e deixa os brilhos acesos e estáticos.
+
+Peso conferido no build: `DespertarCena` sai como chunk próprio de 13,55 kB (5,48 kB comprimido) mais 3,86 kB de CSS, e o three.js continua em chunk separado, confirmando que a introdução não o carrega sem Lua para mostrar.

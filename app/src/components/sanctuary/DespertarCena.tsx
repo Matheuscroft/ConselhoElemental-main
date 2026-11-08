@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
 import { createAwakeningAudio, type AwakeningAudio } from '@/lib/sanctuary/awakening-audio';
 import {
   advance,
@@ -8,6 +9,7 @@ import {
   onVisibility,
 } from '@/lib/sanctuary/awakening-controller';
 import {
+  ALTAR,
   AWAKENING_ELEMENTS,
   type AwakeningElementId,
   PARALLAX,
@@ -28,7 +30,16 @@ import {
 import { sanctuaryAnchor, sanctuarySky } from '@/lib/temporal/sanctuary-sky';
 import './despertar-cena.css';
 
+/**
+ * The real Moon costs three.js and two NASA maps, so it is only fetched when
+ * the sky actually has a Moon to show. Until it arrives the flat sprite stands
+ * in, which is also what a browser without WebGL keeps.
+ */
+const MoonScene = lazy(() => import('@/components/temporal/celestial/MoonScene'));
+
 const BASE = '/sanctuary/despertar';
+/** Below this lit fraction the Moon gives the scene no usable light. */
+const NEW_MOON_LIMIT = 0.08;
 /** Matches the procedural Sun in the scene manifest: core plus two glows. */
 const SUN_DIAMETER = 0.2246 * 1.35 * 2;
 const MOON_WIDTH = 0.166;
@@ -98,14 +109,21 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
   const [basePhase, setPhase] = useState(reduced ? 'running' : INITIAL_PHASE);
   const [state, setState] = useState(() => (reduced ? completeAwakening() : createAwakening()));
   const [soundEnabled, setSoundEnabled] = useState(false);
-  const [tilt, setTilt] = useState<ScenePoint>({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const skyRef = useRef<HTMLDivElement | null>(null);
   const audioRef = useRef<AwakeningAudio | null>(null);
   const announced = useRef(false);
 
   const sky = useMemo(() => sanctuarySky(moment, city), [moment, city]);
+  const lunar = useMemo(() => lunarSnapshot(moment), [moment]);
   const sun = useMemo(() => sanctuaryAnchor(sky.sun), [sky]);
   const moon = useMemo(() => sanctuaryAnchor(sky.moon), [sky]);
+  // In full daylight a Moon is washed out, so the flat sprite is enough and
+  // three.js is never fetched. A new Moon still earns the 3D pass: the dark
+  // disc against the sky is the point.
+  const showRealMoon = moon.visible && sky.daylight !== 'day';
+  const newMoon = sky.moon.illuminated < NEW_MOON_LIMIT;
   const complete = isAwakeningComplete(state);
   // Finishing is derived, not stored: the lit elements already say it, and a
   // second copy in state would only be a render behind. Skipping still wins,
@@ -168,26 +186,65 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
     setSoundEnabled(!next);
   }, [state.lit]);
 
-  // Parallax follows the pointer, and the device when it offers orientation.
+  /**
+   * Parallax is written straight to the two layers, never through state: a
+   * pointer fires far more often than React should re-render a scene with a
+   * canvas in it. The drift also eases toward the target instead of snapping,
+   * which is what makes it read as a camera rather than a cursor.
+   */
   useEffect(() => {
     if (reduced) return;
 
+    const target = { x: 0, y: 0 };
+    const current = { x: 0, y: 0 };
+    let frame = 0;
+
     const onPointer = (event: PointerEvent) => {
-      setTilt({
-        x: (event.clientX / window.innerWidth) * 2 - 1,
-        y: (event.clientY / window.innerHeight) * 2 - 1,
-      });
+      target.x = (event.clientX / window.innerWidth) * 2 - 1;
+      target.y = (event.clientY / window.innerHeight) * 2 - 1;
     };
     const onOrientation = (event: DeviceOrientationEvent) => {
       if (event.gamma == null || event.beta == null) return;
-      setTilt({ x: event.gamma / 45, y: (event.beta - 45) / 45 });
+      target.x = event.gamma / 45;
+      target.y = (event.beta - 45) / 45;
     };
+
+    const step = () => {
+      current.x += (target.x - current.x) * 0.06;
+      current.y += (target.y - current.y) * 0.06;
+
+      const stage = parallaxOffset(current, PARALLAX.plate);
+      const sky = parallaxOffset(current, PARALLAX.sky - PARALLAX.plate);
+      if (stageRef.current) {
+        stageRef.current.style.translate = `calc(-50% + ${stage.x * 100}%) calc(-50% + ${(stage.y / PLATE_ASPECT) * 100}%)`;
+      }
+      if (skyRef.current) {
+        skyRef.current.style.translate = `${sky.x * 100}% ${(sky.y / PLATE_ASPECT) * 100}%`;
+      }
+      frame = requestAnimationFrame(step);
+    };
+
+    const stop = () => {
+      if (!frame) return;
+      cancelAnimationFrame(frame);
+      frame = 0;
+    };
+    const start = () => {
+      if (frame || document.hidden) return;
+      frame = requestAnimationFrame(step);
+    };
+    const onVisibilityChange = () => (document.hidden ? stop() : start());
 
     window.addEventListener('pointermove', onPointer, { passive: true });
     window.addEventListener('deviceorientation', onOrientation);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    start();
+
     return () => {
+      stop();
       window.removeEventListener('pointermove', onPointer);
       window.removeEventListener('deviceorientation', onOrientation);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [reduced]);
 
@@ -247,8 +304,6 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
     };
   }, [reduced, phase, state]);
 
-  const plateDrift = parallaxOffset(tilt, PARALLAX.plate);
-  const skyDrift = parallaxOffset(tilt, PARALLAX.sky - PARALLAX.plate);
   const remaining = AWAKENING_ELEMENTS.length - state.lit.length;
 
   return (
@@ -259,10 +314,8 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
 
       <div
         className="despertar-palco"
-        style={{
-          scale: reduced ? '1' : '1.03',
-          translate: `calc(-50% + ${plateDrift.x * 100}%) calc(-50% + ${(plateDrift.y / PLATE_ASPECT) * 100}%)`,
-        }}
+        ref={stageRef}
+        style={{ scale: reduced ? '1' : '1.03' }}
       >
         <picture>
           <source
@@ -284,29 +337,59 @@ export function DespertarCena({ at, cityId, onSkip, onComplete }: DespertarCenaP
           />
         </picture>
 
-        <div
-          className="despertar-ceu"
-          style={{ translate: `${skyDrift.x * 100}% ${(skyDrift.y / PLATE_ASPECT) * 100}%` }}
-        >
+        <div className="despertar-ceu" ref={skyRef}>
           {sun.visible ? (
             <div className="despertar-sol" style={{ ...squareOf(SUN_DIAMETER), ...centredAt(sun) }} />
           ) : null}
           {moon.visible ? (
-            <img
-              className="despertar-lua"
-              src={`${BASE}/sprite-lua.webp`}
-              alt=""
-              aria-hidden="true"
-              style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
-            />
+            showRealMoon ? (
+              <div
+                className="despertar-lua-3d"
+                aria-hidden="true"
+                style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
+              >
+                <Suspense fallback={<img className="despertar-lua" src={`${BASE}/sprite-lua.webp`} alt="" />}>
+                  <MoonScene moon={lunar} south={sky.hemisphere === 'south'} />
+                </Suspense>
+              </div>
+            ) : (
+              <img
+                className="despertar-lua"
+                src={`${BASE}/sprite-lua.webp`}
+                alt=""
+                aria-hidden="true"
+                style={{ ...squareOf(MOON_WIDTH), ...centredAt(moon) }}
+              />
+            )
           ) : null}
         </div>
+
+        {complete && !reduced ? (
+          <div
+            className="despertar-conclusao"
+            aria-hidden="true"
+            style={{
+              background: `radial-gradient(circle at ${ALTAR.x * 100}% ${ALTAR.y * 100}%, rgba(255,246,220,0.9) 0%, rgba(255,214,138,0.45) 16%, rgba(255,214,138,0) 44%)`,
+            }}
+          />
+        ) : null}
+
+        {newMoon ? (
+          <div
+            className="despertar-realce"
+            aria-hidden="true"
+            style={{
+              background: `radial-gradient(ellipse 34% 20% at ${ALTAR.x * 100}% ${ALTAR.y * 100}%, rgba(214,182,111,0.3) 0%, rgba(214,182,111,0) 70%)`,
+            }}
+          />
+        ) : null}
 
         {AWAKENING_ELEMENTS.map((element) => (
           <div
             key={`brilho-${element.id}`}
             className="despertar-brilho"
             data-aceso={isLit(state, element.id)}
+            data-respirando={isLit(state, element.id) && isPlaying(phase)}
             style={{
               ...squareOf(element.glowRadius * 2),
               ...centredAt(element),
