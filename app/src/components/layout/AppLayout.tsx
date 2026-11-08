@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { TopBar } from './TopBar';
 import { MobileBottomNav } from './MobileBottomNav';
 import { Sidebar } from './Sidebar';
+import { beatUnless } from '@/lib/motion/motion';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -38,7 +39,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
               initial={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: reducedMotion ? 0 : -6 }}
-              transition={{ duration: reducedMotion ? .12 : .24, ease: [.23, 1, .32, 1] }}
+              transition={beatUnless(reducedMotion, 'reveal')}
             >
               <TemporalReturnLink />
               {children}

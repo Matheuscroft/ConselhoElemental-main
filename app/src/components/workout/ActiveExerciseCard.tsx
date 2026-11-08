@@ -4,6 +4,8 @@ import { Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 import { CATEGORY_ICONS } from '@/lib/workout';
 import type {
   ExerciseLoadMode,
@@ -134,6 +136,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
   onCompleteSet,
   onSkipSet,
 }) => {
+  const reduced = useMotionPreference();
   const Icon = exercise ? CATEGORY_ICONS[exercise.category] ?? CATEGORY_ICONS.mixed : CATEGORY_ICONS.mixed;
   const totalSets = result.sets.length;
   const doneSets = result.sets.filter((set) => set.completed || set.skipped).length;
@@ -191,7 +194,7 @@ export const ActiveExerciseCard: React.FC<ActiveExerciseCardProps> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={beatUnless(reduced, 'reveal')}
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 space-y-2">

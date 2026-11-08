@@ -19,6 +19,8 @@
   --ds-duration-reveal: 240ms;
   --ds-duration-settle: 420ms;
   --ds-duration-conjure: 720ms;
+  /* One step of a staggered entrance: the gap between a list's items. */
+  --ds-stagger: 60ms;
   --ds-ease: cubic-bezier(.23,1,.32,1);
   --ds-ease-exit: cubic-bezier(.4,0,1,1);
   --ds-ease-conjure: cubic-bezier(.22,1.4,.36,1);

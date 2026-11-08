@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { MUSCLE_LABELS } from '@/lib/workout';
 import type { MuscleContribution } from '@/types/workout';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 
 interface MuscleDistributionBarsProps {
   distribution: MuscleContribution[];
@@ -14,6 +16,7 @@ export const MuscleDistributionBars: React.FC<MuscleDistributionBarsProps> = ({
   emptyMessage = 'Conclua séries para revelar a distribuição muscular desta sessão.',
   maxItems,
 }) => {
+  const reduced = useMotionPreference();
   const sorted = useMemo(() => {
     const ordered = [...distribution].sort((a, b) => b.percentage - a.percentage);
     return typeof maxItems === 'number' ? ordered.slice(0, maxItems) : ordered;
@@ -39,7 +42,7 @@ export const MuscleDistributionBars: React.FC<MuscleDistributionBarsProps> = ({
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(100, entry.percentage)}%` }}
-              transition={{ duration: 0.4, ease: 'easeOut' }}
+              transition={beatUnless(reduced, 'settle')}
               className={`h-full rounded-full ${
                 index === 0
                   ? 'bg-gradient-to-r from-mystic-gold/70 to-mystic-gold'

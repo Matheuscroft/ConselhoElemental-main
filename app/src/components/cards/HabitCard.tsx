@@ -5,6 +5,8 @@ import { Check, Flame, Calendar } from 'lucide-react';
 import type { Habit } from '@/types';
 import { ELEMENTS, getAreaById } from '@/constants';
 import { Badge } from '@/components/ui/badge';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 
 interface HabitCardProps {
   habit: Habit;
@@ -17,6 +19,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
   onComplete,
   onClick,
 }) => {
+  const reduced = useMotionPreference();
   const element = ELEMENTS[habit.elementId];
   const area = getAreaById(habit.areaId);
   
@@ -109,7 +112,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(habit.streak * 10, 100)}%` }}
-              transition={{ duration: 0.5 }}
+              transition={beatUnless(reduced, 'settle')}
               className="h-full rounded-full bg-gradient-to-r from-orange-500 to-red-500"
             />
           </div>

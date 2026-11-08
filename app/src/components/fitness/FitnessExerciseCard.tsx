@@ -8,6 +8,8 @@ import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { VideoExercisePlayer } from './VideoExercisePlayer';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 
 export type ExerciseCardState = 'pending' | 'active' | 'completed';
 
@@ -36,6 +38,7 @@ export const FitnessExerciseCard: React.FC<FitnessExerciseCardProps> = ({
   children,
   className,
 }) => {
+  const reduced = useMotionPreference();
   const isCompleted = state === 'completed';
   const isActive = state === 'active';
 
@@ -121,7 +124,7 @@ export const FitnessExerciseCard: React.FC<FitnessExerciseCardProps> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
+            transition={beatUnless(reduced, 'reveal')}
             className="overflow-hidden px-4 pb-4"
           >
             <VideoExercisePlayer

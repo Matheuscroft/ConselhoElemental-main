@@ -37,6 +37,15 @@ export const EASE = {
 
 export type EaseName = keyof typeof EASE;
 
+/**
+ * One step of a staggered entrance. Items in a list arrive a step apart, so
+ * the list reads as a sequence rather than as everything landing at once.
+ */
+export const STAGGER = 60;
+
+/** The delay, in seconds, for the nth item of a staggered group. */
+export const stagger = (step: number): number => (step * STAGGER) / 1000;
+
 /** Seconds, which is what framer-motion counts in. */
 export const seconds = (name: DurationName): number => DURATION[name] / 1000;
 
@@ -49,10 +58,14 @@ export interface BeatOptions {
  * One transition for framer-motion, by beat. Asking for a beat by name is the
  * whole point: a number typed inline is how the system comes apart.
  */
+/** A cubic bezier, as the four numbers every animation library expects. */
+export type EaseTuple = [number, number, number, number];
+
 export function beat(name: DurationName, options: BeatOptions = {}) {
+  const curve = EASE[options.ease ?? (name === 'conjure' ? 'conjure' : 'standard')];
   return {
     duration: seconds(name),
-    ease: [...EASE[options.ease ?? (name === 'conjure' ? 'conjure' : 'standard')]] as number[],
+    ease: [curve[0], curve[1], curve[2], curve[3]] as EaseTuple,
     ...(options.delay ? { delay: options.delay } : {}),
   };
 }

@@ -1,4 +1,6 @@
 import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/cycle-date-navigation';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless, stagger } from '@/lib/motion/motion';
 import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
 import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
 import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
@@ -119,6 +121,7 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 };
 
 export const Ciclos: React.FC = () => {
+  const reducedMotion = useMotionPreference();
   const navigate = useNavigate();
   const location = useLocation();
   const [destinyParams, setDestinyParams] = useSearchParams();
@@ -1715,7 +1718,7 @@ export const Ciclos: React.FC = () => {
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progressToday}%` }}
-              transition={{ duration: 0.5 }}
+              transition={beatUnless(reducedMotion, 'settle')}
               className="h-full rounded-full bg-gradient-to-r from-mystic-gold to-orange-400"
             />
           </div>
@@ -1734,7 +1737,7 @@ export const Ciclos: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18 }}
+          transition={{ delay: stagger(3) }}
           className="mb-6"
         >
           <div className="flex items-center justify-between mb-3">
@@ -1764,7 +1767,7 @@ export const Ciclos: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: stagger(3) }}
       >
         {displayedMixedCards.length > 0 && <CycleRoutineToolbar
           title={selectedDate.toDateString() === new Date().toDateString() ? 'Ciclos de hoje' : `Ciclos de ${selectedDate.toLocaleDateString('pt-BR')}`}
@@ -2303,7 +2306,7 @@ export const Ciclos: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
+        transition={{ delay: stagger(2) }}
         className="cycle-library"
       >
         <div className="flex items-center justify-between mb-3">

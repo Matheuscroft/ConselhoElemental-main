@@ -3,6 +3,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { ElementId } from '@/types';
 import { ELEMENTS } from '@/constants';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless, stagger } from '@/lib/motion/motion';
 
 interface ElementCardProps {
   elementId: ElementId;
@@ -19,6 +21,7 @@ export const ElementCard: React.FC<ElementCardProps> = ({
   onClick,
   size = 'md',
 }) => {
+  const reduced = useMotionPreference();
   const element = ELEMENTS[elementId];
   
   const sizeClasses = {
@@ -92,7 +95,7 @@ export const ElementCard: React.FC<ElementCardProps> = ({
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${percentage}%` }}
-              transition={{ duration: 1, delay: 0.2 }}
+              transition={beatUnless(reduced, 'settle', { delay: stagger(2) })}
               className="h-full rounded-full"
               style={{
                 background: `linear-gradient(90deg, ${element.color}, ${element.lightColor})`,

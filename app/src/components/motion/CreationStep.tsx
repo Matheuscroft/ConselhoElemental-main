@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { motion, useIsPresent } from 'framer-motion';
 import { useMotionPreference } from './useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 
 export function creationStepPose(direction: number, reduced: boolean, exiting = false) {
   return { opacity: 0, x: reduced ? 0 : (exiting ? -1 : 1) * direction * 12 };
@@ -17,7 +18,7 @@ export function CreationStep({ direction, children }: { direction: number; child
       visible: { opacity: 1, x: 0 },
       exit: (value: number) => creationStepPose(value, reduced, true),
     }}
-    transition={{ duration: reduced ? .12 : .16, ease: 'easeOut' }}>
+    transition={beatUnless(reduced, 'feedback')}>
     {children}
   </motion.div>;
 }

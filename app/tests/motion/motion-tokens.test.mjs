@@ -15,7 +15,7 @@ const load = (file) => {
   return module.exports;
 };
 
-const { DURATION, EASE, beat, beatUnless, seconds, STILL } = load('src/lib/motion/motion.ts');
+const { DURATION, EASE, beat, beatUnless, seconds, STILL, STAGGER, stagger } = load('src/lib/motion/motion.ts');
 const css = readFileSync(resolve(root, 'src/styles/elemental-motion.css'), 'utf8');
 const rootBlock = css.slice(css.indexOf(':root {'), css.indexOf('}', css.indexOf(':root {')));
 
@@ -75,4 +75,13 @@ test('reduced motion arrives at the end state instead of losing it', () => {
 test('seconds are what framer-motion counts in', () => {
   assert.equal(seconds('press'), 0.12);
   assert.equal(seconds('conjure'), 0.72);
+});
+
+test('the stagger step is one number, shared by the stylesheet', () => {
+  const css = readFileSync(resolve(root, 'src/styles/elemental-motion.css'), 'utf8');
+  const declared = /--ds-stagger:\s*(\d+)ms/.exec(css);
+  assert.ok(declared, 'the stylesheet must declare the step too');
+  assert.equal(Number(declared[1]), STAGGER);
+  assert.equal(stagger(0), 0);
+  assert.equal(stagger(3), 0.18, 'the third item waits three steps');
 });

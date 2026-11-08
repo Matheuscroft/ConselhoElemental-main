@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { beatUnless } from '@/lib/motion/motion';
 import { ForgeFeedback, type ForgeFeedbackValue } from '@/components/forge/ForgeFeedback';
 import { Check, Search, X } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
@@ -211,7 +212,7 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
               {dialog?.mode === 'delete' ? 'Excluir rascunho' : selectedType ? `Criar ${selectedType.name}` : 'Escolha o formato'}
             </Button></div>
         </>}
-        {dialog?.mode === 'classify' && <motion.div key={classification} className="forge-type-hint" initial={{ opacity: reduceMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={{ duration: reduceMotion ? 0 : .16 }}>{selectedType?.example ?? 'Você pode cancelar e decidir depois.'}</motion.div>}
+        {dialog?.mode === 'classify' && <motion.div key={classification} className="forge-type-hint" initial={{ opacity: reduceMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={beatUnless(reduceMotion, 'feedback')}>{selectedType?.example ?? 'Você pode cancelar e decidir depois.'}</motion.div>}
       </DialogContent>
     </Dialog>
   </div>;

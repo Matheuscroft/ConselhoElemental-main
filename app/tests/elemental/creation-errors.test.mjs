@@ -3,6 +3,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import ts from 'typescript';
+
+// The motion beats, transpiled once. motion.ts imports nothing, so it runs
+// standalone and the pages under test get the real transitions.
+const motionTokens = (() => {
+  const mod = { exports: {} };
+  const out = ts.transpileModule(readFileSync('src/lib/motion/motion.ts', 'utf8'), {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  new Function('require', 'module', 'exports', out)(() => ({}), mod, mod.exports);
+  return mod.exports;
+})();
 import { loadComponent } from './load-component.mjs';
 const recurrence = loadComponent('src/lib/temporal/recurrence.ts');
 const require = createRequire(import.meta.url);
@@ -51,6 +62,10 @@ function fixture(page, client = null) {
     if (id === 'react/jsx-runtime') return require(id);
     if (id === '@/stores/appStore') return { useAppStore };
     if (id === '@/lib/temporal/recurrence') return recurrence;
+    // The real beats: the catch-all proxy turns any unknown export into its
+    // own name, so `beatUnless` would arrive here as a string and the page
+    // would fail only at render. The module has no imports of its own.
+    if (id === '@/lib/motion/motion') return motionTokens;
     if (id === 'react-router-dom') return { useNavigate: () => () => {} };
     if (id.includes('InvocationChoices')) return { ...Object.fromEntries(['InvocationChoices', 'InvocationProgress', 'InvocationStepTitle'].map(n => [n, n])), INVOCATION_TYPES: types };
     if (id === '@/constants') return { AREAS: [{ id: 'area', elementId: 'terra' }], ELEMENTS: { terra: { name: 'Terra' } }, EFFORT_LABELS: Object.fromEntries([1, 2, 3, 4, 5].map(n => [n, { label: 'Esforco', description: 'Descricao' }])) };

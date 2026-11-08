@@ -83,3 +83,40 @@ sentidos, a ordem dos tempos, só o `conjure` ultrapassando, as transições por
 nome, movimento reduzido chegando ao estado final) e 5 em `contagem.test.mjs`
 (começo e fim exatos, monotonia, número inteiro, a maior parte da distância
 cedo, e contagem decrescente).
+
+## A migração (08/11/2026)
+
+Eram 19 transições em 13 arquivos, não 25 telas — e boa parte é cena ambiente,
+que o próprio sistema sempre disse que mantém o tempo próprio. Migrar não foi
+cosmético.
+
+**O que a migração revelou:** três barras de progresso, em três arquivos
+diferentes, com três durações diferentes para o mesmo gesto — `HabitCard` a
+0,5 s, `Ciclos` a 0,5 s e `ElementCard` a 1 s. **Nenhuma das três respeitava
+movimento reduzido.** Todas passaram a `settle`, e as três violações de
+acessibilidade caíram junto. Seis dos sete arquivos tocados não tinham nenhuma
+noção de movimento reduzido; agora têm.
+
+Também entrou `--ds-stagger: 60ms`, porque seis das transições eram atrasos de
+escalonamento escritos à mão — o `WorkoutSummary` já usava 0,06 / 0,12 / 0,18,
+que é exatamente o passo de 60 ms, e o `Ciclos` usava 0,15 / 0,18 / 0,2 sem
+critério.
+
+Ficaram com tempo próprio, por natureza e não por esquecimento: o pulso
+infinito do `ElementCard`, o giro infinito do `TaskCard`, o aviso de recompensa
+do `FitnessHabitWidget`, que é uma sequência de quadros-chave com tempos
+próprios e precisa ser lido antes de sumir, e a roda do `DestinyWheel`, que tem
+a curva de uma roleta.
+
+### O guarda
+
+`tests/motion/motion-uso.test.mjs` varre os `.tsx` e falha se alguém escrever
+uma duração à mão. A regra não é uma lista de exceções: só escapam um laço
+`repeat: Infinity`, que não é uma batida e sim um loop, e uma sequência com
+`times:`, que é coreografia. A roda do destino está nomeada à parte, com o
+motivo escrito.
+
+A primeira versão da regra aceitava qualquer `repeat:`, então `repeat: 0`
+passava. Foi apertada depois de o guarda ser testado contra uma violação de
+propósito e **não pegar** — um teste de guarda que não sabe falhar não vale
+nada.

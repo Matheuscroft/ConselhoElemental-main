@@ -39,6 +39,7 @@ import {
 import { MuscleDistributionBars, StarRating } from '@/components/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { CATEGORY_ICONS, formatWorkoutDateTime } from '@/lib/workout';
+import { stagger } from '@/lib/motion/motion';
 import {
   formatSessionDuration,
   formatTimeHHMM,
@@ -182,7 +183,7 @@ export const WorkoutSummary: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.06 }}
+        transition={{ delay: stagger(1) }}
         className="grid grid-cols-2 gap-x-6 gap-y-6 mb-8"
       >
         <SummaryMetric label="Tempo total" value={durationLabel} />
@@ -198,7 +199,7 @@ export const WorkoutSummary: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12 }}
+          transition={{ delay: stagger(2) }}
           className="mb-5"
         >
           <ChartWidget title="Tendência de volume">
@@ -216,7 +217,7 @@ export const WorkoutSummary: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.18 }}
+        transition={{ delay: stagger(3) }}
         className="mb-8"
       >
         <ChartWidget title="Exercícios">
