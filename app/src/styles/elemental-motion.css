@@ -1,13 +1,32 @@
-/* Shared response tokens. Ambient elemental scenes keep their own timing. */
+/*
+ * The app's four beats. Motion here answers something a person did and shows
+ * what changed by it; ambient elemental scenes keep their own timing.
+ *
+ * press     the finger is down and the control knows it
+ * feedback  the smallest visible answer: a state, a colour, a toggle
+ * reveal    something opens, expands or arrives on screen
+ * settle    something lands and finds its place
+ * conjure   energy arrives: XP, a level, a streak. The only beat that
+ *           overshoots, so earning something never reads like a value
+ *           quietly changing in a field.
+ *
+ * `motion.ts` carries the same numbers for framer-motion, and a test fails if
+ * the two ever disagree. One system, two consumers.
+ */
 :root {
+  --ds-duration-press: 120ms;
   --ds-duration-feedback: 160ms;
   --ds-duration-reveal: 240ms;
+  --ds-duration-settle: 420ms;
+  --ds-duration-conjure: 720ms;
   --ds-ease: cubic-bezier(.23,1,.32,1);
+  --ds-ease-exit: cubic-bezier(.4,0,1,1);
+  --ds-ease-conjure: cubic-bezier(.22,1.4,.36,1);
 }
 .elemental-press {
   transition: transform var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) ease, border-color var(--ds-duration-feedback) ease;
 }
-.elemental-press:active:not(:disabled) { transform: scale(.97); transition-duration: 100ms; }
+.elemental-press:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ds-duration-press); }
 [data-slot="dialog-content"][data-state], [data-slot="dialog-overlay"][data-state], [data-slot="sheet-content"][data-state], [data-slot="sheet-overlay"][data-state] {
   animation-duration: var(--ds-duration-reveal);
   animation-timing-function: var(--ds-ease);

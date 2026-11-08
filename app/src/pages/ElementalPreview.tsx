@@ -14,6 +14,8 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, SANCTUARY_HOME as HOME, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
 import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
+import { Contagem } from '@/components/motion/Contagem';
+import { Conjurar } from '@/components/motion/Conjurar';
 import './elemental-preview.css';
 
 /** The aura costs a shader and three.js, so it arrives after the page does. */
@@ -232,14 +234,24 @@ function SanctuaryComposition() {
       <div className="ep-identity">
         <p className="ep-kicker">Seu Santuário</p>
         <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
-        <p className="ep-mobile-xp">Nível {level.level} · {format(xp)} / {format(level.xpToNextLevel)} XP</p>
+        <p className="ep-mobile-xp">
+          Nível {level.level} · <Contagem valor={xp} formatar={format} /> / {format(level.xpToNextLevel)} XP
+        </p>
         <p className="ep-intro">Cada pequeno ritual faz parte da sua evolução.</p>
-        <div className="ep-level"><span className="ep-level-seal">{level.level}</span><div><strong>Nível {level.level}</strong><p>{format(xp)} de {format(level.xpToNextLevel)} XP</p></div></div>
+        <div className="ep-level">
+          {/* The one moment that is allowed to overshoot: a level is earned. */}
+          <Conjurar marca={level.level}><span className="ep-level-seal">{level.level}</span></Conjurar>
+          <div>
+            <strong>Nível {level.level}</strong>
+            <p><Contagem valor={xp} formatar={format} /> de {format(level.xpToNextLevel)} XP</p>
+          </div>
+        </div>
         <progress className="ep-xp" aria-label="Progresso para o próximo nível" value={Math.min(xp, level.xpToNextLevel)} max={Math.max(1, level.xpToNextLevel)} />
         <div className="ep-resources">
-          <div><Heart size={17} aria-hidden="true" /><span>HP</span><strong>{hp}<small>/100</small></strong></div>
-          <div><Zap size={17} aria-hidden="true" /><span>Stamina</span><strong>{format(resources.currentStamina)}<small>/100</small></strong></div>
-          <div><Sparkles size={17} aria-hidden="true" /><span>Prana</span><strong>{format(resources.currentPrana)}<small>/100</small></strong></div>
+          {/* Resources are state, not an achievement: they settle, they do not celebrate. */}
+          <div><Heart size={17} aria-hidden="true" /><span>HP</span><strong><Contagem valor={hp} beat="settle" /><small>/100</small></strong></div>
+          <div><Zap size={17} aria-hidden="true" /><span>Stamina</span><strong><Contagem valor={resources.currentStamina} beat="settle" formatar={format} /><small>/100</small></strong></div>
+          <div><Sparkles size={17} aria-hidden="true" /><span>Prana</span><strong><Contagem valor={resources.currentPrana} beat="settle" formatar={format} /><small>/100</small></strong></div>
         </div>
         <p className="ep-resource-note">Recursos do jogo</p>
       </div>

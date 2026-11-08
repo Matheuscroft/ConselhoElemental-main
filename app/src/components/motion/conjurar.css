@@ -1,0 +1,43 @@
+.conjurar {
+  position: relative;
+  display: inline-block;
+}
+
+.conjurar[data-ativo='true'] {
+  animation: conjurar-chegar var(--ds-duration-conjure) var(--ds-ease-conjure);
+}
+
+/* The light behind it, so the pop is energy arriving and not a box scaling. */
+.conjurar[data-ativo='true']::after {
+  content: '';
+  position: absolute;
+  inset: -40% -30%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--conjurar-cor, rgb(var(--el-gold))) 55%, transparent) 0%,
+    transparent 70%
+  );
+  animation: conjurar-luz var(--ds-duration-conjure) var(--ds-ease) forwards;
+  pointer-events: none;
+}
+
+@keyframes conjurar-chegar {
+  0% { scale: 1; }
+  38% { scale: 1.22; }
+  100% { scale: 1; }
+}
+
+@keyframes conjurar-luz {
+  0% { opacity: 0; scale: 0.6; }
+  30% { opacity: 1; scale: 1; }
+  100% { opacity: 0; scale: 1.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .conjurar[data-ativo='true'],
+  .conjurar[data-ativo='true']::after {
+    animation: none;
+  }
+}
