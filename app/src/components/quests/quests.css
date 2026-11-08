@@ -89,7 +89,7 @@
 .quest-resume>span { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-wrap: anywhere; font-size: var(--ds-text-small); }
 .quest-resume :is(button,a) { flex-shrink: 0; }
 .quest-notice,.quest-error { padding: 12px; background: #423024; border: 1px solid #c68c59; border-radius: 10px; color: #ffdfbe; font-size: var(--ds-text-small); line-height: 1.6; margin-bottom: 16px; }
-.quest-dialog { width: min(560px,calc(100vw - 24px)); max-width: 560px; max-height: calc(100dvh - 32px); overflow-y: auto; padding: 28px; background: #111925f5; border: 1px solid #d6b96d60; border-radius: 24px; backdrop-filter: blur(24px); scroll-padding: 20px; }
+.quest-dialog { width: min(560px,calc(100vw - 24px)); max-width: 560px; max-height: calc(100dvh - 32px); overflow-y: auto; padding: 28px; background: #111925f5; border: 1px solid #d6b96d60; border-radius: 24px; -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px); scroll-padding: 20px; }
 .quest-dialog [data-slot=dialog-header] { padding-right: 26px; text-align: left; }
 .quest-dialog [data-slot=dialog-title] { font-family: 'Cinzel',Georgia,serif; font-size: var(--ds-text-title); line-height: 1.4; color: #edece7; }
 .quest-dialog [data-slot=dialog-description] { color: var(--quest-muted); line-height: 1.65; }

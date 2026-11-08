@@ -57,8 +57,7 @@
 /* Glass card enhancements */
 .glass-card {
   background: rgba(26, 16, 37, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1rem;
 }
@@ -192,8 +191,7 @@ textarea:focus {
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .glass-card {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   }
 }
 

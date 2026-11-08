@@ -1,0 +1,169 @@
+/*
+ * The four elements as cards. The one in focus lights from within while its
+ * material comes alive; the other three go quiet rather than disappear.
+ *
+ * No blur here. These sit on the page rather than float over it, so they use
+ * the cheap material: a tint, an edge and a rim. Glass is reserved for what
+ * actually floats, and the budget is two blurred layers in all.
+ */
+.pillar-element-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.pillar-element-card {
+  --pillar-luz: color-mix(in srgb, var(--pillar-accent) 16%, transparent);
+  position: relative;
+  min-width: 0;
+  border: var(--ds-edge);
+  border-radius: 26px;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, var(--pillar-luz), transparent 70%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  overflow: clip;
+  transition:
+    border-color var(--ds-duration-reveal) var(--ds-ease),
+    box-shadow var(--ds-duration-reveal) var(--ds-ease),
+    opacity var(--ds-duration-reveal) var(--ds-ease),
+    scale var(--ds-duration-settle) var(--ds-ease);
+}
+
+/* Lit from within: the accent reaches the edge and the card leaves the page. */
+.pillar-element-card[data-open='true'] {
+  --pillar-luz: color-mix(in srgb, var(--pillar-accent) 34%, transparent);
+  grid-column: 1 / -1;
+  border-color: color-mix(in srgb, var(--pillar-accent) 60%, transparent);
+  box-shadow:
+    var(--ds-rim),
+    var(--ds-lift),
+    0 0 36px color-mix(in srgb, var(--pillar-accent) 22%, transparent);
+}
+
+/* Quiet, not gone: the others stay legible and keep their targets. */
+.pillar-element-card[data-quieto='true'] {
+  opacity: 0.62;
+  scale: 0.985;
+}
+
+.pillar-element-trigger {
+  inline-size: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 14px 16px;
+  text-align: center;
+}
+
+.pillar-element-card[data-open='true'] .pillar-element-trigger {
+  grid-template-columns: auto 1fr auto;
+  justify-items: start;
+  align-items: center;
+  gap: 14px;
+  text-align: start;
+}
+
+/* The material, and its reflection on a dark glossy floor. box-reflect is a
+   WebKit and Blink property; where it is missing the card simply has no
+   mirror, which costs nothing and loses nothing legible. */
+.element-card-material {
+  position: relative;
+  display: block;
+  inline-size: 76px;
+  block-size: 76px;
+  flex-shrink: 0;
+  -webkit-box-reflect: below 1px linear-gradient(transparent 58%, rgb(0 0 0 / 26%));
+}
+
+.element-card-material img,
+.element-card-material canvas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.element-card-material canvas {
+  mix-blend-mode: screen;
+}
+
+.pillar-element-card[data-open='true'] .element-card-material {
+  inline-size: 92px;
+  block-size: 92px;
+}
+
+.pillar-element-trigger > span {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.pillar-element-trigger strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--pillar-accent);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-lead);
+  font-weight: 500;
+}
+
+.pillar-element-trigger small {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  line-height: 1.4;
+}
+
+.pillar-element-trigger > svg {
+  color: var(--pillar-accent);
+  transition: rotate var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.pillar-element-card:not([data-open='true']) .pillar-element-trigger > svg {
+  justify-self: center;
+}
+
+.pillar-element-card[data-open='true'] .pillar-element-trigger > svg {
+  rotate: 180deg;
+}
+
+.pillar-element-content {
+  padding: 0 16px 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.pillar-element-content p {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small);
+  line-height: 1.6;
+}
+
+.pillar-element-content a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 16px;
+  justify-self: start;
+  border: var(--ds-edge-lit);
+  border-radius: 999px;
+  color: var(--pillar-accent);
+  font-size: var(--ds-text-small);
+}
+
+.pillar-element-trigger:focus-visible,
+.pillar-element-content a:focus-visible {
+  outline: 2px solid rgb(var(--el-gold));
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pillar-element-card,
+  .pillar-element-trigger > svg {
+    transition: none;
+  }
+}

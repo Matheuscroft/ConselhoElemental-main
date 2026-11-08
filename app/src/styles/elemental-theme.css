@@ -14,7 +14,7 @@
   --fg-secondary: rgb(var(--el-muted));
 }
 html, body { background: rgb(var(--el-canvas)); color: rgb(var(--el-text)); }
-.glass-card { background: rgb(var(--el-surface) / .94); border-color: rgb(var(--el-muted) / .16); box-shadow: 0 8px 26px #0003; backdrop-filter: blur(12px); }
+.glass-card { background: rgb(var(--el-surface) / .94); border-color: rgb(var(--el-muted) / .16); box-shadow: 0 8px 26px #0003; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .glass-card::before { opacity: .08; }
 .text-mystic-arcane, .text-fitness-primary { color: rgb(var(--el-gold)); }
 [data-state="active"][role="tab"] { background: rgb(var(--el-raised)) !important; color: rgb(var(--el-gold)); box-shadow: inset 0 -2px rgb(var(--el-gold)); }
