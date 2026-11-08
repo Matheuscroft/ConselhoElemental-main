@@ -1,0 +1,37 @@
+[
+  {
+    "path": "/app-version.json",
+    "http": 200,
+    "cache": "no-store, no-cache, must-revalidate",
+    "metadata": {
+      "format": "conselho-release",
+      "version": "0.1.144"
+    }
+  },
+  {
+    "path": "/auth",
+    "http": 200,
+    "cache": "no-store, no-cache, must-revalidate",
+    "entry": "/assets/index-kEXqMKFu.js"
+  },
+  {
+    "path": "/boas-vindas",
+    "http": 200,
+    "cache": "no-store, no-cache, must-revalidate"
+  },
+  {
+    "path": "/auth?modo=cadastro",
+    "http": 200,
+    "cache": "no-store, no-cache, must-revalidate"
+  },
+  {
+    "path": "/?progresso=recuperar",
+    "http": 200,
+    "cache": "no-store, no-cache, must-revalidate"
+  },
+  {
+    "path": "/manifest.json",
+    "http": 200,
+    "cache": "public, max-age=0, must-revalidate"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "version": "0.1.144",
+  "sourceCommit": "1decdaf369359e7c2742e1cdd78d0ea4e78874bd",
+  "ciRun": 42436358696,
+  "ciStatus": "success",
+  "ciTests": 751,
+  "ciFailures": 0,
+  "vercelStatus": "success",
+  "deployment": "9PcQ2QnVASCnnaubX8vD2KLrpAyv",
+  "deploymentUrl": "https://vercel.com/matheuscrofts-projects/conselho-elemental-main/9PcQ2QnVASCnnaubX8vD2KLrpAyv",
+  "origin": "https://conselho-elemental-main.vercel.app",
+  "iabObserved": "/auth: Minha conta — Conselho Elemental; e-mail/senha vazios, apresentação nova, sem submit",
+  "realEmailTested": false,
+  "physicalPhoneTested": false,
+  "vercelRuntimeLogsAvailable": false
+}

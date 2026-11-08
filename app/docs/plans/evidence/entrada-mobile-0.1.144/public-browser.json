@@ -1,0 +1,542 @@
+{
+  "version": "0.1.144",
+  "origin": "https://conselho-elemental-main.vercel.app",
+  "requests": [
+    {
+      "path": "/auth/v1/token",
+      "method": "POST",
+      "simulated": true
+    },
+    {
+      "path": "/auth/v1/signup",
+      "method": "POST",
+      "simulated": true
+    },
+    {
+      "path": "/auth/v1/recover",
+      "method": "POST",
+      "simulated": true
+    }
+  ],
+  "metrics": [
+    {
+      "name": "login",
+      "width": 360,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 132.796875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 132.8125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Esqueci minha senha",
+          "w": 286,
+          "h": 44
+        },
+        {
+          "label": "Entrar",
+          "w": 286,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "signup",
+      "width": 360,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 132.796875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 132.8125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Mostrar confirmação de senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 286,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "recovery",
+      "width": 360,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao acesso",
+          "w": 134.046875,
+          "h": 44
+        },
+        {
+          "label": "Enviar link de recuperação",
+          "w": 286,
+          "h": 52
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 360,
+      "overflow": false,
+      "inputFontSizes": [],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Entrar",
+          "w": 63.671875,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 328,
+          "h": 52.5
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 328,
+          "h": 52.5
+        },
+        {
+          "label": "Experimentar sem conta",
+          "w": 328,
+          "h": 48
+        },
+        {
+          "label": "Já uso o app. Quero trazer meu progresso.",
+          "w": 263.59375,
+          "h": 44
+        },
+        {
+          "label": "Conhecer os quatro elementos",
+          "w": 174.625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "login",
+      "width": 390,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 147.796875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 147.8125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Esqueci minha senha",
+          "w": 316,
+          "h": 44
+        },
+        {
+          "label": "Entrar",
+          "w": 316,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "signup",
+      "width": 390,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 147.796875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 147.8125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Mostrar confirmação de senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 316,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "recovery",
+      "width": 390,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao acesso",
+          "w": 134.046875,
+          "h": 44
+        },
+        {
+          "label": "Enviar link de recuperação",
+          "w": 316,
+          "h": 52
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 390,
+      "overflow": false,
+      "inputFontSizes": [],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Entrar",
+          "w": 63.671875,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 358,
+          "h": 52.5
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 358,
+          "h": 52.5
+        },
+        {
+          "label": "Experimentar sem conta",
+          "w": 358,
+          "h": 48
+        },
+        {
+          "label": "Já uso o app. Quero trazer meu progresso.",
+          "w": 263.59375,
+          "h": 44
+        },
+        {
+          "label": "Conhecer os quatro elementos",
+          "w": 174.625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "login",
+      "width": 768,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 137.6875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 137.703125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Esqueci minha senha",
+          "w": 295.78125,
+          "h": 44
+        },
+        {
+          "label": "Entrar",
+          "w": 295.78125,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "signup",
+      "width": 768,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px",
+        "16px",
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao app",
+          "w": 111.859375,
+          "h": 44
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 137.6875,
+          "h": 44
+        },
+        {
+          "label": "Criar conta",
+          "w": 137.703125,
+          "h": 44
+        },
+        {
+          "label": "Mostrar senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Mostrar confirmação de senha",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 295.78125,
+          "h": 52
+        },
+        {
+          "label": "Importar meu progresso",
+          "w": 148.390625,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "recovery",
+      "width": 768,
+      "overflow": false,
+      "inputFontSizes": [
+        "16px"
+      ],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Voltar ao acesso",
+          "w": 134.046875,
+          "h": 44
+        },
+        {
+          "label": "Enviar link de recuperação",
+          "w": 295.78125,
+          "h": 52
+        }
+      ]
+    },
+    {
+      "name": "welcome",
+      "width": 768,
+      "overflow": false,
+      "inputFontSizes": [],
+      "controls": [
+        {
+          "label": "ConselhoElemental",
+          "w": 155.8125,
+          "h": 48
+        },
+        {
+          "label": "Entrar",
+          "w": 63.671875,
+          "h": 44
+        },
+        {
+          "label": "Criar minha conta",
+          "w": 328.46875,
+          "h": 52.5
+        },
+        {
+          "label": "Já tenho conta",
+          "w": 328.46875,
+          "h": 52.5
+        },
+        {
+          "label": "Experimentar sem conta",
+          "w": 328.46875,
+          "h": 48
+        },
+        {
+          "label": "Já uso o app. Quero trazer meu progresso.",
+          "w": 263.59375,
+          "h": 44
+        },
+        {
+          "label": "Conhecer os quatro elementos",
+          "w": 174.625,
+          "h": 44
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "existingProgressPreserved": true,
+  "onboardingUsesExistingCommands": true,
+  "firstWelcomeWritesNoProgress": true,
+  "loginErrorAndSignupAndRecovery": "intercepted SDK responses; no hosted Auth or mail",
+  "physicalPhone": false
+}
