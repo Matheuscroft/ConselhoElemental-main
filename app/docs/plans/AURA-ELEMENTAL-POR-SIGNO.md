@@ -74,3 +74,19 @@ Testes: `app/tests/sanctuary/zodiac.test.mjs`, 8 casos — a estrutura de
 elementos e modalidades, Libra, os trios não colapsando numa cor só, o signo
 pela posição do Sol, o equinócio na entrada de Libra, a curva de crescimento,
 a leitura da data ao meio-dia local e o índice fora da roda.
+
+## A data também nas preferências (08/11/2026)
+
+Só a pesquisa de primeiro acesso perguntava a data, e quem já tinha progresso
+nunca vê aquela tela: a aura dessas pessoas ficaria dourada para sempre. Em
+"Preferências e integrações", ao lado da cidade do santuário, entrou "Sua
+aura", com a data de nascimento e o signo nomeado na cor que ele produz.
+
+A troca vale na hora, sem recarregar: a preferência dispara o mesmo evento que
+a cidade já usava, e a aura ouve. Conferido indo de Libra para Áries na tela,
+de `#b8f0e4` para `#ff604d`.
+
+Nota de cor: o Fogo lê bem mais forte que o Ar contra o fundo escuro do
+Santuário, porque o ciano do Ar é claro e de baixo contraste. Não é o shader —
+é a base de cor do elemento. Se o Ar precisar de mais presença, o caminho é
+saturar a base, não mexer no campo.

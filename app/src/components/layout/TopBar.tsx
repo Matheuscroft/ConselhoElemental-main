@@ -11,6 +11,11 @@ import { useAuthStore } from '@/stores/authStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { useWeekStartsOnPreference } from '@/lib/temporal';
 import { SANCTUARY_CITIES, useSanctuaryCityPreference } from '@/lib/temporal/sanctuary-city';
+import { useZodiacPreference } from '@/lib/sanctuary/zodiac';
+
+const ELEMENTO_DA_AURA: Record<string, string> = {
+  fogo: 'Fogo', terra: 'Terra', ar: 'Ar', agua: 'Água',
+};
 import {
   getGoogleCalendarConnectUrl,
   getGoogleCalendarConnection,
@@ -65,6 +70,9 @@ export const TopBar: React.FC<TopBarProps> = ({
   const [googleStatusMessage, setGoogleStatusMessage] = React.useState<string>('');
   const { weekStartsOn, setWeekStartsOn } = useWeekStartsOnPreference();
   const { cityId: sanctuaryCityId, setCity: setSanctuaryCity } = useSanctuaryCityPreference();
+  // Only the first open asks for this, and whoever already had progress never
+  // saw that survey: without it here their aura would stay gold for good.
+  const { profile: signo, birthDate: nascimento, setBirthDate: setNascimento } = useZodiacPreference();
   const googleConnectUrl = React.useMemo(() => getGoogleCalendarConnectUrl(), []);
   const googleSyncUrl = React.useMemo(() => getGoogleCalendarSyncUrl(), []);
 
@@ -340,6 +348,33 @@ export const TopBar: React.FC<TopBarProps> = ({
             <a href="/despertar" className="inline-flex min-h-[44px] items-center text-xs text-white/70 underline underline-offset-4">
               Rever a introdução
             </a>
+          </div>
+
+          <div className="space-y-3 rounded-lg border border-white/15 p-3">
+            <p className="text-sm font-medium text-white">Sua aura</p>
+            <p className="text-xs text-white/70">
+              O seu signo dá a cor da aura em volta do personagem, e ela cresce com o seu
+              nível. A data fica neste aparelho e não serve a mais nada.
+            </p>
+            <label className="block text-xs text-white/70">
+              <span className="mb-1 block">Data de nascimento</span>
+              <input
+                type="date"
+                value={nascimento ?? ''}
+                max={new Date().toISOString().slice(0, 10)}
+                onChange={(event) => setNascimento(event.target.value || null)}
+                className="min-h-[44px] w-full rounded-lg border border-white/20 bg-white/5 px-3 text-sm text-white"
+              />
+            </label>
+            <p className="text-xs" aria-live="polite">
+              {signo ? (
+                <span style={{ color: signo.colour }}>
+                  {signo.icon} {signo.name} · {ELEMENTO_DA_AURA[signo.element]}
+                </span>
+              ) : (
+                <span className="text-white/60">Sem data, a aura fica dourada.</span>
+              )}
+            </p>
           </div>
 
           <div className="space-y-3 rounded-lg border border-white/15 p-3">
