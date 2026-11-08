@@ -1,0 +1,56 @@
+
+> my-app@0.1.143 build
+> tsc -b && vite build
+
+vite v7.3.0 building client environment for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 11 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 4793 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/app-version.json                                 0.05 kB │ gzip:   0.07 kB
+dist/index.html                                       1.19 kB │ gzip:   0.57 kB
+dist/assets/mount-account-workspace-Br4vCiv5.css      0.84 kB │ gzip:   0.40 kB
+dist/assets/restore-workspace-jXG4IYwX.css            5.58 kB │ gzip:   1.58 kB
+dist/assets/ElementalPreview-lHDx36ZR.css            21.57 kB │ gzip:   4.95 kB
+dist/assets/index-DQU6yEw_.css                      129.60 kB │ gzip:  21.14 kB
+dist/assets/bootstrap-app-C1hZKmnN.css              242.71 kB │ gzip:  41.30 kB
+dist/assets/download-M7Oj80vl.js                      0.24 kB │ gzip:   0.20 kB
+dist/assets/file-check-corner-gHvkVOId.js             0.32 kB │ gzip:   0.24 kB
+dist/assets/ActivityReminderControl-DCcXyvjQ.js       0.45 kB │ gzip:   0.27 kB
+dist/assets/attach-account-sync-C9OQ5_YT.js           1.26 kB │ gzip:   0.63 kB
+dist/assets/account-session-C65GsfEH.js               1.30 kB │ gzip:   0.74 kB
+dist/assets/temporal-navigation-BEkhq81V.js           1.45 kB │ gzip:   0.72 kB
+dist/assets/exclusive-restore-DxxYkTM4.js             2.58 kB │ gzip:   1.09 kB
+dist/assets/MoonScene-CWrcY-Z0.js                     2.65 kB │ gzip:   1.47 kB
+dist/assets/restore-confirmation-BrJ0i-yF.js          2.75 kB │ gzip:   1.19 kB
+dist/assets/account-live-access-BvjBZINb.js           2.90 kB │ gzip:   1.45 kB
+dist/assets/new-account-progress-BWGRoyFn.js          3.05 kB │ gzip:   1.45 kB
+dist/assets/mount-account-resume-D_8Nu0wo.js          3.27 kB │ gzip:   1.55 kB
+dist/assets/restore-comparison-EdOX9jIO.js            4.09 kB │ gzip:   1.89 kB
+dist/assets/account-recovery-CrQwbDrg.js              4.43 kB │ gzip:   1.89 kB
+dist/assets/association-review-BjfT9GzJ.js            4.47 kB │ gzip:   2.00 kB
+dist/assets/account-transport-Da9pyB3v.js             4.71 kB │ gzip:   1.96 kB
+dist/assets/mount-account-recovery-CHNOkdXl.js        5.43 kB │ gzip:   2.33 kB
+dist/assets/mount-account-app-m3HHeb0b.js             5.90 kB │ gzip:   2.61 kB
+dist/assets/index-DaWeh03a.js                         8.26 kB │ gzip:   3.19 kB
+dist/assets/mount-reminder-workspace-dm6BoiZt.js     14.18 kB │ gzip:   5.23 kB
+dist/assets/mount-restore-workspace-rAtiuEH0.js      21.79 kB │ gzip:   6.56 kB
+dist/assets/ElementalPreview-CrA6aNkH.js             27.59 kB │ gzip:   9.92 kB
+dist/assets/index-bBLjGCDA.js                        53.94 kB │ gzip:  17.80 kB
+dist/assets/mount-account-workspace-Bu0hiGM8.js      56.28 kB │ gzip:  15.73 kB
+dist/assets/initial-character-Dy-7yPbd.js            86.11 kB │ gzip:  28.88 kB
+dist/assets/index-DOCObyJ7.js                       173.94 kB │ gzip:  46.04 kB
+dist/assets/arrow-left-BY8cYohu.js                  185.86 kB │ gzip:  58.44 kB
+dist/assets/AuraAvatar3D-LWizcmgu.js                261.58 kB │ gzip:  81.79 kB
+dist/assets/workoutStore-ChqAZUYz.js                304.53 kB │ gzip:  75.39 kB
+dist/assets/three.module-BZp4vj9u.js                746.25 kB │ gzip: 190.70 kB
+dist/assets/bootstrap-app-CU6Ls-V0.js             1,536.81 kB │ gzip: 442.49 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 8.58s

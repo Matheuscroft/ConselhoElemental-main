@@ -99,6 +99,27 @@ export const Rituais: React.FC = () => {
     createHabitFromTask,
   } = useAppStore();
   
+  const allAreasForEdit = useMemo(() => {
+    const mergedAreas = [...AREAS, ...customAreas];
+    const originalIndex = new Map(mergedAreas.map((area, index) => [area.id, index]));
+    const elementOrder: Record<ElementId, number> = {
+      terra: 0,
+      fogo: 1,
+      agua: 2,
+      ar: 3,
+    };
+
+    return [...mergedAreas].sort((a, b) => {
+      const elementDiff = elementOrder[a.elementId] - elementOrder[b.elementId];
+      if (elementDiff !== 0) return elementDiff;
+
+      const customDiff = Number(Boolean(a.isCustom)) - Number(Boolean(b.isCustom));
+      if (customDiff !== 0) return customDiff;
+
+      return (originalIndex.get(a.id) ?? 0) - (originalIndex.get(b.id) ?? 0);
+    });
+  }, [customAreas]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterElement, setFilterElement] = useState<ElementId | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
@@ -539,26 +560,7 @@ export const Rituais: React.FC = () => {
   const isEditingParentTask = Boolean(editingTaskId && !editingItemId);
   const isAggregatorLocked = !!((isEditingParentTask && isEditingTaskAggregator) || (editingItemId && isEditingItemAggregator));
 
-  const allAreasForEdit = useMemo(() => {
-    const mergedAreas = [...AREAS, ...customAreas];
-    const originalIndex = new Map(mergedAreas.map((area, index) => [area.id, index]));
-    const elementOrder: Record<ElementId, number> = {
-      terra: 0,
-      fogo: 1,
-      agua: 2,
-      ar: 3,
-    };
 
-    return [...mergedAreas].sort((a, b) => {
-      const elementDiff = elementOrder[a.elementId] - elementOrder[b.elementId];
-      if (elementDiff !== 0) return elementDiff;
-
-      const customDiff = Number(Boolean(a.isCustom)) - Number(Boolean(b.isCustom));
-      if (customDiff !== 0) return customDiff;
-
-      return (originalIndex.get(a.id) ?? 0) - (originalIndex.get(b.id) ?? 0);
-    });
-  }, [customAreas]);
 
   const getMergedSubareasForArea = (areaId: string) => {
     const selectedArea = allAreasForEdit.find((area) => area.id === areaId);

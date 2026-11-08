@@ -1,0 +1,52 @@
+{
+  "version": "0.1.143",
+  "scope": "local production build, Chromium disposable profile, synthetic data/API-created IDs, no personal profile or hosted writes",
+  "background": "real background tab and focus return for 3.1 seconds; unit tests cover long skipped callbacks",
+  "pauseSurvivesReload": true,
+  "runningSurvivesManualUpdate": true,
+  "updateNotice": "synthetic newer release metadata; explicit reload only; same origin/path maintained",
+  "fourElementEffects": [
+    {
+      "element": "fogo",
+      "animation": "timer-fire-breath"
+    },
+    {
+      "element": "agua",
+      "animation": "timer-water-surface"
+    },
+    {
+      "element": "ar",
+      "animation": "timer-air-flow"
+    },
+    {
+      "element": "terra",
+      "animation": "timer-earth-light"
+    }
+  ],
+  "reducedMotion": true,
+  "effectsPauseIndependent": true,
+  "metrics": [
+    {
+      "width": 360,
+      "w": 149,
+      "h": 48
+    },
+    {
+      "width": 390,
+      "w": 161,
+      "h": 48
+    },
+    {
+      "width": 768,
+      "w": 161,
+      "h": 48
+    }
+  ],
+  "menuQuickActions": 3,
+  "menuDescriptions": true,
+  "menuDoesNotOpenKeyboard": true,
+  "clockOnlyExplicitCompletion": true,
+  "pageErrors": [],
+  "blockedNetwork": [],
+  "physicalPhone": false
+}

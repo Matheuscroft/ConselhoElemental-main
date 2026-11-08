@@ -1,0 +1,12 @@
+✔ hosted build requires complete public connection and disabled legacy writers, without mutating or exposing values (1.397792ms)
+✔ secret and service-role keys are refused; legacy anon and modern publishable keys are accepted (0.779916ms)
+✔ chosen ritual element without category survives creation, completion, reload and exact Undo (15.026417ms)
+✔ primary area classification aligns root/canonical action, nested item and custom area without rewriting paid history (1.289375ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.284708

@@ -16,7 +16,8 @@
     "astro:test": "node --test scripts/astro-boy.test.mjs",
     "astro:audit": "node scripts/project-audit.mjs",
     "verify:release": "node scripts/verify-release.mjs",
-    "publish:main": "node scripts/publish-main.mjs"
+    "publish:main": "node scripts/publish-main.mjs",
+    "build:release": "node scripts/build-release.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
