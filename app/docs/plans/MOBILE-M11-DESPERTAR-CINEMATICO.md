@@ -312,3 +312,17 @@ A pesquisa faz duas perguntas e só. O nome, que é como o app chama a pessoa, n
 Verificado no navegador, percurso inteiro em 390x844: o app abriu no Despertar, "Pular" levou à pesquisa, o nome `  Fábio   Rodrigues  ` foi gravado como `Fábio Rodrigues`, a cidade virou Olinda, o despertar ficou marcado como visto e a tela seguinte foi a entrada.
 
 Testes: `app/tests/sanctuary/first-run.test.mjs`, 6 casos — normalização e limite do nome, lembrar e esquecer o despertar, nome vazio não gravado, armazenamento negado sem quebrar, a ordem dos passos, e a pesquisa oferecendo as duas cidades com a atual marcada e o atalho para responder depois.
+
+## Redesenho da entrada (08/11/2026)
+
+Depois do Despertar e das perguntas, chegar na entrada antiga era um degrau para baixo: arte achatada diferente, e cinco ações disputando a mesma atenção.
+
+A entrada agora mantém o santuário atrás de si, usando a mesma placa que o despertar já deixou em cache, escurecida por um degradê até o preto do fundo. A abertura vira um lugar só.
+
+Hierarquia refeita, seguindo a `frontend-design`: uma ação principal (criar conta), uma alternativa (experimentar sem conta), e os caminhos silenciosos — entrar, trazer progresso, conhecer os elementos — recuados para o topo e o rodapé. Tirei a seta colada ao texto do botão, que aquela skill nomeia como um dos sinais de página gerada. Se a pessoa respondeu o nome na pesquisa, a entrada cumprimenta por ele.
+
+Os quatro elementos continuam explicados, agora em quatro linhas compactas em vez do retrato com órbitas, porque ali eles são conteúdo, não enfeite.
+
+**O contrato do M10 foi preservado e continua verde**: os cinco destinos (`/auth?modo=cadastro`, `/auth`, `/santuario`, `/?progresso=restaurar`, `/onboarding`), um único `h1`, a manchete "Seu cotidiano" e a ausência de carrossel ou de XP inventado. O teste `access-entry` passa sem alteração.
+
+Conferido em 390x844: sem rolagem horizontal, conteúdo dentro da altura, um `h1`, e nenhum alvo de toque abaixo de 44 px.

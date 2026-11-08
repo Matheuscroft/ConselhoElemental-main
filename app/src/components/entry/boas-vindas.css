@@ -1,0 +1,208 @@
+.boas {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-block-size: 100dvh;
+  padding-inline: 20px;
+  padding-block: max(14px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background: #070b12;
+  color: #f4ece0;
+}
+
+/* The sanctuary stays behind the entry, so the opening reads as one place.
+   The plate is already cached by the awakening that came before. */
+.boas-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.boas-fundo img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: 50% 28%;
+  opacity: 0.4;
+}
+
+.boas-fundo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgb(7 11 18 / 55%) 0%,
+    rgb(7 11 18 / 72%) 34%,
+    rgb(7 11 18 / 94%) 70%,
+    #070b12 100%
+  );
+}
+
+.boas-pular {
+  position: absolute;
+  inset-block-start: -100px;
+  inset-inline-start: 12px;
+  z-index: 3;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #16202b;
+  color: #f4ece0;
+}
+
+.boas-pular:focus-visible {
+  inset-block-start: 12px;
+}
+
+.boas-topo,
+.boas-corpo,
+.boas-rodape {
+  position: relative;
+  z-index: 1;
+  inline-size: min(100%, 460px);
+  margin-inline: auto;
+}
+
+.boas-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.boas-entrar {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 16px;
+  border: 1px solid rgb(244 236 224 / 20%);
+  border-radius: 999px;
+  color: rgb(244 236 224 / 78%);
+  font-size: 16px;
+}
+
+.boas-corpo {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 18px;
+  padding-block: 28px;
+  animation: boas-entrada 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes boas-entrada {
+  from { opacity: 0; translate: 0 18px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+.boas-saudacao {
+  margin: 0;
+  color: rgb(214 182 111 / 88%);
+  font-size: 17px;
+}
+
+.boas-corpo h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(34px, 10vw, 48px);
+  font-weight: 400;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
+}
+
+.boas-resumo {
+  margin: 0;
+  max-inline-size: 38ch;
+  color: rgb(244 236 224 / 70%);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.boas-elementos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 14px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.boas-elementos li {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 15px;
+}
+
+.boas-elementos strong {
+  font-weight: 600;
+}
+
+.boas-elementos span {
+  color: rgb(244 236 224 / 58%);
+}
+
+.boas-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block-start: 6px;
+}
+
+.boas-primaria,
+.boas-secundaria {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 54px;
+  border-radius: 999px;
+  font-size: 17px;
+}
+
+.boas-primaria {
+  border: 1px solid rgb(214 182 111 / 72%);
+  background: rgb(214 182 111 / 17%);
+  color: #f0dcad;
+}
+
+.boas-secundaria {
+  border: 1px solid rgb(244 236 224 / 18%);
+  color: rgb(244 236 224 / 78%);
+}
+
+.boas-nota {
+  color: rgb(244 236 224 / 48%);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.boas-rodape {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-block-start: 14px;
+  border-block-start: 1px solid rgb(244 236 224 / 10%);
+}
+
+.boas-rodape a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  color: rgb(244 236 224 / 62%);
+  font-size: 15px;
+}
+
+.boas-entrar:focus-visible,
+.boas-primaria:focus-visible,
+.boas-secundaria:focus-visible,
+.boas-rodape a:focus-visible {
+  outline: 2px solid #d6b66f;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boas-corpo {
+    animation: none;
+  }
+}
