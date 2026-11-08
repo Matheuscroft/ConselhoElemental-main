@@ -4,6 +4,7 @@
 - Callback de reset sem query de rota só é adotado com comprovante válido, recente, da mesma origem e projeto. O código sai do endereço antes do Auth.
 - Ao abrir o link, o app valida automaticamente e mostra os campos de nova senha e confirmação; não exige a senha antiga nem login anterior.
 - O ajuste de Auth não altera dados, XP ou redirects/SMTP remotos. A versão 145 acrescenta apenas o número à allowlist do validador de arquivos: nenhuma linha/arquivo é regravado, e gate, grants e pontuação ficam preservados.
+- A auditoria local também reconhece explicitamente arquivos da versão 145; versões futuras continuam bloqueadas até revisão.
 
 ## 0.1.144 — 07/11/2026
 
