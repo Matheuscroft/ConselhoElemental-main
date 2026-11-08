@@ -1,6 +1,6 @@
-## F6-N13 — callback de reset no domínio oficial — em execução
+## F6-N13 — callback de reset no domínio oficial — app publicada; teste pessoal pendente
 
-No checkout `main` da versão 0.1.144, corrigir a entrada do reset vinda de localhost e callbacks que perderam `progresso=recuperar`, sem aceitar código sem prova PKCE correspondente. Link deve abrir nova senha + confirmação sem login anterior. Auth não muda dados, XP ou config remota. A versão 145 requer compatibilidade aditiva do validador de arquivos; revisar/testar migration local antes de aplicar. O primeiro deployment falhou nesse gate. Confirmar testes/build/lint, publicar no GitHub/Vercel já autorizado e orientar pedido de novo e-mail no domínio oficial. Não usar senha/e-mail real.
+Código está em `main` e app 0.1.145 publicada no Vercel. Pipeline remoto: 756 testes + lint + build passaram. Tela pública `/ ?progresso=recuperar` confirmada; resta pedir novo e-mail no mesmo navegador, clicar, definir e confirmar senha, depois entrar com a nova senha. Nenhum dado real foi usado pelo agente. Migração Supabase 145 é necessária antes do teste de sincronização; a base ainda registra versão 144. Aplicar pelo fluxo oficial, conferir migration e testar transferência só depois. Não reutilizar links antigos.
 
 ## M10 — introdução e acesso mobile publicados — 0.1.144 (07/11/2026)
 
