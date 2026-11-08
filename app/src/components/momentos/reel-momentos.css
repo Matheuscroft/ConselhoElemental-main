@@ -1,0 +1,141 @@
+/*
+ * A coverflow you throw with a finger. The rail is a native scroller with
+ * snap points -- the momentum, the keyboard and the screen reader are the
+ * browser's own. The turn is written onto the cards from a rAF loop.
+ */
+.reel-momentos {
+  --reel-largura: 220px;
+  margin-top: 16px;
+}
+
+.reel-trilho {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 10px calc((100% - var(--reel-largura)) / 2) 18px;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* The cards are turned in 3D; the rail is what holds the stage flat. */
+  transform-style: preserve-3d;
+}
+
+.reel-trilho::-webkit-scrollbar { display: none; }
+
+.reel-cartao {
+  flex: 0 0 var(--reel-largura);
+  scroll-snap-align: center;
+  display: grid;
+  gap: 10px;
+  /* transform, opacity and filter are written per frame, never here. */
+  will-change: transform, opacity;
+}
+
+.reel-moldura {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  align-content: end;
+  overflow: clip;
+  border: var(--ds-edge);
+  border-radius: 22px;
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), var(--ds-lift-near);
+}
+
+.reel-cartao[data-ativo='true'] .reel-moldura {
+  border-color: rgb(var(--el-gold) / 42%);
+  box-shadow: var(--ds-rim), var(--ds-lift);
+}
+
+.reel-moldura img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+.reel-vazio {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  line-height: 1.5;
+  text-align: center;
+  text-wrap: balance;
+}
+
+/* The caption sits on the photograph, so it needs its own ground. */
+.reel-legenda {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 28px 14px 14px;
+  background: linear-gradient(to top, rgb(7 11 18 / 92%), rgb(7 11 18 / 0%));
+}
+
+.reel-legenda strong {
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-body);
+  font-weight: 500;
+}
+
+.reel-legenda small {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+}
+
+.reel-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  /* Only the card in the middle can be acted on: a half-turned card at the
+     edge of the rail is not something anyone is aiming at. */
+  visibility: hidden;
+}
+
+.reel-cartao[data-ativo='true'] .reel-acoes {
+  visibility: visible;
+}
+
+.reel-acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-block-size: 44px;
+  padding-inline: 14px;
+  border: var(--ds-edge);
+  border-radius: 999px;
+  background: var(--ds-surface-raised);
+  color: rgb(var(--el-text));
+  font-size: var(--ds-text-micro);
+  cursor: pointer;
+}
+
+.reel-acao input { display: none; }
+
+.reel-acao:focus-within,
+.reel-acao:focus-visible {
+  outline: 2px solid rgb(var(--el-gold));
+  outline-offset: 2px;
+}
+
+.reel-aviso {
+  margin: 4px 20px 0;
+  color: #f5ad83;
+  font-size: var(--ds-text-micro);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-trilho { scroll-behavior: auto; }
+  .reel-cartao { will-change: auto; }
+}
