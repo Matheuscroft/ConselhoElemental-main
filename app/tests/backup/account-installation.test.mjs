@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {createLegacyDatabase,migration,userQuery} from './load-account-db.mjs';
+import {createLegacyDatabase,migration145 as migration,userQuery} from './load-account-db.mjs';
 import {fixture} from './load-progress.mjs';
 
 // These are the relevant column differences observed in hosted catalog metadata
