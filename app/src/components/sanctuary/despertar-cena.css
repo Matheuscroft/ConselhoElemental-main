@@ -1,0 +1,165 @@
+.despertar-cena {
+  position: relative;
+  inline-size: 100%;
+  /* The scene is full-screen. A plain 100% collapses to zero whenever the
+     route's parent has no definite height, which also breaks the container
+     units the plate is sized with. */
+  block-size: 100vh;
+  block-size: 100dvh;
+  overflow: hidden;
+  background: #070b12;
+  container-type: size;
+  touch-action: manipulation;
+}
+
+/*
+ * The plate keeps its 2:3 ratio and covers the stage, so every overlay can be
+ * placed in plate fractions. Without container units the plate still covers,
+ * but overlays would drift, so the fallback below keeps them centred.
+ */
+.despertar-palco {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  /* Centred by hand: margin auto pushes all the overflow to one side when the
+     plate is wider than the stage, which left the Air element off screen. */
+  translate: -50% -50%;
+  inline-size: 100%;
+  block-size: 100%;
+  inline-size: max(100cqw, calc(100cqh * 1024 / 1536));
+  block-size: max(100cqh, calc(100cqw * 1536 / 1024));
+  will-change: translate;
+}
+
+.despertar-placa {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/*
+ * Sun and Moon blend as one layer. Blending each child instead would fail:
+ * this element already forms its own stacking context, so a child's screen
+ * would mix with the empty layer rather than with the plate behind it.
+ */
+.despertar-ceu {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.despertar-sol,
+.despertar-lua {
+  position: absolute;
+  pointer-events: none;
+}
+
+.despertar-sol {
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(255 250 240 / 95%) 0%,
+    rgb(255 246 225 / 90%) 6%,
+    rgb(255 214 138 / 42%) 11%,
+    rgb(255 170 90 / 20%) 22%,
+    rgb(255 130 60 / 7%) 44%,
+    rgb(255 120 60 / 0%) 70%
+  );
+}
+
+.despertar-particulas {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+
+.despertar-brilho {
+  position: absolute;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.7;
+  transition:
+    opacity 900ms cubic-bezier(0.16, 1, 0.3, 1),
+    scale 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.despertar-brilho[data-aceso='true'] {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Invisible targets: the artwork already shows where each element is. */
+.despertar-alvo {
+  position: absolute;
+  border: 0;
+  border-radius: 50%;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  appearance: none;
+}
+
+.despertar-alvo:focus-visible {
+  outline: 2px solid #f0dcad;
+  outline-offset: 4px;
+}
+
+.despertar-controles {
+  position: absolute;
+  inset-block-start: max(16px, env(safe-area-inset-top));
+  inset-inline-end: 16px;
+  z-index: 2;
+  display: flex;
+  gap: 8px;
+}
+
+.despertar-pular {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 44px;
+  padding-inline: 18px;
+  border: 1px solid rgb(244 236 224 / 22%);
+  border-radius: 999px;
+  background: rgb(7 11 18 / 35%);
+  color: rgb(244 236 224 / 70%);
+  font-size: 16px;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.despertar-pular:hover,
+.despertar-pular:focus-visible {
+  color: #f4ece0;
+  border-color: rgb(244 236 224 / 45%);
+}
+
+.despertar-legenda {
+  position: absolute;
+  inset-inline: 20px;
+  inset-block-end: max(24px, env(safe-area-inset-bottom));
+  z-index: 2;
+  color: rgb(244 236 224 / 78%);
+  font-size: 16px;
+  line-height: 1.4;
+  text-align: center;
+  text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .despertar-brilho {
+    transition: none;
+  }
+
+  .despertar-palco {
+    will-change: auto;
+  }
+}

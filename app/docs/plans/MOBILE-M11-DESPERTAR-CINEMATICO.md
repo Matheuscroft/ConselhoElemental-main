@@ -224,3 +224,49 @@ Primeiro código de produto do M11. Dois módulos novos em `app/src/lib/temporal
 Testes: `app/tests/temporal/sanctuary-sky.test.mjs`, 9 casos. Cobrem o catálogo, a queda para o padrão com valor inválido, Sol alto ao meio-dia e fundo à meia-noite, poente ao sul do oeste na primavera do Sul, estação pelo hemisfério, lua cheia do USNO de abril de 2024 conferida, invisibilidade abaixo do horizonte, a geometria das âncoras e a diferença real mas desprezível entre Recife e Olinda. O teste extrai `getSeason` do barril de constantes pela mesma técnica que `presentation.test.mjs` já usava, sem puxar leveling nem armazenamento.
 
 Verificação: **760 testes passam** (eram 751; os 9 novos), `eslint .` limpo, `tsc -b` e `vite build` concluídos. Sem publicação, sem push e sem commit. A interface de escolha da cidade e o desenho da cena ficam para os lotes seguintes; por ora o núcleo existe e está coberto.
+
+## Lote D — cena 2.5D isolada (08/11/2026)
+
+A cena existe e funciona, mas ainda não está ligada a rota nenhuma: a entrada do app segue intacta, e a integração é o lote G.
+
+`app/src/lib/sanctuary/awakening-scene.ts`: geometria e estado puros, sem React e sem DOM. Posições e raios vêm do manifesto do lote B. `sceneDistance` normaliza o eixo vertical pela proporção 2:3, senão a área de toque viraria elipse. `hitTestElement` devolve o elemento mais próximo quando duas áreas se sobrepõem, para um dedo entre Terra e Fogo nunca acender o errado. O estado guarda a ordem em que a pessoa acendeu, acender duas vezes não faz nada, e `completeAwakening` é o caminho de pular e de movimento reduzido.
+
+`app/src/components/sanctuary/DespertarCena.tsx` com `despertar-cena.css`. Placa em `<picture>` com AVIF e WebP em 390, 780 e 1024, e JPEG de reserva; assets em `public/sanctuary/despertar/`, 680 KB no total, dos quais o aparelho baixa um. Sol procedural e sprite da Lua posicionados por `sanctuaryAnchor` do lote C, desenhados só quando `visible`. Quatro alvos são `button` de verdade, com nome acessível e `aria-pressed`, então funcionam no teclado e no leitor de tela. Partículas num único canvas, que para quando a aba fica oculta. Parallax segue ponteiro e `deviceorientation`, com valores limitados. Pular sempre visível no topo. Nada é gravado, nenhuma pontuação é tocada, e a cena só avisa por `onSkip` e `onComplete`.
+
+Movimento reduzido abre com os quatro elementos já acesos, sem parallax, sem canvas e sem transição.
+
+Testes: `app/tests/sanctuary/awakening-scene.test.mjs`, 11 casos, incluindo o toque em cada elemento, o desempate entre áreas vizinhas, o mínimo de 44 px em tela de 390, qualquer ordem, o limite do parallax e a renderização com e sem movimento reduzido.
+
+### Dois defeitos achados só olhando a cena no navegador
+
+`will-change: translate` na camada do céu criava um contexto de empilhamento próprio, então o `mix-blend-mode: screen` da Lua misturava com a camada vazia em vez da placa, e o sprite aparecia como um retângulo preto. O blend passou para a camada inteira, e o `will-change` foi para o palco, que é o que de fato se move.
+
+`margin: auto` não centraliza um elemento maior que o contêiner: o navegador joga todo o excesso para um lado. Com a placa 2:3 cobrindo uma tela estreita, o palco ficava encostado à esquerda e o Ar caía fora da tela, com centro em x=423 numa viewport de 390. Centralização explícita resolveu.
+
+Verificação: **771 testes passam** (eram 760; os 11 novos), `eslint .` limpo, `tsc -b` e `vite build` concluídos, com código de saída conferido. O lint pegou dois erros que as checagens parciais tinham escondido: um `useMemo` sem função embutida e um import sem uso.
+
+Verificado no navegador em 360, 390 e 768: os quatro alvos ficam dentro da tela nas três larguras, com no máximo 11 px aparados nos extremos. Falta aparelho real.
+
+Limite conhecido: a câmera olha para o sul num arco de 220°, então a Lua só entra no enquadramento em cerca de 30% das horas, e Sol e Lua aparecem juntos em cerca de 22%. É honesto, mas significa que a maioria das noites não terá a Lua que a arte mostra.
+
+## Lote E — controlador e áudio (08/11/2026)
+
+`app/src/lib/sanctuary/awakening-controller.ts`: a única máquina de progressão da introdução, pura, sem timers, sem áudio e sem armazenamento. Fases `idle`, `loading`, `running`, `paused`, `done` e `skipped`, com tabela de transições explícita. Sinal inesperado é ignorado em vez de lançar erro, porque um evento de visibilidade perdido ou um toque duplo não pode quebrar a cena. `done` e `skipped` são terminais; `teardown` sempre volta a `idle`, então remontar nunca herda fase. `onVisibility` pausa ao sair do app e retoma ao voltar, deixando em paz o que já terminou.
+
+Na cena, a conclusão é **derivada**, não guardada: os elementos acesos já dizem isso, e uma segunda cópia em estado ficaria um render atrás. O lint do projeto pegou essa duplicação como render em cascata, e a correção simplificou o componente.
+
+`app/src/lib/sanctuary/awakening-audio.ts`: ambiência sintetizada em Web Audio, sem arquivo. Quatro vozes — pedra com corpo grave e pulso lento, brasas num filtro estreito que respira, água num varrimento mais lento, ar fino e agudo à deriva — cada uma com ganho próprio, sobre ruído marrom em laço. Da skill `soundtrack` veio a disciplina que importa aqui: camadas entram uma a uma, com rampa de 1,4 s, porque uma camada chegando em nível cheio soa como susto.
+
+Nada começa sozinho. `start()` só é chamado pelo botão "Ativar som", que é ao mesmo tempo a exigência do navegador e a autorização da pessoa. O padrão é silêncio. Mute e unmute usam rampa de 0,25 s, nunca corte seco. Sair do app suspende o contexto; voltar retoma respeitando um mute feito enquanto fora. `stop()` para cada fonte, desconecta, fecha o contexto e recusa reabrir, e a cena chama isso ao desmontar.
+
+A música que vem depois da introdução **não é tocada daqui**. A cena só informa, em `onComplete`, se a pessoa ativou o som; é essa a única coisa que pode autorizar a música mais tarde, no lote G. O arquivo `Domínio do Mago.mp3` continua fora do repositório.
+
+Testes: `app/tests/sanctuary/awakening-controller.test.mjs`, 12 casos. Cobrem a tabela de transições inteira, sinais inesperados, terminalidade, pular de qualquer fase, visibilidade e teardown; e, com um `AudioContext` falso, que nenhum contexto nasce antes do gesto, que o início é por rampa e não em nível cheio, que acender a mesma voz duas vezes não empilha, que mute e unmute rampam, que voltar não desfaz um mute, e que depois de `stop()` o áudio não reabre.
+
+### Rota de teste e defeito achado no app real
+
+A cena ganhou a rota pública `/despertar` em `App.tsx`, carregada por `lazy`. Nada aponta para ela; serve para testar a cena dentro do app e no deploy. A ligação à entrada, só no primeiro acesso e com "rever introdução" nas configurações, continua sendo o lote G.
+
+Montada no app de verdade, a cena apareceu com **altura zero**. A causa: `block-size: 100%` só resolve quando o pai tem altura definida, e o elemento da rota não tem; de quebra, isso zerava as unidades de contêiner com que a placa é dimensionada. Passou a `100dvh`, com `100vh` antes como reserva. A página de teste estática não pegaria isso, porque lá o `body` tinha altura.
+
+Depois da correção, no app em 390x844: palco 580x869 e os quatro alvos dentro da tela, nas mesmas posições medidas no teste estático. Fábio exercitou a cena no navegador interno: os toques acenderam os elementos em ordem livre, a fase chegou a `done` e a legenda fechou com a estação e a fase lunar reais da cidade.
