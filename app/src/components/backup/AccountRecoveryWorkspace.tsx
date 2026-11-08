@@ -7,6 +7,7 @@ import { ACCOUNT_ACCESS_RELEASED } from '@/lib/backup/account-access-release';
 
 export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const [email, setEmail] = useState(''), [password, setPassword] = useState(''), [confirm, setConfirm] = useState('');
+  const [cooldownUntil, setCooldownUntil] = useState(0), [clock, setClock] = useState(Date.now());
   const [showPassword, setShowPassword] = useState(false), [showConfirm, setShowConfirm] = useState(false);
   const [verified, setVerified] = useState<{ email: string } | null>(null);
   const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [done, setDone] = useState(false);
@@ -18,6 +19,11 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   // A callback code is one-time; mount the isolated recovery root without StrictMode replay.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  useEffect(() => {
+    if (cooldownUntil <= clock) return;
+    const timer = window.setInterval(() => setClock(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [cooldownUntil, clock]);
   async function run(action: () => Promise<void>) {
     if (!ACCOUNT_ACCESS_RELEASED || working.current) return;
     working.current = true; setBusy(true); setError(''); setMessage('');
@@ -31,9 +37,9 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     const next = createPasswordRecovery({ url: import.meta.env.VITE_SUPABASE_URL, key: import.meta.env.VITE_SUPABASE_ANON_KEY, origin: window.location.origin, storage: window.localStorage, locks: navigator.locks });
     session.current = next; return next;
   }
-  function request() { void run(async () => {
+  function request() { if (cooldownUntil > Date.now()) return; void run(async () => {
     const next = await open();
-    const result = await next.request(email); if (alive.current) setMessage(result);
+    const result = await next.request(email); if (alive.current) { setMessage(result); setCooldownUntil(Date.now() + 60_000); setClock(Date.now()); }
   }); }
   function exchange() { void run(async () => {
     const code = entry.takeCode();
@@ -72,7 +78,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
       {entry.kind === 'invalid' && <p role="alert">Este link não pôde ser aceito. Solicite outro abaixo.</p>}
       <section className="entry-access-card"><h2>Receber um novo link</h2><p>Abra o e-mail no mesmo navegador usado para solicitar. Um novo pedido substitui o link anterior.</p><form onSubmit={event => { event.preventDefault(); request(); }}>
         <label htmlFor="recovery-email">E-mail da conta<input id="recovery-email" enterKeyHint="go" name="recovery-email" type="email" inputMode="email" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" autoComplete="email" required value={email} disabled={busy || !ACCOUNT_ACCESS_RELEASED} onChange={event => setEmail(event.target.value)} /></label>
-        <button type="submit" disabled={busy || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}Enviar link de recuperação</button>
+        <button type="submit" disabled={busy || cooldownUntil > clock || !ACCOUNT_ACCESS_RELEASED || !email.trim()}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{cooldownUntil > clock ? `Enviar novamente em 00:${String(Math.ceil((cooldownUntil-clock)/1000)).padStart(2,'0')}` : message ? 'Enviar link novamente' : 'Enviar link de recuperação'}</button>
       </form></section>
     </>)}
     {done && <a className="restore-workspace-back" href="/?progresso=conta">Entrar com a nova senha</a>}

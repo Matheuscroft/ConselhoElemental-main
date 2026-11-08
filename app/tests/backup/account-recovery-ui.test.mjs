@@ -5,10 +5,11 @@ import ts from 'typescript';
 const source=ts.transpileModule(readFileSync('src/components/backup/AccountRecoveryWorkspace.tsx','utf8').replaceAll('import.meta.env.VITE_SUPABASE_URL',"'https://synthetic.invalid'").replaceAll('import.meta.env.VITE_SUPABASE_ANON_KEY',"'synthetic'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({released=true,callback=true}={}){
- const values=[];let cursor=0,initialized=false,cleanup,tree,constructions=0,disposals=0,taken=0;
+ const values=[],effects=[],timers=new Map();let cursor=0,effectCursor=0,tree,constructions=0,disposals=0,taken=0,now=1000,nextTimer=1;
+ const originalNow=Date.now;Date.now=()=>now;
  const calls=[];
  const hook=initial=>{const at=cursor++;if(!(at in values))values[at]=initial;return [values[at],value=>{values[at]=value;}];};
- const react={useState:hook,useRef:initial=>hook({current:initial})[0],useEffect:fn=>{if(!initialized)cleanup=fn();}};
+ const react={useState:hook,useRef:initial=>hook({current:initial})[0],useEffect(fn,deps){const at=effectCursor++,previous=effects[at];const changed=!previous||!deps||deps.some((value,index)=>!Object.is(value,previous.deps?.[index]));if(!changed)return;previous?.cleanup?.();effects[at]={deps,cleanup:fn()};}};
  const jsx=(type,props)=>({type,props:props??{}});
  const entry={kind:callback?'callback':'request',takeCode(){taken++;return taken===1?'synthetic-code':null;}};
  const controller={dispose(){disposals++;},request(...args){return pending('request',args);},exchange(...args){return pending('exchange',args);},update(...args){return pending('update',args);}};
@@ -20,11 +21,11 @@ function fixture({released=true,callback=true}={}){
   if(id.endsWith('account-access-release'))return {ACCOUNT_ACCESS_RELEASED:released};
   if(id.endsWith('account-recovery'))return {createPasswordRecovery(){constructions++;return controller;}};
   throw Error('Unexpected UI dependency '+id);
- },exports,{location:{origin:'https://app.example.invalid'},localStorage:{}},{locks:{}});
- function render(){cursor=0;tree=exports.AccountRecoveryWorkspace({entry});initialized=true;}
+ },exports,{location:{origin:'https://app.example.invalid'},localStorage:{},setInterval(fn){const id=nextTimer++;timers.set(id,fn);return id;},clearInterval(id){timers.delete(id);}},{locks:{}});
+ function render(){cursor=0;effectCursor=0;tree=exports.AccountRecoveryWorkspace({entry});}
  const nodes=()=>{const out=[];function visit(n){if(!n||typeof n!=='object')return;if(Array.isArray(n)){n.forEach(visit);return;}out.push(n);visit(n.props?.children);}visit(tree);return out;};
  function text(n){if(n==null||typeof n==='boolean')return '';if(typeof n==='string'||typeof n==='number')return String(n);if(Array.isArray(n))return n.map(text).join('');return text(n.props?.children);}
- render();return {calls,render,get constructions(){return constructions;},get disposals(){return disposals;},get taken(){return taken;},content:()=>text(tree),click(label){const b=nodes().find(n=>n.type==='button'&&text(n)===label);assert.ok(b,label);b.props.onClick?.();render();},fill(type,value,index=0){nodes().filter(n=>n.type==='input'&&n.props.type===type)[index].props.onChange({target:{value}});render();},submit(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();},unmount(){cleanup();}};
+ render();return {calls,render,get constructions(){return constructions;},get disposals(){return disposals;},get taken(){return taken;},content:()=>text(tree),click(label){const b=nodes().find(n=>n.type==='button'&&text(n)===label);assert.ok(b,label);b.props.onClick?.();render();},fill(type,value,index=0){nodes().filter(n=>n.type==='input'&&n.props.type===type)[index].props.onChange({target:{value}});render();},submit(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();},advance(ms){now+=ms;for(const fn of [...timers.values()])fn();render();},unmount(){for(const effect of effects)effect?.cleanup?.();Date.now=originalNow;}};
 }
 
 test('closed release rejects automatic callback validation and request before Auth construction or code consumption',async()=>{
@@ -38,8 +39,9 @@ test('email callback validates automatically, then matching passwords and confir
  f.fill('password','synthetic new password',1);f.submit();f.submit();await tick();assert.equal(f.calls.length,2);assert.deepEqual(f.calls[1].args,['synthetic new password']);f.calls[1].resolve({logoutConfirmed:true});await tick();f.render();assert.match(f.content(),/Senha atualizada/);assert.equal(f.disposals,1);assert.equal(f.constructions,1);f.unmount();
 });
 
-test('resending uses one isolated client for the document and has no App handoff',async()=>{
- const f=fixture({callback:false});f.fill('email','synthetic@example.invalid');f.submit();await tick();f.calls[0].resolve('Generic request accepted');await tick();f.render();f.submit();await tick();assert.equal(f.constructions,1);assert.equal(f.calls[1].name,'request');f.calls[1].resolve('Generic request accepted');await tick();f.render();assert.match(f.content(),/Generic request accepted/);f.unmount();assert.equal(f.disposals,1);
+test('accepted recovery request confirms generically, counts down and only then permits one resend on the isolated client',async()=>{
+ const f=fixture({callback:false});f.fill('email','synthetic@example.invalid');f.submit();await tick();f.calls[0].resolve('Generic request accepted');await tick();f.render();assert.match(f.content(),/Generic request accepted/);assert.match(f.content(),/Enviar novamente em 00:60/);
+ f.submit();await tick();assert.equal(f.calls.length,1);f.advance(60_000);assert.match(f.content(),/Enviar link novamente/);f.submit();await tick();assert.equal(f.constructions,1);assert.equal(f.calls[1].name,'request');f.calls[1].resolve('Generic request accepted');await tick();f.render();f.unmount();assert.equal(f.disposals,1);
 });
 
 test('unmount during validation disposes the owned client and ignores late identity results',async()=>{

@@ -1,3 +1,7 @@
+## F6-N14 — reenvio de recuperação e Vite local — pronto para publicação
+
+Origem: feedback de Matheus sobre e-mail que abriu localhost, falta de confirmação/contador no reset e 404 dos módulos Vite. Dependências reinstaladas de forma limpa; localhost e módulos Vite respondem 200. Código usa somente o callback oficial, bloqueia PKCE cross-origin e mostra confirmação genérica com cooldown de 60s. Supabase mantém Site URL/retorno oficial e não aceita mais o callback local de recuperação. Evidências: 15 testes direcionados, lint e build passaram; navegador confirmou local → Vercel. Suíte geral local esbarra no loader Windows preexistente e será conferida no pipeline Linux. Após publicar, pedir link novo real, abrir no mesmo navegador, definir/confirmar senha e entrar novamente.
+
 ## F6-N13 — callback de reset no domínio oficial — app publicada; teste pessoal pendente
 
 Código está em `main` e app 0.1.145 publicada no Vercel. Pipeline remoto: 756 testes + lint + build passaram. Tela pública `/ ?progresso=recuperar` confirmada; resta pedir novo e-mail no mesmo navegador, clicar, definir e confirmar senha, depois entrar com a nova senha. Nenhum dado real foi usado pelo agente. Migração Supabase 145 é necessária antes do teste de sincronização; a base ainda registra versão 144. Aplicar pelo fluxo oficial, conferir migration e testar transferência só depois. Não reutilizar links antigos.
