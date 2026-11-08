@@ -7,10 +7,8 @@
   --el-muted: 170 180 196;
   --el-gold: 213 182 111;
   --el-action: 121 97 58;
-  --element-terra: #a3ce9b;
-  --element-fogo: #f5ad83;
-  --element-agua: #8bcee3;
-  --element-ar: #d2e6df;
+  /* The four element colours moved to elemental-fundacao.css, which every
+     path loads; they were declared here and again on .entry-shell. */
   --canvas-bg: rgb(var(--el-canvas));
   --fg-primary: rgb(var(--el-text));
   --fg-secondary: rgb(var(--el-muted));

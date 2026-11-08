@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import type { DestinyOption } from './destiny-options';
-const TINT = { terra: '#263e36', fogo: '#4b302b', agua: '#203d4e', ar: '#34424b' };
+import { TINTA } from '@/lib/design/palette';
+const TINT = TINTA;
 
 export function DestinyWheel({ options, rotation, spinning, reduced }: { options: DestinyOption[]; rotation: number; spinning: boolean; reduced: boolean }) {
   // A rune ring remains legible for large catalogues; the list exposes every real option.

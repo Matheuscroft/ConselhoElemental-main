@@ -9,6 +9,7 @@ import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-r
 import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft, ChevronRight, Crown, Footprints, Gem, Heart, Menu, Pause, Play, Plus, RotateCw, Search, Shield, Sparkles, WandSparkles, X, Zap } from 'lucide-react';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
+import { ACENTO } from '@/lib/design/palette';
 import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
@@ -24,7 +25,7 @@ const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'))
 /** Before anyone gives a birth date the aura still burns, in the app's gold. */
 const AURA_SEM_SIGNO = { colour: '#d6b66f', modality: 'fixo' as ZodiacModality };
 
-const ACCENTS: Record<ElementId, string> = { terra: '#a3ce9b', fogo: '#f5ad83', agua: '#8bcee3', ar: '#d2e6df' };
+const ACCENTS = ACENTO;
 const EQUIPMENT = [
   { name: 'Cajado', Icon: WandSparkles }, { name: 'Grimório', Icon: BookOpen },
   { name: 'Amuleto', Icon: Gem }, { name: 'Chapéu', Icon: Crown },

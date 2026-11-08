@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Body, Ecliptic, GeoVector } from 'astronomy-engine';
 import { ZODIAC_SIGNS } from '@/constants';
+import { AURA } from '@/lib/design/palette';
 
 /**
  * The sign behind someone's aura, and the aura's own colour and size.
@@ -34,17 +35,8 @@ export interface ZodiacProfile {
 const ELEMENTS: readonly ZodiacElementId[] = ['fogo', 'terra', 'ar', 'agua'];
 const MODALITIES: readonly ZodiacModality[] = ['cardeal', 'fixo', 'mutavel'];
 
-/**
- * One base colour per element, deliberately more saturated than the accents
- * in `entry.css`: those label a section of a page, these have to read as
- * light coming off a person.
- */
-const AURA_BASE: Record<ZodiacElementId, string> = {
-  fogo: '#ff8a4d',
-  terra: '#86e07a',
-  ar: '#b8f0e4',
-  agua: '#5cc8f5',
-};
+/** One base colour per element, from the one palette the app paints from. */
+const AURA_BASE: Record<ZodiacElementId, string> = AURA;
 
 /** Degrees of hue between the three signs that share an element. */
 const TRIAD_HUE_STEP = 14;

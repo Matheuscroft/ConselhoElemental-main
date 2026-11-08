@@ -1,6 +1,5 @@
 .entry-shell {
   --entry-canvas: #080b12; --entry-panel: #141b27; --entry-text: #f2efe7; --entry-muted: #aab4c4; --entry-gold: #d5b66f;
-  --element-terra: #a3ce9b; --element-fogo: #f5ad83; --element-agua: #8bcee3; --element-ar: #d2e6df;
   box-sizing: border-box; min-height: 100svh; color: var(--entry-text); background: radial-gradient(ellipse at 9% 30%,#20313635,transparent 50%),var(--entry-canvas);
   padding: max(18px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left));
   font-family: Inter,system-ui,sans-serif; color-scheme: dark;

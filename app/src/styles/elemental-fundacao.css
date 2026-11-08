@@ -1,0 +1,40 @@
+/*
+ * The foundation every path loads: the four element colours and the type
+ * scale. Carried by `main.tsx`, so the opening screens and the app share one
+ * source — before this the element colours were declared twice with the same
+ * values, once on `:root` for the app and once on `.entry-shell`, because the
+ * theme stylesheet only ever reached the app bundle.
+ *
+ * `src/lib/design/palette.ts` carries the same colours for the code that
+ * needs them in JavaScript, and a test fails if the two disagree.
+ */
+:root {
+  /* The four elements, as the interface accents them. */
+  --element-terra: #a3ce9b;
+  --element-fogo: #f5ad83;
+  --element-agua: #8bcee3;
+  --element-ar: #d2e6df;
+
+  /*
+   * The type scale. Seven steps, because the app had 82 different font sizes
+   * and that is not a scale, it is 82 separate decisions. The steps were
+   * chosen to absorb the clusters already in use rather than to look tidy on
+   * paper: most of what exists snaps to one of these without moving a layout.
+   *
+   * 12px is the floor. Below it the app was unreadable on a phone at arm's
+   * length, and 10px and 11px together appeared 66 times.
+   */
+  --ds-text-micro: 12px;
+  --ds-text-small: 14px;
+  --ds-text-body: 16px;
+  --ds-text-lead: 18px;
+  --ds-text-title: 22px;
+  --ds-text-display: 28px;
+  --ds-text-hero: 36px;
+
+  /* Cinzel is a display serif and tightens as it grows; Inter carries the
+     reading, and reading wants air. */
+  --ds-leading-tight: 1.12;
+  --ds-leading-snug: 1.3;
+  --ds-leading-body: 1.5;
+}
