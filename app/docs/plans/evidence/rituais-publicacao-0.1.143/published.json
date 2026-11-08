@@ -1,0 +1,20 @@
+{
+  "sourceCommit": "ba6df2e0030410af3ca678f19a8b592a310d52a6",
+  "state": "success",
+  "vercel": [
+    {
+      "state": "success",
+      "description": "Deployment has completed",
+      "url": "https://vercel.com/matheuscrofts-projects/conselho-elemental-main/BoXyoE8iZfcSzqJGRhMgvzP2EN3y"
+    }
+  ],
+  "domain": "https://conselho-elemental-main.vercel.app",
+  "version": {
+    "format": "conselho-release",
+    "version": "0.1.143"
+  },
+  "githubQualityRun": "https://github.com/Matheuscroft/ConselhoElemental-main/actions/runs/42431957928",
+  "githubQualityConclusion": "success",
+  "physicalPhone": false,
+  "personalProgressTransferred": false
+}

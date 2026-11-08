@@ -1,0 +1,6 @@
+Linux/Node26 installation from lockfile
+746 tests:746 passed,0 failed
+lint:passed
+build:passed (Vite13.86s)
+Run42431957928:success
+First run42431085415:746 tests passed; lint memoization error fixed by declaration ordering.
