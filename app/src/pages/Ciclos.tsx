@@ -14,7 +14,6 @@ import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-sema
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
-import { ExpandedDayCard } from '@/components/cycles/ExpandedDayCard';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
@@ -125,7 +124,6 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 export const Ciclos: React.FC = () => {
   const reducedMotion = useMotionPreference();
   /** Two ways to look at the same days: the calendar, or the moments kept in them. */
-  const [vistaDosDias, setVistaDosDias] = useState<'calendario' | 'momentos'>('calendario');
   const navigate = useNavigate();
   const location = useLocation();
   const [destinyParams, setDestinyParams] = useSearchParams();
@@ -232,8 +230,6 @@ export const Ciclos: React.FC = () => {
   const [dragOverPromoteParentId, setDragOverPromoteParentId] = useState<string | null>(null);
   const newCycleTriggerRef = useRef<HTMLButtonElement | null>(null);
   const newSequenceTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const dayShortcutsContainerRef = useRef<HTMLDivElement | null>(null);
-  const selectedDayButtonRef = useRef<HTMLButtonElement | null>(null);
   const [userLatitude, setUserLatitude] = useState<number | null>(() => {
     if (typeof window === 'undefined') return null;
     const cachedLatitude = localStorage.getItem('ce:user-latitude');
@@ -284,18 +280,6 @@ export const Ciclos: React.FC = () => {
       return [...current, day].sort((a, b) => a - b);
     });
   };
-
-  useEffect(() => {
-    // Keep the horizontal rail in view without moving the page or stealing focus.
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const timeout = window.setTimeout(() => {
-      const rail = dayShortcutsContainerRef.current;
-      const day = selectedDayButtonRef.current;
-      if (!rail || !day) return;
-      rail.scrollTo({ left: day.offsetLeft - (rail.clientWidth - day.clientWidth) / 2, behavior: reduced ? 'auto' : 'smooth' });
-    }, reduced ? 0 : 260);
-    return () => window.clearTimeout(timeout);
-  }, [selectedDate, visibleDaysCenterDate]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -1374,6 +1358,19 @@ export const Ciclos: React.FC = () => {
   const totalToday = habitsForDate.length;
   const progressToday = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
+  // Read-only: how many cycles each day of the Reel has done, from the same
+  // store data the routine below reads.
+  const diasDoReel = useMemo(() => dayShortcuts.map((offset) => {
+    const date = new Date(visibleDaysCenterDate);
+    date.setDate(date.getDate() + offset);
+    const doDia = getHabitsForDate(date);
+    const feitos = doDia.filter((habit) => habit.completions.some(
+      (completion) => new Date(completion.completionDate).toDateString() === date.toDateString(),
+    )).length;
+    return { dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()) };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [visibleDaysCenterDate, getHabitsForDate, habits]);
+
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 
   const renderChildHabits = (childHabits: Habit[], depth = 0, parentHabitId?: string) => {
@@ -1670,51 +1667,16 @@ export const Ciclos: React.FC = () => {
         <CycleCalendarNavigation selectedDate={selectedDate} onPrevious={goToPreviousDay} onNext={goToNextDay} onToday={goToToday}
           onSelect={date => selectCalendarDate(date)} />
 
-        <div className="cycle-vista" role="group" aria-label="Como ver os dias">
-          {([['calendario', 'Calendário'], ['momentos', 'Momentos']] as const).map(([chave, rotulo]) => (
-            <button
-              key={chave}
-              type="button"
-              aria-pressed={vistaDosDias === chave}
-              onClick={() => setVistaDosDias(chave)}
-            >
-              {rotulo}
-            </button>
-          ))}
-        </div>
-
-        {vistaDosDias !== 'calendario' ? (() => {
-          const diasDoMomento = dayShortcuts.map((offset) => {
+        <ReelMomentos
+          dias={diasDoReel}
+          selecionado={dayShortcuts.findIndex((offset) => {
             const date = new Date(visibleDaysCenterDate);
             date.setDate(date.getDate() + offset);
-            return {
-              dia: chaveDoDia(date),
-              titulo: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }),
-              detalhe: date.toLocaleDateString('pt-BR', { weekday: 'long' }),
-            };
-          });
-          return <ReelMomentos dias={diasDoMomento} />;
-        })() : null}
-
-        {/* Day shortcuts + full date picker */}
-        <div
-          ref={dayShortcutsContainerRef}
-          className="cycle-calendar-rail"
-          role="group"
-          aria-label="Dias do calendário: selecione para expandir"
-          hidden={vistaDosDias !== 'calendario'}
-        >
-          {dayShortcuts.map((offset) => {
-            const date = new Date(visibleDaysCenterDate);
-            date.setDate(date.getDate() + offset);
-            const active = isSameDay(selectedDate, date);
-            const isTodayShortcut = isSameDay(date, new Date());
-
-            return <ExpandedDayCard key={date.toDateString()} date={date} selected={active} today={isTodayShortcut}
-              completed={completedToday} total={totalToday} preview={active ? displayedMixedCards.slice(0, 2).map(card => card.type === 'habit' ? card.habit.name : card.summary.sequence.name) : []} onSelect={() => selectRelativeVisibleDay(offset)}
-              buttonRef={active ? selectedDayButtonRef : null} />;
+            return isSameDay(selectedDate, date);
           })}
-        </div>
+          aoEscolher={(indice) => selectRelativeVisibleDay(dayShortcuts[indice])}
+        />
+
         {/* Moon Phase & Season */}
         <div className="flex items-center justify-center gap-6 mb-4">
           <button

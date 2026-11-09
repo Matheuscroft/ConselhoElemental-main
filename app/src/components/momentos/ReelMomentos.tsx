@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { MENSAGEM_RECUSA } from '@/lib/momentos/momento';
 import {
@@ -10,12 +10,16 @@ import {
   salvarMomento,
 } from '@/lib/momentos/momento-store';
 import { distanciaDoCentro, indiceAtivo, posicaoReel } from '@/lib/momentos/reel';
+import { AcoesMomento } from './AcoesMomento';
 import './reel-momentos.css';
 
 export interface DiaDoReel {
+  /** Chave local do dia, a mesma do Temporal e dos Momentos. */
   readonly dia: string;
-  readonly titulo: string;
-  readonly detalhe: string;
+  readonly data: Date;
+  readonly feitos: number;
+  readonly total: number;
+  readonly hoje: boolean;
 }
 
 const MENSAGENS: Record<string, string> = {
@@ -25,22 +29,55 @@ const MENSAGENS: Record<string, string> = {
   falha: 'Não consegui guardar essa foto. Tente de novo.',
 };
 
+/** After this long without a scroll event the rail counts as settled. */
+const ASSENTAR_MS = 120;
+
 /**
- * The days as a coverflow you throw with a finger.
- *
- * The rail is a native scroller with snap points, so the momentum, the
- * keyboard and the screen reader are the browser's own and not a
- * reimplementation. The turn and the softening are written straight to the
- * cards from a rAF loop reading scrollLeft: a scroll fires far too often for
- * React to be in the middle of it.
+ * Neighbours fade no lower than this: the text on a card at 0.38 measured
+ * 2.2-3.2:1. At 0.75 the muted text (170 180 196 over 8 11 18) estimates at
+ * about 5.5:1. The depth is carried by tilt, scale and the fixed blur instead.
  */
-export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
+const PISO_OPACIDADE = 0.75;
+
+const rotulo = (item: DiaDoReel, comFoto: boolean) => {
+  const data = item.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const ciclos = item.total ? `${item.feitos} de ${item.total} ciclos` : 'sem ciclos';
+  return `${data}${item.hoje ? ', hoje' : ''}, ${ciclos}${comFoto ? ', com foto' : ''}`;
+};
+
+/**
+ * The days as a coverflow you throw with a finger, and the calendar itself:
+ * the card in front is the open day.
+ *
+ * The rail is a native scroller with snap points, so momentum, keyboard and
+ * screen reader are the browser's own. The turn is written straight to the
+ * cards from a rAF loop (transform and opacity only); the softening is a fixed
+ * blur per distance class, never animated. Scrolling selects a day only after
+ * a gesture of the person and only once the rail settles: a scroll the
+ * component started itself never selects.
+ */
+export function ReelMomentos({ dias, selecionado, aoEscolher }: {
+  dias: DiaDoReel[];
+  /** Index of the open day in `dias`, or -1 when it is outside the window. */
+  selecionado: number;
+  aoEscolher: (indice: number) => void;
+}) {
   const reduced = useMotionPreference();
   const trilhoRef = useRef<HTMLUListElement>(null);
-  const [ativo, setAtivo] = useState(0);
   const [fotos, setFotos] = useState<Record<string, string>>({});
   const [aviso, setAviso] = useState<string | null>(null);
   const soltarRef = useRef<Array<() => void>>([]);
+  const carregadosRef = useRef(new Set<string>());
+  const gestoRef = useRef(false);
+  const visualRef = useRef(0);
+  const selecionadoRef = useRef(selecionado);
+  const aoEscolherRef = useRef(aoEscolher);
+  useEffect(() => {
+    selecionadoRef.current = selecionado;
+    aoEscolherRef.current = aoEscolher;
+  });
+
+  const chaves = dias.map((item) => item.dia).join('|');
 
   // Every object URL is released on the way out. Thirty blobs held by URLs
   // nobody revoked is how a gallery eats a phone's memory.
@@ -54,17 +91,20 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     let vivo = true;
 
     void (async () => {
-      for (const { dia } of dias) {
-        const momento = await lerMomento(dia);
-        if (!vivo || !momento) continue;
+      for (const chave of chaves.split('|')) {
+        if (!chave || carregadosRef.current.has(chave)) continue;
+        const momento = await lerMomento(chave);
+        if (!vivo) return;
+        carregadosRef.current.add(chave);
+        if (!momento) continue;
         const { url, soltar } = enderecoTemporario(momento.miniatura);
         soltarRef.current.push(soltar);
-        setFotos((atual) => ({ ...atual, [dia]: url }));
+        setFotos((atual) => ({ ...atual, [chave]: url }));
       }
     })();
 
     return () => { vivo = false; };
-  }, [dias]);
+  }, [chaves]);
 
   // The turn follows the finger, so it is written per frame rather than per
   // render, and only while the rail is actually moving.
@@ -75,36 +115,56 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     let frame = 0;
     let parar = 0;
 
-    const pintar = () => {
+    const medidas = () => {
       const cartoes = [...trilho.children] as HTMLElement[];
-      if (!cartoes.length) return;
+      if (!cartoes.length) return null;
       const largura = cartoes[0].offsetWidth;
       const passo = cartoes.length > 1 ? cartoes[1].offsetLeft - cartoes[0].offsetLeft : largura;
-      const recuo = cartoes[0].offsetLeft;
+      return { cartoes, largura, passo, recuo: cartoes[0].offsetLeft };
+    };
 
-      cartoes.forEach((cartao, indice) => {
-        const d = distanciaDoCentro(trilho.scrollLeft, trilho.clientWidth, passo, largura, recuo, indice);
+    const pintar = () => {
+      const m = medidas();
+      if (!m) return;
+      m.cartoes.forEach((cartao, indice) => {
+        const d = distanciaDoCentro(trilho.scrollLeft, trilho.clientWidth, m.passo, m.largura, m.recuo, indice);
         const p = posicaoReel(d);
         cartao.style.transform = reduced
           ? 'none'
           : `perspective(1100px) translateZ(${p.profundidade}px) rotateY(${p.rotacao}deg) scale(${p.escala})`;
-        cartao.style.opacity = String(reduced ? 1 : p.opacidade);
-        cartao.style.filter = reduced || p.desfoque < 0.2 ? 'none' : `blur(${p.desfoque.toFixed(2)}px)`;
+        cartao.style.opacity = String(reduced ? 1 : Math.max(p.opacidade, PISO_OPACIDADE));
+        const classe = String(Math.min(3, Math.round(Math.abs(d))));
+        if (cartao.dataset.distancia !== classe) cartao.dataset.distancia = classe;
       });
+      visualRef.current = indiceAtivo(trilho.scrollLeft, trilho.clientWidth, m.passo, m.largura, m.recuo, m.cartoes.length);
+    };
 
-      setAtivo(indiceAtivo(trilho.scrollLeft, trilho.clientWidth, passo, largura, recuo, cartoes.length));
+    const assentou = () => {
+      pintar();
+      if (!gestoRef.current) return;
+      gestoRef.current = false;
+      if (visualRef.current !== selecionadoRef.current) aoEscolherRef.current(visualRef.current);
     };
 
     const aoRolar = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => { frame = 0; pintar(); });
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; pintar(); });
       window.clearTimeout(parar);
-      parar = window.setTimeout(pintar, 120);
+      parar = window.setTimeout(assentou, ASSENTAR_MS);
+    };
+
+    // A resize moves every card, so the open day is brought back to the middle.
+    // Programmatic, so it never selects.
+    const recentrar = () => {
+      pintar();
+      const cartao = trilho.children[selecionadoRef.current] as HTMLElement | undefined;
+      if (!cartao) return;
+      gestoRef.current = false;
+      trilho.scrollTo({ left: cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2, behavior: 'auto' });
     };
 
     pintar();
     trilho.addEventListener('scroll', aoRolar, { passive: true });
-    const observador = new ResizeObserver(pintar);
+    const observador = new ResizeObserver(recentrar);
     observador.observe(trilho);
 
     return () => {
@@ -113,9 +173,33 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
       trilho.removeEventListener('scroll', aoRolar);
       observador.disconnect();
     };
-  }, [reduced, dias.length]);
+  }, [reduced, chaves]);
 
-  const escolher = useCallback(async (dia: string, arquivo: File | undefined) => {
+  // The open day is brought to the middle by the component itself. That scroll
+  // is programmatic: it drops any pending gesture so it can never select.
+  useEffect(() => {
+    const trilho = trilhoRef.current;
+    const cartao = trilho?.children[selecionado] as HTMLElement | undefined;
+    if (!trilho || !cartao) return;
+    gestoRef.current = false;
+    trilho.scrollTo({
+      left: cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2,
+      behavior: reduced ? 'auto' : 'smooth',
+    });
+    if (trilho.contains(document.activeElement)) {
+      (cartao.firstElementChild as HTMLElement | null)?.focus({ preventScroll: true });
+    }
+  }, [selecionado, chaves, reduced]);
+
+  const anotarGesto = useCallback(() => { gestoRef.current = true; }, []);
+
+  const mover = useCallback((passo: number) => {
+    const base = selecionadoRef.current >= 0 ? selecionadoRef.current : visualRef.current;
+    const alvo = base + passo;
+    if (alvo >= 0 && alvo < dias.length) aoEscolherRef.current(alvo);
+  }, [dias.length]);
+
+  const guardar = useCallback(async (dia: string, arquivo: File | undefined) => {
     if (!arquivo) return;
     setAviso(null);
     const resultado = await salvarMomento(dia, arquivo);
@@ -137,47 +221,95 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     });
   }, []);
 
+  const aberto = selecionado >= 0 ? dias[selecionado] : undefined;
+  const podeVoltar = selecionado !== 0;
+  const podeAvancar = selecionado !== dias.length - 1;
+
   return (
-    <div className="reel-momentos">
-      <ul className="reel-trilho" ref={trilhoRef} aria-label="Seus dias, um momento por dia">
-        {dias.map((item, indice) => {
-          const foto = fotos[item.dia];
-          const eAtivo = indice === ativo;
-          return (
-            <li key={item.dia} className="reel-cartao" data-ativo={eAtivo} aria-current={eAtivo ? 'true' : undefined}>
-              <div className="reel-moldura">
-                {foto ? (
-                  <img src={foto} alt={`Seu momento de ${item.titulo}`} loading="lazy" decoding="async" />
-                ) : (
-                  <p className="reel-vazio">O ápice do seu dia ainda não tem foto.</p>
-                )}
-                <div className="reel-legenda">
-                  <strong>{item.titulo}</strong>
-                  <small>{item.detalhe}</small>
-                </div>
-              </div>
-              <div className="reel-acoes">
-                <label className="reel-acao">
-                  <Camera size={16} aria-hidden="true" />
-                  {foto ? 'Trocar foto' : 'Guardar momento'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={(evento) => void escolher(item.dia, evento.target.files?.[0])}
-                  />
-                </label>
-                {foto ? (
-                  <button type="button" className="reel-acao" onClick={() => void remover(item.dia)}>
-                    <Trash2 size={16} aria-hidden="true" />
-                    Remover
-                  </button>
-                ) : null}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="reel-momentos" data-reduzido={reduced}>
+      <div className="reel-palco">
+        <ul
+          className="reel-trilho"
+          ref={trilhoRef}
+          aria-label="Seus dias"
+          onPointerDown={anotarGesto}
+          onWheel={anotarGesto}
+          onTouchStart={anotarGesto}
+          onKeyDown={(evento) => {
+            if (evento.key !== 'ArrowLeft' && evento.key !== 'ArrowRight') return;
+            evento.preventDefault();
+            mover(evento.key === 'ArrowLeft' ? -1 : 1);
+          }}
+        >
+          {dias.map((item, indice) => {
+            const foto = fotos[item.dia];
+            const eAberto = indice === selecionado;
+            return (
+              <li key={item.dia} className="reel-cartao" data-distancia="0">
+                <button
+                  type="button"
+                  className="reel-moldura"
+                  data-ativo={eAberto}
+                  data-foto={foto ? 'sim' : 'nao'}
+                  aria-pressed={eAberto}
+                  aria-current={item.hoje ? 'date' : undefined}
+                  aria-label={rotulo(item, Boolean(foto))}
+                  tabIndex={eAberto || selecionado < 0 ? 0 : -1}
+                  onClick={() => {
+                    gestoRef.current = false;
+                    if (!eAberto) aoEscolher(indice);
+                  }}
+                >
+                  {foto ? <img src={foto} alt="" loading="lazy" decoding="async" draggable={false} /> : null}
+                  <span className="reel-pelicula" aria-hidden="true" />
+                  <span className="reel-texto" aria-hidden="true">
+                    <span className="reel-semana">{item.data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span>
+                    <strong className="reel-numero">{String(item.data.getDate()).padStart(2, '0')}</strong>
+                    <span className="reel-mes">{item.data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span>
+                    <span className="reel-hoje">{item.hoje ? 'Hoje' : ' '}</span>
+                    <span className="reel-ciclos">{item.total ? `${item.feitos}/${item.total} ciclos` : 'Sem ciclos'}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <div className="reel-navegacao">
+      <button
+        type="button"
+        className="reel-seta"
+        data-lado="anterior"
+        aria-label="Dia anterior"
+        disabled={!podeVoltar}
+        onClick={() => mover(-1)}
+      >
+        <ChevronLeft size={18} aria-hidden="true" />
+      </button>
+        <div className="reel-pontos" aria-hidden="true">
+          {dias.map((item, indice) => <i key={item.dia} data-ativo={indice === selecionado} />)}
+        </div>
+      <button
+        type="button"
+        className="reel-seta"
+        data-lado="proximo"
+        aria-label="Próximo dia"
+        disabled={!podeAvancar}
+        onClick={() => mover(1)}
+      >
+        <ChevronRight size={18} aria-hidden="true" />
+      </button>
+      </div>
+
+      {aberto ? (
+        <AcoesMomento
+          temFoto={Boolean(fotos[aberto.dia])}
+          aoEscolher={(arquivo) => void guardar(aberto.dia, arquivo)}
+          aoRemover={() => void remover(aberto.dia)}
+        />
+      ) : null}
+      <p className="reel-privado">Fica só neste aparelho.</p>
       {aviso ? <p className="reel-aviso" role="alert">{aviso}</p> : null}
     </div>
   );

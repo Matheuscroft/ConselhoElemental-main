@@ -105,7 +105,6 @@
 .cycle-filter-options > summary > span { color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); }
 
 /* Expanded calendar: selection reveals one day; neighbouring dates remain operable. */
-.cycle-calendar-rail { position: relative; display: flex; gap: 8px; overflow-x: auto; padding: 6px 3px 12px; scrollbar-width: thin; scrollbar-color: rgb(var(--el-gold) / .35) transparent; overscroll-behavior-x: contain; }
 .cycle-day-card { position: relative; isolation: isolate; flex: 1 0 54px; height: 190px; overflow: hidden; display: flex; align-items: center; flex-direction: column; border: 1px solid rgb(var(--el-muted) / .2); border-radius: 32px 32px 12px 12px; padding: 16px 8px 12px; color: rgb(var(--el-muted)); background: rgb(var(--el-canvas)); transition: flex-basis 250ms ease, border-color 200ms ease, background 200ms ease; }
 .cycle-day-card[aria-pressed="true"] { flex-basis: 174px; color: rgb(var(--el-text)); border-color: rgb(var(--el-gold) / .65); background: radial-gradient(ellipse at 85% 38%, rgb(var(--el-gold) / .15), transparent 70%), rgb(var(--el-canvas)); }
 .cycle-day-weekday { font-size: var(--ds-text-micro); text-transform: capitalize; }
@@ -443,34 +442,3 @@
 .cycle-date-jump [role="alert"] { color: #ffb5ac; font-size: var(--ds-text-micro); }
 .cycle-date-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 .cycle-date-footer button { padding: 8px 12px; min-height: 48px; color: rgb(var(--el-gold)); }
-
-/* Two ways to look at the same days. */
-.cycle-vista {
-  display: inline-flex;
-  gap: 4px;
-  margin: 0 auto 12px;
-  padding: 4px;
-  border: var(--ds-edge);
-  border-radius: 999px;
-  background: var(--ds-surface-sunken);
-}
-
-.cycle-vista button {
-  min-block-size: 36px;
-  padding-inline: 16px;
-  border-radius: 999px;
-  color: rgb(var(--el-muted));
-  font-size: var(--ds-text-micro);
-  transition: background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease);
-}
-
-.cycle-vista button[aria-pressed='true'] {
-  background: rgb(var(--el-gold) / 18%);
-  color: rgb(var(--el-gold));
-}
-
-@media (prefers-reduced-motion: reduce) { .cycle-vista button { transition: none; } }
-
-/* An explicit display beats the user agent's rule for [hidden], so the rail
-   stayed on screen while another view was showing. */
-.cycle-calendar-rail[hidden] { display: none; }

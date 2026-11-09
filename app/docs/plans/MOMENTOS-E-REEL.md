@@ -58,7 +58,12 @@ isso não é detalhe: vale avisar quem usa, e vale empurrar a instalação.
 
 Testes: 12 casos novos — 5 em `momento.test.mjs` e 7 em `reel.test.mjs`.
 
-## O túnel (08/11/2026)
+## O túnel (08/11/2026) — REMOVIDO no commit 61fdf81
+
+> **Removido no commit 61fdf81** (`refactor(ciclos): remove o Flow Tunnel`). O
+> Reel horizontal passou a ser o próprio calendário de Ciclos (09/11/2026): a
+> vista Calendário/Momentos e o trilho antigo saíram. O texto abaixo fica só
+> como histórico; nada dele existe mais no código.
 
 A terceira visão dos mesmos dias: um corredor que se atravessa voando, rumo a
 um ponto de fuga de luz.
