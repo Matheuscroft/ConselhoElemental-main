@@ -45,3 +45,22 @@ Conferido em `/santuario`, `/ciclos`, `/grimorio`, `/pilares`, `/jornadas` e
 `/mapa`: HUD presente, 35px de altura, zero estouro horizontal a 390px.
 
 Testes: 4 casos em `vitalidade.test.mjs`.
+
+## O buraco no pipeline, fechado (09/11/2026)
+
+A main ficou quatro commits vermelha e nada publicável, e a causa não foi
+descuido: era o atalho que o próprio pipeline oferecia.
+
+`verify:release` rodava os testes e o lint. **O único typecheck do projeto
+vivia dentro de `npm run build`, que só rodava no CI.** Dava para ver tudo
+verde na máquina, empurrar, e descobrir que não compila depois.
+
+Agora `verify:release` começa por `tsc -b` — o **mesmo comando** que o
+`build` roda, então é a checagem do CI e não uma aproximação dela. Vem
+primeiro, para o erro de tipo aparecer antes de a suíte gastar o tempo dela.
+
+Custo: cerca de oito segundos.
+
+Provado contra um erro de propósito: `verify:release` saiu com código 2,
+imprimiu o `error TS2322` e **não chegou a rodar os testes**. Restaurado,
+voltou aos 855 verdes.
