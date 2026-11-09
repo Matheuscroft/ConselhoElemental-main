@@ -94,7 +94,7 @@ function GrimorioContent() {
           <div className="grimoire-profile-actions"><button ref={nameTrigger} type="button" onClick={() => { setNewName(user.name); setEditName(true); }}><Edit2 size={15} aria-hidden="true" />Editar nome</button><button ref={avatarTrigger} type="button" onClick={() => setShowAvatarDialog(true)}><ArcaneIcon name="santuario" size={16} />Ícone do perfil</button></div>
           <div className="grimoire-streak"><span><ArcaneIcon name="fogo" size={17} />{user.streak} {user.streak === 1 ? 'dia seguido' : 'dias seguidos'}</span><span>Recorde: {user.longestStreak} {user.longestStreak === 1 ? 'dia' : 'dias'}</span></div>
         </div>
-        <div className="grimoire-resources">
+        <div className="grimoire-resources ds-glass">
           <div className="grimoire-resource-grid">
             <ResourceMeter label="Vitalidade · HP" value={hp} maximum={100} color="246 148 167" icon={<Heart size={18} aria-hidden="true" />} />
             <ResourceMeter label="Stamina" value={resourceSnapshot.currentStamina} maximum={100} color="231 196 119" icon={<Zap size={18} aria-hidden="true" />} />

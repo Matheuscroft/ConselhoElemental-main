@@ -1580,7 +1580,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   <p className={`text-sm ${item.isCompleted ? 'line-through text-white/40' : ''}`}>
                     {item.title}
                   </p>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] flex-wrap">
+                  <div className="flex items-center gap-2 mt-1 text-[length:var(--ds-text-micro)] flex-wrap">
                     {itemArea && itemPrimaryBadgeLabel && (
                       <Badge 
                         style={{ 
@@ -1588,7 +1588,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                           color: itemArea.color,
                           borderColor: `${itemArea.color}80`
                         }}
-                        className="text-[9px] px-1.5 py-0 border"
+                        className="text-[length:var(--ds-text-micro)] px-1.5 py-0 border"
                       >
                         {itemPrimaryBadgeLabel}
                       </Badge>
@@ -1607,7 +1607,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                             color: aggArea?.color || '#D1D5DB',
                             borderColor: `${aggArea?.color || '#9CA3AF'}50`
                           }}
-                          className="text-[9px] px-1.5 py-0 border"
+                          className="text-[length:var(--ds-text-micro)] px-1.5 py-0 border"
                         >
                           +{Math.round(data.points)} {aggAreaName}
                           {aggSubarea ? ` | ${aggSubarea.name}` : ''}
@@ -1902,7 +1902,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               {primaryAreaBadgeLabel && (
                 <Badge 
                   variant="outline"
-                  className="text-[10px]"
+                  className="text-[length:var(--ds-text-micro)]"
                   style={{ 
                     backgroundColor: task.areaPrimaryId ? `${(area?.color || element.color)}15` : 'rgba(255,255,255,0.05)', 
                     borderColor: task.areaPrimaryId ? `${(area?.color || element.color)}40` : 'rgba(255,255,255,0.1)',
@@ -1916,7 +1916,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               {secondaryAreaBadgeLabel && (
                 <Badge 
                   variant="outline"
-                  className="text-[10px]"
+                  className="text-[length:var(--ds-text-micro)]"
                   style={{ 
                     backgroundColor: `${(secondaryArea?.color || element.color)}12`, 
                     borderColor: `${(secondaryArea?.color || element.color)}30`,
@@ -1930,7 +1930,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               {tertiaryAreaBadgeLabel && (
                 <Badge 
                   variant="outline"
-                  className="text-[10px]"
+                  className="text-[length:var(--ds-text-micro)]"
                   style={{ 
                     backgroundColor: `${(tertiaryArea?.color || element.color)}12`, 
                     borderColor: `${(tertiaryArea?.color || element.color)}30`,
@@ -1950,7 +1950,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   <Badge 
                     key={areaId}
                     variant="outline"
-                    className="text-[10px]"
+                    className="text-[length:var(--ds-text-micro)]"
                     style={{ 
                       backgroundColor: `${aggArea.color}10`, 
                       borderColor: `${aggArea.color}50`,
@@ -1964,7 +1964,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
               })}
               
               {task.plannedTimeMinutes != null && task.plannedTimeMinutes > 0 && (
-                <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px]">
+                <Badge variant="outline" className="bg-white/5 text-white/60 text-[length:var(--ds-text-micro)]">
                   <Clock className="w-3 h-3 mr-1" />
                   {formatDuration(task.plannedTimeMinutes)}
                 </Badge>

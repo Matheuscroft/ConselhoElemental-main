@@ -328,7 +328,7 @@ export const TemporalCalendarPage: React.FC = () => {
                       ))}
                     </div>
 
-                    <p className="mt-2 text-center text-[10px] text-white/45">
+                    <p className="mt-2 text-center text-[length:var(--ds-text-micro)] text-white/55">
                       {day?.totalCompleted ?? 0} feitos
                     </p>
                   </button>
@@ -373,7 +373,7 @@ export const TemporalCalendarPage: React.FC = () => {
               <article key={entry.date.toISOString()} className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm text-white">{entry.icon} {entry.name}</p>
-                  <span className="rounded-full border border-mystic-gold/30 px-2 py-0.5 text-[10px] uppercase tracking-[0.12em] text-mystic-gold/80">
+                  <span className="rounded-full border border-mystic-gold/30 px-2 py-0.5 text-[length:var(--ds-text-micro)] uppercase tracking-[0.12em] text-mystic-gold/80">
                     {entry.planet}
                   </span>
                 </div>

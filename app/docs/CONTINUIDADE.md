@@ -1,3 +1,21 @@
+## Onda 1 de migração de telas — em revisão (09/11/2026)
+
+Lote: três implementadores em paralelo, em telas disjuntas, orquestrados conforme [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Checkout `main`, HEAD `8adca02`, sem commit nem push desta onda. Estado: **em revisão**; só o orquestrador marca aceita. A onda ainda não tem ID próprio em [FILA-ENTREGAS.md](FILA-ENTREGAS.md), e este registro não alterou a fila: o orquestrador deve abrir a entrada.
+
+Mudou (código, pelos implementadores): Rituais (8 `text-[9px]`/`text-[10px]` trocados por `--ds-text-micro`; 4 durações trocadas por tokens em `rituals.css`); Temporal (`DayDetailsDialog` usa `ds-glass-float`; `.temporal-stat` de 25px para `--ds-text-title`; `.season-panel` usa `--ds-duration-settle`; 2 `text-[10px]` viraram micro em `TemporalCalendarPage`; "0 feitos" com `text-white/55`); Grimório (`.grimoire-resources` usa `.ds-glass`; 4 durações viraram tokens em `grimorio.css`). Arquivos: `src/components/rituals/rituals.css`, `src/pages/Rituais.tsx`, `src/components/temporal/DayDetailsDialog.tsx`, `src/pages/temporal/TemporalCalendarPage.tsx`, `src/pages/temporal/temporal-elemental.css`, `src/pages/Grimorio.tsx`, `src/pages/grimorio.css`, todos sob `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src`.
+
+Já conformes, sem edição (inspeção estática por grep): Forja, Domínios, Astrolábio. Domínios usa cartões próprios sem `.ds-pane`/`.ds-glass`. Ticks do Recharts com `fontSize` numérico ficaram, porque o guarda só conta `font-size` em CSS. A animação `grimoire-light-pass` de 1,8s ficou, sem token adequado.
+
+Fora desta onda, já modificados antes do lote e não atribuídos a ele: `src/App.tsx`, `vite.config.ts`, `src/lib/dev/`, `src/main.qa.tsx`, `tests/dev/`. `App.tsx` é arquivo reservado ao orquestrador.
+
+Evidência reportada pelo orquestrador, não reexecutada por este registro: Verificador (Haiku) com `verify:release` 871/871 e build verde; QA no navegador a 390 e 768px com estouro 0 nas 8 rotas e console sem erros. Inspeção deste registro, por leitura: `ds-glass-float` em `DayDetailsDialog.tsx`; `ds-glass` em `Grimorio.tsx`; zero `text-[9px]`/`text-[10px]` em `rituals.css` e `Rituais.tsx`; `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs` e `TETO_VIDRO = 12` em `tests/design/superficie.test.mjs`. Nenhum teto foi alterado.
+
+Limites: telas vistas só com perfil vazio, sem dados. Badges de 12px em Rituais não medidos. Token `--ds-duration-settle` (420ms) não zera em movimento reduzido: defeito do sistema de movimento, não desta onda, a ser corrigido em commit separado. "0 feitos" do Calendário quebra em duas linhas e já quebrava a 10px. Contraste de `/55` não remedido (era 4,53:1 com `/45`). Foco não voltou à célula ao fechar o diálogo do dia; pode ser artefato do clique programático. `.domain-rail-art` ultrapassa a janela a 390px em `/dominios` sem estouro de página; não investigado. `prefers-reduced-motion` não pôde ser emulado. Nada visto em WebKit nem em aparelho real.
+
+Versão do produto: este registro não altera versão. Eventual bump da onda fica para decisão do orquestrador no encerramento do lote.
+
+Pendências: aceite pelo orquestrador; commit separado do token settle; investigação de `.domain-rail-art`; remedição de contraste e foco; medição de badges. Treinos segue para depois, sozinho, sem HUD.
+
 ## Equipe de frontend com Claude e retomada (09/11/2026)
 
 Fábio pediu um time de agentes orquestrado, numa sessão nova, para gastar menos do uso semanal: o frontend rodava sempre no Opus. O time e as regras estão em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md), que adapta ao Claude o protocolo de [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md) e de [POLITICA-MODELOS.md](POLITICA-MODELOS.md), escritos para o Codex. Só o orquestrador commita e publica. Instrução permanente de Fábio: publicar sempre na main.

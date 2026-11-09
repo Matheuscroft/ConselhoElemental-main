@@ -53,7 +53,7 @@
 .season-current { display: flex; justify-content: space-between; gap: 24px; align-items: center; padding: 16px 0 24px; border-bottom: 1px solid var(--temporal-line); }
 .season-current .temporal-select { flex-shrink: 0; }
 .season-explorer { display: flex; gap: 12px; align-items: stretch; }
-.season-panel { flex: 0 0 92px; min-width: 0; border: 1px solid var(--temporal-line); border-radius: 14px; overflow: clip; background: #141b27; transition: flex-grow 280ms ease; }
+.season-panel { flex: 0 0 92px; min-width: 0; border: 1px solid var(--temporal-line); border-radius: 14px; overflow: clip; background: #141b27; transition: flex-grow var(--ds-duration-settle) var(--ds-ease); }
 .season-panel[data-open="true"] { flex-grow: 1; border-color: color-mix(in srgb, var(--season-accent) 55%, transparent); }
 .season-trigger { color: var(--season-accent); display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 22px 8px; width: 100%; min-height: 44px; }
 .season-trigger span { display: flex; flex-direction: column; gap: 8px; font-size: var(--ds-text-micro); }
@@ -80,7 +80,7 @@
 .temporal-year-today { min-height: 44px; padding: 8px 12px; color: #d5b66f; font-size: var(--ds-text-micro); }
 .temporal-year-stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; padding: 20px 0; border-block: 1px solid var(--temporal-line); }
 .temporal-stat > p:first-child { text-transform: none; letter-spacing: normal; color: #aab4c4; font-size: var(--ds-text-micro); }
-.temporal-stat > p:last-child { font-size: 25px; font-weight: 400; }
+.temporal-stat > p:last-child { font-size: var(--ds-text-title); font-weight: 400; }
 .temporal-action { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 10px 16px; background: #d5b66f; color: #080b12; border-radius: 9px; font-size: var(--ds-text-micro); font-weight: 500; }
 .annual-entry-action { min-height: 44px; flex-shrink: 0; }
 .temporal-month-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
