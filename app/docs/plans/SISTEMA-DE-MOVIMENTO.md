@@ -120,3 +120,29 @@ A primeira versão da regra aceitava qualquer `repeat:`, então `repeat: 0`
 passava. Foi apertada depois de o guarda ser testado contra uma violação de
 propósito e **não pegar** — um teste de guarda que não sabe falhar não vale
 nada.
+
+## Movimento reduzido, no token (09/11/2026)
+
+O sistema tinha um buraco que eu abri: das cinco batidas, só `feedback` e
+`reveal` eram zeradas em movimento reduzido, e só dentro de
+`.elemental-system`. `settle` e `conjure` não tinham regra nenhuma, e nove
+folhas de estilo as usam. Cada tela teria de lembrar de desligar a própria
+animação, e as que esqueceram continuaram se mexendo para quem pediu menos
+movimento. O QA da onda 1 achou por leitura do CSS.
+
+O conserto é na origem: sob `prefers-reduced-motion`, **todas** as durações
+colapsam no próprio token, e o passo de escalonamento vai a zero. Isso cobre
+os consumidores existentes e os que ainda não foram escritos. O valor é
+`0.01ms` e não `0` de propósito: uma transição de duração zero nunca dispara
+`transitionend`, e qualquer coisa esperando por ele esperaria para sempre. O
+estado final chega, só que de uma vez, então nada se perde.
+
+`motion.ts` já fazia o equivalente no JavaScript, por `beatUnless`.
+
+Um teste falha se uma batida for acrescentada sem colapsar, e foi provado
+falhando ao remover `settle` do bloco.
+
+Conferido no navegador, que o QA não conseguia: a regra é lida sob a media
+query, e aplicá-la move a transição da barra do Grimório de 0,42s para
+0,00001s. A ativação pela preferência real do sistema ainda precisa de um
+aparelho.
