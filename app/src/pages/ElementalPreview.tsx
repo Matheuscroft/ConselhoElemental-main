@@ -16,6 +16,8 @@ import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, SANCTUARY_HOME as HOME, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
 import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
 import { Contagem } from '@/components/motion/Contagem';
+import { Cerimonia } from '@/components/cerimonia/Cerimonia';
+import type { Premio } from '@/lib/cerimonia/cerimonia';
 import { Conjurar } from '@/components/motion/Conjurar';
 import './elemental-preview.css';
 
@@ -226,11 +228,36 @@ function SanctuaryComposition() {
   const { user, currentAccountId, getLevelProgress, getCompletedHabitsToday, getStreak } = useAppStore();
   const { getResourceSnapshot: getResources } = useWorkoutStore();
   const level = getLevelProgress();
+  const { profile: signo } = useZodiacPreference();
+
+  /**
+   * Levelling up is rare and earned, which is what a ceremony is for. A habit
+   * ticked keeps the small pop instead: three full screens every time would
+   * be a punishment by the second day.
+   *
+   * Adjusted during render, React's own recipe for state that follows a prop,
+   * so the ceremony opens on the same paint as the level it is marking.
+   */
+  const [nivelVisto, setNivelVisto] = useState(level.level);
+  const [premio, setPremio] = useState<Premio | null>(null);
+  if (nivelVisto !== level.level) {
+    const subiu = level.level > nivelVisto;
+    setNivelVisto(level.level);
+    if (subiu) {
+      setPremio({
+        elemento: signo?.element,
+        titulo: 'Você subiu de nível',
+        numero: { rotulo: 'Nível', de: nivelVisto, para: level.level },
+        destrave: { titulo: 'Próximo nível', detalhe: `${format(level.xpToNextLevel)} XP pela frente` },
+      });
+    }
+  }
   const resources = getResources();
   const xp = level.xpTotal - level.xpAtLevelStart;
   const hp = Math.min(100, 70 + getCompletedHabitsToday() * 5 + (getStreak() > 0 ? 10 : 0));
 
   return <>
+    {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
     <section className="ep-sanctuary" aria-labelledby="ep-title">
       <div className="ep-identity">
         <p className="ep-kicker">Seu Santuário</p>

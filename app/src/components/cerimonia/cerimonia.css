@@ -1,0 +1,132 @@
+/*
+ * The ceremony: whole screens, one thing on each.
+ *
+ * It covers everything on purpose. The point of a ceremony is that the app
+ * stops for a moment, and a celebration crowded by the interface it
+ * interrupts is just a louder notice.
+ */
+.cerimonia {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  padding: 24px max(20px, env(safe-area-inset-left)) max(28px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 42%, color-mix(in srgb, var(--cerimonia-cor) 22%, transparent), transparent 70%),
+    rgb(5 7 12 / 96%);
+  animation: cerimonia-abrir var(--ds-duration-reveal) var(--ds-ease) both;
+}
+
+@keyframes cerimonia-abrir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The rays behind it: the burst, turned slowly so it is alive without
+   demanding to be watched. */
+.cerimonia-raios {
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 46%,
+    color-mix(in srgb, var(--cerimonia-cor) 20%, transparent) 0deg 4deg,
+    transparent 4deg 13deg
+  );
+  -webkit-mask-image: radial-gradient(circle at 50% 46%, #000 12%, transparent 62%);
+  mask-image: radial-gradient(circle at 50% 46%, #000 12%, transparent 62%);
+  animation: cerimonia-girar 42s linear infinite;
+}
+
+.cerimonia-raios[data-parado='true'] { animation: none; }
+
+@keyframes cerimonia-girar {
+  to { rotate: 360deg; }
+}
+
+.cerimonia-corpo {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 26px;
+  text-align: center;
+}
+
+.cerimonia-beat {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  /* Each beat arrives on the curve that overshoots: this is the one place in
+     the app where something is allowed to land harder than it settles. */
+  animation: cerimonia-chegar var(--ds-duration-conjure) var(--ds-ease-conjure) both;
+}
+
+@keyframes cerimonia-chegar {
+  from { opacity: 0; scale: 0.82; }
+  to { opacity: 1; scale: 1; }
+}
+
+.cerimonia-selo {
+  inline-size: 104px;
+  block-size: 104px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cerimonia-cor) 0%, color-mix(in srgb, var(--cerimonia-cor) 30%, transparent) 46%, transparent 72%);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--cerimonia-cor) 45%, transparent);
+}
+
+.cerimonia-chegada h2 {
+  margin: 0;
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-fluid-display);
+  font-weight: 500;
+  line-height: var(--ds-leading-tight);
+  text-wrap: balance;
+}
+
+.cerimonia-numero strong {
+  display: block;
+  color: var(--cerimonia-cor);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-fluid-hero, var(--ds-text-hero));
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.cerimonia-numero small,
+.cerimonia-destrave small {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small);
+}
+
+.cerimonia-destrave strong {
+  font-size: var(--ds-text-lead);
+  font-weight: 500;
+}
+
+.cerimonia-sair {
+  position: relative;
+  min-block-size: 52px;
+  inline-size: min(100%, 320px);
+  border: 1px solid color-mix(in srgb, var(--cerimonia-cor) 62%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cerimonia-cor) 16%, transparent);
+  color: rgb(var(--el-text));
+  font-size: var(--ds-text-body);
+  cursor: pointer;
+}
+
+.cerimonia-sair:focus-visible {
+  outline: 2px solid rgb(var(--el-gold));
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cerimonia,
+  .cerimonia-beat,
+  .cerimonia-raios {
+    animation: none;
+  }
+}
