@@ -25,7 +25,7 @@ function completed(context: Context) {
 
 /** One explicit connection action. Reuses the existing archive, CAS, durable
  * intent, receipt, readback and binding. No external safety-file roundtrip. */
-export async function connectCurrentAccountProgress(context: Context, input: { userId: string; confirmed: boolean }, transport: Transport) {
+export async function connectCurrentAccountProgress(context: Context, input: { userId: string; confirmed: boolean; legacyReplacementConfirmed?: boolean }, transport: Transport) {
   permitted(context, input.confirmed);
   const storage = context.storage();
   if (storage.getItem(ACCOUNT_INTENT_KEY) !== null || storage.getItem(ACCOUNT_RESOLUTION_KEY) !== null) {
@@ -44,7 +44,7 @@ export async function connectCurrentAccountProgress(context: Context, input: { u
   } else {
     const safety = await createWorkspaceSafetyCopy(storage, context.origin);
     permitted(context, input.confirmed);
-    const sent = await beginAccountTransfer(context, { baseline: safety.baseline, previousCopy: safety.text, allProfilesConfirmed: true, userId: input.userId }, transport);
+    const sent = await beginAccountTransfer(context, { baseline: safety.baseline, previousCopy: safety.text, allProfilesConfirmed: true, userId: input.userId, legacyReplacementConfirmed: input.legacyReplacementConfirmed }, transport);
     await finishAccountTransferLocally(context, { raw: sent.raw, localUseConfirmed: true, bindAccountConfirmed: true }, transport);
   }
   return completed(context);

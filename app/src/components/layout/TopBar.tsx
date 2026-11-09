@@ -55,8 +55,6 @@ export const TopBar: React.FC<TopBarProps> = ({
     user: authUser,
     session,
     signOut,
-    restoreFromLocalBackupToCloud,
-    isMigratingLocalData,
   } = useAuthStore();
   const [isAccountModalOpen, setIsAccountModalOpen] = React.useState(false);
   const [routesOpen, setRoutesOpen] = React.useState(false);
@@ -225,25 +223,28 @@ export const TopBar: React.FC<TopBarProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />
+          {(sync || !authUser) && <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />}
 
-          {isSupabaseAuthEnabled && authUser && (
+          {!sync && isSupabaseAuthEnabled && authUser && (
             <div className="space-y-2 rounded-lg border border-white/15 p-3">
-              <p className="text-sm font-medium text-white">Sessao Supabase</p>
+              <p className="text-sm font-medium text-white">Conclua a conexão da sua jornada</p>
               <p className="text-xs text-white/70">
-                {authUser?.email || 'Usuario autenticado sem email visivel'}
+                {authUser?.email || 'Conta autenticada'} · entre novamente na tela segura para escolher e sincronizar os dados deste aparelho.
               </p>
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   className="flex-1"
-                  disabled={isMigratingLocalData}
                   onClick={() => {
-                    void restoreFromLocalBackupToCloud();
+                    void (async () => {
+                      await signOut();
+                      setIsAccountModalOpen(false);
+                      window.location.replace('/auth');
+                    })();
                   }}
                 >
-                  {isMigratingLocalData ? 'Restaurando...' : 'Restaurar backup local'}
+                  Conectar esta jornada
                 </Button>
                 <Button
                   type="button"
@@ -252,7 +253,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                     void (async () => {
                       await signOut();
                       setIsAccountModalOpen(false);
-                      navigate('/auth', { replace: true });
+                      window.location.replace('/auth');
                     })();
                   }}
                 >

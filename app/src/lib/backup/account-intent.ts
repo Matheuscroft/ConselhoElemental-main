@@ -28,7 +28,7 @@ export async function inspectAccountIntent(raw: string, origin: string): Promise
   const fields = ['format','version','phase','origin','userId','operationId','expectedRevision','archive','archiveSha256','baselineDigest','localMode'];
   if (!object(v) || Object.keys(v).length !== fields.length || fields.some(k => !Object.hasOwn(v,k))
     || v.format !== 'conselho-elemental-account-intent' || v.version !== 1 || (v.phase !== 'pending' && v.phase !== 'paused')
-    || !origin || v.origin !== origin || !uuid(v.userId) || !uuid(v.operationId) || (v.expectedRevision !== 'empty' && !uuid(v.expectedRevision))
+    || !origin || v.origin !== origin || !uuid(v.userId) || !uuid(v.operationId) || (v.expectedRevision !== 'empty' && v.expectedRevision !== 'legacy' && !uuid(v.expectedRevision))
     || typeof v.archive !== 'string' || typeof v.archiveSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(v.archiveSha256)
     || typeof v.baselineDigest !== 'string' || !/^[a-f0-9]{64}$/.test(v.baselineDigest)
     || (v.localMode !== null && typeof v.localMode !== 'string')) invalid();

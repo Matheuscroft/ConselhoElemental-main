@@ -5,7 +5,7 @@ import { ActiveFitnessSession } from '@/pages/fitness/ActiveFitnessSession';
 import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
 import { ActiveWorkout } from '@/pages/fitness/ActiveWorkout';
 import { WorkoutSummary } from '@/pages/fitness/WorkoutSummary';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useContext, useEffect, useSyncExternalStore } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from '@/components/ui/sonner';
@@ -40,12 +40,26 @@ import {
 } from '@/pages';
 import './App.css';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
+import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
+import type { AccountSyncView } from '@/lib/backup/account-live-sync';
 
 const ElementalPreview = lazy(() => import('@/pages/ElementalPreview'));
 const DespertarRota = lazy(() => import('@/components/sanctuary/DespertarRota'));
+const signedOutView: Readonly<AccountSyncView> = Object.freeze({ status: 'stopped', message: 'Entre para continuar.' });
+const subscribeSignedOut = () => () => {};
+const getSignedOutView = () => signedOutView;
+
+function AccountEntryRedirect() {
+  useEffect(() => {
+    window.location.replace('/auth');
+  }, []);
+  return <div className="min-h-screen bg-transparent text-white grid place-items-center"><p className="text-white/70">Abrindo acesso à conta...</p></div>;
+}
 
 function ProtectedRoute() {
   const location = useLocation();
+  const accountSync = useContext(AccountConnectionContext);
+  const accountView = useSyncExternalStore(accountSync?.subscribe ?? subscribeSignedOut, accountSync?.getSnapshot ?? getSignedOutView, getSignedOutView);
   const { isInitialized, user } = useAuthStore();
   const onboarding = useAppStore((state) => state.onboarding);
   const hasDomainData = useAppStore(
@@ -59,9 +73,11 @@ function ProtectedRoute() {
       0
   );
 
-  if (!isSupabaseAuthEnabled) {
+  if (accountSync && accountView.status !== 'stopped') {
     return <Outlet />;
   }
+
+  if (!isSupabaseAuthEnabled) return <AccountEntryRedirect />;
 
   if (!isInitialized) {
     return (
@@ -89,11 +105,12 @@ function ProtectedRoute() {
 
 function PublicAuthRoute() {
   const location = useLocation();
+  const accountSync = useContext(AccountConnectionContext);
+  const accountView = useSyncExternalStore(accountSync?.subscribe ?? subscribeSignedOut, accountSync?.getSnapshot ?? getSignedOutView, getSignedOutView);
   const { isInitialized, user } = useAuthStore();
 
-  if (!isSupabaseAuthEnabled) {
-    return <Navigate to="/santuario" replace />;
-  }
+  if (accountSync && accountView.status !== 'stopped') return <Navigate to="/santuario" replace />;
+  if (!isSupabaseAuthEnabled) return <AccountEntryRedirect />;
 
   if (!isInitialized) {
     return (

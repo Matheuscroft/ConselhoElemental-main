@@ -1,7 +1,16 @@
 import { version } from '../../../package.json';
 import { BACKUP_FORMAT, MAX_BACKUP_BYTES, STORE_KEYS, validateProgressSnapshot, type ProgressSnapshot } from './progress-backup';
-import { auditCriticalProgress } from './critical-progress';
+import { auditCriticalProgress, type CriticalProgressAudit } from './critical-progress';
 import type { StoredProgress } from './restore-journal';
+
+export class StoredProgressAuditError extends Error {
+  readonly audit: CriticalProgressAudit;
+  constructor(audit: CriticalProgressAudit) {
+    super('O progresso armazenado contém dados que precisam de revisão. Nenhum dado foi alterado.');
+    this.name = 'StoredProgressAuditError';
+    this.audit = { issues: audit.issues.map(issue => ({ ...issue })), truncated: audit.truncated };
+  }
+}
 
 /** Validate actual bytes without normalizing, hydrating stores or inferring rewards.
  * Both absent is a fresh origin. Half a pair is not a restorable baseline.
@@ -27,6 +36,7 @@ export function validateStoredProgress(pair: StoredProgress, origin: string): Pr
     stores: { core: { key: STORE_KEYS.core, ...core }, fitness: { key: STORE_KEYS.fitness, ...fitness } },
   };
   validateProgressSnapshot(snapshot);
-  if (auditCriticalProgress(snapshot).issues.length) throw new Error('O progresso armazenado contém dados que precisam de revisão. Nenhum dado foi alterado.');
+  const audit = auditCriticalProgress(snapshot);
+  if (audit.issues.length || audit.truncated) throw new StoredProgressAuditError(audit);
   return snapshot;
 }

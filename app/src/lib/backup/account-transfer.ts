@@ -38,7 +38,7 @@ function checkMode(s: RestoreStorage, intent: AccountIntent) {
   validateLocalProgressMode(mode,intent.origin);
   if (mode !== intent.localMode && mode !== localProgressMode(intent.origin)) throw new Error('O modo de uso mudou. Refaça a conferência.');
 }
-export async function beginAccountTransfer(context: Context, input: { baseline: WorkspaceBaseline; previousCopy: string; allProfilesConfirmed: boolean; userId: string }, transport: Transport) {
+export async function beginAccountTransfer(context: Context, input: { baseline: WorkspaceBaseline; previousCopy: string; allProfilesConfirmed: boolean; userId: string; legacyReplacementConfirmed?: boolean }, transport: Transport) {
   const selected = { ...input, baseline: { ...input.baseline, pair: { ...input.baseline.pair } } };
   if (selected.allProfilesConfirmed !== true) throw new Error('Confirme o envio da cópia de todos os perfis locais.');
   return exclusive(context,async(c,s) => {
@@ -56,6 +56,13 @@ export async function beginAccountTransfer(context: Context, input: { baseline: 
       const reviewed = await reviewAccountBinding(bindingRaw,c.origin,transport,s);
       if (reviewed.binding.userId !== selected.userId) throw new Error('Entre na conta correspondente ao vínculo salvo.');
       expectedRevision = reviewed.binding.revision;
+    } else if (selected.legacyReplacementConfirmed === true) {
+      const remote = await transport.readProgress(selected.userId); check(c);
+      if (!remote || typeof remote !== 'object' || !('kind' in remote) || remote.kind !== 'legacy'
+        || !('complete' in remote) || remote.complete !== false || !('revision' in remote) || remote.revision !== 'legacy') {
+        throw new Error('A conta não está mais no formato anterior. Refaça a comparação antes de enviar.');
+      }
+      expectedRevision = 'legacy';
     } else {
       const local = await prepareLocalAssociationReview(reviewContext), remote = await prepareRemoteAssociationReview(local,reviewContext,transport);
       if (remote.remoteSummary !== null || remote.revision !== 'empty') throw new Error('Esta conta já contém progresso online. Guarde as duas versões; esta etapa não substitui ou mescla dados existentes.');
@@ -104,7 +111,7 @@ export async function finishAccountTransferLocally(context: Context, input: { ra
     const bindingRaw = s.getItem(ACCOUNT_BINDING_KEY);
     const existing = bindingRaw === null ? null : await inspectAccountBinding(bindingRaw,c.origin);
     if (existing && (existing.userId !== intent.userId || (existing.revision !== intent.expectedRevision && existing.operationId !== intent.operationId))) throw new Error('O vínculo mudou. Preserve as versões e refaça a conferência.');
-    if (!existing && intent.expectedRevision !== 'empty') throw new Error('O vínculo anterior está ausente. Preserve a tentativa antes de continuar.');
+    if (!existing && intent.expectedRevision !== 'empty' && intent.expectedRevision !== 'legacy') throw new Error('O vínculo anterior está ausente. Preserve a tentativa antes de continuar.');
     const identity=await transport.verifyIdentity();if(identity.userId!==intent.userId)throw new Error('A conta não corresponde à tentativa.');
     const command=await transport.prepare({archive:intent.archive,expectedRevision:intent.expectedRevision,operationId:intent.operationId,allProfilesConfirmed:true});
     const confirmed=await transport.confirm(command);check(c);assertIntent(s,selected.raw);
