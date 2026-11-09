@@ -85,3 +85,26 @@ test('the stagger step is one number, shared by the stylesheet', () => {
   assert.equal(stagger(0), 0);
   assert.equal(stagger(3), 0.18, 'the third item waits three steps');
 });
+
+// Only two of the five beats were covered by reduced motion, and only inside
+// one class: settle and conjure had no rule and nine stylesheets use them.
+// The collapse lives at the token, so this is what stops a sixth beat from
+// being added without it.
+test('every beat collapses under reduced motion, so no screen has to remember', () => {
+  const reduzido = /@media \(prefers-reduced-motion: reduce\) \{\s*:root \{([^}]*)\}/.exec(css);
+  assert.ok(reduzido, 'the stylesheet must collapse the tokens inside a reduced-motion block at the root');
+
+  const colapsadas = Object.fromEntries(
+    [...reduzido[1].matchAll(/--ds-duration-([a-z]+):\s*([\d.]+)ms/g)].map(([, nome, ms]) => [nome, Number(ms)]),
+  );
+
+  for (const nome of Object.keys(DURATION)) {
+    assert.ok(nome in colapsadas, `${nome} has no reduced-motion value: a screen using it keeps moving`);
+    // Not zero on purpose: a zero-length transition never fires transitionend.
+    assert.ok(colapsadas[nome] > 0 && colapsadas[nome] <= 1, `${nome} must collapse to under 1ms, not stay at ${colapsadas[nome]}ms`);
+  }
+  assert.deepEqual(Object.keys(colapsadas).sort(), Object.keys(DURATION).sort(), 'and nothing unknown may sit beside them');
+
+  const passo = /--ds-stagger:\s*(\d+)ms/.exec(reduzido[1]);
+  assert.ok(passo && Number(passo[1]) === 0, 'staggered delays must not wait either');
+});

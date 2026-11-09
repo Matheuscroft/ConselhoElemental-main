@@ -1,5 +1,5 @@
 /*
- * The app's four beats. Motion here answers something a person did and shows
+ * The app's five beats. Motion here answers something a person did and shows
  * what changed by it; ambient elemental scenes keep their own timing.
  *
  * press     the finger is down and the control knows it
@@ -24,6 +24,34 @@
   --ds-ease: cubic-bezier(.23,1,.32,1);
   --ds-ease-exit: cubic-bezier(.4,0,1,1);
   --ds-ease-conjure: cubic-bezier(.22,1.4,.36,1);
+}
+
+/*
+ * Reduced motion, for every beat at once, at the token.
+ *
+ * Only two of the five beats were covered, and only inside `.elemental-system`:
+ * settle and conjure had no rule at all, and nine stylesheets use them. Each of
+ * those screens would have had to remember to switch its own animation off,
+ * and the ones that forgot -- the Grimoire bar, the season panel, the element
+ * artwork -- kept moving for someone who had asked the system for less.
+ *
+ * Collapsing the token fixes every consumer, including the ones not written
+ * yet. It is 0.01ms and not 0 on purpose: a zero-length transition never fires
+ * `transitionend`, and anything waiting on it would wait forever. The end state
+ * still arrives, it just arrives at once, so no information is lost.
+ *
+ * `motion.ts` already does the same for JavaScript through `beatUnless`, and a
+ * test fails if a beat is added here without being collapsed.
+ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ds-duration-press: 0.01ms;
+    --ds-duration-feedback: 0.01ms;
+    --ds-duration-reveal: 0.01ms;
+    --ds-duration-settle: 0.01ms;
+    --ds-duration-conjure: 0.01ms;
+    --ds-stagger: 0ms;
+  }
 }
 .elemental-press {
   transition: transform var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) ease, border-color var(--ds-duration-feedback) ease;
