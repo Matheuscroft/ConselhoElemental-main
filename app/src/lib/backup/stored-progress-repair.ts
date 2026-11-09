@@ -58,10 +58,16 @@ async function inspectJournal(raw: string, origin: string): Promise<Journal> {
     || await digest(envelope.payload) !== envelope.checksum) fail('A cópia de segurança da correção perdeu a integridade. Preserve os dados deste navegador.');
   let journal: unknown;
   try { journal = JSON.parse(envelope.payload); } catch { return fail('A cópia de segurança da correção é incompatível.'); }
+  const incompativel = 'A cópia de segurança da correção pertence a outra origem ou é incompatível.';
   if (!object(journal) || journal.format !== 'conselho-elemental-progress-repair' || journal.version !== 1
-    || journal.origin !== origin || !object(journal.before) || !object(journal.target)
-    || !['core', 'fitness'].every(key => journal.before[key] === null || typeof journal.before[key] === 'string')
-    || !['core', 'fitness'].every(key => typeof journal.target[key] === 'string')) fail('A cópia de segurança da correção pertence a outra origem ou é incompatível.');
+    || journal.origin !== origin) fail(incompativel);
+  // Hoisted: narrowing a property of an unknown does not survive into a
+  // closure, so `journal.before[key]` inside every() was still unknown and
+  // the build refused it. A const can, because it cannot be reassigned.
+  const { before, target } = journal;
+  if (!object(before) || !object(target)
+    || !['core', 'fitness'].every(key => before[key] === null || typeof before[key] === 'string')
+    || !['core', 'fitness'].every(key => typeof target[key] === 'string')) fail(incompativel);
   return journal as unknown as Journal;
 }
 
