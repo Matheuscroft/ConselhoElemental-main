@@ -15,7 +15,7 @@ async function setup(){
  const calls=[],hooks={beforeRpc:async()=>{},afterRpc:async()=>{}};
  const client={auth:{getUser:async()=>({data:{user:session?{id:session}:null},error:null})},rpc(name,args){const request=(async()=>{
   const call={name,args:{...args}};calls.push(call);const failure=await hooks.beforeRpc(call);if(failure)return {data:null,error:failure};
-  const mapping={progress_account_read:['select public.progress_account_read($1) as value',[args.p_expected_user_id]],progress_account_commit:['select public.progress_account_commit($1,$2,$3,$4,$5) as value',[args.p_expected_user_id,args.p_expected_revision,args.p_operation_id,args.p_archive,args.p_all_profiles_confirmed]],progress_account_receipt:['select public.progress_account_receipt($1,$2) as value',[args.p_expected_user_id,args.p_operation_id]]};
+  const mapping={progress_account_read:['select public.progress_account_read($1) as value',[args.p_expected_user_id]],progress_account_commit:['select public.progress_account_commit($1,$2,$3,$4,$5) as value',[args.p_expected_user_id,args.p_expected_revision,args.p_operation_id,args.p_archive,args.p_all_profiles_confirmed]],progress_account_adopt_legacy:['select public.progress_account_adopt_legacy($1,$2,$3,$4,$5,$6) as value',[args.p_expected_user_id,args.p_expected_revision,args.p_operation_id,args.p_archive,args.p_all_profiles_confirmed,args.p_legacy_replacement_confirmed]],progress_account_receipt:['select public.progress_account_receipt($1,$2) as value',[args.p_expected_user_id,args.p_operation_id]]};
   assert.ok(mapping[name],name);const [sql,params]=mapping[name];let result;try{result={data:(await userQuery(db,session,sql,params)).rows[0].value,error:null};}catch(e){result={data:null,error:{message:e.message,code:e.code}};}
   await hooks.afterRpc(call,result);return result;
  })();return request;}};
@@ -59,9 +59,11 @@ test('a later revision invalidates old confirmation and stale CAS cannot erase t
  await assert.rejects(f.transport.confirm(first),/não corresponde mais/);const stale=await f.prepare();await assert.rejects(f.transport.commit(stale),/online mudou/);assert.equal((await f.transport.readProgress(f.userId)).archive,archive);
 });
 
-test('legacy content and missing backend are never treated as a new empty account',async()=>{
- const f=await setup();await userQuery(db,f.userId,'insert into public.drafts(user_id,title) values($1,$2)',[f.userId,'Legado']);await assert.rejects(f.transport.readProgress(f.userId),/formato anterior/);
- const command=await f.prepare();await assert.rejects(f.transport.commit(command),/dados no formato anterior/);
+test('legacy content is explicit, preserved by adoption and never treated as a new empty account',async()=>{
+ const f=await setup();await userQuery(db,f.userId,'insert into public.drafts(user_id,title) values($1,$2)',[f.userId,'Legado']);const legacy=await f.transport.readProgress(f.userId);assert.deepEqual({kind:legacy.kind,revision:legacy.revision,complete:legacy.complete},{kind:'legacy',revision:'legacy',complete:false});
+ const emptyCommand=await f.prepare();await assert.rejects(f.transport.commit(emptyCommand),/dados no formato anterior/);
+ const command=await f.transport.prepare({archive:f.archive,expectedRevision:'legacy',allProfilesConfirmed:true});const receipt=await f.transport.commit(command);assert.equal(receipt.expectedRevision,'legacy');assert.equal((await f.transport.readProgress(f.userId)).archive,f.archive);
+ const snapshot=await db.query('select legacy_snapshot from progress_private.legacy_adoptions where user_id=$1',[f.userId]);assert.equal(snapshot.rows[0].legacy_snapshot.drafts[0].title,'Legado');assert.equal((await userQuery(db,f.userId,'select title from public.drafts where user_id=$1',[f.userId])).rows[0].title,'Legado');
  f.hooks.beforeRpc=async()=>({message:'function is not available'});await assert.rejects(f.transport.readProgress(f.userId),/servidor não confirmou/);
 });
 

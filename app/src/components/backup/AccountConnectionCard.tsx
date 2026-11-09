@@ -15,7 +15,7 @@ export function AccountConnectionCard({ sync, profileName }: { sync: LiveAccount
   function disconnect() {
     if (!sync) return;
     sync.forgetAccess();
-    window.location.assign('/?progresso=conta');
+    window.location.replace('/auth');
   }
   return <section className="account-connection-card" aria-labelledby="account-connection-title">
     <div className="account-connection-seal" data-connected={!!sync}>{saved ? <CloudCheck size={30} aria-hidden="true" /> : <CloudUpload size={30} aria-hidden="true" />}</div>
@@ -26,7 +26,7 @@ export function AccountConnectionCard({ sync, profileName }: { sync: LiveAccount
       {date && <small>Última versão salva: {date}</small>}
       <p>Atividades, XP, conquistas e treinos são salvos juntos. O app sincroniza durante o uso e confere a conta quando você volta.</p>
       {paused ? <a className="account-connection-primary" href="/?progresso=conta">Conferir conexão e progresso</a> : <button type="button" className="account-connection-primary" disabled={saving || view.status === 'offline'} onClick={() => void sync.flush()}><RefreshCw size={18} aria-hidden="true" />{saving ? 'Sincronizando…' : 'Sincronizar agora'}</button>}
-      <button type="button" className="account-connection-link" onClick={disconnect}>Desconectar neste aparelho</button>
+      <button type="button" className="account-connection-link" onClick={disconnect}>Sair da conta</button>
     </> : <>
       <p>Seu progresso está neste aparelho. Crie uma conta pessoal para guardar a jornada atual e continuar em outro dispositivo.</p>
       <a className="account-connection-primary" href="/?progresso=conta&modo=cadastro"><UserRoundPlus size={20} aria-hidden="true" />Criar minha conta</a>

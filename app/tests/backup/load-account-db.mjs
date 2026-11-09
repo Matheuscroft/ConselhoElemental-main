@@ -26,6 +26,7 @@ export const mobileTimerVersionMigration=readFileSync('supabase/migrations/20261
 export const refinedTimerVersionMigration=readFileSync('supabase/migrations/20261108003620_account_archive_version_143.sql','utf8');
 export const accessOnboardingVersionMigration=readFileSync('supabase/migrations/20261108014325_access_onboarding_version_144.sql','utf8');
 export const accountArchiveVersion145Migration=readFileSync('supabase/migrations/20261108060000_account_archive_version_145.sql','utf8');
+export const legacyAccountAdoptionMigration=readFileSync('supabase/migrations/20261109123000_legacy_account_adoption.sql','utf8');
 // Integration fixtures exercise the complete LOCAL candidate, not hosted state.
 const migration140=installedMigration+'\n'+archiveVersionMigration+'\n'+accessVersionMigration+'\n'+newJourneyVersionMigration+'\n'+authOnlyVersionMigration+'\n'+restoreHelpVersionMigration+'\n'+simpleImportVersionMigration+'\n'+quotaVersionMigration+'\n'+connectionVersionMigration;
 const migration141=migration140+'\n'+scorePanelVersionMigration;
@@ -49,7 +50,10 @@ export async function createLegacyDatabase(){
 export async function createAccountDatabase({release=true,producerVersion=145}={}){
  const db=await createLegacyDatabase();
  try{
-  await db.exec(producerVersion>=145?migration145:producerVersion>=144?migration:producerVersion>=143?migration143:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140);
+  const selected=producerVersion>=145?migration145:producerVersion>=144?migration:producerVersion>=143?migration143:producerVersion>=142?migration142:producerVersion>=141?migration141:migration140;
+  // Function-source guards are byte-exact. Keep Windows checkouts equivalent to CI/Supabase.
+  await db.exec(selected.replace(/\r\n/g,'\n'));
+  if(producerVersion>=145)await db.exec(legacyAccountAdoptionMigration.replace(/\r\n/g,'\n'));
   if(release)await db.exec('update progress_private.release_gate set writes_enabled=true where singleton'); // test-only postgres owner
   return db;
  }catch(error){await db.close();throw error;}

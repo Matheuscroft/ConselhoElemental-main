@@ -97,7 +97,7 @@ test('main static import graph cannot hydrate stores or initialize auth before g
  visit(resolve('src/main.tsx'));
  assert.ok(seen.has(resolve('src/lib/backup/progress-startup.ts')));
  assert.ok(!seen.has(resolve('src/bootstrap-app.tsx')));
- const entry=readFileSync('src/main.tsx','utf8');assert.match(entry,/await import\('\.\/bootstrap-app'\)/);
+ const entry=readFileSync('src/main.tsx','utf8');assert.match(entry,/await import\('\.\/mount-account-resume'\)/);
  visit(resolve('src/mount-restore-workspace.tsx'));
  assert.ok(!seen.has(resolve('src/App.tsx')));
  assert.ok(!seen.has(resolve('src/lib/backup/capture-progress.ts')));

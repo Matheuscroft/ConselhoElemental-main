@@ -15,7 +15,8 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
  const memory=new Map([['conselho-elemental-storage','synthetic core'],['dominio-do-mago-workout-storage-v1','synthetic fitness']]);if(empty)memory.clear();if(pending)memory.set(key,'synthetic intent');if(bound)memory.set('conselho-elemental-account-binding-v1','synthetic binding');
  const baseline={pair:{core:empty?null:'synthetic core',fitness:empty?null:'synthetic fitness'},snapshot:empty?null:{},localMode:null};
  const react={useState(initial){const i=si++;if(!(i in slots))slots[i]=initial;return [slots[i],next=>slots[i]=next];},useRef(initial){return refs[ri++]??={current:initial};},useEffect(fn){if(!mounted)cleanup=fn();}};
- const window={location:{origin:'https://fixture.test',assign:url=>navigations.push(url),reload:()=>navigations.push('reload')},localStorage:{getItem:k=>memory.get(k)??null},addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn)};
+ const sessionMemory=new Map();
+ const window={location:{origin:'https://fixture.test',assign:url=>navigations.push(url),reload:()=>navigations.push('reload')},localStorage:{getItem:k=>memory.get(k)??null},sessionStorage:{getItem:k=>sessionMemory.get(k)??null,setItem:(k,v)=>sessionMemory.set(k,v),removeItem:k=>sessionMemory.delete(k)},addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn)};
  const source=ts.transpileModule(readFileSync('src/components/backup/AccountWorkspace.tsx','utf8').replaceAll('import.meta.env.VITE_SUPABASE_URL',JSON.stringify('https://synthetic.invalid')).replaceAll('import.meta.env.VITE_SUPABASE_ANON_KEY',JSON.stringify('synthetic-public-key')),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX},reportDiagnostics:true});
  assert.deepEqual(source.diagnostics?.filter(d=>d.category===ts.DiagnosticCategory.Error).map(d=>ts.flattenDiagnosticMessageText(d.messageText,' ')),[]);
  const compiledSource=source.outputText;
@@ -36,9 +37,12 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   if(id.endsWith('/account-intent'))return {ACCOUNT_INTENT_KEY:key,accountBaselineDigest:async()=> 'baseline',inspectAccountIntent:async()=>({userId:uid,archive:'local archive',phase:'pending',baselineDigest:'baseline'})};
   if(id.endsWith('/restore-journal'))return {RESTORE_JOURNAL_KEY:'conselho-elemental-restore-journal-v1'};
   if(id.endsWith('/progress-mode'))return {LOCAL_PROGRESS_MODE_KEY:'conselho-elemental-local-progress-mode-v1'};
+  if(id.endsWith('/account-resume-entry'))return {ACCOUNT_TAB_ACCESS_KEY:'conselho-elemental-tab-access-v1'};
+  if(id.endsWith('/stored-progress'))return {StoredProgressAuditError:class StoredProgressAuditError extends Error{constructor(audit){super('synthetic progress audit');this.audit=audit;}}};
+  if(id.endsWith('/stored-progress-repair'))return {STORED_PROGRESS_REPAIR_KEY:'conselho-elemental-progress-repair-v1',settleStoredProgressRepair:async()=>{},planStoredProgressRepair:()=>null,applyStoredProgressRepair:async()=>{}};
   if(id.endsWith('/account-release'))return {ACCOUNT_TRANSFER_WRITES_RELEASED:released};
   if(id.endsWith('/account-access-release'))return {ACCOUNT_ACCESS_RELEASED:accessReleased};
-  if(id.endsWith('/account-transport'))return {createSupabaseAccountTransport:(_,guard)=>({guard})};
+  if(id.endsWith('/account-transport'))return {createSupabaseAccountTransport:(_,guard)=>({guard,readProgress:async()=>({complete:true,userId:uid,kind:'empty',revision:'empty',archive:null,coverage:{}})})};
   if(id.endsWith('/account-transfer'))return Object.fromEntries(['beginAccountTransfer','reviewAccountTransfer','finishAccountTransferLocally','pauseAccountTransferLocally'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
   if(id.endsWith('/new-account-progress'))return {startNewAccountProgress:(...args)=>new Promise((resolve,reject)=>requests.push({name:'startNewAccountProgress',args,resolve,reject}))};
   if(id.endsWith('/account-live-access'))return {prepareLiveAccountAccess:async(owned,options)=>({...options,allProfilesConfirmed:true,client:owned.client,dispose:owned.dispose})};
@@ -130,7 +134,7 @@ test('resending confirmation is explicit, needs no password and cannot be duplic
 });
 
 test('mode switches clear typed credentials and changing a verified access preserves pending data but removes authority to send',async()=>{
- const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta validada nesta conferência/);const before=[...f.memory.entries()];f.click('Trocar acesso');assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);const before=[...f.memory.entries()];f.click('Trocar conta');assert.doesNotMatch(f.content(),/Conta confirmada/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('late signup response after local context changes never restores access or shows a success result',async()=>{
@@ -146,9 +150,9 @@ test('authentication waits for initial pending-context inspection, even with val
 });
 
 test('a failed data inspection keeps transfers blocked but releases email and password access',async()=>{
- const f=fixture({contextFailure:true});await flush();f.render();assert.match(f.content(),/acesso à conta segue disponível|você ainda pode entrar/);
+ const f=fixture({contextFailure:true});await flush();f.render();assert.match(f.content(),/conexão anterior deste aparelho precisa ser reiniciada/);
  const fields=f.nodes().filter(n=>n.type==='input'&&['email','password'].includes(n.props.type));assert.equal(fields.length,2);assert.ok(fields.every(n=>n.props.disabled===false));
- f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.doesNotMatch(f.content(),/Salvar minha jornada na conta/);f.unmount();
+ f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);assert.equal(f.requests.length,0);assert.doesNotMatch(f.content(),/Sincronizar este aparelho/);f.unmount();
 });
 
 test('a failed choice mounts recovery controls, never resends on receipt check, and can explicitly re-evaluate while keeping local data',async()=>{
@@ -204,9 +208,9 @@ test('access-only release also keeps new-account start closed for an empty devic
 
 test('one explicit connection reuses the current journey without a file roundtrip and starts only a confirmed handoff',async()=>{
  const f=fixture({handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- assert.equal(f.downloads,0);f.click('Salvar minha jornada na conta');f.click('Salvar minha jornada na conta');assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[0].otherTabsClosed,true);assert.equal(f.requests[0].args[1].confirmed,true);assert.equal(f.requests[0].args[1].userId,uid);
+ assert.equal(f.downloads,0);f.click('Sincronizar este aparelho');f.click('Sincronizar este aparelho');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[0].otherTabsClosed,true);assert.equal(f.requests[0].args[1].confirmed,true);assert.equal(f.requests[0].args[1].userId,uid);
  f.requests[0].resolve({bindingRaw:'confirmed binding'});await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'confirmed binding');assert.equal(f.handoffs[0].remember,true);assert.equal(f.downloads,0);f.unmount();
- for(const mode of ['change','unmount']){const g=fixture({handoff:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.click('Salvar minha jornada na conta');if(mode==='change')g.emit('conselho-elemental-storage');else g.unmount();g.requests[0].resolve({bindingRaw:'late binding'});await flush();assert.equal(g.handoffs.length,0);if(mode==='change')g.unmount();}
+ for(const mode of ['change','unmount']){const g=fixture({handoff:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.click('Sincronizar este aparelho');await flush();if(mode==='change')g.emit('conselho-elemental-storage');else g.unmount();g.requests[0].resolve({bindingRaw:'late binding'});await flush();assert.equal(g.handoffs.length,0);if(mode==='change')g.unmount();}
 });
 
 

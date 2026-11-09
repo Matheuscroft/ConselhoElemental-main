@@ -62,6 +62,8 @@ export function createAccountTransport(client: AccountRpcClient, input: AccountT
       if (message.includes('progress_release_closed')) fail('A integração ainda não foi liberada no servidor. Seu progresso permanece local.');
       if (message.includes('progress_revision_conflict')) fail('O progresso online mudou. Refaça a comparação antes de enviar.');
       if (message.includes('progress_legacy_requires_review')) fail('Esta conta possui dados no formato anterior. Eles precisam de revisão antes da associação.');
+      if (message.includes('progress_legacy_consent_required')) fail('Confirme a preservação dos registros anteriores e o uso da jornada deste aparelho.');
+      if (message.includes('progress_legacy_state_changed')) fail('Os registros anteriores da conta mudaram. Refaça a conferência antes de sincronizar.');
       if (message.includes('progress_operation_reused')) fail('Esta tentativa já foi usada para outro conteúdo. Preserve o recibo original.');
       fail('O servidor não confirmou a operação completa. Preserve a cópia local e confira o recibo.');
     }
@@ -72,7 +74,12 @@ export function createAccountTransport(client: AccountRpcClient, input: AccountT
     if (userId !== guard.expectedUserId) fail('Destino diferente da conta conferida.');
     await verifyIdentity(signal);
     const response = await rpc('progress_account_read', {}, signal);
-    if (object(response) && response.kind === 'legacy') fail('Esta conta usa o formato anterior e ainda não tem leitura integral. Nenhum dado foi substituído.');
+    if (object(response) && response.kind === 'legacy') {
+      if (response.complete !== false || response.userId !== guard.expectedUserId || response.revision !== 'legacy') {
+        fail('Resposta antiga da conta incompatível. Nenhum dado foi substituído.');
+      }
+      return Object.freeze({ complete: false as const, userId: guard.expectedUserId, kind: 'legacy' as const, revision: 'legacy' as const });
+    }
     if (!object(response) || response.complete !== true || response.userId !== guard.expectedUserId
       || (response.kind !== 'empty' && response.kind !== 'snapshot') || !object(response.coverage)
       || (response.kind === 'empty' ? response.revision !== 'empty' || response.archive !== null : !uuid(response.revision) || typeof response.archive !== 'string')) {
@@ -93,7 +100,7 @@ export function createAccountTransport(client: AccountRpcClient, input: AccountT
     const { archive, expectedRevision, allProfilesConfirmed } = input, operationId = input.operationId ?? crypto.randomUUID();
     check(signal);
     if (allProfilesConfirmed !== true) fail('Confirme o envio do arquivo de todos os perfis locais.');
-    if ((expectedRevision !== 'empty' && !uuid(expectedRevision)) || !uuid(operationId)) fail('Revise a versão de destino e a identificação da tentativa.');
+    if ((expectedRevision !== 'empty' && expectedRevision !== 'legacy' && !uuid(expectedRevision)) || !uuid(operationId)) fail('Revise a versão de destino e a identificação da tentativa.');
     const { backup } = await inspectProgressBackup(archive);
     const audit = auditCriticalProgress(backup);
     if (audit.issues.length || audit.truncated) fail('A cópia precisa de revisão antes de qualquer envio.');
@@ -110,7 +117,9 @@ export function createAccountTransport(client: AccountRpcClient, input: AccountT
   }
   async function commit(command: PreparedAccountCommit, signal?: AbortSignal): Promise<AccountCommitReceipt> {
     bound(command, signal); await verifyIdentity(signal);
-    const value = await rpc('progress_account_commit', { p_expected_revision: command.expectedRevision, p_operation_id: command.operationId, p_archive: command.archive, p_all_profiles_confirmed: true }, signal);
+    const value = command.expectedRevision === 'legacy'
+      ? await rpc('progress_account_adopt_legacy', { p_expected_revision: 'legacy', p_operation_id: command.operationId, p_archive: command.archive, p_all_profiles_confirmed: true, p_legacy_replacement_confirmed: true }, signal)
+      : await rpc('progress_account_commit', { p_expected_revision: command.expectedRevision, p_operation_id: command.operationId, p_archive: command.archive, p_all_profiles_confirmed: true }, signal);
     return receipt(value, command);
   }
   async function confirm(command: PreparedAccountCommit, signal?: AbortSignal) {

@@ -15,7 +15,8 @@ async function run(search,block,fail=false,handoff=false,sessionRaw=null,session
   if(id.endsWith('.css'))return {};
   if(id.endsWith('access-entry'))return accessEntryModule.exports;
   if(id.endsWith('mount-entry-welcome')){if(fail)throw Error('chunk unavailable');return {mountEntryWelcome:node=>{assert.equal(node,root);calls.push('welcome');}};}
-  if(id.endsWith('account-resume-entry'))return {hasAccountTabAccess:storage=>storage.getItem('access')!==null};
+  if(id.endsWith('account-resume-entry'))return {ACCOUNT_TAB_ACCESS_KEY:'access'};
+  if(id.endsWith('account-tab-access'))return {inspectTabAccess:raw=>{if(raw==='saved')return {};throw Error('invalid access');}};
   if(id.endsWith('mount-account-resume')){if(fail)throw Error('chunk unavailable');return {mountAccountResume:async()=>calls.push('resume')};}
   if(id.endsWith('reminder-entry'))return entryModule.exports;
   if(id.endsWith('account-recovery-entry'))return recoveryModule.exports;
@@ -54,22 +55,22 @@ test('auth callback at the site fallback URL is scrubbed and isolated instead of
  assert.deepEqual(await run('#error=denied&error_description=private',null,true),['loading','scrubbed','startup-failed']);
 });
 
-test('restore URL mounts isolated workspace directly, normal URL starts the existing app',async()=>{
- assert.deepEqual(await run('?progresso=restaurar'),['loading','workspace']);
- assert.deepEqual(await run('?progresso=restaurar&confirmar=true'),['loading','workspace']);
- assert.deepEqual(await run(''),['loading','session','app']);
+test('restore URL requires valid tab access and normal protected routes resume the account',async()=>{
+ assert.deepEqual(await run('?progresso=restaurar'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('?progresso=restaurar&confirmar=true',null,false,false,null,false,false,'saved'),['loading','workspace']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,'saved'),['loading','exclusive','resume']);
 });
 test('pending journal is routed to workspace while denied storage or lock retains protective screen',async()=>{
- assert.deepEqual(await run('','pending-restore'),['loading','session','workspace']);
- for(const reason of ['storage-unavailable','busy','startup-failed'])assert.deepEqual(await run('',reason),['loading','session',reason]);
+ assert.deepEqual(await run('','pending-restore',false,false,null,false,false,'saved'),['loading','exclusive','workspace']);
+ for(const reason of ['storage-unavailable','busy','startup-failed'])assert.deepEqual(await run('',reason,false,false,null,false,false,'saved'),['loading','exclusive',reason]);
 });
 test('workspace load failure never falls through to importing the live app',async()=>{
- assert.deepEqual(await run('?progresso=restaurar',null,true),['loading','startup-failed']);
+ assert.deepEqual(await run('?progresso=restaurar',null,true,false,null,false,false,'saved'),['loading','startup-failed']);
 });
 
 
 test('account URL and pending account barrier mount only the isolated account workspace',async()=>{
- assert.deepEqual(await run('?progresso=conta'),['loading','account']);assert.deepEqual(await run('','pending-account'),['loading','session','account']);assert.deepEqual(await run('?progresso=conta',null,true),['loading','startup-failed']);
+ assert.deepEqual(await run('?progresso=conta'),['loading','account']);assert.deepEqual(await run('','pending-account',false,false,null,false,false,'saved'),['loading','exclusive','account']);assert.deepEqual(await run('?progresso=conta',null,true),['loading','startup-failed']);
 });
 
 
@@ -80,16 +81,16 @@ test('only the explicit workspace handoff requests the exclusive online entry, w
 
 
 test('explicit reminder entry and pending session plan stop before App import; other workspaces keep priority',async()=>{
- assert.deepEqual(await run('?progresso=lembretes'),['loading','reminders']);
- assert.deepEqual(await run('',null,false,false,'pending'),['loading','reminders']);
- assert.deepEqual(await run('?progresso=restaurar',null,false,false,'pending'),['loading','workspace']);
+ assert.deepEqual(await run('?progresso=lembretes',null,false,false,null,false,false,'saved'),['loading','reminders']);
+ assert.deepEqual(await run('',null,false,false,'pending',false,false,'saved'),['loading','reminders']);
+ assert.deepEqual(await run('?progresso=restaurar',null,false,false,'pending',false,false,'saved'),['loading','workspace']);
  assert.deepEqual(await run('?progresso=conta',null,false,false,'pending'),['loading','account']);
- assert.deepEqual(await run('?progresso=lembretes',null,true),['loading','startup-failed']);
+ assert.deepEqual(await run('?progresso=lembretes',null,true,false,null,false,false,'saved'),['loading','startup-failed']);
  assert.deepEqual(await run('',null,false,false,null,true),['loading','storage-unavailable']);
 });
 
 test('saved access requests isolated exclusive review; malformed markers cannot fall through to legacy App',async()=>{
- assert.deepEqual(await run('',null,false,false,null,false,false,'malformed'),['loading','exclusive','resume']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,'malformed'),['loading','redirect:/auth']);
  assert.deepEqual(await run('','busy',false,false,null,false,false,'saved'),['loading','exclusive','busy']);
  assert.deepEqual(await run('','pending-account',false,false,null,false,false,'saved'),['loading','exclusive','account']);
  assert.deepEqual(await run('?progresso=conta',null,false,false,null,false,false,'saved'),['loading','account']);
@@ -100,10 +101,10 @@ test('saved access requests isolated exclusive review; malformed markers cannot 
 test('auth aliases open the isolated access workspace; welcome is read-only and fresh root stays behind startup guards',async()=>{
  for(const path of ['/auth','/entrar','/cadastro'])assert.deepEqual(await run('',null,false,false,null,false,false,null,path),['loading','account']);
  assert.deepEqual(await run('?progresso=inicio'),['loading','welcome']);
- assert.deepEqual(await run('?progresso=restaurar',null,false,false,null,false,false,null,'/auth'),['loading','workspace']);
+ assert.deepEqual(await run('?progresso=restaurar',null,false,false,null,false,false,'saved','/auth'),['loading','workspace']);
  assert.deepEqual(await run('?progresso=conta',null,false,false,null,false,false,null,'/boas-vindas'),['loading','account']);
- assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','session','welcome']);
- assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','existing progress'),['loading','session','app']);
- assert.deepEqual(await run('', 'pending-restore',false,false,null,false,false,null,'/'),['loading','session','workspace']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','existing progress'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('', 'pending-restore',false,false,null,false,false,'saved','/'),['loading','exclusive','workspace']);
  for(const path of ['/auth','/entrar','/cadastro'])assert.deepEqual(await run('?code=synthetic',null,false,false,null,false,false,null,path),['loading','scrubbed','account']);
 });

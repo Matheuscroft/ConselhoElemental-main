@@ -28,7 +28,7 @@ export async function inspectAccountBinding(raw: string, origin: string): Promis
   const fields = ['format','version','origin','userId','operationId','revision','expectedRevision','archiveSha256','createdAt','baselineDigest'];
   if (Object.keys(v).length !== fields.length || fields.some(k => !Object.hasOwn(v,k))
     || v.format !== 'conselho-elemental-account-binding' || v.version !== 1 || !origin || v.origin !== origin
-    || !uuid(v.userId) || !uuid(v.operationId) || !uuid(v.revision) || (v.expectedRevision !== 'empty' && !uuid(v.expectedRevision))
+    || !uuid(v.userId) || !uuid(v.operationId) || !uuid(v.revision) || (v.expectedRevision !== 'empty' && v.expectedRevision !== 'legacy' && !uuid(v.expectedRevision))
     || !hash(v.archiveSha256) || !hash(v.baselineDigest) || typeof v.createdAt !== 'string' || !Number.isFinite(Date.parse(v.createdAt))) invalid();
   return Object.freeze(v as unknown as AccountBinding);
 }

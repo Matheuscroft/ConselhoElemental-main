@@ -1,6 +1,7 @@
-import { accessEntry, shouldShowWelcome } from './lib/backup/access-entry';
+import { accessEntry } from './lib/backup/access-entry';
 import type { LiveAccountSession } from './lib/backup/account-live-sync';
-import { hasAccountTabAccess } from './lib/backup/account-resume-entry';
+import { ACCOUNT_TAB_ACCESS_KEY } from './lib/backup/account-resume-entry';
+import { inspectTabAccess } from './lib/backup/account-tab-access';
 import { captureRecoveryEntry, isPasswordRecoveryCallback } from './lib/backup/account-recovery-entry';
 import { captureAccountReturn, type AccountReturnNotice } from './lib/backup/account-return';
 import { needsReminderWorkspace } from './lib/reminders/reminder-entry'
@@ -16,6 +17,11 @@ document.documentElement.classList.add('dark');
 
 const root = document.getElementById('root')!;
 showProgressStartup(root);
+function hasValidAccountAccess() {
+  const raw=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
+  if(!raw||!project)return false;
+  try{inspectTabAccess(raw,window.location.origin,project);return true;}catch{return false;}
+}
 async function openWelcome() {
   try { const { mountEntryWelcome } = await import('./mount-entry-welcome'); mountEntryWelcome(root); }
   catch { showProgressStartup(root, 'startup-failed'); }
@@ -52,7 +58,12 @@ else {
     const notice=captureAccountReturn(window.location.href,url=>window.history.replaceState(null,'',url));
     if(notice!=='none')void openAccountWorkspace(notice);
     else if(progressView==='conta')void openAccountWorkspace();
-    else if(progressView==='restaurar')void openRestoreWorkspace();
+    else if(progressView==='restaurar'){
+      try {
+        if(hasValidAccountAccess())void openRestoreWorkspace();
+        else window.location.replace('/auth');
+      } catch { showProgressStartup(root,'storage-unavailable'); }
+    }
     else if(progressView==='inicio')void openWelcome();
     else if(accessEntry(window.location.pathname, window.location.search)==='account')void openAccountWorkspace();
     else if(accessEntry(window.location.pathname, window.location.search)==='welcome')void openWelcome();
@@ -60,24 +71,24 @@ else {
   }catch{showProgressStartup(root,'startup-failed');}
 }
 async function openProgress() {
+  try {
+    if (!hasValidAccountAccess()) {
+      window.location.replace('/auth');
+      return;
+    }
+  } catch {
+    showProgressStartup(root, 'storage-unavailable');
+    return;
+  }
   try { if (needsReminderWorkspace(window.location.search, () => window.sessionStorage)) { await openReminderWorkspace(); return; } }
   catch { showProgressStartup(root, 'storage-unavailable'); return; }
   try {
-    if (hasAccountTabAccess(window.sessionStorage)) {
+    if (hasValidAccountAccess()) {
       await startProgressSession({storage:()=>window.localStorage,origin:window.location.origin,locks:navigator.locks,exclusive:true,
         load:async()=>{const {mountAccountResume}=await import('./mount-account-resume');await mountAccountResume(root);},
         blocked:reason=>{if(reason==='pending-account')void openAccountWorkspace();else if(reason==='pending-restore')void openRestoreWorkspace();else showProgressStartup(root,reason);},
       });return;
     }
   } catch { showProgressStartup(root,'storage-unavailable');return; }
-  await startProgressSession({
-  storage: () => window.localStorage,
-  origin: window.location.origin,
-  locks: navigator.locks,
-  load: async () => {
-    if (shouldShowWelcome(window.location.pathname, window.localStorage)) { await openWelcome(); return; }
-    const { mountApp } = await import('./bootstrap-app'); mountApp(root);
-  },
-  blocked: reason => { if (reason === 'pending-account') void openAccountWorkspace(); else if (reason === 'pending-restore') void openRestoreWorkspace(); else showProgressStartup(root, reason); },
-});
+  window.location.replace('/auth');
 }
