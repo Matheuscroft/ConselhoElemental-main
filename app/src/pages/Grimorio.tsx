@@ -15,6 +15,7 @@ import { ELEMENTS, AVATARS } from '@/constants';
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import './grimorio.css';
+import { hpDoDia } from '@/lib/recursos/vitalidade';
 
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
@@ -54,7 +55,7 @@ function GrimorioContent() {
   const resourceSnapshot = getResourceSnapshot();
   const habitsToday = getCompletedHabitsToday();
   const streak = getStreak();
-  const hp = Math.min(100, 70 + (habitsToday * 5) + (streak > 0 ? 10 : 0));
+  const hp = hpDoDia({ habitosHoje: habitsToday, ofensiva: streak });
   const joinedAt = new Date(user.joinedAt);
   const history = useMemo(() => buildGrimoireHistory({ actions, tasks, habits, logs: executionLogs }), [actions, tasks, habits, executionLogs]);
   const radarData = elementScores.map(score => ({

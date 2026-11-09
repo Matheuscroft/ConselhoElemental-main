@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Menu } from 'lucide-react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { HudRecursos } from './HudRecursos';
 
 /** Presentation only: account and navigation operations stay with TopBar. */
 export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, children }: {
@@ -18,6 +19,7 @@ export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, childre
         {children}
       </nav>
     </div>
+    <HudRecursos />
   </header>;
 }
 

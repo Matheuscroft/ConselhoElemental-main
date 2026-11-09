@@ -20,6 +20,8 @@ import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
 import { Conjurar } from '@/components/motion/Conjurar';
 import './elemental-preview.css';
+import { hpDoDia } from '@/lib/recursos/vitalidade';
+import { HudRecursos } from '@/components/layout/HudRecursos';
 
 /** The aura costs a shader and three.js, so it arrives after the page does. */
 const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'));
@@ -254,7 +256,7 @@ function SanctuaryComposition() {
   }
   const resources = getResources();
   const xp = level.xpTotal - level.xpAtLevelStart;
-  const hp = Math.min(100, 70 + getCompletedHabitsToday() * 5 + (getStreak() > 0 ? 10 : 0));
+  const hp = hpDoDia({ habitosHoje: getCompletedHabitsToday(), ofensiva: getStreak() });
 
   return <>
     {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
@@ -374,7 +376,7 @@ export default function ElementalPreview() {
   if (redirect) return <Navigate to={redirect} replace />;
   return <div className="elemental-preview ep-page">
     <a className="ep-skip" href="#ep-main">Ir para o conteúdo</a>
-    <header className="ep-header"><Link to={HOME} className="ep-brand"><span className="ep-brand-symbol" aria-hidden="true"><ArcaneIcon name="santuario" /></span><span>Conselho<br /><strong>Elemental</strong></span></Link><nav aria-label="Navegação principal"><Link to={HOME} aria-current={!requested ? 'page' : undefined}>Santuário</Link><Link to="/pilares">Pilares</Link><button type="button" className="ep-app-menu" aria-label="Explorar todas as páginas" onClick={() => setRoutesOpen(true)} aria-expanded={routesOpen} aria-haspopup="dialog"><Menu size={18} aria-hidden="true" /><span>Explorar</span></button><TopBar accountOnly /></nav></header>
+    <header className="ep-header"><Link to={HOME} className="ep-brand"><span className="ep-brand-symbol" aria-hidden="true"><ArcaneIcon name="santuario" /></span><span>Conselho<br /><strong>Elemental</strong></span></Link><nav aria-label="Navegação principal"><Link to={HOME} aria-current={!requested ? 'page' : undefined}>Santuário</Link><Link to="/pilares">Pilares</Link><button type="button" className="ep-app-menu" aria-label="Explorar todas as páginas" onClick={() => setRoutesOpen(true)} aria-expanded={routesOpen} aria-haspopup="dialog"><Menu size={18} aria-hidden="true" /><span>Explorar</span></button><TopBar accountOnly /></nav><HudRecursos /></header>
     <main id="ep-main" ref={mainRef} tabIndex={-1} className="ep-main" aria-label={id ? `Elemento ${ELEMENTS[id].name}` : requested ? 'Elemento não encontrado' : 'Santuário'}>
       {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /><Link className="ep-back" to={HOME}><ArrowLeft size={17} />Voltar ao Santuário</Link></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
     </main>

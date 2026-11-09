@@ -8,6 +8,7 @@ import { useAuthStore } from '@/stores/authStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { SIDEBAR_ROUTES } from '@/lib/app-routes';
+import { hpDoDia } from '@/lib/recursos/vitalidade';
 
 const NAV_ITEMS = SIDEBAR_ROUTES;
 
@@ -23,7 +24,7 @@ export const Sidebar: React.FC = () => {
   const streak = getStreak();
   const levelProgress = getLevelProgress();
   
-  const hp = Math.min(100, 70 + (habitsToday * 5) + (streak > 0 ? 10 : 0));
+  const hp = hpDoDia({ habitosHoje: habitsToday, ofensiva: streak });
   const stamina = getResourceSnapshot().currentStamina;
 
   return (

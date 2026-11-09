@@ -13,3 +13,98 @@
 @media (min-width: 768px) { .elemental-topbar { margin-left: 18rem; } }
 @media (max-width: 640px) { .elemental-topbar-inner { min-height: 68px; padding: 10px 16px; gap: 8px; } .elemental-topbar-location { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); } .elemental-topbar-actions { gap: 6px; } .elemental-topbar-brand { gap: 7px; } }
 @media (max-width: 380px) { .elemental-topbar-actions > button:first-child > span { display: none; } }
+
+/*
+ * The resources, kept on screen wherever you are. They used to live on the
+ * Sanctuary alone, which meant that everywhere else they did not exist -- a
+ * resource you cannot see while you spend it is a number on another page.
+ *
+ * One row, compact on purpose: this is a status line, not the panel. The
+ * Sanctuary keeps the detailed view.
+ */
+.hud-recursos {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 1104px;
+  margin: auto;
+  padding: 0 clamp(14px, 4vw, 32px) 9px;
+}
+
+.hud-nivel { flex-shrink: 0; }
+
+.hud-selo {
+  display: grid;
+  place-items: center;
+  inline-size: 26px;
+  block-size: 26px;
+  border: 1px solid rgb(var(--el-gold) / 52%);
+  border-radius: 50%;
+  color: rgb(var(--el-gold));
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-xp {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.hud-xp-trilho {
+  block-size: 4px;
+  border-radius: 999px;
+  background: rgb(var(--el-muted) / 20%);
+  overflow: hidden;
+}
+
+.hud-xp-trilho > span {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(to right, rgb(var(--el-action)), rgb(var(--el-gold)));
+  transition: inline-size var(--ds-duration-settle) var(--ds-ease);
+}
+
+.hud-xp small {
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.hud-marcas {
+  display: flex;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex-shrink: 0;
+}
+
+.hud-marcas li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: rgb(var(--el-text) / 82%);
+  font-size: var(--ds-text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-marcas li:nth-child(1) svg { color: #f5ad83; }
+.hud-marcas li:nth-child(2) svg { color: #e0708a; }
+.hud-marcas li:nth-child(3) svg { color: #e8c572; }
+.hud-marcas li:nth-child(4) svg { color: #8bcee3; }
+
+/* The XP figure is the first thing to go when there is no room for it. */
+@media (max-width: 420px) {
+  .hud-recursos { gap: 9px; }
+  .hud-xp small { display: none; }
+  .hud-marcas { gap: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-xp-trilho > span { transition: none; }
+}

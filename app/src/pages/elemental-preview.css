@@ -303,3 +303,8 @@
 @media (max-width: 640px) {
   .ep-main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
 }
+
+/* The Sanctuary builds its own header, so the resource line has to be put
+   there too: it is the one screen the shared top bar never reaches. */
+.ep-header { flex-wrap: wrap; }
+.ep-header .hud-recursos { flex: 1 0 100%; padding-inline: 0; padding-block-end: 0; }
