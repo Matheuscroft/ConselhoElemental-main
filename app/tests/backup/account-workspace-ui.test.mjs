@@ -54,6 +54,7 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   click(label){const b=nodes().find(n=>n.type==='button'&&text(n.props.children)===label);assert.ok(b,label);b.props.onClick?.();render();},
   fill(type,value,index=0){nodes().filter(n=>n.type==='input'&&n.props.type===type)[index].props.onChange({target:{value}});render();},
   toggle(index,value=true){nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox')[index].props.onChange({target:{checked:value}});render();},
+  toggleLabel(label,value=true){const node=nodes().find(n=>n.type==='label'&&text(n.props.children)===label);assert.ok(node,label);flatten(node).find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:value}});render();},
   file(file={size:10,text:async()=> 'local archive'}){nodes().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[file],value:'selected'}});render();},
   submit(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();},
   emit(storageKey){listeners.forEach(fn=>fn({key:storageKey}));render();},wrongCopy(value=true){staleCopy=value;},auth(value){authId=value;},unmount(){cleanup();}};
@@ -73,12 +74,19 @@ test('login is independent from a file, while password clears and explicit copy/
  const f=fixture();await prepared(f);await signed(f);assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Enviar cópia conferida');assert.equal(f.requests.length,0);f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');f.click('Enviar cópia conferida');assert.equal(f.requests.length,1);
  const request=f.requests[0];assert.equal(request.name,'beginAccountTransfer');assert.equal(request.args[1].previousCopy,'local archive');assert.equal(request.args[1].allProfilesConfirmed,true);
  f.memory.set(key,'synthetic intent');request.resolve({raw:'synthetic intent',receipt,storageConfirmed:true});await flush();f.render();assert.match(f.content(),/Arquivo enviado/);assert.equal(f.navigations.length,0);
- f.toggle(2);f.click('Encerrar conferência e continuar localmente');assert.equal(f.requests[1].name,'finishAccountTransferLocally');assert.equal(f.requests[1].args[1].bindAccountConfirmed,false);f.requests[1].resolve(receipt);await flush();assert.deepEqual(f.navigations,['/santuario']);assert.ok([...f.memory.keys()].every(k=>!/(password|token)/i.test(k)));f.unmount();assert.equal(f.listeners.size,0);
+ f.toggleLabel('Quero continuar usando o progresso local, sem ativar sincronização automática.');f.click('Encerrar conferência e continuar localmente');assert.equal(f.requests[1].name,'finishAccountTransferLocally');assert.equal(f.requests[1].args[1].bindAccountConfirmed,false);f.requests[1].resolve(receipt);await flush();assert.deepEqual(f.navigations,['/santuario']);assert.ok([...f.memory.keys()].every(k=>!/(password|token)/i.test(k)));f.unmount();assert.equal(f.listeners.size,0);
 });
 
 test('pending receipt check cannot resend without a separate consent, and offline pause does not construct a session',async()=>{
- const f=fixture({pending:true});await flush();f.render();f.toggle(0);f.toggle(2);f.click('Pausar conferência e usar o app localmente');assert.equal(f.constructions,0);assert.equal(f.requests[0].name,'pauseAccountTransferLocally');f.requests[0].resolve('paused intent');await flush();assert.deepEqual(f.navigations,['/santuario']);f.unmount();
- const g=fixture({pending:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.toggle(0);g.click('Conferir recibo sem reenviar');assert.equal(g.requests[0].args[1].retryConfirmed,false);g.requests[0].resolve({receipt:null,localChanged:false});await flush();g.render();g.click('Repetir tentativa conferida');assert.equal(g.requests.length,1);g.toggle(1);g.click('Repetir tentativa conferida');assert.equal(g.requests[1].args[1].retryConfirmed,true);g.requests[1].resolve({receipt:null,localChanged:false});await flush();g.unmount();
+ const f=fixture({pending:true});await flush();f.render();f.toggleLabel('Fechei as outras abas e janelas deste app.');f.toggleLabel('Quero continuar usando o progresso local, sem ativar sincronização automática.');f.click('Pausar conferência e usar o app localmente');assert.equal(f.constructions,0);assert.equal(f.requests[0].name,'pauseAccountTransferLocally');f.requests[0].resolve('paused intent');await flush();assert.deepEqual(f.navigations,['/santuario']);f.unmount();
+ const g=fixture({pending:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.toggleLabel('Fechei as outras abas e janelas deste app.');g.click('Conferir recibo sem reenviar');assert.equal(g.requests[0].args[1].retryConfirmed,false);g.requests[0].resolve({receipt:null,localChanged:false});await flush();g.render();g.click('Repetir tentativa conferida');assert.equal(g.requests.length,1);g.toggleLabel('Autorizo reenviar exatamente o arquivo desta tentativa se não houver recibo confirmado.');g.click('Repetir tentativa conferida');assert.equal(g.requests[1].args[1].retryConfirmed,true);g.requests[1].resolve({receipt:null,localChanged:false});await flush();g.unmount();
+});
+
+test('pending journey can retry the exact protected operation and connect from the main section',async()=>{
+ const f=fixture({pending:true,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
+ f.click('Concluir envio protegido e conectar');assert.equal(f.requests.length,0);
+ f.toggleLabel('Fechei as outras abas e autorizo concluir exatamente esta tentativa se o servidor confirmar que não há recibo.');f.click('Concluir envio protegido e conectar');await flush();assert.equal(f.requests[0].name,'reviewAccountTransfer');assert.equal(f.requests[0].args[1].retryConfirmed,true);
+ f.requests[0].resolve({receipt,localChanged:false});await flush();assert.equal(f.requests[1].name,'finishAccountTransferLocally');assert.equal(f.requests[1].args[1].bindAccountConfirmed,true);f.memory.set('conselho-elemental-account-binding-v1','connected binding');f.requests[1].resolve(receipt);await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'connected binding');assert.equal(f.handoffs[0].remember,true);f.unmount();
 });
 
 test('wrong identity, failed copy and late responses after storage changes or unmount never show a successful transfer',async()=>{
@@ -95,8 +103,8 @@ test('account mount static graph has no domain stores, global auth client or eag
 
 
 test('saving the account binding is a separate explicit consent and does not claim automatic synchronization',async()=>{
- const f=fixture({pending:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);f.toggle(0);f.click('Conferir recibo sem reenviar');f.requests[0].resolve({receipt,localChanged:false});await flush();f.render();
- assert.match(f.content(),/Guardar o vínculo desta conta/);f.toggle(1);f.toggle(2);f.click('Encerrar conferência e continuar localmente');assert.equal(f.requests[1].args[1].bindAccountConfirmed,true);f.requests[1].resolve(receipt);await flush();f.unmount();
+ const f=fixture({pending:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);f.toggleLabel('Fechei as outras abas e janelas deste app.');f.click('Conferir recibo sem reenviar');f.requests[0].resolve({receipt,localChanged:false});await flush();f.render();
+ assert.match(f.content(),/Guardar o vínculo desta conta/);f.toggleLabel('Guardar o vínculo desta conta para próximos envios. Isso não ativa sincronização automática.');f.toggleLabel('Quero continuar usando o progresso local, sem ativar sincronização automática.');f.click('Encerrar conferência e continuar localmente');assert.equal(f.requests[1].args[1].bindAccountConfirmed,true);f.requests[1].resolve(receipt);await flush();f.unmount();
 });
 
 test('bound account describes revision protection, refuses another identity and invalidates consents on binding changes',async()=>{

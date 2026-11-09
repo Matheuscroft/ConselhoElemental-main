@@ -47,6 +47,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [blockKind,setBlockKind]=useState<'connection'|'progress'|'restore'|null>(null),[progressIssues,setProgressIssues]=useState<ProgressIssue[]>([]);
   const [progressRepair,setProgressRepair]=useState<StoredProgressRepairSummary|null>(null),[progressRepairError,setProgressRepairError]=useState(''),[repairConsent,setRepairConsent]=useState(false);
   const [legacyAccount,setLegacyAccount]=useState(false),[legacyConsent,setLegacyConsent]=useState(false);
+  const [pendingRetryConsent,setPendingRetryConsent]=useState(false);
   const [ready,setReady]=useState(false);
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
   const generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
@@ -80,7 +81,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     void refresh(token).catch(reason=>{if(ref.current===token)markBlocked(reason);});
     const changed=(event:StorageEvent)=>{
       if(event.key!==null&&![STORE_KEYS.core,STORE_KEYS.fitness,ACCOUNT_INTENT_KEY,ACCOUNT_BINDING_KEY,ACCOUNT_RESOLUTION_KEY,RESTORE_JOURNAL_KEY,STORED_PROGRESS_REPAIR_KEY,LOCAL_PROGRESS_MODE_KEY].includes(event.key))return;
-      const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setRememberAccess(false);setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setVersions(null);setMessage('O progresso mudou. Refaça a conferência.');
+      const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setRememberAccess(false);setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setPendingRetryConsent(false);setVersions(null);setMessage('O progresso mudou. Refaça a conferência.');
       void refresh(next).catch(reason=>{if(ref.current===next)markBlocked(reason);});
     };
     window.addEventListener('storage',changed);
@@ -101,7 +102,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function transport(token:number){if(!session.current||!identity.current)throw new Error('Entre na conta de destino para conferir.');const captured=pair(),currentSession=session.current;return createSupabaseAccountTransport(currentSession.client,{expectedUserId:identity.current,currentUserId:()=>identity.current,isCurrent:()=>isCurrent(token)&&session.current===currentSession&&pair()===captured});}
   function clearAccess() {
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);
-    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setAuthFeedback('');setAuthError('');
+    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
   }
   function changeAccess(mode:AccountAccessMode) {
     if(!ready||busy||job.current!==null||userId)return;
@@ -182,6 +183,29 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   }
   function send(){if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!copy||!baseline||!userId||!tabs||!allProfiles||pending||blocked)return;void run(async token=>{const result=await beginAccountTransfer(context(token),{baseline,previousCopy:copy,allProfilesConfirmed:allProfiles,userId},transport(token));if(!isCurrent(token))return;setReceipt(result.receipt);await refresh(token);setMessage('Arquivo enviado e recibo conferido. O app ainda não está conectado para sincronizar automaticamente.');});}
   function review(resend=false){if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!pending||!userId||!tabs||(resend&&!retry)||blocked)return;void run(async token=>{const result=await reviewAccountTransfer(context(token),{raw:pending.raw,retryConfirmed:resend&&retry},transport(token));if(isCurrent(token)){setReceipt(result.receipt);setLocalChanged(result.localChanged);setMessage(result.receipt?'Recibo e arquivo online conferidos. Nenhum dado local foi substituído.':'Ainda não há recibo confirmado. Esta consulta não reenviou o arquivo.');}});}
+  function completePendingJourney(){
+    if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!pending||!userId||!onStart||!pendingRetryConsent||blocked)return;
+    const opened=session.current,id=identity.current,attempt=pending;
+    if(!opened||!id)return;
+    void run(async token=>{
+      const current=()=>isCurrent(token)&&session.current===opened&&identity.current===id&&window.localStorage.getItem(ACCOUNT_INTENT_KEY)===attempt.raw;
+      const recoveryContext={origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,otherTabsClosed:true,isCurrent:current};
+      const selectedTransport=createSupabaseAccountTransport(opened.client,{expectedUserId:id,currentUserId:()=>identity.current,isCurrent:current});
+      setMessage('Conferindo o recibo e concluindo a conexão protegida…');
+      const reviewed=await reviewAccountTransfer(recoveryContext,{raw:attempt.raw,retryConfirmed:true},selectedTransport);
+      if(!reviewed.receipt)throw new Error('O servidor ainda não confirmou o envio. Preserve este navegador e tente novamente quando a conexão estiver estável.');
+      if(reviewed.localChanged)throw new Error('O progresso mudou depois desta tentativa. Abra “Cópias, versões e recuperação” para preservar as duas versões antes de continuar.');
+      await finishAccountTransferLocally(recoveryContext,{raw:attempt.raw,localUseConfirmed:true,bindAccountConfirmed:true},selectedTransport);
+      if(!current()&&window.localStorage.getItem(ACCOUNT_INTENT_KEY)!==null)throw new Error('A conexão mudou. Reabra a conta antes de continuar.');
+      const bindingRaw=window.localStorage.getItem(ACCOUNT_BINDING_KEY);
+      if(!bindingRaw)throw new Error('O navegador não confirmou o vínculo da conta. Seu arquivo continua protegido.');
+      const {prepareLiveAccountAccess}=await import('@/lib/backup/account-live-access');
+      const handoff=await prepareLiveAccountAccess(opened,{userId:id,bindingRaw,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:window.sessionStorage,remember:true,email:email.trim()});
+      if(!isCurrent(token)||session.current!==opened||identity.current!==id){handoff.dispose();throw new Error('O acesso mudou. Reabra a conta.');}
+      session.current=null;identity.current=null;
+      try{onStart(handoff);}catch(reason){handoff.dispose();throw reason;}
+    });
+  }
   function finish(){if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!pending||!receipt||!userId||!tabs||!localUse||blocked)return;void run(async token=>{await finishAccountTransferLocally(context(token),{raw:pending.raw,localUseConfirmed:localUse,preserveNewerLocalConfirmed:keepNewer,bindAccountConfirmed:saveBinding},transport(token));if(isCurrent(token))window.location.assign('/santuario');});}
   function pause(){if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!pending||!tabs||!localUse||blocked)return;void run(async token=>{await pauseAccountTransferLocally(context(token),pending.raw,localUse);if(isCurrent(token))window.location.assign('/santuario');});}
   function compareVersions(){
@@ -345,7 +369,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       </>}
       <small>O app salva após suas alterações e confere a conta quando você volta. Sem internet, os registros permanecem no aparelho; um envio não confirmado pede conferência.</small>
     </section>}
-    {ready && pending && !resolution && <section aria-labelledby="account-pending-title"><h2 id="account-pending-title">Conclua a conexão da sua jornada</h2><p>Há um envio protegido neste aparelho. Entre na mesma conta e confira o salvamento. Isso consulta a tentativa original, sem repetir o envio.</p><p id="account-pending-consent">Feche as outras abas. Ao continuar, você autoriza vincular a jornada já enviada e sincronizar as próximas alterações nesta aba por até 12 horas.</p><button type="button" aria-describedby="account-pending-consent" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || !userId || busy || blocked || !onStart} onClick={() => connectJourney()}>Conferir salvamento e conectar</button></section>}
+    {ready && pending && !resolution && <section aria-labelledby="account-pending-title"><h2 id="account-pending-title">Conclua a conexão da sua jornada</h2><p>Há um envio protegido neste aparelho. Primeiro confira o recibo; essa consulta não repete o envio.</p><p id="account-pending-consent">Se ainda não houver recibo, o botão de conclusão reutiliza a mesma operação e o mesmo arquivo. O servidor só grava quando confirma que a tentativa anterior não foi concluída.</p><button type="button" className="restore-workspace-secondary" aria-describedby="account-pending-consent" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || !userId || busy || blocked || !onStart} onClick={() => connectJourney()}>Verificar tentativa sem reenviar</button><label className="restore-workspace-consent"><input type="checkbox" checked={pendingRetryConsent} disabled={busy} onChange={event=>setPendingRetryConsent(event.target.checked)}/>Fechei as outras abas e autorizo concluir exatamente esta tentativa se o servidor confirmar que não há recibo.</label><button type="button" aria-describedby="account-pending-consent" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || !userId || busy || blocked || !onStart || !pendingRetryConsent} onClick={completePendingJourney}>Concluir envio protegido e conectar</button></section>}
     <details className="account-advanced" hidden={blocked}><summary>Cópias, versões e recuperação</summary>
     <div hidden={!ACCOUNT_TRANSFER_WRITES_RELEASED&&!pending&&!resolution}>
     {ready&&baseline&&!baseline.snapshot&&!pending&&!binding&&!resolution&&<section aria-labelledby="account-new"><h2 id="account-new">Sua primeira jornada</h2>
