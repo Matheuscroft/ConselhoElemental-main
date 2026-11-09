@@ -8,10 +8,14 @@ const src = resolve(root, 'src');
 
 const walk = (dir) => readdirSync(dir).flatMap((entry) => {
   const path = join(dir, entry);
-  return statSync(path).isDirectory() ? walk(path) : path.endsWith('.css') ? [path] : [];
+  return statSync(path).isDirectory() ? walk(path) : /\.(css|tsx)$/.test(path) ? [path] : [];
 });
 
-const folhas = walk(src).map((path) => [relative(root, path), readFileSync(path, 'utf8')]);
+const todos = walk(src).map((path) => [relative(root, path), readFileSync(path, 'utf8')]);
+const folhas = todos.filter(([arquivo]) => arquivo.endsWith('.css'));
+// Tailwind's `backdrop-blur-*` classes live in .tsx and are the same cost as a
+// declared backdrop-filter, but a guard that only read .css could not see them.
+const classesBlur = /\bbackdrop-blur(?:-[a-z0-9]+)?\b/g;
 const semPrefixo = /(?<!-)(?<!webkit-)\bbackdrop-filter:/g;
 const comPrefixo = /-webkit-backdrop-filter:/g;
 
@@ -41,10 +45,14 @@ test('every blur carries its prefixed twin, or it does nothing on an iPhone', ()
  * gradient mask reads the same for one. It only exists while a card is open,
  * so on a list of twenty journeys the runtime cost is a single blurred strip.
  */
-const TETO_VIDRO = 12;
+const TETO_VIDRO = 15;
+// 15 is a photograph of reality, not a goal: 11 declarations in .css plus four
+// Tailwind `backdrop-blur-*` classes that escaped the old guard. The four are
+// MobileBottomNav, Auth and the two VideoExercisePlayer. They should fall.
 
 test('the app does not spread glass', () => {
-  const total = folhas.reduce((soma, [, css]) => soma + (css.match(semPrefixo) ?? []).length, 0);
+  const total = todos.reduce((soma, [arquivo, texto]) => soma
+    + (arquivo.endsWith('.css') ? (texto.match(semPrefixo) ?? []).length : (texto.match(classesBlur) ?? []).length), 0);
   assert.ok(
     total <= TETO_VIDRO,
     `blurred surfaces rose from ${TETO_VIDRO} to ${total}. Use .ds-pane unless the thing truly floats over content.`,
