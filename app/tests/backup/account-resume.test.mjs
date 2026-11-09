@@ -64,3 +64,29 @@ test('live access persists only at activation; token rotations are synchronous a
  const target=store(),second=await loaded.prepareLiveAccountAccess(opened,{origin,project,userId:uid,bindingRaw:'bound',storage:target,remember:true});assert.equal(target.getItem(key),null);
  let invalidations=0;const stop=second.watchIdentity(()=>invalidations++);second.activateResume();callback('TOKEN_REFRESHED',{...tokens,refresh_token:'rotated'});assert.equal(JSON.parse(target.getItem(key)).refreshToken,'rotated');callback('SIGNED_OUT',null);assert.equal(invalidations,1);second.forgetResume();second.dispose();stop();assert.equal(target.getItem(key),null);
 });
+
+test('verified login persists tab access before any progress binding or transport exists',async()=>{
+ let disposed=0;const target=store(),opened={client:{auth:{getSession:async()=>({data:{session:tokens},error:null})}},dispose(){disposed++;}};
+ const loaded=load('src/lib/backup/account-live-access.ts');
+ await loaded.rememberAuthenticatedAccountAccess(opened,{origin,project,userId:uid,storage:target});
+ const saved=api.inspectTabAccess(target.getItem(key),origin,project,Date.now());
+ assert.equal(saved.userId,uid);assert.equal(disposed,0);assert.deepEqual(target.writes,[key]);
+});
+
+test('authenticated local mode exposes account state without a progress transport and logout clears only access',async()=>{
+ const calls=[];const loaded=load('src/lib/backup/authenticated-local-sync.ts');
+ const sync=loaded.createAuthenticatedLocalSync({userId:uid,email:'synthetic@example.invalid',client:{},forgetResume(){calls.push('forget');},dispose(){calls.push('dispose');}});
+ assert.equal(sync.getSnapshot().status,'blocked');assert.match(sync.getSnapshot().message,/sincronização aguarda sua escolha/i);
+ await sync.flush();assert.deepEqual(calls,[]);assert.equal(sync.forgetAccess(),true);assert.deepEqual(calls,['forget','dispose']);assert.equal(sync.getSnapshot().status,'stopped');
+});
+
+test('saved Auth resumes independently from local progress and preserves the original twelve-hour deadline',async()=>{
+ const f=saved(),calls=[];let disposed=0;
+ const opened={client:{auth:{setSession:async value=>{calls.push(['set',value]);return{data:{session:tokens},error:null};},getUser:async()=>{calls.push(['user']);return{data:{user:{id:uid,email:'synthetic@example.invalid'}},error:null};}}},dispose(){disposed++;}};
+ const loaded=load('src/lib/backup/resume-authenticated-account.ts',{
+  './account-session':{createAccountReviewSession:()=>opened},
+  './account-live-access':{prepareAuthenticatedAccountAccess:async(_,options)=>{calls.push(['prepare',options]);return{userId:uid,client:opened.client,dispose:opened.dispose};},rememberAuthenticatedAccountAccess:async()=>{}},
+ });
+ const session=await loaded.resumeAuthenticatedAccountSession({config:{url:project,key:'synthetic-public'},origin,accessStorage:f.storage,isCurrent:()=>true});
+ assert.equal(session.userId,uid);assert.deepEqual(calls.map(call=>call[0]),['set','user','prepare']);assert.equal(calls[2][1].previous.consentedAt,JSON.parse(f.raw).consentedAt);assert.equal(disposed,0);
+});

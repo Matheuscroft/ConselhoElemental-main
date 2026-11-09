@@ -89,7 +89,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [emptyJourneyConsent,setEmptyJourneyConsent]=useState(false);
   const [ready,setReady]=useState(false);
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
-  const generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
+  const generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
   const pair=()=>JSON.stringify([window.localStorage.getItem(STORE_KEYS.core),window.localStorage.getItem(STORE_KEYS.fitness)]);
   const isCurrent=(token:number)=>alive.current&&generation.current===token;
   function markBlocked(reason:unknown) {
@@ -117,7 +117,24 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   }
   useEffect(()=>{
     const ref=generation;alive.current=true;setReady(false);const token=++ref.current;
-    void refresh(token).catch(reason=>{if(ref.current===token)markBlocked(reason);});
+    void (async()=>{
+      try{await refresh(token);}catch(reason){if(ref.current===token)markBlocked(reason);return;}
+      if(!isCurrent(token)||window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)===null)return;
+      try{
+        setBusy(true);
+        const {resumeAuthenticatedAccountReview}=await import('@/lib/backup/resume-authenticated-account');
+        const resumed=await resumeAuthenticatedAccountReview({config:{url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY},origin:window.location.origin,accessStorage:window.sessionStorage,isCurrent:()=>isCurrent(token)});
+        if(!isCurrent(token)){resumed.owned.dispose();return;}
+        const ids:string[]=[];
+        const bindingRaw=window.localStorage.getItem(ACCOUNT_BINDING_KEY);if(bindingRaw)ids.push((await inspectAccountBinding(bindingRaw,window.location.origin)).userId);
+        const pendingRaw=window.localStorage.getItem(ACCOUNT_INTENT_KEY);if(pendingRaw)ids.push((await inspectAccountIntent(pendingRaw,window.location.origin)).userId);
+        const resolutionRaw=window.localStorage.getItem(ACCOUNT_RESOLUTION_KEY);if(resolutionRaw)ids.push((await inspectAccountResolution(resolutionRaw,window.location.origin)).userId);
+        if(ids.some(id=>id!==resumed.userId)){resumed.owned.dispose();throw new Error('O acesso salvo pertence a outra conta. Entre na conta vinculada a esta tentativa.');}
+        session.current=resumed.owned;identity.current=resumed.userId;accessRaw.current=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(resumed.email??'');setUserId(resumed.userId);setPassword('');
+        setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
+      }catch(reason){if(ref.current===token)setAuthError(reason instanceof Error?reason.message:'Entre novamente para validar o acesso.');}
+    })()
+      .finally(()=>{if(ref.current===token)setBusy(false);});
     const changed=(event:StorageEvent)=>{
       if(event.key!==null&&![STORE_KEYS.core,STORE_KEYS.fitness,ACCOUNT_INTENT_KEY,ACCOUNT_BINDING_KEY,ACCOUNT_RESOLUTION_KEY,RESTORE_JOURNAL_KEY,STORED_PROGRESS_REPAIR_KEY,LOCAL_PROGRESS_MODE_KEY].includes(event.key))return;
       const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setRememberAccess(false);setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setPendingRetryConsent(false);setEmptyJourneyConsent(false);setVersions(null);setMessage('O progresso mudou. Refaça a conferência.');
@@ -139,8 +156,16 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function select(selected:File){void run(async token=>{setCopy(null);setAllProfiles(false);setLocalUse(false);setLiveConsent(false);setRememberAccess(false);setVersions(null);if(!baseline)throw new Error('Recarregue a conferência antes de escolher a cópia.');if(selected.size>MAX_BACKUP_BYTES)throw new Error('Escolha uma cópia de até 20 MB.');const text=await selected.text();if(!isCurrent(token))return;await verifyPreviousSafetyCopy(text,baseline,window.localStorage,window.location.origin);if(isCurrent(token)){setCopy(text);setMessage('Arquivo salvo corresponde ao progresso local conferido.');}});}
   function context(token:number){const captured=pair(),bound=window.localStorage.getItem(ACCOUNT_BINDING_KEY);return{origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,otherTabsClosed:tabs,isCurrent:()=>isCurrent(token)&&pair()===captured&&window.localStorage.getItem(ACCOUNT_BINDING_KEY)===bound};}
   function transport(token:number){if(!session.current||!identity.current)throw new Error('Entre na conta de destino para conferir.');const captured=pair(),currentSession=session.current;return createSupabaseAccountTransport(currentSession.client,{expectedUserId:identity.current,currentUserId:()=>identity.current,isCurrent:()=>isCurrent(token)&&session.current===currentSession&&pair()===captured});}
-  function clearAccess() {
+  function forgetSavedAccess() {
+    const raw=accessRaw.current;if(!raw)return;
+    if(window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)!==raw)throw new Error('O acesso salvo mudou. Recarregue antes de trocar a conta.');
+    window.sessionStorage.removeItem(ACCOUNT_TAB_ACCESS_KEY);
+    if(window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)!==null)throw new Error('O navegador não confirmou a saída.');
+    accessRaw.current=null;
+  }
+  function clearAccess(forget=false) {
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
+    if(forget)forgetSavedAccess();
     session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
   }
   function changeAccess(mode:AccountAccessMode) {
@@ -150,7 +175,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   }
   function closeAccess() {
     if(!ready||busy||job.current!==null)return;
-    generation.current++;clearAccess();setAuthFeedback('Acesso encerrado nesta conferência. O progresso local e as tentativas continuam preservados.');
+    generation.current++;try{clearAccess(true);setAuthFeedback('Acesso encerrado nesta aba. O progresso local e as tentativas continuam preservados.');}catch(reason){setAuthError(reason instanceof Error?reason.message:'Não foi possível encerrar este acesso.');}
   }
   function resetLocalConnection() {
     if(!ready||busy||!repairable)return;
@@ -187,7 +212,11 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         if(result.kind==='confirmation'){opened.dispose();session.current=null;setAccessMode('login');window.history?.replaceState(null, '', '/auth');setAuthFeedback(result.message);return;}
         const id=result.userId;
         if((pending&&pending.intent.userId!==id)||(binding&&binding.userId!==id)||(resolution&&resolution.journal.userId!==id))throw new Error('Entre na mesma conta usada nesta tentativa para conferir seu recibo.');
-        identity.current=id;setUserId(id);setAuthFeedback('Conta confirmada. Agora sincronize os dados deste aparelho para entrar no app.');
+        const {rememberAuthenticatedAccountAccess}=await import('@/lib/backup/account-live-access');
+        await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:window.sessionStorage});
+        if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
+        identity.current=id;accessRaw.current=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);setUserId(id);setPassword('');setConfirmation('');
+        setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
       }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
     },true);
   }
@@ -364,7 +393,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         <button type="submit" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountAccess(accessMode,email,password,confirmation)}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{!ready ? 'Preparando acesso…' : busy ? 'Aguarde…' : accessMode==='signup'?'Criar minha conta':'Entrar'}</button>
       </form>
       <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
-      {userId&&<><p>Conta confirmada. Escolha abaixo a jornada que deseja sincronizar.</p><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Trocar conta</button></>}
+      {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}</p>}
     </section>
     {!userId && <p className="entry-local-note"><ShieldCheck size={18} aria-hidden="true" /><span>{baseline?.snapshot ? 'O progresso deste aparelho continua protegido. Depois de entrar, use o botão principal para salvá-lo na conta.' : 'Entre para receber sua jornada salva ou começar uma nova conta sincronizada.'}</span></p>}

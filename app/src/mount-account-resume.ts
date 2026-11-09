@@ -3,18 +3,24 @@ import { resumeAccountSession } from './lib/backup/resume-account-session';
 import { hasExclusiveProgressSession } from './lib/backup/progress-startup';
 import { isRestoredLocalDocument } from './lib/backup/progress-mode';
 import { mountAccountApp } from './mount-account-app';
+import { ACCOUNT_BINDING_KEY } from './lib/backup/account-binding';
 
 /** Loaded under the exclusive progress lease; failures never fall through to App. */
 export async function mountAccountResume(root: HTMLElement) {
   let captured: string | null | undefined;
   try {
     captured=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);
-    if(!isRestoredLocalDocument())throw new Error('Confira o vínculo local.');
-    const session=await resumeAccountSession({
-      config:{url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY},
-      origin:window.location.origin,storage:window.localStorage,accessStorage:window.sessionStorage,isExclusive:hasExclusiveProgressSession,
-    });
-    try { await mountAccountApp(root,session); } catch(error) { session.dispose();throw error; }
+    const config={url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY};
+    if(window.localStorage.getItem(ACCOUNT_BINDING_KEY)!==null){
+      if(!isRestoredLocalDocument())throw new Error('Confira o vínculo local.');
+      const session=await resumeAccountSession({config,origin:window.location.origin,storage:window.localStorage,accessStorage:window.sessionStorage,isExclusive:hasExclusiveProgressSession});
+      try { await mountAccountApp(root,session); } catch(error) { session.dispose();throw error; }
+    }else{
+      const {resumeAuthenticatedAccountSession}=await import('./lib/backup/resume-authenticated-account');
+      const session=await resumeAuthenticatedAccountSession({config,origin:window.location.origin,accessStorage:window.sessionStorage,isCurrent:hasExclusiveProgressSession});
+      try{const {mountAuthenticatedAccountApp}=await import('./mount-authenticated-account-app');await mountAuthenticatedAccountApp(root,session);}
+      catch(error){session.dispose();throw error;}
+    }
   }catch{
     // Use DOM/textContent, never render credentials or server error strings.
     // Full navigation releases this document's lease before another workspace.
