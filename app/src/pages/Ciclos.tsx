@@ -1678,31 +1678,34 @@ export const Ciclos: React.FC = () => {
         />
 
         {/* Moon Phase & Season */}
-        <div className="flex items-center justify-center gap-6 mb-4">
+        <div className="cycle-sky-links mb-4">
           <button
             type="button"
             onClick={() => navigate('/lua')}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/5 transition-colors text-left"
+            className="cycle-sky-button ds-pane elemental-press is-moon"
             title="Abrir pagina da Lua"
+            aria-label={`Abrir página da Lua: ${moonPhase.name}`}
           >
-            <span className="text-2xl"><ArcaneIcon name="lua" /></span>
-            <div className="text-left">
-              <p className="text-[10px] text-white/40">Fase Lunar</p>
-              <p className="text-xs">{moonPhase.name}</p>
-            </div>
+            <span className="cycle-sky-medal" aria-hidden="true"><ArcaneIcon name="lua" /></span>
+            <span className="cycle-sky-text">
+              <span className="cycle-sky-label">Lua</span>
+              <span className="cycle-sky-name">{moonPhase.name}</span>
+            </span>
+            <svg className="cycle-sky-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
-          <div className="w-px h-8 bg-white/10" />
           <button
             type="button"
             onClick={() => navigate('/estacoes')}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/5 transition-colors text-left"
+            className="cycle-sky-button ds-pane elemental-press is-season"
             title="Abrir pagina da Estacao"
+            aria-label={`Abrir página da Estação: ${season.name}`}
           >
-            <span className="text-2xl"><ArcaneIcon name="estacoes" /></span>
-            <div className="text-left">
-              <p className="text-[10px] text-white/40">Estação</p>
-              <p className="text-xs">{season.name}</p>
-            </div>
+            <span className="cycle-sky-medal" aria-hidden="true"><ArcaneIcon name="estacoes" /></span>
+            <span className="cycle-sky-text">
+              <span className="cycle-sky-label">Estação</span>
+              <span className="cycle-sky-name">{season.name}</span>
+            </span>
+            <svg className="cycle-sky-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </button>
         </div>
 

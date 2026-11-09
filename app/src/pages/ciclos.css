@@ -442,3 +442,18 @@
 .cycle-date-jump [role="alert"] { color: #ffb5ac; font-size: var(--ds-text-micro); }
 .cycle-date-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
 .cycle-date-footer button { padding: 8px 12px; min-height: 48px; color: rgb(var(--el-gold)); }
+
+/* Fase lunar e Estacao: dois botoes lado a lado abaixo do Reel. */
+.cycle-sky-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 14px 0 16px; }
+.cycle-sky-button { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 56px; padding: 8px 8px 8px 10px; border-radius: 14px; color: rgb(var(--el-text)); text-align: left; cursor: pointer; }
+.cycle-sky-button:hover { background: var(--ds-surface-float); border-color: rgb(var(--el-gold) / .4); }
+.cycle-sky-button:active:not(:disabled) { border-color: rgb(var(--el-gold) / .55); }
+.cycle-sky-medal { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; font-size: var(--ds-text-title); line-height: 1; border: 1px solid rgb(var(--el-gold) / .3); background: rgb(var(--el-text) / .06); }
+.cycle-sky-button.is-moon .cycle-sky-medal { border-color: rgb(165 185 225 / .4); background: radial-gradient(circle at 35% 30%, rgb(165 185 225 / .22), rgb(40 52 84 / .35)); }
+.cycle-sky-button.is-season .cycle-sky-medal { border-color: rgb(var(--el-gold) / .45); background: radial-gradient(circle at 35% 30%, rgb(var(--el-gold) / .24), rgb(96 62 20 / .3)); }
+.cycle-sky-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.cycle-sky-label { font-size: var(--ds-text-micro); line-height: 1.2; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; color: rgb(var(--el-text) / .55); }
+.cycle-sky-name { font-size: var(--ds-text-small); line-height: 1.25; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.cycle-sky-chevron { flex: none; color: rgb(var(--el-gold) / .7); transition: transform var(--ds-duration-feedback) var(--ds-ease); }
+.cycle-sky-button:hover .cycle-sky-chevron { transform: translateX(2px); }
+@media (prefers-reduced-motion: reduce) { .cycle-sky-button:hover .cycle-sky-chevron { transform: none; } }
