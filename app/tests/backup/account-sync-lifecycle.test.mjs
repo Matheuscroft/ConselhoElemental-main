@@ -25,7 +25,7 @@ test('foreign storage mutation stops the session; unrelated keys and stopped tim
 test('status panel presents explicit sync state, a manual check, and stops before leaving the document',()=>{
  const jsx={jsx:(type,props)=>({type,props}),jsxs:(type,props)=>({type,props})};const view={status:'saved',message:'Arquivo confirmado'},calls=[];const sync={getSnapshot:()=>view,subscribe(){},flush:()=>calls.push('flush'),forgetAccess:()=>{calls.push('forget');return true;}};
  const mod={exports:{}};new Function('require','module','exports','window',transpile('src/components/backup/AccountSyncStatus.tsx'))(id=>id==='react'?{useSyncExternalStore:(_,get)=>get()}:id==='react/jsx-runtime'?jsx:id==='lucide-react'?{CloudCheck:()=>null,CloudOff:()=>null}:{},mod,mod.exports,{location:{assign:url=>calls.push(url)}});
- const flat=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flat):[n,...flat(n.props?.children)];let nodes=flat(mod.exports.AccountSyncStatus({sync}));const buttons=nodes.filter(n=>n.type==='button');buttons[0].props.onClick();buttons[1].props.onClick();assert.deepEqual(calls,['flush','forget','/santuario']);
+ const flat=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flat):[n,...flat(n.props?.children)];let nodes=flat(mod.exports.AccountSyncStatus({sync}));const buttons=nodes.filter(n=>n.type==='button');buttons[0].props.onClick();buttons[1].props.onClick();assert.deepEqual(calls,['flush','forget','/auth']);
  view.status='pending';nodes=flat(mod.exports.AccountSyncStatus({sync}));assert.ok(nodes.some(n=>n.props?.role==='status'));nodes.find(n=>n.type==='button').props.onClick();assert.deepEqual(calls.slice(-2),['forget','/?progresso=conta']);
 });
 
