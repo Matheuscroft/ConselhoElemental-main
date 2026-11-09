@@ -77,6 +77,6 @@ test('ordinary navigation and a distinct calendar OAuth callback are untouched',
 
 
 test('email configuration and rate limits have actionable messages while opaque errors remain private',()=>{
- const message=module.exports.accountAccessFailure;
- assert.match(message({code:'email_address_not_authorized'},'generic'),/novos testadores/);assert.match(message({code:'over_email_send_rate_limit'},'generic'),/Aguarde/);assert.equal(message({message:'private raw value'},'generic'),'generic');
+ const message=(error,fallback='generic')=>module.exports.accountAccessFailure(error,fallback).message;
+ assert.match(message({code:'email_address_not_authorized'}),/fase do beta/);assert.match(message({code:'over_email_send_rate_limit'}),/limite/);assert.equal(message({message:'private raw value'}),'generic');
 });

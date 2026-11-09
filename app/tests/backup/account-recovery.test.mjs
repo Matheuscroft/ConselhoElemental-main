@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import {createClient} from '@supabase/supabase-js';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
+const messagesModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-auth-messages.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(messagesModule.exports);
 
 const compilerOptions={target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS};
 const entryModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-entry.ts','utf8'),{compilerOptions}).outputText)(entryModule.exports);
-const recoveryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery.ts','utf8'),{compilerOptions}).outputText)(id=>id==='@supabase/supabase-js'?{createClient}:entryModule.exports,recoveryModule.exports);
+const recoveryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery.ts','utf8'),{compilerOptions}).outputText)(id=>id==='@supabase/supabase-js'?{createClient}:id.endsWith('account-auth-messages')?messagesModule.exports:entryModule.exports,recoveryModule.exports);
 const {captureRecoveryEntry,isPasswordRecoveryCallback}=entryModule.exports,{createPasswordRecovery}=recoveryModule.exports;
 const id='11111111-1111-4111-8111-111111111111',other='22222222-2222-4222-8222-222222222222';
 

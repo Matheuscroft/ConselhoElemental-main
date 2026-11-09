@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import ts from 'typescript';
+const messagesModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-auth-messages.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(messagesModule.exports);
 const source=ts.transpileModule(readFileSync('src/components/backup/AccountRecoveryWorkspace.tsx','utf8').replaceAll('import.meta.env.VITE_SUPABASE_URL',"'https://synthetic.invalid'").replaceAll('import.meta.env.VITE_SUPABASE_ANON_KEY',"'synthetic'"),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 function fixture({released=true,callback=true}={}){
@@ -18,6 +19,7 @@ function fixture({released=true,callback=true}={}){
  new Function('require','exports','window','navigator',source)(id=>{
   if(id.endsWith('/entry/EntryVisuals'))return {EntryArtwork:()=>null,EntryBrand:()=>null};
   if(id==='react')return react;if(id==='react/jsx-runtime')return {jsx,jsxs:jsx};if(id==='lucide-react')return {ArrowLeft:'icon',KeyRound:'icon'};
+  if(id.endsWith('account-auth-messages'))return messagesModule.exports;
   if(id.endsWith('account-access-release'))return {ACCOUNT_ACCESS_RELEASED:released};
   if(id.endsWith('account-recovery'))return {createPasswordRecovery(){constructions++;return controller;}};
   throw Error('Unexpected UI dependency '+id);

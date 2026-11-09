@@ -4,11 +4,12 @@ import {readFileSync,existsSync,statSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {resolve,dirname} from 'node:path';
 import ts from 'typescript';
+const messagesModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-auth-messages.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(messagesModule.exports);
 const require=createRequire(import.meta.url),flush=()=>new Promise(r=>setImmediate(r));
 const flatten=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flatten):[n,...flatten(n.props?.children)];
 const text=n=>Array.isArray(n)?n.map(text).join(''):typeof n==='object'?text(n?.props?.children):String(n??'');
 const uid='11111111-1111-4111-8111-111111111111',key='conselho-elemental-account-intent-v1';
-const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
+const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-auth-messages')?messagesModule.exports:id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
 const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-revision',createdAt:'2026-10-29T12:00:00Z'};
  function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false,snapshotData}={}){
  let si,ri,mounted=false,tree,cleanup,authId=uid,constructions=0,disposals=0,staleCopy=false,download=0;const handoffs=[];const slots=[],refs=[],listeners=new Set(),requests=[],navigations=[],sessions=[],timers=[];
@@ -26,6 +27,7 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   if(id.endsWith('.css'))return {};
   if(id.endsWith('/connect-account-progress'))return Object.fromEntries(['connectCurrentAccountProgress','receiveReviewedAccountProgress','resumeAccountConnection'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
   if(id.endsWith('/account-access'))return accessModule.exports;
+  if(id.endsWith('/account-auth-messages'))return messagesModule.exports;
    if(id.endsWith('/workspace-preview'))return {readWorkspaceBaseline:()=>{if(contextFailure)throw Error('synthetic context failure');return baseline;},createWorkspaceSafetyCopy:async()=>({baseline,text:'local archive'})};
   if(id.endsWith('/restore-confirmation'))return {verifyPreviousSafetyCopy:async()=>{if(staleCopy)throw Error('Cópia diferente');}};
   if(id.endsWith('/progress-backup'))return {MAX_BACKUP_BYTES:20*1024*1024,STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}};

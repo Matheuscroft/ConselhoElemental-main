@@ -3,6 +3,7 @@ import { connectCurrentAccountProgress, receiveReviewedAccountProgress, resumeAc
 import { CloudUpload, CloudDownload, UserRoundCheck, Sparkles } from 'lucide-react';
 import './account-journey.css';
 import { ACCOUNT_RESOLUTION_KEY } from '@/lib/backup/account-resolution-key';
+import { accountErrorCode } from '@/lib/backup/account-auth-messages';
 import { accessAccount, resendAccountConfirmation, validAccountAccess, validAccountEmail, type AccountAccessMode } from '@/lib/backup/account-access';
 import type { AccountReturnNotice } from '@/lib/backup/account-return';
 import { inspectAccountResolution, resolveAccountVersions, resumeAccountResolution, keepLocalAfterResolution, type AccountResolution } from '@/lib/backup/account-resolution';
@@ -69,7 +70,8 @@ function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
 
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
   const [accessMode,setAccessMode]=useState<AccountAccessMode>(new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro' ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
-  const [authFeedback,setAuthFeedback]=useState(notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthError]=useState('');
+  const [authFeedback,setAuthFeedback]=useState(notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
+  const setAuthError=(reason:string,code:string|null=null)=>{setAuthErrorText(reason);setAuthCode(code);};
   const [receiveMode,setReceiveMode]=useState(false);
   const [resolution,setResolution]=useState<{raw:string;journal:Readonly<AccountResolution>}|null>(null);
   const [liveConsent,setLiveConsent]=useState(false),[rememberAccess,setRememberAccess]=useState(false);
@@ -148,7 +150,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   async function run(action:(token:number)=>Promise<void>,access=false) {
     if(!ready||job.current!==null)return;
     const token=++generation.current;job.current=token;setBusy(true);setError('');
-    try{await action(token);}catch(reason){if(isCurrent(token)){(access?setAuthError:setError)(reason instanceof Error?reason.message:'Não foi possível concluir. Preserve sua cópia local.');try{await refresh(token);}catch(refreshReason){markBlocked(refreshReason);}}}
+    try{await action(token);}catch(reason){if(isCurrent(token)){if(access)setAuthError(reason instanceof Error?reason.message:'Não foi possível concluir. Preserve sua cópia local.',accountErrorCode(reason));else setError(reason instanceof Error?reason.message:'Não foi possível concluir. Preserve sua cópia local.');try{await refresh(token);}catch(refreshReason){markBlocked(refreshReason);}}}
     finally{if(job.current===token){job.current=null;if(alive.current)setBusy(false);}}
   }
   function download(text:string,label:string){const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=`${label}-${new Date().toISOString().replace(/[:.]/g,'-')}.json`;try{document.body.append(a);a.click();}finally{a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}}
@@ -394,7 +396,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       </form>
       <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
       {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
-      {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}</p>}
+      {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}{authCode&&<small className="entry-auth-code" style={{display:'block',opacity:.7,fontSize:'.75em',marginTop:4}}>código: {authCode}</small>}</p>}
     </section>
     {!userId && <p className="entry-local-note"><ShieldCheck size={18} aria-hidden="true" /><span>{baseline?.snapshot ? 'O progresso deste aparelho continua protegido. Depois de entrar, use o botão principal para salvá-lo na conta.' : 'Entre para receber sua jornada salva ou começar uma nova conta sincronizada.'}</span></p>}
     {ready&&!blocked&&baseline?.snapshot&&<section className="account-journey" aria-labelledby="account-health-title">
