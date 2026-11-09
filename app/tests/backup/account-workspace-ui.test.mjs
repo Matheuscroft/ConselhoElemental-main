@@ -10,10 +10,10 @@ const text=n=>Array.isArray(n)?n.map(text).join(''):typeof n==='object'?text(n?.
 const uid='11111111-1111-4111-8111-111111111111',key='conselho-elemental-account-intent-v1';
 const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
 const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-revision',createdAt:'2026-10-29T12:00:00Z'};
- function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false}={}){
+ function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false,snapshotData}={}){
  let si,ri,mounted=false,tree,cleanup,authId=uid,constructions=0,disposals=0,staleCopy=false,download=0;const handoffs=[];const slots=[],refs=[],listeners=new Set(),requests=[],navigations=[],sessions=[],timers=[];
  const memory=new Map([['conselho-elemental-storage','synthetic core'],['dominio-do-mago-workout-storage-v1','synthetic fitness']]);if(empty)memory.clear();if(pending)memory.set(key,'synthetic intent');if(bound)memory.set('conselho-elemental-account-binding-v1','synthetic binding');
- const baseline={pair:{core:empty?null:'synthetic core',fitness:empty?null:'synthetic fitness'},snapshot:empty?null:{},localMode:null};
+ const baseline={pair:{core:empty?null:'synthetic core',fitness:empty?null:'synthetic fitness'},snapshot:empty?null:(snapshotData??{}),localMode:null};
  const react={useState(initial){const i=si++;if(!(i in slots))slots[i]=initial;return [slots[i],next=>slots[i]=next];},useRef(initial){return refs[ri++]??={current:initial};},useEffect(fn){if(!mounted)cleanup=fn();}};
  const sessionMemory=new Map();
  const window={location:{origin:'https://fixture.test',assign:url=>navigations.push(url),reload:()=>navigations.push('reload')},localStorage:{getItem:k=>memory.get(k)??null},sessionStorage:{getItem:k=>sessionMemory.get(k)??null,setItem:(k,v)=>sessionMemory.set(k,v),removeItem:k=>sessionMemory.delete(k)},addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn)};
@@ -228,4 +228,23 @@ test('password visibility is explicit, keeps credentials only in the form, and m
  f.nodes().find(n=>n.type==='button'&&n.props['aria-label']==='Mostrar senha').props.onClick();f.render();
  input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'text');assert.equal(input.props.value,'synthetic private value');assert.equal(f.constructions,0);
  f.click('Criar conta');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
+});
+
+test('connection summary includes every local profile while identifying an empty active profile',async()=>{
+ const active='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',other='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+ const snapshotData={stores:{core:{state:{accounts:[{id:active,name:'Perfil ativo'},{id:other,name:'Outro perfil'}],currentAccountId:active,accountDataById:{
+  [active]:{tasks:[{id:'stale'}],habits:[],user:{xp_earth:99,xp_fire:0,xp_water:0,xp_air:0}},
+  [other]:{tasks:[{id:'ritual'},{id:'filho',parentId:'ritual'}],habits:[{id:'ciclo'}],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:51.705,xp_fire:0,xp_water:0,xp_air:0}}
+ },tasks:[],habits:[],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:0,xp_fire:0,xp_water:0,xp_air:0}}},fitness:{state:{accountDataById:{[other]:{sessions:[{}]}},nativeDataById:{}}}}};
+ const f=fixture({snapshotData,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
+ assert.match(f.content(),/Perfis no arquivo2/);assert.match(f.content(),/Rituais em todos os perfis1/);assert.match(f.content(),/Ciclos em todos os perfis1/);assert.match(f.content(),/XP em todos os perfis51,705/);assert.match(f.content(),/Treinos salvos1/);
+ assert.match(f.content(),/Perfil ativo: Perfil ativo — 0 rituais, 0 ciclos e 0 XP/);assert.match(f.content(),/arquivo contém progresso em outros perfis/);f.unmount();
+});
+
+test('a structurally valid but activity-free local journey needs explicit consent before first upload to an empty account',async()=>{
+ const active='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
+ const snapshotData={stores:{core:{state:{accounts:[{id:active,name:'Perfil vazio'}],currentAccountId:active,accountDataById:{},tasks:[],habits:[],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:0,xp_fire:0,xp_water:0,xp_air:0}}},fitness:{state:{accountDataById:{},nativeDataById:{}}}}};
+ const f=fixture({snapshotData,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
+ assert.match(f.content(),/Jornada local sem atividade registrada/);f.click('Sincronizar este aparelho');await flush();f.render();assert.equal(f.requests.length,0);assert.match(f.content(),/conta ainda não possui uma jornada salva/);
+ f.toggleLabel('Conferi os totais e quero usar esta jornada vazia somente se a conta também estiver vazia.');f.click('Sincronizar este aparelho');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');f.unmount();
 });
