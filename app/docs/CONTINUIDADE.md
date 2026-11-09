@@ -1,3 +1,20 @@
+## Equipe de frontend com Claude e retomada (09/11/2026)
+
+Fábio pediu um time de agentes orquestrado, numa sessão nova, para gastar menos do uso semanal: o frontend rodava sempre no Opus. O time e as regras estão em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md), que adapta ao Claude o protocolo de [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md) e de [POLITICA-MODELOS.md](POLITICA-MODELOS.md), escritos para o Codex. Só o orquestrador commita e publica. Instrução permanente de Fábio: publicar sempre na main.
+
+Estado de retomada: main com CI verde e `verify:release` incluindo `tsc -b`. O design system tem quatro camadas, cada uma com guarda: movimento, cor, tipografia e superfície. Entregues nesta rodada, cada uma com seu documento em `plans/`:
+
+- Sistema de movimento e migração das telas: [SISTEMA-DE-MOVIMENTO](plans/SISTEMA-DE-MOVIMENTO.md).
+- Cor e tipografia: [FUNDACAO-COR-E-TIPOGRAFIA](plans/FUNDACAO-COR-E-TIPOGRAFIA.md).
+- Camada de vidro, cartões de elemento e cartão de projeto: [REDESIGN-SUPERFICIE-E-ELEMENTOS](plans/REDESIGN-SUPERFICIE-E-ELEMENTOS.md).
+- Fotos por dia, reel e túnel nos Ciclos: [MOMENTOS-E-REEL](plans/MOMENTOS-E-REEL.md).
+- Cerimônia de subida de nível: [CERIMONIA-DE-CONCLUSAO](plans/CERIMONIA-DE-CONCLUSAO.md).
+- HUD permanente e a fórmula única de HP: [HUD-PERMANENTE](plans/HUD-PERMANENTE.md).
+- Aura por signo: [AURA-ELEMENTAL-POR-SIGNO](plans/AURA-ELEMENTAL-POR-SIGNO.md).
+- Peso do deploy, de 58 MB para 18 MB: [AUDITORIA-PUBLICACAO](AUDITORIA-PUBLICACAO.md).
+
+Pendências conhecidas. Nada disso foi visto em WebKit nem em aparelho real. O Safari do iOS descarta o IndexedDB das fotos após sete dias sem uso se o app não estiver instalado. `/treinos` ficou sem HUD de propósito, por ter casca de foco. Faltam 11 literais de `font-size` (cinco tamanhos distantes dos degraus e seis títulos de display) e o reflexo dos cartões de elemento só existe em WebKit e Blink. O corpo como ecossistema, com a água, espera decisões de produto de Fábio. Próximo lote proposto: onda 1 de migração de telas, com três implementadores em telas disjuntas.
+
 ## F6-N17 — sessão obrigatória e sincronização direta (09/11/2026)
 
 Relato de Matheus mostrou que a conta autenticava, mas uma falha em metadados operacionais escondia a ação principal e deixava visíveis apenas os controles antigos de cópia JSON. O importador `?progresso=restaurar` não era uma etapa da sincronização; a orientação de usá-lo foi corrigida.
