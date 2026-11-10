@@ -14,5 +14,11 @@
 .account-oauth { display: grid; gap: 8px; margin-top: 16px; }
 .account-oauth-divider { display: flex; align-items: center; gap: 10px; margin: 0; font-size: var(--ds-text-micro, .8rem); opacity: .7; }
 .account-oauth-divider::before, .account-oauth-divider::after { content: ''; flex: 1; border-top: 1px solid #aab4c424; }
-.restore-workspace .account-oauth .account-oauth-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 44px; margin-top: 0; }
+/* Google identity: light surface, dark label, full-colour "G" (works on the dark card). */
+.restore-workspace .account-oauth .account-oauth-button { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 48px; margin-top: 0; border-radius: 12px; border: 1px solid #dadce0; background: #ffffff; color: #1f1f1f; font-weight: 600; letter-spacing: .01em; box-shadow: 0 1px 2px #0000004d, 0 1px 3px 1px #00000026; transition: background-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.restore-workspace .account-oauth .account-oauth-button:hover:not(:disabled) { background: #f6f8fc; box-shadow: 0 1px 3px #0000004d, 0 2px 8px 2px #00000026; }
+.restore-workspace .account-oauth .account-oauth-button:active:not(:disabled) { background: #eef2fa; transform: translateY(1px); }
+.restore-workspace .account-oauth .account-oauth-button:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 2px; }
+.restore-workspace .account-oauth .account-oauth-button:disabled { opacity: .6; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) { .restore-workspace .account-oauth .account-oauth-button { transition: none; } }
 .account-oauth small { line-height: 1.5; opacity: .85; }
