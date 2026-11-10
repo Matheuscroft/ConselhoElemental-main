@@ -273,19 +273,20 @@ test('closed release keeps social buttons inert and builds no client',async()=>{
  const f=fixture({released:false,accessReleased:false});await flush();f.render();f.click('Continuar com Google');await flush();assert.equal(f.constructions,0);assert.equal(f.sessions.length,0);f.unmount();
 });
 
+const until=async(cond,tries=200)=>{for(let i=0;i<tries;i++){if(cond())return;await new Promise(r=>setTimeout(r,5));}throw Error('condition not reached');};
 test('provider failure return shows a safe message with a discreet code and builds no client',async()=>{
  globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&error=access_denied&error_code=access_denied&error_description=secret',()=>{});}finally{delete globalThis.sessionStorage;}
- const f=fixture({notice:'oauth'});await flush();f.render();await flush();f.render();
+ const f=fixture({notice:'oauth'});await until(()=>{f.render();return /cancelado ou negado/.test(f.content());});
  assert.match(f.content(),/cancelado ou negado/);assert.match(f.content(),/código: access_denied/);assert.doesNotMatch(f.content(),/secret/);assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('provider code return becomes the same authenticated access as an e-mail login, without adoption, transfer or sync',async()=>{
  globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&code=synthetic-code-0001',()=>{});}finally{delete globalThis.sessionStorage;}
- const f=fixture({notice:'oauth'});await flush();f.render();await flush();
+ const f=fixture({notice:'oauth'});await until(()=>f.sessions.some(s=>s.kind==='exchange'));
  const exchange=f.sessions.find(s=>s.kind==='exchange');assert.ok(exchange);assert.equal(exchange.args,'synthetic-code-0001');
- exchange.resolve({data:{session:{user:{id:uid}}},error:null});await flush();f.render();await flush();f.render();
+ exchange.resolve({data:{session:{user:{id:uid}}},error:null});await until(()=>{f.render();return /Conta conectada nesta aba/.test(f.content());});
  assert.match(f.content(),/Conta conectada nesta aba/);assert.match(f.content(),/Continuar no app/);
  assert.equal(f.requests.length,0);assert.deepEqual(f.navigations,[]);assert.ok([...f.memory.keys()].every(k=>!/(code|token|password)/i.test(k)));
  f.unmount();
