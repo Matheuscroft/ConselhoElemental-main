@@ -1,3 +1,21 @@
+## FE-W2 — Pilares com Element Cards, Ciclos com Reel Slider, aura refinada — em revisão parcial (10/11/2026)
+
+Pedido de Fábio em 09/11/2026. Fonte: três gravações de tela (09/11, 16:00 a 16:08), a serem reenviadas se não abrirem, mais [thread no X](https://x.com/dr_cintas/status/2119555538144911525/photo/1), o [README do site do reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/site/README.md) e a [skill reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/skills/reanimate/SKILL.md), que serve para aprender e copiar movimento de UI por engenharia reversa.
+
+Estado atual: execução iniciada em 09/11/2026. Itens 3, 4 e 5 estão em revisão, com a publicação na main confirmada até `22cb609`; só `47f5277` está local. Item 1 saiu com o Santuário em `dbdbaf5`. Item 2 aguarda referência de Fábio. Nenhum item está aceito. Só o orquestrador marca aceita. Detalhes e commits em [CONTINUIDADE.md](CONTINUIDADE.md), seção FE-W2.
+
+1. **Aura:** ajustar o ganho no shader de `AuraElemental.tsx`. A cor chapada e o vazamento vertical vieram do QA do Santuário. Status: referenciado em `dbdbaf5` (outra frente); sem aceite de FE-W2 neste item.
+2. **Pilares elementais:** refazer. As animações atuais não ficaram como desejado. Efeito de Element Cards; pesquisar o material acima e comparar layouts antes de escolher. Status: aguarda a referência de Fábio; sem execução.
+3. **Ciclos (Reel Slider):** Reel para rolar entre os dias e acompanhar o que foi feito em cada dia, com a data e o que a tela já tem. Status: em revisão. Publicado em `ac22965` (B1+B2), com `1f18e2d`, `6dc0a71` e `22cb609` no mesmo front.
+4. **Flow Tunnel:** remover (não funciona bem). Status: em revisão. Publicado em `61fdf81` (B0).
+5. **Momentos (calendário e Reel):** integrar ao calendário e ao Reel. Status: em revisão. Foto do dia no `DayDetailsDialog` e pontas da janela de 9 dias em `47f5277` (item C), **só local, ainda não publicado**.
+
+Trabalho de Ciclos fora dos cinco itens, da mesma frente: botões reais de Lua e Estação (`1f18e2d`), céu vivo e moldura de mago (`6dc0a71`), VFX elemental em três níveis (`22cb609`). Rótulos e commits, em [CONTINUIDADE.md](CONTINUIDADE.md).
+
+Restrições: pontuação, XP e stores não mudam sem aprovação de Fábio; mesmas regras do design system (movimento, superfície, tipografia) e do time em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Líder de design em Opus para o conceito, sob aviso. Não verificado: WebKit, aparelho real, desempenho no iPhone com WebGL, seletor de arquivo real.
+
+Próximo: publicar `47f5277` na main (decisão do orquestrador, após `git fetch` e merge); referência de Fábio para o item 2; WebKit e aparelho real se Fábio quiser aceite.
+
 ## FE-W1 — onda 1 de migração de telas ao design system — publicada; ressalvas abertas
 
 Rituais, Temporal e Grimório migrados para os degraus tipográficos, as durações do sistema de movimento e a camada de superfície; Forja, Domínios e Astrolábio já estavam conformes, por inspeção estática. Commit `91d52b9`, CI verde. Aceite com ressalvas: telas vistas só com perfil vazio; badges de 12px em Rituais não medidos; `.domain-rail-art` não investigado; foco ao fechar o diálogo do dia a repetir com teclado real; nada visto em WebKit nem em aparelho real. O token `settle` não zerava em movimento reduzido e foi corrigido à parte em `b0e7121`. Detalhes em [CONTINUIDADE.md](CONTINUIDADE.md). Próximo: segunda onda com perfil de teste populado, e Treinos sozinho, sem HUD.

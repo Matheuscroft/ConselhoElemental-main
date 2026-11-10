@@ -1,3 +1,73 @@
+## FE-W2 — Ciclos com Reel como calendário, céu, moldura, VFX e foto do dia — em revisão (10/11/2026)
+
+Estado: **em revisão**. Só o orquestrador marca aceita. Fila: [FILA-ENTREGAS.md](FILA-ENTREGAS.md), entrada FE-W2. Este registro é só documental: não alterou código, testes, versão, manifests nem commit. Itens A (Pilares) e D (aura) não estão aceitos (ver Em aberto).
+
+Ponto de retomada (conferido por `git status -sb` e `git log origin/main..main` em 10/11/2026): checkout `main`, HEAD `47f5277`. `origin/main` está em `22cb609`; a main está **1 commit à frente** (`ahead 1`). Só `47f5277` não está publicado.
+
+Rótulos desta frente, usados também na fila: **A** = Pilares (fila, item 2); **B0** = Flow Tunnel (item 4); **B1+B2** = Reel como calendário de Ciclos (item 3, toca o item 5); **C** = foto do dia nos Momentos (item 5); **D** = aura (item 1). A numeração 1 a 5 é da fila; os rótulos A a D são desta frente.
+
+Commits da frente (conferidos com `git show --stat` e `git branch -r --contains`):
+- `61fdf81` **B0**, remove o Flow Tunnel: 5 arquivos, 3 inserções, 453 remoções. Removidos `TunelMomentos.tsx`, `tunel-momentos.css`, `lib/momentos/tunel.ts` e `tests/momentos/tunel.test.mjs`. **Publicado.**
+- `ac22965` **B1+B2**, Reel como calendário: cartões com ciclos feitos/total e foto do dia; 6 arquivos, 394 inserções, 201 remoções. Toca `components/momentos/ReelMomentos.tsx`, `reel-momentos.css`, `AcoesMomento.tsx` (novo), `pages/Ciclos.tsx`, `pages/ciclos.css` e `docs/plans/MOMENTOS-E-REEL.md`. **Publicado.**
+- `1f18e2d`: Lua e Estação viram botões reais; 2 arquivos. **Publicado.**
+- `6dc0a71`: céu vivo para Lua e Estação (Lua com shader e borda pela fase; Estação com partículas e vidro `.ceu-peitoril`) e moldura de mago no cartão aberto, com cor pelo elemento dominante do dia. Em `tests/design/superficie.test.mjs`, `TETO_VIDRO` foi de 15 para 16, aprovado por Fábio. 20 arquivos. **Publicado.**
+- `22cb609`: VFX elemental em três níveis, pela maestria do elemento do dia. Nível 1, Faísca (maestria abaixo de 10): moldura com o verbo de cada elemento. Nível 2, Fluxo (10 a 24): a borda vira o próprio elemento. Nível 3, Domínio (25 ou mais): borda premium dupla com filigrana, 60fps e dobra de tela cheia. Movimento reduzido fica sempre no nível 1, parado. `?vfx=1|2|3` força um nível e só existe em DEV. Conceito em `docs/plans/CONCEITO-VFX-ELEMENTAL.md`. Também traz o céu mais vivo (Lua escura com limbo, luz da Terra e estrelas; estações com horizonte, paralaxe, raios e eventos raros). 16 arquivos, 1928 inserções, 85 remoções. **Publicado.**
+- `47f5277`, **C e pontas da janela**: foto do dia no topo do `DayDetailsDialog` (`components/momentos/MomentoDoDia.tsx`, `momento-do-dia.css`, `lib/momentos/momento.ts`), com as mesmas ações do Reel, a linha "Fica só neste aparelho." e sem foto em dia futuro, no diálogo e no Reel. As pontas da janela de 9 dias ficaram destravadas: setas e teclado abrem o dia seguinte e recentram. 7 arquivos, 197 inserções, 13 remoções. **Não publicado (só local).**
+
+Pendência anterior fechada: as pontas da janela de 9 dias, que estavam inertes, foram resolvidas em `47f5277`. A decisão de produto que estava aberta foi tomada pelo orquestrador e não está em nenhum documento de regra.
+
+Evidência, separada por origem:
+- **Git, conferido nesta sessão:** hashes, publicação em `origin/main`, estatísticas de `git show --stat` e `ahead 1`.
+- **Reportado pelo orquestrador, não reexecutado aqui:** `47f5277` com Verificador em 932/932 e build verde. QA visto no navegador a 390px: foto de teste no dia 3, remoção pela própria tela, dia futuro sem bloco e pontas funcionando nos dois sentidos. CI verde e Vercel ok em `6dc0a71` e `22cb609`, conferidos no ar.
+- **Reportado em B1+B2 (`ac22965`), não reexecutado aqui:** Verificador 865/865 e build verde; QA em Chromium com perfil vazio, 390 e 768px: sem estouro horizontal, setas e botões de 44px, cartões de 148px e 180px, blur estático, `scrollTo` programático não seleciona, recentra ao redimensionar; contraste estimado 5,3:1 no texto muted com opacidade 0,75.
+
+Tetos (inspeção por grep nesta sessão): `TETO_TAMANHOS = 11` em `app/tests/design/fundacao.test.mjs`; `TETO_VIDRO = 16` em `app/tests/design/superficie.test.mjs`. O 16 foi subido em `6dc0a71`, aprovado por Fábio. Este registro não altera teto.
+
+Não verificado (registrar): WebKit e Safari em tudo; aparelho real; desempenho no iPhone com até quatro contextos WebGL; a moldura nos níveis Fogo, Ar e Terra foi vista só em navegador sem GPU; conquista ao vivo; hemisfério Norte; seletor de arquivo real; película sobre foto real (QA com perfil vazio); movimento reduzido real (emulado só por JS, sem `@media`); contraste por pixel.
+
+Em aberto:
+- **A, Pilares (fila 2):** aguarda a referência de Fábio. Sem execução.
+- **D, aura (fila 1):** saiu com o Santuário em `dbdbaf5`, outra frente. Referenciado aqui; o ganho do shader de `AuraElemental.tsx` não tem aceite de FE-W2.
+- **Limiares de maestria 10 e 25:** ajustáveis. Não há decisão final registrada.
+- **Peso:** o three.js pesa 747 kB (190 kB gzip) e carrega sob demanda.
+- Santuário: ver seção própria abaixo.
+
+Versão do produto: este registro não altera versão. Eventual incremento do lote fica para decisão do orquestrador no encerramento.
+
+Próximo passo: (1) orquestrador decide publicar `47f5277` na main, depois de `git fetch` e merge (instrução permanente de Fábio: publicar na main); (2) Verificador roda `verify:release` e build sobre o conjunto final, depois que todos os escritores terminarem; (3) Fábio envia a referência de A; (4) WebKit e aparelho real, se Fábio quiser esse aceite; (5) decisão sobre os limiares de maestria, se Fábio quiser mudá-los.
+
+Limites deste registro: não consultei a fonte de domínio em `docs-conselho-master`, porque o lote é documental e não faz afirmação de regra de produto. Nenhum número de pontuação, XP ou store foi alterado.
+
+## Santuário: conceito e implementação (09/11/2026)
+
+Estado: **publicado** em `dbdbaf5` (com a correção do platô da aura) e documentado em `9fae215`, ambos em `origin/main` (conferido por git em 10/11/2026). Aceite pessoal de Fábio no aparelho pendente. Conceito aprovado por Fábio com ajustes: [CONCEITO-SANTUARIO.md](plans/CONCEITO-SANTUARIO.md). O texto abaixo é o registro de 09/11, quando ainda não havia commit; o `TETO_VIDRO` citado ali (15) subiu depois para 16 em `6dc0a71`, pelo vidro dos botões do céu em Ciclos.
+
+Passo 0 (commit `a4ea31f`): a guarda de vidro (`tests/design/superficie.test.mjs`) passa a ler `.tsx`. `TETO_VIDRO` sobe de 12 para 15 como retrato da realidade: 11 ocorrências em `.css` e 4 classes Tailwind `backdrop-blur-*` em MobileBottomNav, Auth e nos dois VideoExercisePlayer, que devem cair em lote próprio. Falha comprovada ao acrescentar uma classe. Teto subido: depende de aceite explícito do orquestrador, porque o protocolo reserva os tetos a ele.
+
+Passos 1 a 5 (sem commit): `ElementalPreview.tsx` e `elemental-preview.css` (duplicatas do HUD e rótulos removidos, um "Conjurar" a menos; órbita mantida, sem setas, pausar ou dica; ids `ep-entry-*` nas pedras; próximo passo em `.ds-pane`; grade de nove caminhos trocada por "Todos os caminhos"; `EquipmentSheet`/`EQUIPMENT` removidos do arquivo; cabeçalho com `--ds-surface-float` e `blur(var(--ds-blur-soft))`; durações de 180ms por token). Novos: `src/components/sanctuary/AnelXp.tsx` e `anel-xp.css`, anel de XP em SVG. Correção: o QA achou que `non-scaling-stroke` quebrava o `pathLength`; medido por contagem de pixels, ~21%, 48% e 78% para 25, 50 e 75%, vazio em 0.
+
+Causa da aura: o corte duro vinha do `overflow: clip` da órbita (confirmado por execução). Troca por `overflow-x: clip`. Com `overflow-y: visible` a aura esmaece, mas vaza ~114 a 150px acima e abaixo, sob o cabeçalho sticky e atrás do nome e do cartão. Separado e **não corrigido** (fora do escopo): o platô de cor vem do shader em `AuraElemental.tsx`, porque `shell*(0.30+1.45*tongues)` passa de 1 e o clamp achata. O corte da Terra não foi reproduzido a 390px; o "Ter" do briefing provavelmente era rótulo atrás do corpo.
+
+Evidência reportada pelo implementador e pelo QA, não reexecutada por este registro: Verificador (Haiku) com `verify:release` 872/872, build verde, `TETO_TAMANHOS = 11`, `TETO_VIDRO = 15`. QA no Chromium com perfil vazio (atalho de login só local, não versionado): estouro 0 a 390 e 768px em `/santuario` e `/santuario/elementos/terra`; Terra sem corte numa volta (margem 15px); órbita pausa fora da tela, com hover e com foco; foco volta à pedra Terra com "Voltar ao Santuário"; alvos de toque ≥44px; contraste de "Nível N" 9,41:1 e do link 10,08:1. Inspeção deste registro, por leitura: `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs`, `TETO_VIDRO = 15` em `tests/design/superficie.test.mjs`, commit `a4ea31f` existe no histórico.
+
+Arquivos: `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/pages/ElementalPreview.tsx`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/pages/elemental-preview.css`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/components/sanctuary/AnelXp.tsx`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/components/sanctuary/anel-xp.css`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/tests/design/superficie.test.mjs` (commit `a4ea31f`).
+
+Limites e pendências:
+- Perfil vazio, XP 0. Não visto com dados.
+- Anel preenchido só por sonda no DOM e pela medição do implementador; sem QA independente depois da correção.
+- Movimento reduzido só por stub de `matchMedia`; o `@media` do CSS e o colapso do token não foram executados.
+- Aura em nível alto (1,75×) e a 768px com e sem clip não vistas.
+- Contraste sobre a mancha da aura não medido por pixel.
+- Barra inferior a 768px parece não ocupar a largura (possível artefato, não investigado).
+- Hover só pausa a rotação; aura e canvas das pedras seguem.
+- "Nível N" repete o selo do HUD (decisão de Fábio).
+- Corpo genérico do personagem, maior ganho de acabamento, depende de arte nova.
+- Água e corpo como ecossistema não construídos.
+- Nada visto em WebKit nem em aparelho real.
+- Os 4 `backdrop-blur-*` Tailwind e as 11 ocorrências em `.css` ainda precisam cair para o teto voltar a 11 de vidro.
+
+Próximo passo: o orquestrador confere o diff, aceita ou devolve; depois o Verificador roda `verify:release` e build sobre o conjunto final, e só então o orquestrador commita e publica na main após `git fetch` e merge. Versão do produto: este registro não altera versão.
+
 ## Onda 1 de migração de telas — publicada em 91d52b9 (09/11/2026)
 
 Lote: três implementadores em paralelo, em telas disjuntas, orquestrados conforme [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Publicada na `main` no commit `91d52b9` (CI verde, execução 42670245567), com autorização expressa de Fábio. Aceita pelo orquestrador **com ressalvas**, listadas abaixo. Entrada `FE-W1` em [FILA-ENTREGAS.md](FILA-ENTREGAS.md). Deploy conferido: os 9 arquivos CSS de um build local do commit existem na produção com o mesmo hash de conteúdo, o que prova que a Vercel serve o CSS exato dele.
