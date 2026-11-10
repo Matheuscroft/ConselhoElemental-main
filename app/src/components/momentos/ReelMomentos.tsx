@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
-import { MENSAGEM_RECUSA } from '@/lib/momentos/momento';
+import { MENSAGENS_MOMENTO, podeGuardarFoto } from '@/lib/momentos/momento';
 import {
   apagarMomento,
   enderecoTemporario,
@@ -41,12 +41,7 @@ export interface DiaDoReel {
   readonly nivel: NivelVfx;
 }
 
-const MENSAGENS: Record<string, string> = {
-  ...MENSAGEM_RECUSA,
-  indisponivel: 'Este navegador não guarda fotos. Tente pelo app instalado.',
-  espaco: 'Não há espaço no aparelho para mais uma foto.',
-  falha: 'Não consegui guardar essa foto. Tente de novo.',
-};
+const MENSAGENS = MENSAGENS_MOMENTO;
 
 /** After this long without a scroll event the rail counts as settled. */
 const ASSENTAR_MS = 120;
@@ -283,8 +278,10 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
 
   const mover = useCallback((passo: number) => {
     const base = selecionadoRef.current >= 0 ? selecionadoRef.current : visualRef.current;
-    const alvo = base + passo;
-    if (alvo >= 0 && alvo < dias.length) aoEscolherRef.current(alvo);
+    // One step past either end is allowed: the page turns it into the next
+    // date and recentres the window, so the arrows never go dead.
+    const alvo = Math.min(dias.length, Math.max(-1, base + passo));
+    aoEscolherRef.current(alvo);
   }, [dias.length]);
 
   const guardar = useCallback(async (dia: string, arquivo: File | undefined) => {
@@ -310,8 +307,9 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   }, []);
 
   const aberto = selecionado >= 0 ? dias[selecionado] : undefined;
-  const podeVoltar = selecionado !== 0;
-  const podeAvancar = selecionado !== dias.length - 1;
+  // The window slides at the ends, so both arrows always lead somewhere.
+  const podeVoltar = dias.length > 0;
+  const podeAvancar = dias.length > 0;
 
   return (
     <div className="reel-momentos" data-reduzido={reduced}>
@@ -430,7 +428,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
       </button>
       </div>
 
-      {aberto ? (
+      {aberto && (fotos[aberto.dia] || podeGuardarFoto(aberto.dia, new Date())) ? (
         <AcoesMomento
           temFoto={Boolean(fotos[aberto.dia])}
           aoEscolher={(arquivo) => void guardar(aberto.dia, arquivo)}

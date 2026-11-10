@@ -1707,7 +1707,16 @@ export const Ciclos: React.FC = () => {
             date.setDate(date.getDate() + offset);
             return isSameDay(selectedDate, date);
           })}
-          aoEscolher={(indice) => selectRelativeVisibleDay(dayShortcuts[indice])}
+          aoEscolher={(indice) => {
+            if (indice >= 0 && indice < dayShortcuts.length) {
+              selectRelativeVisibleDay(dayShortcuts[indice]);
+              return;
+            }
+            // One step past an end of the window: open that day and recentre on it.
+            const date = new Date(visibleDaysCenterDate);
+            date.setDate(date.getDate() + dayShortcuts[0] + indice);
+            selectCalendarDate(date);
+          }}
         />
 
         {/* Moon Phase & Season */}

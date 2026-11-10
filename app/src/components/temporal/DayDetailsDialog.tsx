@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { MomentoDoDia } from '@/components/momentos/MomentoDoDia';
 import { TemporalDayAgenda } from './TemporalDayAgenda';
 import type { DayAggregate, TemporalCommitment, TemporalEvent } from '@/lib/temporal';
 
@@ -19,6 +20,7 @@ export function DayDetailsDialog({ open, onOpenChange, date, aggregate, events, 
   return <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="temporal-day-dialog max-h-[85dvh] overflow-y-auto ds-glass-float text-white sm:max-w-xl">
       <DialogHeader><DialogTitle className="capitalize">{dateLabel}</DialogTitle><DialogDescription>Abra uma atividade ou confira o que você fez nesta data.</DialogDescription></DialogHeader>
+      {date && <MomentoDoDia data={date} />}
       {aggregate && <p className="temporal-day-reading">{aggregate.totalCompleted} registros de conclusão · {aggregate.score.toLocaleString('pt-BR')} pontos registrados</p>}
       {date && <TemporalDayAgenda date={date} events={events} commitments={commitments} returnTo={returnTo ?? location.pathname + location.search} />}
     </DialogContent>

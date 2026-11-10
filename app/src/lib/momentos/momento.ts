@@ -76,3 +76,20 @@ export const MENSAGEM_RECUSA: Record<RecusaMomento, string> = {
   tamanho: 'Essa imagem é grande demais. Escolha uma foto de até 25 MB.',
   dia: 'Não consegui identificar o dia dessa lembrança.',
 };
+
+/** Every message a photo action can show, for the Reel and the day dialog alike. */
+export const MENSAGENS_MOMENTO: Record<string, string> = {
+  ...MENSAGEM_RECUSA,
+  indisponivel: 'Este navegador não guarda fotos. Tente pelo app instalado.',
+  espaco: 'Não há espaço no aparelho para mais uma foto.',
+  falha: 'Não consegui guardar essa foto. Tente de novo.',
+};
+
+/**
+ * A photograph can be kept for today or for a day already gone, never for a
+ * day that has not happened. Keys are zero-padded, so comparing them as text
+ * is comparing the calendar, across month and year turns alike.
+ */
+export function podeGuardarFoto(dia: string, hoje: Date): boolean {
+  return chaveValida(dia) && dia <= chaveDoDia(hoje);
+}
