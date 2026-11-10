@@ -32,6 +32,9 @@ uniform float uHalo;
 uniform float uEstrelas;
 uniform float uTerra;
 uniform float uSul;
+uniform float uLimbo;
+uniform float uNebulosa;
+uniform float uLado;
 
 float hash(vec2 p) {
   return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
@@ -60,6 +63,10 @@ void main() {
 
   float dm = length(p - uCentro);
 
+  // Nebula veil: a faint cold wash, easiest to see around a new moon.
+  float veu = smoothstep(0.42, 0.9, fbm(p / 34.0 + vec2(5.3, 2.1)));
+  col += vec3(0.07, 0.12, 0.27) * veu * uNebulosa * 0.9;
+
   // Stars on a 14px grid, a third of the cells, fewer as the Moon fills.
   vec2 cell = floor(p / 14.0);
   if (hash(cell) < 0.35) {
@@ -73,6 +80,9 @@ void main() {
   // Halo outside the limb.
   float halo = uHalo * exp(-max(dm - uRaio, 0.0) / (0.55 * uRaio));
   col += vec3(196.0, 210.0, 240.0) / 255.0 * halo * 0.55;
+  // A thin cold ring hugging the limb, present in every phase.
+  float fino = uHalo * exp(-max(dm - uRaio, 0.0) / 2.5) * smoothstep(uRaio - 1.0, uRaio + 0.5, dm);
+  col += vec3(150.0, 190.0, 255.0) / 255.0 * fino * 0.35;
 
   if (dm < uRaio + 1.0) {
     vec2 n = (p - uCentro) / uRaio;
@@ -87,8 +97,14 @@ void main() {
     vec3 albedo = mix(1.0, 0.78, mare) * vec3(0.839, 0.835, 0.812);
 
     vec3 sun = albedo * (0.7 + 0.3 * clamp(ndl, 0.0, 1.0));
-    vec3 dark = mix(vec3(0.125, 0.15, 0.2) * 0.8, albedo * vec3(111.0, 132.0, 168.0) / 255.0, clamp(uTerra * 2.5, 0.0, 1.0));
+    // Earthshine: blue, and the maria stay readable through the albedo.
+    vec3 dark = mix(vec3(0.125, 0.15, 0.2) * 0.8, albedo * vec3(88.0, 124.0, 196.0) / 255.0, clamp(uTerra * 3.6, 0.0, 0.85));
     vec3 disc = mix(dark, sun, lit);
+
+    // Limb: a Fresnel rim on the sunward edge, never off, so a new moon still reads as a moon.
+    float rim = pow(1.0 - z, 2.2);
+    float lado = smoothstep(-0.25, 0.75, n.x * uLado / max(length(n), 0.001));
+    disc += vec3(0.78, 0.85, 0.98) * rim * lado * uLimbo * 0.85;
 
     col = mix(col, disc, smoothstep(uRaio + 0.5, uRaio - 0.5, dm));
   }
@@ -96,6 +112,12 @@ void main() {
   gl_FragColor = vec4(col, 1.0);
 }
 `;
+
+/** [left %, top %, delay factor, cycle factor]: kept clear of the disc at the right. */
+const ESTRELAS: ReadonlyArray<readonly [number, number, number, number]> = [
+  [8, 14, 0, 5], [21, 40, 2.3, 6], [34, 12, 4.1, 4.5], [47, 34, 1.2, 7],
+  [57, 10, 3.4, 5.5], [14, 28, 5.2, 6.5], [40, 24, 0.7, 4],
+];
 
 export interface LuaTelaProps {
   readonly phaseAngle: number;
@@ -168,6 +190,9 @@ export function LuaTela({ phaseAngle, illuminated, waxing, south }: LuaTelaProps
           uEstrelas: { value: 1 },
           uTerra: { value: 0 },
           uSul: { value: 0 },
+          uLimbo: { value: 1 },
+          uNebulosa: { value: 1 },
+          uLado: { value: 1 },
         },
       });
       const quad = new THREE.Mesh(geometry, material);
@@ -196,6 +221,9 @@ export function LuaTela({ phaseAngle, illuminated, waxing, south }: LuaTelaProps
         u.uEstrelas.value = luz.estrelas;
         u.uTerra.value = luz.terra;
         u.uSul.value = entrada.south ? 1 : 0;
+        u.uLimbo.value = luz.limbo;
+        u.uNebulosa.value = luz.nebulosa;
+        u.uLado.value = luz.lado === 90 ? 1 : -1;
         renderer.render(scene, camera);
         modo('3d');
       };
@@ -241,10 +269,16 @@ export function LuaTela({ phaseAngle, illuminated, waxing, south }: LuaTelaProps
       className="ceu-janela"
       data-modo="simple"
       aria-hidden="true"
-      style={{ '--lua-halo': luz.halo.toFixed(3) } as React.CSSProperties}
+      style={{ '--lua-halo': luz.halo.toFixed(3), '--lua-estrelas': luz.estrelas.toFixed(3) } as React.CSSProperties}
     >
       <div className="ceu-fundo ceu-fundo-lua">
         <span className="ceu-lua-disco"><MoonDisc phaseAngle={phaseAngle} waxing={waxing} south={south} /></span>
+      </div>
+      {/* Twinkle: a few CSS stars over the one-shot shader; the CSS stops them for reduced motion. */}
+      <div className="ceu-estrelas">
+        {ESTRELAS.map((e, i) => (
+          <span key={i} className="ceu-estrela" style={{ left: `${e[0]}%`, top: `${e[1]}%`, '--e-atraso': `${e[2]}`, '--e-ciclo': `${e[3]}` } as React.CSSProperties} aria-hidden="true" />
+        ))}
       </div>
     </div>
   );

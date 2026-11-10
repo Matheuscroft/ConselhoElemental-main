@@ -3,6 +3,7 @@ import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
 import { elementoDominante } from '@/lib/momentos/elemento-do-dia';
+import { nivelDeVfx, nivelForcado } from '@/lib/momentos/nivel-vfx';
 import { beatUnless, stagger } from '@/lib/motion/motion';
 import { BotaoLua } from '@/components/cycles/ceu/BotaoLua';
 import { BotaoEstacao } from '@/components/cycles/ceu/BotaoEstacao';
@@ -1372,6 +1373,15 @@ export const Ciclos: React.FC = () => {
   const totalToday = habitsForDate.length;
   const progressToday = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
 
+  // The frame of the open day evolves with the mastery of the day's element
+  // (the Grimório's own scale). In development, ?vfx=1|2|3 forces a level.
+  const xpDosElementos = useAppStore(state => state.user);
+  const getMasteryProgress = useAppStore(state => state.getMasteryProgress);
+  // getMasteryProgress reads the store's user, so the user is what invalidates it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const maestria = useMemo(() => getMasteryProgress(), [getMasteryProgress, xpDosElementos]);
+  const vfxForcado = import.meta.env.DEV ? nivelForcado(location.search) : null;
+
   // Read-only: how many cycles each day of the Reel has done, from the same
   // store data the routine below reads.
   const diasDoReel = useMemo(() => dayShortcuts.map((offset) => {
@@ -1385,12 +1395,14 @@ export const Ciclos: React.FC = () => {
       ),
     }));
     const feitos = ciclos.filter((ciclo) => ciclo.feito).length;
+    const elemento = elementoDominante(ciclos);
     return {
       dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()),
-      elemento: elementoDominante(ciclos),
+      elemento,
+      nivel: vfxForcado ?? nivelDeVfx(elemento ? maestria[elemento].level : null),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [visibleDaysCenterDate, getHabitsForDate, habits]);
+  }), [visibleDaysCenterDate, getHabitsForDate, habits, maestria, vfxForcado]);
 
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 

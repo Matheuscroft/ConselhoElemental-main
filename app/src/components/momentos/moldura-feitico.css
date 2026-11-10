@@ -8,13 +8,19 @@
  * component. Without it the frame is gold.
  */
 
-/* Centred on the open card: the rail pads 10px above it and the card is 3:4. */
+/*
+ * Centred on the open card: the rail pads 10px above it and the card is 3:4.
+ * The canvas leaves --moldura-margem of room on every side: 24px at level 1,
+ * 40px from level 2, where the element is drawn on the border. The value must
+ * match MARGEM_POR_NIVEL in moldura.ts, which the shader uses.
+ */
 .reel-feitico {
+  --moldura-margem: 24px;
   position: absolute;
   inset-block-start: calc(10px + var(--reel-largura) * 2 / 3);
   inset-inline-start: 50%;
-  inline-size: calc(var(--reel-largura) + 48px);
-  block-size: calc(var(--reel-largura) * 4 / 3 + 48px);
+  inline-size: calc(var(--reel-largura) + var(--moldura-margem) * 2);
+  block-size: calc(var(--reel-largura) * 4 / 3 + var(--moldura-margem) * 2);
   transform: translate(-50%, -50%);
   pointer-events: none;
   opacity: 0;
@@ -35,7 +41,32 @@
   block-size: 100%;
 }
 
+.reel-feitico[data-nivel='2'],
+.reel-feitico[data-nivel='3'] { --moldura-margem: 40px; }
+
 .reel-feitico[data-modo='simples'] { display: none; }
+
+/*
+ * The leap of level 3: a canvas as big as the window, in a portal on the body.
+ * It sits above the page (main is 10) and the topbar (40), and below the
+ * bottom bar and every dialog (50). It never takes a touch, and while no leap
+ * is running it is hidden, so it costs nothing.
+ */
+.reel-dobra {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.reel-dobra[data-ativa='true'] { visibility: visible; }
+
+.reel-dobra canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
 
 /* The hairline, inset 6px from the edge of the card. */
 .reel-moldura[data-ativo='true']::before {
@@ -147,11 +178,87 @@
   animation-delay: calc(var(--ordem) * var(--ds-stagger));
 }
 
+/*
+ * Level 3, the premium border. A second filet outside the hairline (::after at
+ * 3px; the hairline stays at 6px), a beaded filigree inside it, a light that
+ * runs along the filigree, one more ornament on each bracket, and the four
+ * triangles turning slowly in their discs. Only at data-nivel='3'; reduced
+ * motion has already made the level 1.
+ */
+.reel-moldura[data-ativo='true'][data-nivel='3']::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  border: 1px solid rgb(var(--el-gold) / 38%);
+  border-radius: 19px;
+  pointer-events: none;
+}
+
+.reel-filigrana {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  inline-size: calc(100% - 20px);
+  block-size: calc(100% - 20px);
+  fill: none;
+  overflow: visible;
+}
+
+/* The rect is 120x160 in a box that is 3:4 within 4%, so the stroke scales evenly. */
+.reel-filigrana rect { stroke-linecap: round; }
+
+.reel-filigrana-fio {
+  stroke: rgb(var(--el-gold) / 45%);
+  stroke-width: 1.4;
+  stroke-dasharray: 0.6 2.4;
+}
+
+/* The light is a short dash that runs the whole filet; the halo is the same dash, wider and faint. */
+.reel-filigrana-luz {
+  stroke: rgb(var(--el-gold));
+  stroke-width: 1.8;
+  stroke-dasharray: 9 91;
+  animation: reel-filigrana-corre calc(var(--ds-duration-conjure) * 8) linear infinite;
+}
+
+.reel-filigrana-halo {
+  stroke: rgb(var(--el-gold) / 28%);
+  stroke-width: 5;
+}
+
+.reel-runas[data-nivel='3'] .reel-adorno {
+  stroke: rgb(var(--el-gold) / 60%);
+  stroke-width: 1;
+}
+
+.reel-runas[data-nivel='3'] .reel-gota { fill: rgb(var(--el-gold)); stroke: none; }
+
+.reel-runas[data-nivel='3'] .reel-triangulo polygon,
+.reel-runas[data-nivel='3'] .reel-triangulo line {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: reel-triangulo-gira calc(var(--ds-duration-conjure) * 12) linear infinite;
+}
+
+@keyframes reel-filigrana-corre {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes reel-triangulo-gira {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 /* Reduced motion: a still frame, lit and complete, with no burst. */
 .reel-momentos[data-reduzido='true'] .reel-cantoneira,
 .reel-momentos[data-reduzido='true'] .reel-triangulo { animation: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   .reel-cantoneira,
-  .reel-triangulo { animation: none !important; }
+  .reel-triangulo,
+  .reel-filigrana-luz,
+  .reel-triangulo polygon,
+  .reel-triangulo line { animation: none !important; }
 }

@@ -11,15 +11,19 @@ import {
 } from '@/lib/momentos/momento-store';
 import { AURA, TINTA } from '@/lib/design/palette';
 import { DURATION } from '@/lib/motion/motion';
-import { corDaMoldura, diaConquistado, type EstadoDoDia } from '@/lib/momentos/moldura';
+import { corDaMoldura, diaConquistado, nivelEfetivo, type EstadoDoDia } from '@/lib/momentos/moldura';
 import { distanciaDoCentro, indiceAtivo, posicaoReel } from '@/lib/momentos/reel';
 import type { ElementoDoDia } from '@/lib/momentos/elemento-do-dia';
+import type { NivelVfx } from '@/lib/momentos/nivel-vfx';
 import { AcoesMomento } from './AcoesMomento';
+import type { DisparoDeDobra } from './DobraTelaCheia';
 import { RunasMoldura } from './RunasMoldura';
 import './reel-momentos.css';
 
 // three.js only arrives when a card is open; the SVG frame never waits for it.
 const MolduraFeitico = lazy(() => import('./MolduraFeitico'));
+// The leap across the screen belongs to level 3 alone, so it is its own chunk.
+const DobraTelaCheia = lazy(() => import('./DobraTelaCheia'));
 
 /** How long a conquest stays on the frame before it is cleared. */
 const CONQUISTA_DURA_MS = 1800;
@@ -33,6 +37,8 @@ export interface DiaDoReel {
   readonly hoje: boolean;
   /** O elemento que lidera os ciclos do dia; null no dia vazio ou empatado. */
   readonly elemento: ElementoDoDia | null;
+  /** O nível de VFX da moldura: a maestria do elemento do dia (nivel-vfx.ts). */
+  readonly nivel: NivelVfx;
 }
 
 const MENSAGENS: Record<string, string> = {
@@ -85,6 +91,10 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   const visualRef = useRef(0);
   const [rolando, setRolando] = useState(false);
   const [conquista, setConquista] = useState({ dia: '', n: 0 });
+  const [dobra, setDobra] = useState<DisparoDeDobra>({ n: 0, tipo: 'troca' });
+  const [dobraMontada, setDobraMontada] = useState(false);
+  const dobraPendenteRef = useRef(true);
+  const nivelRef = useRef<NivelVfx>(1);
   const anteriorRef = useRef<EstadoDoDia | null>(null);
   const selecionadoRef = useRef(selecionado);
   const aoEscolherRef = useRef(aoEscolher);
@@ -213,6 +223,42 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   const abertoChave = abertoDia?.dia;
   const abertoFeitos = abertoDia?.feitos ?? 0;
   const abertoTotal = abertoDia?.total ?? 0;
+  // Reduced motion turns every level into level 1: no live edge, no leap.
+  const nivelAberto = nivelEfetivo(abertoDia?.nivel ?? 1, reduced);
+
+  // The leap canvas is mounted the first time a level 3 day opens, and stays
+  // until the Reel goes or motion is reduced: no context churn between days.
+  if (nivelAberto === 3 && !dobraMontada) setDobraMontada(true);
+
+  useEffect(() => {
+    nivelRef.current = nivelAberto;
+  });
+
+  // The leap of a day change: once the rail has settled on the new day. A day
+  // chosen by the person lands with the rail already centred; a day chosen by
+  // an arrow or a tap is still travelling, so it waits for the rail to rest.
+  useEffect(() => {
+    dobraPendenteRef.current = true;
+  }, [abertoChave]);
+
+  useEffect(() => {
+    if (!dobraPendenteRef.current || rolando || !abertoChave) return;
+    const trilho = trilhoRef.current;
+    const cartao = trilho?.children[selecionado] as HTMLElement | undefined;
+    if (!trilho || !cartao) return;
+    const centro = cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2;
+    if (Math.abs(trilho.scrollLeft - centro) > 4) return;
+    dobraPendenteRef.current = false;
+    if (nivelAberto !== 3) return;
+    const agendado = window.setTimeout(() => setDobra((d) => ({ n: d.n + 1, tipo: 'troca' })), 0);
+    return () => window.clearTimeout(agendado);
+  }, [rolando, abertoChave, selecionado, nivelAberto]);
+
+  // Where the open card is on screen, asked at the moment a leap starts.
+  const medirOrigem = useCallback((): DOMRect | null => {
+    const cartao = trilhoRef.current?.children[selecionadoRef.current] as HTMLElement | undefined;
+    return (cartao?.firstElementChild as HTMLElement | null)?.getBoundingClientRect() ?? null;
+  }, []);
 
   // Only the last cycle of the open day, completed right here, is a conquest.
   // It is held back one conjure beat so it never lands on top of the XP receipt.
@@ -226,6 +272,8 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
     let limpar = 0;
     const atraso = window.setTimeout(() => {
       setConquista((c) => ({ dia: atual.dia, n: c.n + 1 }));
+      // At level 3 the conquest is also the biggest leap: four elements, all together.
+      if (nivelRef.current === 3) setDobra((d) => ({ n: d.n + 1, tipo: 'conquista' }));
       limpar = window.setTimeout(() => setConquista((c) => ({ ...c, dia: '' })), CONQUISTA_DURA_MS);
     }, DURATION.conjure);
     return () => { window.clearTimeout(atraso); window.clearTimeout(limpar); };
@@ -286,6 +334,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
             const eAberto = indice === selecionado;
             const cor = item.elemento ? corDaMoldura(item.elemento, AURA) : undefined;
             const completo = item.total > 0 && item.feitos >= item.total;
+            const nivelDoCartao = nivelEfetivo(item.nivel, reduced);
             return (
               <li key={item.dia} className="reel-cartao" data-distancia="0">
                 <button
@@ -294,6 +343,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
                   data-ativo={eAberto}
                   data-foto={foto ? 'sim' : 'nao'}
                   data-tinta={eAberto && item.elemento ? item.elemento : undefined}
+                  data-nivel={eAberto ? nivelDoCartao : undefined}
                   style={eAberto && item.elemento
                     ? ({ '--runa-cor': cor, '--runa-tinta': TINTA[item.elemento] } as React.CSSProperties)
                     : undefined}
@@ -304,6 +354,8 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
                   onClick={() => {
                     gestoRef.current = false;
                     if (!eAberto) aoEscolher(indice);
+                    // Tapping the card that is already open invokes the leap (level 3).
+                    else if (nivelDoCartao === 3) setDobra((d) => ({ n: d.n + 1, tipo: 'toque' }));
                   }}
                 >
                   {foto ? <img src={foto} alt="" loading="lazy" decoding="async" draggable={false} /> : null}
@@ -313,6 +365,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
                       elemento={item.elemento}
                       completo={completo}
                       conquista={conquista.dia === item.dia ? conquista.n : 0}
+                      nivel={nivelDoCartao}
                     />
                   ) : null}
                   <span className="reel-texto" aria-hidden="true">
@@ -331,11 +384,21 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
           <Suspense fallback={null}>
             <MolduraFeitico
               elemento={aberto.elemento}
+              nivel={aberto.nivel}
               completo={aberto.total > 0 && aberto.feitos >= aberto.total}
               rolando={rolando}
               ativo
               conquista={conquista.dia === aberto.dia ? conquista.n : 0}
               reduzido={reduced}
+            />
+          </Suspense>
+        ) : null}
+        {dobraMontada && !reduced ? (
+          <Suspense fallback={null}>
+            <DobraTelaCheia
+              elemento={aberto?.elemento ?? null}
+              disparo={dobra}
+              medirOrigem={medirOrigem}
             />
           </Suspense>
         ) : null}

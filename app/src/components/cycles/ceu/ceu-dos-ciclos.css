@@ -45,6 +45,23 @@
 .ceu-janela[data-modo="3d"] .ceu-lua-disco { opacity: 0; }
 .ceu-janela[data-modo="3d"] .ceu-tela { opacity: 1; transition: opacity var(--ds-duration-reveal) var(--ds-ease); }
 
+/* Twinkling stars over the shader. Opacity only; duration is a token times a factor. */
+.ceu-estrelas { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: var(--lua-estrelas, 1); }
+.ceu-estrela {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgb(226 236 255);
+  box-shadow: 0 0 3px rgb(196 214 255 / .8);
+  opacity: .25;
+  animation: ceu-cintila calc(var(--ds-duration-conjure) * var(--e-ciclo, 5)) ease-in-out calc(var(--ds-duration-conjure) * var(--e-atraso, 0) * -1) infinite;
+}
+@keyframes ceu-cintila { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+@media (prefers-reduced-motion: reduce) {
+  .ceu-estrela { animation: none; opacity: .55; }
+}
+
 /* Season: sky and sun in CSS, weather on the canvas. */
 .ceu-janela[data-estacao] .ceu-tela { opacity: 1; animation: elemental-feedback-in var(--ds-duration-reveal) var(--ds-ease) both; }
 .ceu-fundo-estacao { background: linear-gradient(180deg, rgb(var(--ceu-topo)), rgb(var(--ceu-cor) / .22)); }
@@ -58,6 +75,36 @@
 [data-estacao="winter"] .ceu-geada { display: block; inset: 0; background:
   radial-gradient(circle at 0 0, rgb(var(--ceu-cor-2) / .35), transparent 32px),
   radial-gradient(circle at 100% 0, rgb(var(--ceu-cor-2) / .3), transparent 28px); }
+
+/* Light: soft diagonal beams that breathe (spring, summer), a warm autumn sun, ice glints. */
+.ceu-raios, .ceu-cristal, .ceu-calor { position: absolute; display: none; pointer-events: none; }
+[data-estacao="spring"] .ceu-raios, [data-estacao="summer"] .ceu-raios { display: block; inset: 0; animation: ceu-respira calc(var(--ds-duration-conjure) * 9) ease-in-out infinite; }
+[data-estacao="spring"] .ceu-raios { background: conic-gradient(from 188deg at 82% 22%, transparent 0 4deg, rgb(255 240 200 / .10) 9deg, transparent 15deg 22deg, rgb(255 240 200 / .08) 28deg, transparent 36deg 44deg, rgb(255 240 200 / .09) 50deg, transparent 58deg, transparent 360deg); }
+[data-estacao="summer"] .ceu-raios { background: conic-gradient(from 184deg at calc(100% - 38px) 32px, transparent 0 3deg, rgb(255 214 140 / .14) 8deg, transparent 14deg 20deg, rgb(255 214 140 / .11) 26deg, transparent 34deg 41deg, rgb(255 214 140 / .12) 48deg, transparent 56deg, transparent 360deg); }
+[data-estacao="autumn"] .ceu-sol { animation: ceu-pulsa calc(var(--ds-duration-conjure) * 7) ease-in-out infinite; }
+[data-estacao="summer"] .ceu-calor { display: block; left: -6px; right: -6px; bottom: 44px; height: 22px; background: repeating-linear-gradient(0deg, transparent 0 4px, rgb(255 190 120 / .10) 4px 5px); animation: ceu-calor calc(var(--ds-duration-conjure) * 4) ease-in-out infinite; }
+[data-estacao="winter"] .ceu-cristal { display: block; width: 10px; height: 10px; background: rgb(240 250 255); clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); animation: ceu-cristal calc(var(--ds-duration-conjure) * 4) ease-in-out infinite; }
+.ceu-cristal-a { right: 22px; top: 18px; }
+.ceu-cristal-b { left: 18%; top: 14px; width: 7px; height: 7px; animation-delay: calc(var(--ds-duration-conjure) * -2.2); }
+@keyframes ceu-respira { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@keyframes ceu-pulsa { 0%, 100% { opacity: .8; scale: .97; } 50% { opacity: 1; scale: 1.06; } }
+@keyframes ceu-calor { 0%, 100% { opacity: .25; transform: translateX(-3px); } 50% { opacity: .9; transform: translateX(3px); } }
+@keyframes ceu-cristal { 0%, 100% { opacity: .1; scale: .6; } 50% { opacity: 1; scale: 1.1; } }
+
+/* Horizon: a dark silhouette at the foot of the sky, behind the glass and under the weather. */
+.ceu-horizonte { position: absolute; left: 0; right: 0; bottom: 0; display: block; width: 100%; height: 80px; pointer-events: none; }
+.ceu-horizonte .ceu-solo { fill: rgb(4 7 12 / .9); }
+.ceu-horizonte .ceu-galho { fill: none; stroke: rgb(4 7 12 / .9); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ceu-horizonte .ceu-neve { fill: rgb(226 240 248 / .8); }
+.ceu-horizonte .ceu-flor-a { fill: rgb(var(--ceu-cor-2) / .85); }
+.ceu-horizonte .ceu-flor-b { fill: rgb(var(--ceu-cor) / .85); }
+
+@media (prefers-reduced-motion: reduce) {
+  .ceu-raios, .ceu-calor, .ceu-cristal, .ceu-sol { animation: none !important; }
+  [data-estacao="spring"] .ceu-raios, [data-estacao="summer"] .ceu-raios { opacity: .75; }
+  [data-estacao="winter"] .ceu-cristal { opacity: .6; }
+  [data-estacao="summer"] .ceu-calor { opacity: .5; }
+}
 
 /* Sill: the glass. */
 .ceu-peitoril {

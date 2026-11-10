@@ -15,10 +15,10 @@ const perto = (a, b, folga = 0.6) => assert.ok(Math.abs(a - b) <= folga, `${a} n
 test('a tabela de luz bate nas cinco fases do conceito', () => {
   // [fração iluminada, arco, borda, halo, estrelas, luz da Terra]
   const tabela = [
-    [0.0, 30, 0.18, 0.1, 1, 0.06],
-    [0.15, 52.5, 0.273, 0.175, 0.88, 0.0434],
-    [0.5, 105, 0.49, 0.35, 0.6, 0.015],
-    [0.85, 157.5, 0.707, 0.525, 0.32, 0.00135],
+    [0.0, 30, 0.3, 0.18, 1, 0.18],
+    [0.15, 52.5, 0.375, 0.243, 0.88, 0.1301],
+    [0.5, 105, 0.55, 0.39, 0.6, 0.045],
+    [0.85, 157.5, 0.725, 0.537, 0.32, 0.00405],
     [1, 180, 0.8, 0.6, 0.2, 0],
   ];
   for (const [luz, arco, borda, halo, estrelas, terra] of tabela) {
@@ -29,6 +29,16 @@ test('a tabela de luz bate nas cinco fases do conceito', () => {
     perto(r.estrelas, estrelas, 0.005);
     perto(r.terra, terra, 0.0005);
   }
+});
+
+test('a Lua Nova nunca fica apagada: limbo, halo, anel e nebulosa têm piso', () => {
+  const nova = luzDaLua({ illuminated: 0, waxing: true }, false);
+  const cheia = luzDaLua({ illuminated: 1, waxing: true }, false);
+  assert.ok(nova.borda >= 0.3 && cheia.borda >= 0.3);
+  assert.ok(nova.halo >= 0.18 && cheia.halo >= 0.18);
+  assert.ok(nova.limbo > cheia.limbo && cheia.limbo > 0, 'limbo aceso sempre, mais forte quanto mais escura');
+  assert.ok(nova.nebulosa > cheia.nebulosa && cheia.nebulosa > 0);
+  assert.equal(nova.terra, 0.18, 'luz da Terra até 3x a anterior (.06)');
 });
 
 test('a luz é contínua e limitada entre 0 e 1', () => {

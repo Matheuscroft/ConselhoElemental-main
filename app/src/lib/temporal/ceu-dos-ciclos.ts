@@ -20,6 +20,10 @@ export interface LuzDaLua {
   readonly estrelas: number;
   /** Earthshine on the dark part of the disc. */
   readonly terra: number;
+  /** Fresnel ring on the sunward limb: never off, strongest at new moon. */
+  readonly limbo: number;
+  /** Nebula veil in the sky, strongest at new moon. */
+  readonly nebulosa: number;
   /** Direction the lit side faces, in degrees from the top, clockwise. */
   readonly lado: 90 | 270;
 }
@@ -35,10 +39,12 @@ export function luzDaLua(snapshot: LuzDaLuaEntrada, south: boolean): LuzDaLua {
   return {
     luz,
     arco: 30 + 150 * luz,
-    borda: 0.18 + 0.62 * luz,
-    halo: 0.1 + 0.5 * luz,
+    borda: 0.3 + 0.5 * luz,
+    halo: 0.18 + 0.42 * luz,
     estrelas: 1 - 0.8 * luz,
-    terra: 0.06 * (1 - luz) ** 2,
+    terra: 0.18 * (1 - luz) ** 2,
+    limbo: 0.3 + 0.7 * (1 - luz) ** 1.5,
+    nebulosa: 0.2 + 0.8 * (1 - luz) ** 2,
     lado: snapshot.waxing !== south ? 90 : 270,
   };
 }
