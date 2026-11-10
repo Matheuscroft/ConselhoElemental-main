@@ -6,10 +6,9 @@ import type { OAuthPkceOptions } from './account-session';
 
 /** Social sign-in. Authentication only: no archive, binding, sync or adoption.
  * A new or linked Auth user starts exactly like an e-mail login: explicit consent later. */
-export type AccountOAuthProvider = 'github' | 'apple';
-export const ACCOUNT_OAUTH_PROVIDERS: readonly AccountOAuthProvider[] = ['github', 'apple'];
-export const ACCOUNT_OAUTH_LABELS: Record<AccountOAuthProvider, string> = { github: 'Continuar com GitHub', apple: 'Continuar com Apple' };
-export const APPLE_ACCOUNT_NOTICE = 'A Apple pode ocultar seu e-mail; isso cria uma conta nova, separada da que você já tem.';
+export type AccountOAuthProvider = 'google';
+export const ACCOUNT_OAUTH_PROVIDERS: readonly AccountOAuthProvider[] = ['google'];
+export const ACCOUNT_OAUTH_LABELS: Record<AccountOAuthProvider, string> = { google: 'Continuar com Google' };
 /** Same fixed return as the e-mail confirmation: the panel allow-list holds only this and ?progresso=recuperar. */
 export const ACCOUNT_OAUTH_REDIRECT = `${PRODUCTION_APP_ORIGIN}/?progresso=conta`;
 export const ACCOUNT_OAUTH_STORAGE_KEY = 'ce-account-oauth';
@@ -55,13 +54,8 @@ export async function completeAccountOAuth(client: Client, code: string, storage
     if (verified.error || !verified.data.user?.id) throw new Error('Não foi possível validar a conta no servidor.');
     if (verified.data.user.id !== signedId) throw new Error('A conta validada mudou. Entre na mesma conta novamente.');
     const user = verified.data.user;
-    return { kind: 'authenticated' as const, userId: user.id, email: user.email, newIdentityNotice: appleIdentityNotice(user) };
+    return { kind: 'authenticated' as const, userId: user.id, email: user.email };
   } finally { clearOAuthAttempt(storage); }
-}
-/** Apple may return a private relay address or none: that is a separate, new account. */
-export function appleIdentityNotice(user: { email?: string | null; app_metadata?: { provider?: unknown } | null } | null | undefined) {
-  const apple = user?.app_metadata?.provider === 'apple' || /@privaterelay\.appleid\.com$/i.test(user?.email ?? '');
-  return apple ? 'Você entrou com a Apple. Se o e-mail estiver oculto, esta é uma conta nova, separada da que você já tinha.' : null;
 }
 /** Safe text for a failed return (cancelled, denied, provider not configured). */
 export function oauthReturnFailure(errorCode: string): AccountAuthError {

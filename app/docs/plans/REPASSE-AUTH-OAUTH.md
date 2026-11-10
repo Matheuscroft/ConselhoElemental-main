@@ -1,4 +1,6 @@
-# Repasse para o Matheus — login social (GitHub e Apple)
+# Repasse para o Matheus — login social (Google)
+
+> **Atualização 10/11/2026:** por decisão do Fábio o app expõe **somente Google**. GitHub e Apple foram removidos da interface (o resto do texto abaixo, escrito para GitHub/Apple, vale igual para o Google: PKCE, retorno fixo, sem adoção automática). Provedor Google configurado pelo Fábio: projeto Google Cloud "Conselho Elemental" (`graceful-karma-514317-e5`), cliente OAuth Web com redirect `https://myvxvgeyseoyugskqlqr.supabase.co/auth/v1/callback`, Client ID/Secret no painel do Supabase (segredo nunca no repositório). Pendências: publicar o app OAuth no Google (hoje em modo de teste) e desligar GitHub/Apple no painel do Supabase (estão ENABLED com configuração inválida). Vinculação: o Supabase vincula identidades com o mesmo e-mail verificado; contas Google novas criam usuário novo.
 
 Continuação de `REPASSE-AUTH-MENSAGENS.md`. Só autenticação: nada de XP, stores, `supabase/` ou migrações.
 

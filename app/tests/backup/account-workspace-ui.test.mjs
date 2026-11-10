@@ -256,22 +256,21 @@ test('a structurally valid but activity-free local journey needs explicit consen
  f.toggleLabel('Conferi os totais e quero usar esta jornada vazia somente se a conta também estiver vazia.');f.click('Sincronizar este aparelho');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');f.unmount();
 });
 
-// ── Social sign-in (GitHub / Apple): authentication only ──────────────────────
-test('social buttons sit under the e-mail form; Apple shows the new-account warning and needs a second explicit click; GitHub goes straight to the provider',async()=>{
+// ── Social sign-in (Google): authentication only ──────────────────────
+test('the Google button sits under the e-mail form and goes straight to the provider; failures stay safe',async()=>{
  const f=fixture();await flush();f.render();
- assert.match(f.content(),/Continuar com GitHub/);assert.match(f.content(),/Continuar com Apple/);assert.doesNotMatch(f.content(),/Apple pode ocultar/);
- f.click('Continuar com Apple');assert.equal(f.constructions,0);assert.match(f.content(),/A Apple pode ocultar seu e-mail; isso cria uma conta nova, separada da que você já tem\./);
- f.click('Entendi, continuar com a Apple');await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.at(-1).kind,'oauth');
- assert.deepEqual(f.sessions.at(-1).args,{provider:'apple',options:{redirectTo:'https://conselho-elemental-main.vercel.app/?progresso=conta',skipBrowserRedirect:true}});
- f.sessions.at(-1).resolve({data:{url:'https://synthetic.invalid/auth/v1/authorize?provider=apple'},error:null});await flush();f.render();
- assert.deepEqual(f.navigations,['https://synthetic.invalid/auth/v1/authorize?provider=apple']);assert.equal(f.requests.length,0);f.unmount();
- const g=fixture();await flush();g.render();g.click('Continuar com GitHub');await flush();assert.equal(g.sessions.at(-1).args.provider,'github');
+ assert.match(f.content(),/Continuar com Google/);assert.doesNotMatch(f.content(),/Apple|GitHub/);
+ f.click('Continuar com Google');await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.at(-1).kind,'oauth');
+ assert.deepEqual(f.sessions.at(-1).args,{provider:'google',options:{redirectTo:'https://conselho-elemental-main.vercel.app/?progresso=conta',skipBrowserRedirect:true}});
+ f.sessions.at(-1).resolve({data:{url:'https://synthetic.invalid/auth/v1/authorize?provider=google'},error:null});await flush();f.render();
+ assert.deepEqual(f.navigations,['https://synthetic.invalid/auth/v1/authorize?provider=google']);assert.equal(f.requests.length,0);f.unmount();
+ const g=fixture();await flush();g.render();g.click('Continuar com Google');await flush();
  g.sessions.at(-1).resolve({data:{url:null},error:{code:'provider_disabled',status:400,message:'Unsupported provider: secret'}});await flush();g.render();
  assert.match(g.content(),/ainda não está disponível/);assert.match(g.content(),/código: provider_disabled/);assert.doesNotMatch(g.content(),/secret/);assert.deepEqual(g.navigations,[]);g.unmount();
 });
 
 test('closed release keeps social buttons inert and builds no client',async()=>{
- const f=fixture({released:false,accessReleased:false});await flush();f.render();f.click('Continuar com GitHub');await flush();assert.equal(f.constructions,0);assert.equal(f.sessions.length,0);f.unmount();
+ const f=fixture({released:false,accessReleased:false});await flush();f.render();f.click('Continuar com Google');await flush();assert.equal(f.constructions,0);assert.equal(f.sessions.length,0);f.unmount();
 });
 
 test('provider failure return shows a safe message with a discreet code and builds no client',async()=>{

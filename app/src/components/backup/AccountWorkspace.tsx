@@ -6,7 +6,7 @@ import { ACCOUNT_RESOLUTION_KEY } from '@/lib/backup/account-resolution-key';
 import { accountErrorCode } from '@/lib/backup/account-auth-messages';
 import { accessAccount, resendAccountConfirmation, validAccountAccess, validAccountEmail, type AccountAccessMode } from '@/lib/backup/account-access';
 import { takeOAuthReturn, type AccountReturnNotice, type AccountOAuthReturn } from '@/lib/backup/account-return';
-import { ACCOUNT_OAUTH_LABELS, APPLE_ACCOUNT_NOTICE, completeAccountOAuth, oauthPkceOptions, oauthReturnFailure, startAccountOAuth, type AccountOAuthProvider } from '@/lib/backup/account-oauth';
+import { ACCOUNT_OAUTH_LABELS, completeAccountOAuth, oauthPkceOptions, oauthReturnFailure, startAccountOAuth, type AccountOAuthProvider } from '@/lib/backup/account-oauth';
 import { inspectAccountResolution, resolveAccountVersions, resumeAccountResolution, keepLocalAfterResolution, type AccountResolution } from '@/lib/backup/account-resolution';
 import { AccountResolutionPanel } from './AccountResolutionPanel';
 import { reviewAccountVersions } from '@/lib/backup/account-conflict';
@@ -69,13 +69,12 @@ function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
     empty: tasks + habits + xp + sessions + otherActivity === 0, activeEmpty: activeTasks + activeHabits + activeXp === 0 };
 }
 
-const GitHubIcon=()=><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>;
-const AppleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>;
+const GoogleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.45a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.57-5.17 3.57-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.27a12 12 0 0 0 0 10.76l4-3.1z"/><path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.27 6.62l4 3.1C6.22 6.88 8.87 4.77 12 4.77z"/></svg>;
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
   const [accessMode,setAccessMode]=useState<AccountAccessMode>(new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro' ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
   const [authFeedback,setAuthFeedback]=useState(notice==='oauth'?'Conferindo o retorno do provedor…':notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
   const setAuthError=(reason:string,code:string|null=null)=>{setAuthErrorText(reason);setAuthCode(code);};
-  const [receiveMode,setReceiveMode]=useState(false),[appleConfirm,setAppleConfirm]=useState(false);
+  const [receiveMode,setReceiveMode]=useState(false);
   const [resolution,setResolution]=useState<{raw:string;journal:Readonly<AccountResolution>}|null>(null);
   const [liveConsent,setLiveConsent]=useState(false),[rememberAccess,setRememberAccess]=useState(false);
   const [versions,setVersions]=useState<Awaited<ReturnType<typeof reviewAccountVersions>>|null>(null);
@@ -182,7 +181,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function clearAccess(forget=false) {
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
     if(forget)forgetSavedAccess();
-    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAppleConfirm(false);setAuthFeedback('');setAuthError('');
+    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
   }
   function changeAccess(mode:AccountAccessMode) {
     if(!ready||busy||job.current!==null||userId)return;
@@ -239,7 +238,6 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   /** Social sign-in leaves for the provider; only the explicit return below creates an access. */
   function startOAuth(provider:AccountOAuthProvider){
     if(!ACCOUNT_ACCESS_RELEASED||!ready||userId)return;
-    if(provider==='apple'&&!appleConfirm){setAppleConfirm(true);return;}
     void run(async token=>{
       clearAccess();
       const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
@@ -265,7 +263,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:window.sessionStorage});
       if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
       identity.current=id;accessRaw.current=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(result.email??'');setUserId(id);setPassword('');setConfirmation('');
-      setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.'+(result.newIdentityNotice?' '+result.newIdentityNotice:''));
+      setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
     }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
   }
   function resend() {
@@ -442,9 +440,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       </form>
       <div className="account-oauth" role="group" aria-label="Entrar com outro serviço">
         <p className="account-oauth-divider"><span>ou</span></p>
-        <button type="button" className="restore-workspace-secondary account-oauth-button" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('github')}><GitHubIcon/>{ACCOUNT_OAUTH_LABELS.github}</button>
-        <button type="button" className="restore-workspace-secondary account-oauth-button" aria-describedby={appleConfirm?'account-oauth-apple-notice':undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('apple')}><AppleIcon/>{appleConfirm?'Entendi, continuar com a Apple':ACCOUNT_OAUTH_LABELS.apple}</button>
-        {appleConfirm&&<small id="account-oauth-apple-notice" role="note">{APPLE_ACCOUNT_NOTICE}</small>}
+        <button type="button" className="restore-workspace-secondary account-oauth-button" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('google')}><GoogleIcon/>{ACCOUNT_OAUTH_LABELS.google}</button>
       </div>
       <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
       {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
