@@ -1,0 +1,33 @@
+/* Stroke widths are in viewBox units: non-scaling-stroke would also stop
+   pathLength from normalising the dashes, so the fill would not be a fraction.
+   About 92% of the stage wide and 16% tall, on its floor. Behind the stones
+   that pass in front of it and under the body, whose feet it frames. */
+.anel-xp {
+  position: absolute;
+  left: 4%;
+  bottom: 0;
+  width: 92%;
+  height: 16%;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.anel-xp path {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.anel-xp-trilho {
+  stroke: color-mix(in srgb, var(--ep-gold, #d5b66f) 24%, transparent);
+  stroke-width: 1.2;
+}
+
+.anel-xp-fio {
+  stroke: var(--ep-gold, #d5b66f);
+  stroke-width: 1.8;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--ep-gold, #d5b66f) 55%, transparent));
+  /* Gaining XP is the one thing that moves it; the token collapses under
+     reduced motion, so the ring then simply sits at its value. */
+  transition: stroke-dashoffset var(--ds-duration-settle) var(--ds-ease);
+}

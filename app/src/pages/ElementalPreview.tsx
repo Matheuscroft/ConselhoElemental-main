@@ -6,22 +6,18 @@ import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, BookOpen, ChevronLeft, ChevronRight, Crown, Footprints, Gem, Heart, Menu, Pause, Play, Plus, RotateCw, Search, Shield, Sparkles, WandSparkles, X, Zap } from 'lucide-react';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { ArrowLeft, ArrowRight, Menu, Plus, RotateCw, Search } from 'lucide-react';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { ACENTO } from '@/lib/design/palette';
 import { useAppStore } from '@/stores/appStore';
-import { useWorkoutStore } from '@/stores/workoutStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, SANCTUARY_HOME as HOME, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
 import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
-import { Contagem } from '@/components/motion/Contagem';
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
-import { Conjurar } from '@/components/motion/Conjurar';
 import './elemental-preview.css';
-import { hpDoDia } from '@/lib/recursos/vitalidade';
 import { HudRecursos } from '@/components/layout/HudRecursos';
+import { AnelXp } from '@/components/sanctuary/AnelXp';
 
 /** The aura costs a shader and three.js, so it arrives after the page does. */
 const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'));
@@ -30,11 +26,6 @@ const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'))
 const AURA_SEM_SIGNO = { colour: '#d6b66f', modality: 'fixo' as ZodiacModality };
 
 const ACCENTS = ACENTO;
-const EQUIPMENT = [
-  { name: 'Cajado', Icon: WandSparkles }, { name: 'Grimório', Icon: BookOpen },
-  { name: 'Amuleto', Icon: Gem }, { name: 'Chapéu', Icon: Crown },
-  { name: 'Vestes', Icon: Shield }, { name: 'Botas', Icon: Footprints },
-];
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
 function ElementMagic({ id, animated = false }: { id: ElementId; animated?: boolean }) {
@@ -54,21 +45,6 @@ function ElementSigil({ id, className }: { id: ElementId; className?: string }) 
     <path d={down ? 'M7 10H41L24 39Z' : 'M24 8L41 37H7Z'} strokeLinejoin="round" />
     {(id === 'terra' || id === 'ar') && <path d={down ? 'M8 20H40' : 'M8 27H40'} />}
   </svg>;
-}
-
-function EquipmentSheet() {
-  return <Dialog>
-    <DialogTrigger asChild><button className="ep-button ep-equipment-trigger" type="button"><Shield size={17} />Ver equipamentos</button></DialogTrigger>
-    <DialogContent className="elemental-preview ep-equipment-dialog" overlayClassName="ep-equipment-overlay" showCloseButton={false} aria-labelledby="ep-equipment-title" aria-describedby="ep-equipment-description">
-      <DialogHeader>
-        <DialogTitle id="ep-equipment-title" className="ep-dialog-title">Equipamentos do mago</DialogTitle>
-        <DialogDescription id="ep-equipment-description">Os seis espaços do personagem. O inventário funcional ainda não está disponível.</DialogDescription>
-      </DialogHeader>
-      <div className="ep-equipment-grid">{EQUIPMENT.map(({ name, Icon }) => <div key={name} className="ep-equipment-slot"><Icon size={30} strokeWidth={1.25} aria-hidden="true" /><strong>{name}</strong><span>Espaço visual</span></div>)}</div>
-      <p className="ep-muted">Estes espaços ainda não equipam itens nem alteram seus atributos.</p>
-      <DialogClose asChild><button type="button" className="ep-icon-button ep-dialog-close" aria-label="Fechar equipamentos"><X size={18} /></button></DialogClose>
-    </DialogContent>
-  </Dialog>;
 }
 
 function orbitStyle(index: number, phase: number): CSSProperties {
@@ -95,11 +71,10 @@ function paintOrbit(orbit: HTMLDivElement, phase: number) {
   });
 }
 
-function ElementalOrbit() {
+function ElementalOrbit({ fracao }: { fracao: number }) {
   const orbitRef = useRef<HTMLDivElement>(null);
   const phase = useRef(0);
   const materialTime = useRef(0);
-  const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -119,7 +94,7 @@ function ElementalOrbit() {
   useEffect(() => {
     const orbit = orbitRef.current;
     if (!orbit) return;
-    if (reducedMotion || paused) return;
+    if (reducedMotion) return;
     const surfaces = [...orbit.querySelectorAll<HTMLCanvasElement>('[data-element-effect]')].flatMap((canvas) => {
       const id = ORDER.find((element) => element === canvas.dataset.elementEffect);
       const surface = id && createMaterialEffect(canvas, id, canvas.parentElement?.querySelector('img') ?? null);
@@ -157,22 +132,16 @@ function ElementalOrbit() {
       resizeObserver.disconnect();
       document.removeEventListener('visibilitychange', sync);
     };
-  }, [paused, hovered, focused, reducedMotion]);
-
-  const step = (direction: number) => {
-    setPaused(true);
-    phase.current = (phase.current + direction * Math.PI / 2) % (Math.PI * 2);
-    if (orbitRef.current) paintOrbit(orbitRef.current, phase.current);
-  };
+  }, [hovered, focused, reducedMotion]);
 
   return <div className="ep-character-section">
-    <div ref={orbitRef} className="ep-orbit" data-motion-paused={paused || reducedMotion} aria-label="Personagem e portais elementais"
+    <div ref={orbitRef} className="ep-orbit" data-motion-paused={reducedMotion} aria-label="Personagem e portais elementais"
       onPointerLeave={() => setHovered(false)}
-      onPointerDown={(event) => { if (event.pointerType !== 'mouse') setPaused(true); }}
       onFocusCapture={() => setFocused(true)}
       onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
       <div className="ep-orbit-track ep-orbit-track-outer" aria-hidden="true" />
       <div className="ep-orbit-track ep-orbit-track-inner" aria-hidden="true" />
+      <AnelXp fracao={fracao} />
       <div className="ep-avatar-stage">
         <div className="ep-avatar-halo" aria-hidden="true" />
         <Suspense fallback={null}>
@@ -187,7 +156,7 @@ function ElementalOrbit() {
       </div>
       <nav className="ep-portals" aria-label="Escolha um elemento">{ORDER.map((id, index) => {
         return <div key={id} className="ep-orbit-position" style={{ '--element-accent': ACCENTS[id], ...orbitStyle(index, 0) } as CSSProperties}>
-          <Link to={elementHref(id)} className="ep-portal"
+          <Link id={`ep-entry-${id}`} to={elementHref(id)} className="ep-portal"
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHovered(true); }}
             onPointerLeave={() => setHovered(false)}>
             <ElementMagic id={id} animated /><span className="ep-portal-name">{ELEMENTS[id].name}</span>
@@ -195,13 +164,6 @@ function ElementalOrbit() {
         </div>;
       })}</nav>
     </div>
-    <div className="ep-ring-controls" role="group" aria-label="Controlar anel elemental">
-      <button type="button" className="ep-icon-button" onClick={() => step(-1)} aria-label="Girar anel para a esquerda"><ChevronLeft size={18} /></button>
-      <button type="button" className="ep-button" onClick={() => setPaused((value) => !value)} disabled={reducedMotion} aria-label={reducedMotion ? 'Órbita parada: movimento reduzido ativado' : paused ? 'Retomar órbita' : 'Pausar órbita'}>{paused || reducedMotion ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}{reducedMotion ? 'Órbita parada' : paused ? 'Retomar órbita' : 'Pausar órbita'}</button>
-      <button type="button" className="ep-icon-button" onClick={() => step(1)} aria-label="Girar anel para a direita"><ChevronRight size={18} /></button>
-    </div>
-    <div className="ep-orbit-actions"><EquipmentSheet /></div>
-    <p className="ep-orbit-hint">Escolha um elemento para explorar suas áreas.</p>
   </div>;
 }
 
@@ -213,22 +175,9 @@ function ElementDirectory() {
   </nav>;
 }
 
-const PATHS = [
-  { to: '/forja', title: 'Forja', description: 'Retome e organize suas ideias.' },
-  { to: '/jornadas', title: 'Jornadas', description: 'Acompanhe o que você quer conquistar.' },
-  { to: '/grandes-obras', title: 'Grandes obras', description: 'Cuide dos seus projetos.' },
-  { to: '/temporal', title: 'Planejamento', description: 'Veja sua semana e seu calendário.' },
-  { to: '/treinos', title: 'Treinos', description: 'Treine e acompanhe sua evolução.' },
-  { to: '/cassino-arcano', title: 'Cassino Arcano', description: 'Visite a Roda do Destino.' },
-  { to: '/grimorio', title: 'Meu grimório', description: 'Veja seu histórico e suas conquistas.' },
-  { to: '/pilares', title: 'Pilares', description: 'Explore o equilíbrio dos quatro elementos.' },
-  { to: '/mapa', title: 'Todos os caminhos', description: 'Encontre os demais recursos do app.' },
-];
-
 function SanctuaryComposition() {
   // Existing getters read several slices; subscribe to updates from both stores.
-  const { user, currentAccountId, getLevelProgress, getCompletedHabitsToday, getStreak } = useAppStore();
-  const { getResourceSnapshot: getResources } = useWorkoutStore();
+  const { user, currentAccountId, getLevelProgress } = useAppStore();
   const level = getLevelProgress();
   const { profile: signo } = useZodiacPreference();
 
@@ -254,51 +203,23 @@ function SanctuaryComposition() {
       });
     }
   }
-  const resources = getResources();
-  const xp = level.xpTotal - level.xpAtLevelStart;
-  const hp = hpDoDia({ habitosHoje: getCompletedHabitsToday(), ofensiva: getStreak() });
 
   return <>
     {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
     <section className="ep-sanctuary" aria-labelledby="ep-title">
+      <div className="ep-character-navigation"><ElementalOrbit fracao={level.progressFraction} /></div>
       <div className="ep-identity">
-        <p className="ep-kicker">Seu Santuário</p>
         <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
-        <p className="ep-mobile-xp">
-          Nível {level.level} · <Contagem valor={xp} formatar={format} /> / {format(level.xpToNextLevel)} XP
-        </p>
-        <p className="ep-intro">Cada pequeno ritual faz parte da sua evolução.</p>
-        <div className="ep-level">
-          {/* The one moment that is allowed to overshoot: a level is earned. */}
-          <Conjurar marca={level.level}><span className="ep-level-seal">{level.level}</span></Conjurar>
-          <div>
-            <strong>Nível {level.level}</strong>
-            <p><Contagem valor={xp} formatar={format} /> de {format(level.xpToNextLevel)} XP</p>
-          </div>
-        </div>
-        <progress className="ep-xp" aria-label="Progresso para o próximo nível" value={Math.min(xp, level.xpToNextLevel)} max={Math.max(1, level.xpToNextLevel)} />
-        <div className="ep-resources">
-          {/* Resources are state, not an achievement: they settle, they do not celebrate. */}
-          <div><Heart size={17} aria-hidden="true" /><span>HP</span><strong><Contagem valor={hp} beat="settle" /><small>/100</small></strong></div>
-          <div><Zap size={17} aria-hidden="true" /><span>Stamina</span><strong><Contagem valor={resources.currentStamina} beat="settle" formatar={format} /><small>/100</small></strong></div>
-          <div><Sparkles size={17} aria-hidden="true" /><span>Prana</span><strong><Contagem valor={resources.currentPrana} beat="settle" formatar={format} /><small>/100</small></strong></div>
-        </div>
-        <p className="ep-resource-note">Recursos do jogo</p>
+        <p className="ep-level-line">Nível {level.level}</p>
       </div>
-      <div className="ep-character-navigation"><ElementalOrbit /><ElementDirectory /></div>
+    </section>
+    <section className="ep-next ds-pane" aria-labelledby="ep-next-heading">
+      <div className="ep-next-heading"><div><p className="ep-kicker">Da intenção à prática</p><h2 id="ep-next-heading">Seu próximo passo</h2></div><Link className="ep-button ep-primary" to="/invocar"><Plus size={18} />Criar ritual</Link></div>
+      <SanctuaryRituals key={currentAccountId ?? "local"} />
     </section>
     <QuestNextSteps />
-    <section className="ep-next" aria-labelledby="ep-next-heading">
-      <div className="ep-next-heading"><div><p className="ep-kicker">Da intenção à prática</p><h2 id="ep-next-heading">Seu próximo passo</h2></div><Link className="ep-button ep-primary" to="/invocar"><Plus size={18} />Criar ritual</Link></div>
-      <div className="ep-next-grid">
-        <SanctuaryRituals key={currentAccountId ?? "local"} />
-        <Link className="ep-cycle-card" to="/ciclos"><RotateCw size={22} strokeWidth={1.25} aria-hidden="true" /><div><h3>O poder da constância</h3><p>Encontre seus hábitos e sequências em Ciclos.</p></div><ArrowRight size={20} aria-hidden="true" /></Link>
-      </div>
-    </section>
-    <section className="ep-paths" aria-labelledby="ep-paths-title">
-      <div className="ep-section-line"><h2 id="ep-paths-title">Continue sua jornada</h2></div>
-      <div className="ep-path-grid">{PATHS.map((path) => <Link className="ep-path" key={path.to} to={path.to}><div><h3>{path.title}</h3><p>{path.description}</p></div><ArrowRight size={18} aria-hidden="true" /></Link>)}</div>
-    </section>
+    <Link className="ep-cycle-card" to="/ciclos"><RotateCw size={22} strokeWidth={1.25} aria-hidden="true" /><div><h3>O poder da constância</h3><p>Encontre seus hábitos e sequências em Ciclos.</p></div><ArrowRight size={20} aria-hidden="true" /></Link>
+    <Link className="ep-all-paths" to="/mapa">Todos os caminhos<ArrowRight size={16} aria-hidden="true" /></Link>
   </>;
 }
 
