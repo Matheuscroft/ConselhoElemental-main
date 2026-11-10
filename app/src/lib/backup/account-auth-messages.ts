@@ -2,7 +2,7 @@
  * Never echoes the server text, the email, a token, a URL or a key. A login
  * failure never says whether an account exists (same text for unknown email
  * and wrong password). `code` is a short technical tag for bug reports. */
-export type AccountAuthAction = 'login' | 'signup' | 'resend' | 'reset';
+export type AccountAuthAction = 'login' | 'signup' | 'resend' | 'reset' | 'oauth';
 export interface AccountAuthMessage { message: string; code: string | null }
 
 const NETWORK = 'Sem conexão com o servidor. Verifique a internet.';
@@ -34,6 +34,12 @@ export function accountAuthMessage(error: unknown, action: AccountAuthAction, fa
   if (action === 'signup') {
     if (code === 'weak_password') return out('A senha é fraca demais. Use pelo menos 8 caracteres e evite senhas comuns.');
     if (code === 'signup_disabled') return out('O cadastro está fechado no momento.');
+  }
+  if (action === 'oauth') {
+    if (code === 'provider_disabled' || code === 'oauth_provider_not_supported') return out('Este provedor de acesso ainda não está disponível. Use e-mail e senha por enquanto.');
+    if (code === 'access_denied') return out('O acesso pelo provedor foi cancelado ou negado. Nada foi alterado.');
+    if (code === 'provider_email_needs_verification') return out('O provedor não confirmou seu e-mail. Use outro método de acesso.');
+    if (code && ['bad_oauth_callback', 'bad_oauth_state', 'bad_code_verifier', 'flow_state_not_found', 'flow_state_expired', 'oauth_error'].includes(code)) return out('Não foi possível concluir o retorno do provedor. Tente de novo.');
   }
   return out(fallback);
 }

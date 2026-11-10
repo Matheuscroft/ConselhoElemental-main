@@ -9,3 +9,10 @@
 .account-advanced { margin-top: 1.5rem; border-top: 1px solid #303b49; }
 .account-advanced > summary { color: #adb8c8; }
 .account-workspace [hidden] { display: none !important; }
+
+/* Social sign-in (GitHub / Apple), below the e-mail form. */
+.account-oauth { display: grid; gap: 8px; margin-top: 16px; }
+.account-oauth-divider { display: flex; align-items: center; gap: 10px; margin: 0; font-size: var(--ds-text-micro, .8rem); opacity: .7; }
+.account-oauth-divider::before, .account-oauth-divider::after { content: ''; flex: 1; border-top: 1px solid #aab4c424; }
+.restore-workspace .account-oauth .account-oauth-button { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 44px; margin-top: 0; }
+.account-oauth small { line-height: 1.5; opacity: .85; }

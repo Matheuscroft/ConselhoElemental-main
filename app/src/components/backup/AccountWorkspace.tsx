@@ -5,7 +5,8 @@ import './account-journey.css';
 import { ACCOUNT_RESOLUTION_KEY } from '@/lib/backup/account-resolution-key';
 import { accountErrorCode } from '@/lib/backup/account-auth-messages';
 import { accessAccount, resendAccountConfirmation, validAccountAccess, validAccountEmail, type AccountAccessMode } from '@/lib/backup/account-access';
-import type { AccountReturnNotice } from '@/lib/backup/account-return';
+import { takeOAuthReturn, type AccountReturnNotice, type AccountOAuthReturn } from '@/lib/backup/account-return';
+import { ACCOUNT_OAUTH_LABELS, APPLE_ACCOUNT_NOTICE, completeAccountOAuth, oauthPkceOptions, oauthReturnFailure, startAccountOAuth, type AccountOAuthProvider } from '@/lib/backup/account-oauth';
 import { inspectAccountResolution, resolveAccountVersions, resumeAccountResolution, keepLocalAfterResolution, type AccountResolution } from '@/lib/backup/account-resolution';
 import { AccountResolutionPanel } from './AccountResolutionPanel';
 import { reviewAccountVersions } from '@/lib/backup/account-conflict';
@@ -68,11 +69,13 @@ function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
     empty: tasks + habits + xp + sessions + otherActivity === 0, activeEmpty: activeTasks + activeHabits + activeXp === 0 };
 }
 
+const GitHubIcon=()=><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" focusable="false" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>;
+const AppleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="currentColor"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>;
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
   const [accessMode,setAccessMode]=useState<AccountAccessMode>(new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro' ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
-  const [authFeedback,setAuthFeedback]=useState(notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
+  const [authFeedback,setAuthFeedback]=useState(notice==='oauth'?'Conferindo o retorno do provedor…':notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
   const setAuthError=(reason:string,code:string|null=null)=>{setAuthErrorText(reason);setAuthCode(code);};
-  const [receiveMode,setReceiveMode]=useState(false);
+  const [receiveMode,setReceiveMode]=useState(false),[appleConfirm,setAppleConfirm]=useState(false);
   const [resolution,setResolution]=useState<{raw:string;journal:Readonly<AccountResolution>}|null>(null);
   const [liveConsent,setLiveConsent]=useState(false),[rememberAccess,setRememberAccess]=useState(false);
   const [versions,setVersions]=useState<Awaited<ReturnType<typeof reviewAccountVersions>>|null>(null);
@@ -91,7 +94,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [emptyJourneyConsent,setEmptyJourneyConsent]=useState(false);
   const [ready,setReady]=useState(false);
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
-  const generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
+  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
   const pair=()=>JSON.stringify([window.localStorage.getItem(STORE_KEYS.core),window.localStorage.getItem(STORE_KEYS.fitness)]);
   const isCurrent=(token:number)=>alive.current&&generation.current===token;
   function markBlocked(reason:unknown) {
@@ -121,7 +124,18 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     const ref=generation;alive.current=true;setReady(false);const token=++ref.current;
     void (async()=>{
       try{await refresh(token);}catch(reason){if(ref.current===token)markBlocked(reason);return;}
-      if(!isCurrent(token)||window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)===null)return;
+      if(!isCurrent(token))return;
+      const returned=notice==='oauth'?(oauthReturn.current??=takeOAuthReturn()):null;
+      if(returned){
+        try{
+          setBusy(true);
+          if(!returned.code)throw oauthReturnFailure(returned.errorCode??'oauth_error');
+          await finishOAuthReturn(returned.code,token);
+        }catch(reason){if(ref.current===token){setAuthFeedback('');setAuthError(reason instanceof Error?reason.message:'Não foi possível concluir o retorno do provedor.',accountErrorCode(reason));}}
+        finally{if(ref.current===token)setBusy(false);}
+        return;
+      }
+      if(window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)===null)return;
       try{
         setBusy(true);
         const {resumeAuthenticatedAccountReview}=await import('@/lib/backup/resume-authenticated-account');
@@ -168,7 +182,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function clearAccess(forget=false) {
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
     if(forget)forgetSavedAccess();
-    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
+    session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAppleConfirm(false);setAuthFeedback('');setAuthError('');
   }
   function changeAccess(mode:AccountAccessMode) {
     if(!ready||busy||job.current!==null||userId)return;
@@ -221,6 +235,38 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
       }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
     },true);
+  }
+  /** Social sign-in leaves for the provider; only the explicit return below creates an access. */
+  function startOAuth(provider:AccountOAuthProvider){
+    if(!ACCOUNT_ACCESS_RELEASED||!ready||userId)return;
+    if(provider==='apple'&&!appleConfirm){setAppleConfirm(true);return;}
+    void run(async token=>{
+      clearAccess();
+      const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
+      const opened=createAccountReviewSession({url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY},undefined,oauthPkceOptions(window.sessionStorage));session.current=opened;
+      try{
+        const url=await startAccountOAuth(opened.client,provider,{projectUrl:import.meta.env.VITE_SUPABASE_URL,storage:window.sessionStorage},()=>isCurrent(token)&&session.current===opened);
+        window.location.assign(url);
+      }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
+    },true);
+  }
+  /** Same "authenticated access" as an e-mail login; no adoption, transfer or sync starts here. */
+  async function finishOAuthReturn(code:string,token:number){
+    const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
+    const opened=createAccountReviewSession({url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY},undefined,oauthPkceOptions(window.sessionStorage));session.current=opened;
+    try{
+      const result=await completeAccountOAuth(opened.client,code,window.sessionStorage,()=>isCurrent(token)&&session.current===opened);
+      const id=result.userId,ids:string[]=[];
+      const bindingRaw=window.localStorage.getItem(ACCOUNT_BINDING_KEY);if(bindingRaw)ids.push((await inspectAccountBinding(bindingRaw,window.location.origin)).userId);
+      const pendingRaw=window.localStorage.getItem(ACCOUNT_INTENT_KEY);if(pendingRaw)ids.push((await inspectAccountIntent(pendingRaw,window.location.origin)).userId);
+      const resolutionRaw=window.localStorage.getItem(ACCOUNT_RESOLUTION_KEY);if(resolutionRaw)ids.push((await inspectAccountResolution(resolutionRaw,window.location.origin)).userId);
+      if(ids.some(other=>other!==id))throw new Error('Entre na mesma conta usada nesta tentativa para conferir seu recibo.');
+      const {rememberAuthenticatedAccountAccess}=await import('@/lib/backup/account-live-access');
+      await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:window.sessionStorage});
+      if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
+      identity.current=id;accessRaw.current=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(result.email??'');setUserId(id);setPassword('');setConfirmation('');
+      setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.'+(result.newIdentityNotice?' '+result.newIdentityNotice:''));
+    }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
   }
   function resend() {
     if(!ACCOUNT_ACCESS_RELEASED||!ready||userId||!validAccountEmail(email))return;
@@ -394,6 +440,12 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         {accessMode==='login'&&<a className="restore-workspace-back entry-recovery-link" href="/?progresso=recuperar">Esqueci minha senha</a>}
         <button type="submit" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountAccess(accessMode,email,password,confirmation)}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{!ready ? 'Preparando acesso…' : busy ? 'Aguarde…' : accessMode==='signup'?'Criar minha conta':'Entrar'}</button>
       </form>
+      <div className="account-oauth" role="group" aria-label="Entrar com outro serviço">
+        <p className="account-oauth-divider"><span>ou</span></p>
+        <button type="button" className="restore-workspace-secondary account-oauth-button" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('github')}><GitHubIcon/>{ACCOUNT_OAUTH_LABELS.github}</button>
+        <button type="button" className="restore-workspace-secondary account-oauth-button" aria-describedby={appleConfirm?'account-oauth-apple-notice':undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('apple')}><AppleIcon/>{appleConfirm?'Entendi, continuar com a Apple':ACCOUNT_OAUTH_LABELS.apple}</button>
+        {appleConfirm&&<small id="account-oauth-apple-notice" role="note">{APPLE_ACCOUNT_NOTICE}</small>}
+      </div>
       <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
       {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}{authCode&&<small className="entry-auth-code" style={{display:'block',opacity:.7,fontSize:'.75em',marginTop:4}}>código: {authCode}</small>}</p>}
