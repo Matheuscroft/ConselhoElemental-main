@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { MENSAGEM_RECUSA } from '@/lib/momentos/momento';
@@ -9,9 +9,20 @@ import {
   momentosDisponiveis,
   salvarMomento,
 } from '@/lib/momentos/momento-store';
+import { AURA, TINTA } from '@/lib/design/palette';
+import { DURATION } from '@/lib/motion/motion';
+import { corDaMoldura, diaConquistado, type EstadoDoDia } from '@/lib/momentos/moldura';
 import { distanciaDoCentro, indiceAtivo, posicaoReel } from '@/lib/momentos/reel';
+import type { ElementoDoDia } from '@/lib/momentos/elemento-do-dia';
 import { AcoesMomento } from './AcoesMomento';
+import { RunasMoldura } from './RunasMoldura';
 import './reel-momentos.css';
+
+// three.js only arrives when a card is open; the SVG frame never waits for it.
+const MolduraFeitico = lazy(() => import('./MolduraFeitico'));
+
+/** How long a conquest stays on the frame before it is cleared. */
+const CONQUISTA_DURA_MS = 1800;
 
 export interface DiaDoReel {
   /** Chave local do dia, a mesma do Temporal e dos Momentos. */
@@ -20,6 +31,8 @@ export interface DiaDoReel {
   readonly feitos: number;
   readonly total: number;
   readonly hoje: boolean;
+  /** O elemento que lidera os ciclos do dia; null no dia vazio ou empatado. */
+  readonly elemento: ElementoDoDia | null;
 }
 
 const MENSAGENS: Record<string, string> = {
@@ -70,6 +83,9 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   const carregadosRef = useRef(new Set<string>());
   const gestoRef = useRef(false);
   const visualRef = useRef(0);
+  const [rolando, setRolando] = useState(false);
+  const [conquista, setConquista] = useState({ dia: '', n: 0 });
+  const anteriorRef = useRef<EstadoDoDia | null>(null);
   const selecionadoRef = useRef(selecionado);
   const aoEscolherRef = useRef(aoEscolher);
   useEffect(() => {
@@ -141,12 +157,14 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
 
     const assentou = () => {
       pintar();
+      setRolando(false);
       if (!gestoRef.current) return;
       gestoRef.current = false;
       if (visualRef.current !== selecionadoRef.current) aoEscolherRef.current(visualRef.current);
     };
 
     const aoRolar = () => {
+      setRolando(true);
       if (!frame) frame = requestAnimationFrame(() => { frame = 0; pintar(); });
       window.clearTimeout(parar);
       parar = window.setTimeout(assentou, ASSENTAR_MS);
@@ -191,6 +209,28 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
     }
   }, [selecionado, chaves, reduced]);
 
+  const abertoDia = selecionado >= 0 ? dias[selecionado] : undefined;
+  const abertoChave = abertoDia?.dia;
+  const abertoFeitos = abertoDia?.feitos ?? 0;
+  const abertoTotal = abertoDia?.total ?? 0;
+
+  // Only the last cycle of the open day, completed right here, is a conquest.
+  // It is held back one conjure beat so it never lands on top of the XP receipt.
+  useEffect(() => {
+    const atual: EstadoDoDia | null = abertoChave === undefined
+      ? null
+      : { dia: abertoChave, feitos: abertoFeitos, total: abertoTotal };
+    const conquistou = diaConquistado(anteriorRef.current, atual);
+    anteriorRef.current = atual;
+    if (!conquistou || !atual) return;
+    let limpar = 0;
+    const atraso = window.setTimeout(() => {
+      setConquista((c) => ({ dia: atual.dia, n: c.n + 1 }));
+      limpar = window.setTimeout(() => setConquista((c) => ({ ...c, dia: '' })), CONQUISTA_DURA_MS);
+    }, DURATION.conjure);
+    return () => { window.clearTimeout(atraso); window.clearTimeout(limpar); };
+  }, [abertoChave, abertoFeitos, abertoTotal]);
+
   const anotarGesto = useCallback(() => { gestoRef.current = true; }, []);
 
   const mover = useCallback((passo: number) => {
@@ -227,7 +267,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
 
   return (
     <div className="reel-momentos" data-reduzido={reduced}>
-      <div className="reel-palco">
+      <div className="reel-palco" data-rolando={rolando}>
         <ul
           className="reel-trilho"
           ref={trilhoRef}
@@ -244,6 +284,8 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
           {dias.map((item, indice) => {
             const foto = fotos[item.dia];
             const eAberto = indice === selecionado;
+            const cor = item.elemento ? corDaMoldura(item.elemento, AURA) : undefined;
+            const completo = item.total > 0 && item.feitos >= item.total;
             return (
               <li key={item.dia} className="reel-cartao" data-distancia="0">
                 <button
@@ -251,6 +293,10 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
                   className="reel-moldura"
                   data-ativo={eAberto}
                   data-foto={foto ? 'sim' : 'nao'}
+                  data-tinta={eAberto && item.elemento ? item.elemento : undefined}
+                  style={eAberto && item.elemento
+                    ? ({ '--runa-cor': cor, '--runa-tinta': TINTA[item.elemento] } as React.CSSProperties)
+                    : undefined}
                   aria-pressed={eAberto}
                   aria-current={item.hoje ? 'date' : undefined}
                   aria-label={rotulo(item, Boolean(foto))}
@@ -262,6 +308,13 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
                 >
                   {foto ? <img src={foto} alt="" loading="lazy" decoding="async" draggable={false} /> : null}
                   <span className="reel-pelicula" aria-hidden="true" />
+                  {eAberto ? (
+                    <RunasMoldura
+                      elemento={item.elemento}
+                      completo={completo}
+                      conquista={conquista.dia === item.dia ? conquista.n : 0}
+                    />
+                  ) : null}
                   <span className="reel-texto" aria-hidden="true">
                     <span className="reel-semana">{item.data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span>
                     <strong className="reel-numero">{String(item.data.getDate()).padStart(2, '0')}</strong>
@@ -274,6 +327,18 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
             );
           })}
         </ul>
+        {aberto ? (
+          <Suspense fallback={null}>
+            <MolduraFeitico
+              elemento={aberto.elemento}
+              completo={aberto.total > 0 && aberto.feitos >= aberto.total}
+              rolando={rolando}
+              ativo
+              conquista={conquista.dia === aberto.dia ? conquista.n : 0}
+              reduzido={reduced}
+            />
+          </Suspense>
+        ) : null}
       </div>
 
       <div className="reel-navegacao">

@@ -1,0 +1,144 @@
+/*
+ * The two sky buttons under the Reel in Ciclos. Each is a window onto a real
+ * sky (`.ceu-janela`: CSS sky and sun, plus a canvas on top) with a sill of
+ * frosted glass (`.ceu-peitoril`) that carries the text. The sill is a sibling
+ * of the window, never inside it, and no ancestor between the two may carry
+ * opacity, filter, mask or blend mode, or the glass has nothing to blur.
+ * The one blur in this file is the sill's, shared by Moon and Season.
+ */
+
+.ceu-botao {
+  --ceu-topo: 9 13 26;
+  --ceu-vidro: 10 14 26;
+  --ceu-blur: var(--ds-blur-soft);
+  --ceu-sat: 1.3;
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  border-radius: 16px;
+  overflow: clip;
+  background: rgb(var(--ceu-topo));
+  color: rgb(var(--el-text));
+  text-align: left;
+  cursor: pointer;
+}
+.ceu-botao:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; }
+
+/* Window: sky, sun and weather. */
+.ceu-janela { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; }
+.ceu-fundo { position: absolute; inset: 0; border-radius: inherit; }
+.ceu-tela { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border-radius: inherit; opacity: 0; }
+
+/* Moon: CSS sky, halo and disc are the fallback under the shader. */
+.ceu-fundo-lua {
+  background:
+    radial-gradient(circle at calc(100% - 38px) 32px, rgb(196 210 240 / calc(var(--lua-halo, .3) * .55)) 0, transparent 74px),
+    linear-gradient(180deg, rgb(9 13 26), rgb(20 27 39));
+}
+.ceu-lua-disco { position: absolute; top: 6px; right: 12px; width: 52px; height: 52px; transition: opacity var(--ds-duration-reveal) var(--ds-ease); }
+.ceu-lua-disco svg { display: block; width: 100%; height: 100%; }
+.ceu-janela[data-modo="3d"] .ceu-lua-disco { opacity: 0; }
+.ceu-janela[data-modo="3d"] .ceu-tela { opacity: 1; transition: opacity var(--ds-duration-reveal) var(--ds-ease); }
+
+/* Season: sky and sun in CSS, weather on the canvas. */
+.ceu-janela[data-estacao] .ceu-tela { opacity: 1; animation: elemental-feedback-in var(--ds-duration-reveal) var(--ds-ease) both; }
+.ceu-fundo-estacao { background: linear-gradient(180deg, rgb(var(--ceu-topo)), rgb(var(--ceu-cor) / .22)); }
+.ceu-sol, .ceu-geada { position: absolute; display: none; }
+.ceu-sol { display: block; transform: translate(-50%, -50%); border-radius: 50%; }
+
+[data-estacao="spring"] .ceu-sol { left: 82%; top: 22%; width: 40px; height: 40px; background: radial-gradient(circle, rgb(255 244 214 / .55) 0, rgb(255 230 180 / .25) 40%, transparent 70%); }
+[data-estacao="summer"] .ceu-sol { left: calc(100% - 38px); top: 32px; width: 48px; height: 48px; background: radial-gradient(circle, rgb(255 246 214) 0 9px, rgb(var(--ceu-cor) / .55) 10px, rgb(var(--ceu-cor-2) / .25) 18px, transparent 24px); }
+[data-estacao="autumn"] .ceu-sol { left: 80%; top: 62%; width: 52px; height: 52px; background: radial-gradient(circle, rgb(255 200 150 / .9) 0 56%, rgb(var(--ceu-cor) / .5) 70%, transparent 72%); }
+[data-estacao="winter"] .ceu-sol { left: calc(100% - 38px); top: 30px; width: 48px; height: 48px; background: radial-gradient(circle, rgb(240 250 255) 0 6px, rgb(var(--ceu-cor-2) / .4) 7px, transparent 14px, transparent 21px, rgb(var(--ceu-cor-2) / .3) 22px, transparent 23px); }
+[data-estacao="winter"] .ceu-geada { display: block; inset: 0; background:
+  radial-gradient(circle at 0 0, rgb(var(--ceu-cor-2) / .35), transparent 32px),
+  radial-gradient(circle at 100% 0, rgb(var(--ceu-cor-2) / .3), transparent 28px); }
+
+/* Sill: the glass. */
+.ceu-peitoril {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  padding: 8px 10px 8px 12px;
+  background: rgb(var(--ceu-vidro) / .66);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / .10), var(--ds-rim);
+  -webkit-backdrop-filter: blur(var(--ceu-blur)) saturate(var(--ceu-sat));
+  backdrop-filter: blur(var(--ceu-blur)) saturate(var(--ceu-sat));
+  color: rgb(var(--el-text));
+}
+.ceu-texto { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.ceu-nome { font-size: var(--ds-text-small); font-weight: 500; line-height: 1.2; color: rgb(var(--el-text)); overflow-wrap: normal; hyphens: manual; }
+.ceu-apoio { font-size: var(--ds-text-micro); font-weight: 400; line-height: 1.3; color: rgb(var(--el-text)); }
+.ceu-chevron { flex: none; color: rgb(var(--el-text) / .8); transition: transform var(--ds-duration-feedback) var(--ds-ease); }
+
+/* Ring: the border lights up. Only drawn where the mask can cut out the middle,
+   or it would paint over the whole button. */
+.ceu-anel { display: none; }
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .ceu-anel {
+    position: absolute;
+    inset: 0;
+    display: block;
+    box-sizing: border-box;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: var(--ceu-anel);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: .85;
+    transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+  }
+}
+
+.ceu-botao-lua {
+  /* The lit arc is centred on the lit side and fades the same on both ends;
+     the fade shrinks to nothing at Full, so the ring closes. */
+  --lua-esfuma: calc((180deg - var(--lua-arco, 100deg)) / 6);
+  --ceu-anel: conic-gradient(from calc(var(--lua-lado, 90deg) - var(--lua-arco, 100deg) - var(--lua-esfuma)),
+    rgb(255 255 255 / .06) 0deg,
+    rgb(226 230 240) var(--lua-esfuma),
+    rgb(226 230 240) calc(var(--lua-arco, 100deg) * 2 + var(--lua-esfuma)),
+    rgb(255 255 255 / .06) calc(var(--lua-arco, 100deg) * 2 + var(--lua-esfuma) * 2),
+    rgb(255 255 255 / .06) 360deg);
+}
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .ceu-botao-lua .ceu-anel { opacity: var(--lua-borda, .5); transition: opacity var(--ds-duration-settle) var(--ds-ease); }
+}
+
+[data-estacao="spring"].ceu-botao { --ceu-anel: linear-gradient(135deg, rgb(var(--ceu-cor) / .7), rgb(var(--ceu-cor-2) / .55), rgb(var(--ceu-cor) / .25)); }
+[data-estacao="summer"].ceu-botao { --ceu-anel: conic-gradient(at calc(100% - 38px) 32px, rgb(var(--ceu-cor-2) / .9) 0deg, rgb(var(--ceu-cor) / .75) 90deg, rgb(var(--ceu-cor) / .2) 200deg, rgb(var(--ceu-cor) / .75) 300deg, rgb(var(--ceu-cor-2) / .9) 360deg); }
+[data-estacao="autumn"].ceu-botao { --ceu-anel: linear-gradient(180deg, rgb(var(--ceu-cor) / .35), rgb(var(--ceu-cor-2) / .7)); }
+[data-estacao="winter"].ceu-botao { --ceu-anel: linear-gradient(180deg, rgb(var(--ceu-cor-2) / .65), rgb(var(--ceu-cor) / .3)); }
+
+@media (hover: hover) {
+  .ceu-botao:hover .ceu-chevron { transform: translateX(2px); }
+  @supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+    .ceu-botao:hover .ceu-anel { opacity: 1; }
+    .ceu-botao-lua:hover .ceu-anel { opacity: min(1, calc(var(--lua-borda, .5) + .15)); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ceu-botao:hover .ceu-chevron { transform: none; }
+}
+
+@media (min-width: 768px) {
+  .ceu-lua-disco { right: 22px; width: 60px; height: 60px; }
+  .ceu-fundo-lua { background:
+    radial-gradient(circle at calc(100% - 52px) 36px, rgb(196 210 240 / calc(var(--lua-halo, .3) * .55)) 0, transparent 84px),
+    linear-gradient(180deg, rgb(9 13 26), rgb(20 27 39)); }
+  .ceu-lua-disco { top: 6px; }
+}

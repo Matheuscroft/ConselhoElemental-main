@@ -2,7 +2,12 @@ import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/c
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
+import { elementoDominante } from '@/lib/momentos/elemento-do-dia';
 import { beatUnless, stagger } from '@/lib/motion/motion';
+import { BotaoLua } from '@/components/cycles/ceu/BotaoLua';
+import { BotaoEstacao } from '@/components/cycles/ceu/BotaoEstacao';
+import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
+import { fimDaEstacao, instanteDoCeu, rotuloDeData } from '@/lib/temporal/ceu-dos-ciclos';
 import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
 import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
 import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
@@ -57,8 +62,8 @@ import {
   getAreaById,
   formatDuration, 
   formatTime,
-  getMoonPhase, 
-  getSeason, 
+  getSeason,
+  getHemisphereFromLatitude,
   WEEKDAYS,
   WEEKDAYS_SHORT,
   ELEMENTS,
@@ -1350,8 +1355,17 @@ export const Ciclos: React.FC = () => {
   ]);
 
   // Moon phase and season
-  const moonPhase = getMoonPhase(selectedDate);
   const season = getSeason(selectedDate, { latitude: userLatitude });
+  // The sky buttons follow the day picked in the Reel; hemisphere comes from the same latitude as the season.
+  const ceu = useMemo(() => {
+    const south = getHemisphereFromLatitude(userLatitude) === 'south';
+    const fim = fimDaEstacao(selectedDate, (dia) => getSeason(dia, { latitude: userLatitude }));
+    return {
+      south,
+      lua: lunarSnapshot(instanteDoCeu(selectedDate, new Date())),
+      fim: fim ? rotuloDeData(fim) : null,
+    };
+  }, [selectedDate, userLatitude]);
 
   // Stats
   const completedToday = habitsForDate.filter(isHabitCompleted).length;
@@ -1364,10 +1378,17 @@ export const Ciclos: React.FC = () => {
     const date = new Date(visibleDaysCenterDate);
     date.setDate(date.getDate() + offset);
     const doDia = getHabitsForDate(date);
-    const feitos = doDia.filter((habit) => habit.completions.some(
-      (completion) => new Date(completion.completionDate).toDateString() === date.toDateString(),
-    )).length;
-    return { dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()) };
+    const ciclos = doDia.map((habit) => ({
+      elementId: habit.elementId,
+      feito: habit.completions.some(
+        (completion) => new Date(completion.completionDate).toDateString() === date.toDateString(),
+      ),
+    }));
+    const feitos = ciclos.filter((ciclo) => ciclo.feito).length;
+    return {
+      dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()),
+      elemento: elementoDominante(ciclos),
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }), [visibleDaysCenterDate, getHabitsForDate, habits]);
 
@@ -1679,34 +1700,15 @@ export const Ciclos: React.FC = () => {
 
         {/* Moon Phase & Season */}
         <div className="cycle-sky-links mb-4">
-          <button
-            type="button"
-            onClick={() => navigate('/lua')}
-            className="cycle-sky-button ds-pane elemental-press is-moon"
-            title="Abrir pagina da Lua"
-            aria-label={`Abrir página da Lua: ${moonPhase.name}`}
-          >
-            <span className="cycle-sky-medal" aria-hidden="true"><ArcaneIcon name="lua" /></span>
-            <span className="cycle-sky-text">
-              <span className="cycle-sky-label">Lua</span>
-              <span className="cycle-sky-name">{moonPhase.name}</span>
-            </span>
-            <svg className="cycle-sky-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/estacoes')}
-            className="cycle-sky-button ds-pane elemental-press is-season"
-            title="Abrir pagina da Estacao"
-            aria-label={`Abrir página da Estação: ${season.name}`}
-          >
-            <span className="cycle-sky-medal" aria-hidden="true"><ArcaneIcon name="estacoes" /></span>
-            <span className="cycle-sky-text">
-              <span className="cycle-sky-label">Estação</span>
-              <span className="cycle-sky-name">{season.name}</span>
-            </span>
-            <svg className="cycle-sky-chevron" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M6 3.5 10.5 8 6 12.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-          </button>
+          <BotaoLua
+            nome={ceu.lua.name}
+            phaseAngle={ceu.lua.phaseAngle}
+            illuminated={ceu.lua.illuminated}
+            waxing={ceu.lua.waxing}
+            south={ceu.south}
+            onAbrir={() => navigate('/lua')}
+          />
+          <BotaoEstacao nome={season.name} south={ceu.south} fim={ceu.fim} onAbrir={() => navigate('/estacoes')} />
         </div>
 
         {/* Progress */}

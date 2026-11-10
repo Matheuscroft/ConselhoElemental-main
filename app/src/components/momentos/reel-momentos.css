@@ -13,6 +13,8 @@
   .reel-momentos { --reel-largura: 180px; }
 }
 
+.reel-palco { position: relative; }
+
 .reel-trilho {
   display: flex;
   gap: 10px;
@@ -88,6 +90,23 @@
   background:
     linear-gradient(to top, rgb(7 11 18 / 88%), rgb(7 11 18 / 30%) 55%, rgb(7 11 18 / 62%));
 }
+
+/* The open card is framed (moldura-feitico.css): the text needs more ground. */
+.reel-moldura[data-ativo='true'][data-foto='sim'] .reel-pelicula {
+  background:
+    linear-gradient(to top, rgb(7 11 18 / 88%), rgb(7 11 18 / 45%) 55%, rgb(7 11 18 / 62%));
+}
+
+.reel-moldura[data-ativo='true'][data-foto='sim'] .reel-numero {
+  text-shadow: 0 1px 12px rgb(7 11 18 / 80%);
+}
+
+/* No photo: a veil of the day's element, down to 60% of the height. */
+.reel-moldura[data-ativo='true'][data-foto='nao'][data-tinta] .reel-pelicula {
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--runa-tinta) 35%, transparent), transparent 60%);
+}
+
+.reel-moldura[data-ativo='true'][data-foto='nao'] .reel-numero { color: rgb(var(--el-gold)); }
 
 .reel-texto {
   position: relative;
