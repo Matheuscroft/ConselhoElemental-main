@@ -8,6 +8,7 @@ const entryModule={exports:{}};new Function('require','exports',entrySource)(()=
 const recoveryModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-recovery-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(recoveryModule.exports);
 const returnModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-return.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(returnModule.exports);
 const accessEntryModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/access-entry.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(()=>({STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}}),accessEntryModule.exports);
+const accessStorageModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-access-storage.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(accessStorageModule.exports);
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 async function run(search,block,fail=false,handoff=false,sessionRaw=null,sessionDenied=false,historyDenied=false,resumeRaw=null,pathname=undefined,saved=null,origin='https://fixture.test'){
  const calls=[];const root={};
@@ -15,6 +16,7 @@ async function run(search,block,fail=false,handoff=false,sessionRaw=null,session
   if(id.endsWith('.css'))return {};
   if(id.endsWith('access-entry'))return accessEntryModule.exports;
   if(id.endsWith('mount-entry-welcome')){if(fail)throw Error('chunk unavailable');return {mountEntryWelcome:node=>{assert.equal(node,root);calls.push('welcome');}};}
+  if(id.endsWith('account-access-storage'))return accessStorageModule.exports;
   if(id.endsWith('account-resume-entry'))return {ACCOUNT_TAB_ACCESS_KEY:'access'};
   if(id.endsWith('account-tab-access'))return {inspectTabAccess:raw=>{if(raw==='saved')return {};throw Error('invalid access');}};
   if(id.endsWith('mount-account-resume')){if(fail)throw Error('chunk unavailable');return {mountAccountResume:async()=>calls.push('resume')};}
@@ -59,6 +61,13 @@ test('restore URL requires valid tab access and normal protected routes resume t
  assert.deepEqual(await run('?progresso=restaurar'),['loading','redirect:/auth']);
  assert.deepEqual(await run('?progresso=restaurar&confirmar=true',null,false,false,null,false,false,'saved'),['loading','workspace']);
  assert.deepEqual(await run('',null,false,false,null,false,false,'saved'),['loading','exclusive','resume']);
+});
+test('a saved access on this device resumes like a tab one, but a v1 copy on the device is never trusted',async()=>{
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,undefined,'saved'),['loading','exclusive','resume']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,'saved',undefined,'{"version":1}'),['loading','exclusive','resume']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,undefined,'{"version":1}'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,undefined,'{broken'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('?progresso=restaurar',null,false,false,null,false,false,null,undefined,'saved'),['loading','workspace']);
 });
 test('pending journal is routed to workspace while denied storage or lock retains protective screen',async()=>{
  assert.deepEqual(await run('','pending-restore',false,false,null,false,false,'saved'),['loading','exclusive','workspace']);

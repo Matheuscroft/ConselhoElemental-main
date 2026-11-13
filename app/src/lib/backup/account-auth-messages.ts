@@ -2,7 +2,7 @@
  * Never echoes the server text, the email, a token, a URL or a key. A login
  * failure never says whether an account exists (same text for unknown email
  * and wrong password). `code` is a short technical tag for bug reports. */
-export type AccountAuthAction = 'login' | 'signup' | 'resend' | 'reset' | 'oauth';
+export type AccountAuthAction = 'login' | 'signup' | 'resend' | 'reset' | 'oauth' | 'resume';
 export interface AccountAuthMessage { message: string; code: string | null }
 
 const NETWORK = 'Sem conexão com o servidor. Verifique a internet.';
@@ -10,6 +10,14 @@ const SERVER = 'O serviço de conta está indisponível. Tente de novo em instan
 const EMAIL_LIMIT = 'O envio de e-mails está no limite. Tente de novo em alguns minutos.';
 const TOO_MANY = 'Muitas tentativas. Aguarde alguns minutos.';
 
+const SESSION_EXPIRED = 'Sua sessão expirou ou foi encerrada em outro lugar. Entre novamente; seu progresso continua preservado.';
+/** Codes after which the saved refresh token can never work again (rotated, revoked or expired). */
+const SESSION_ENDED = ['refresh_token_already_used', 'refresh_token_not_found', 'session_expired', 'session_not_found', 'bad_jwt', 'user_not_found', 'invalid_grant'];
+/** True only for a definitive end of the session, never for a network or server hiccup. */
+export function accountSessionEnded(error: unknown): boolean {
+  const code = field(error, 'code');
+  return field(error, 'name') === 'AuthSessionMissingError' || (typeof code === 'string' && SESSION_ENDED.includes(code));
+}
 function field(error: unknown, key: string): unknown {
   return error && typeof error === 'object' && key in error ? (error as Record<string, unknown>)[key] : undefined;
 }
@@ -23,6 +31,7 @@ export function accountAuthMessage(error: unknown, action: AccountAuthAction, fa
   if (code === 'over_request_rate_limit' || status === 429) return out(action === 'reset' ? EMAIL_LIMIT : TOO_MANY);
   if (status !== null && status >= 500) return out(SERVER);
   if (!code && (status === 0 || name === 'AuthRetryableFetchError' || error instanceof TypeError)) return out(NETWORK, 'network');
+  if (action === 'resume' && accountSessionEnded(error)) return out(SESSION_EXPIRED, code ?? 'session_ended');
   if (action === 'login') {
     // GoTrue checks the password first, so email_not_confirmed is only returned for the right password.
     if (code === 'email_not_confirmed') return out('Confirme seu e-mail para entrar. Se não recebeu o link, use "Reenviar confirmação" em "Não recebeu o e-mail de confirmação?".');

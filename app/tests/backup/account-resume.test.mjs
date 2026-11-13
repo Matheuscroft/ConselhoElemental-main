@@ -24,12 +24,12 @@ function saved(storage=store()){const control=api.createTabAccessControl(opts(st
 test('remembered access is opt-in, bounded, origin/project-bound and separate from domain data',()=>{
  const storage=store([['core','personal fixture']]),control=api.createTabAccessControl(opts(storage));assert.equal(storage.getItem(key),null);control.capture(tokens);assert.equal(storage.getItem(key),null);
  control.activate();const raw=storage.getItem(key);assert.equal(api.inspectTabAccess(raw,origin,project,now).userId,uid);assert.equal(storage.getItem('core'),'personal fixture');assert.deepEqual(storage.writes,[key]);
- for(const change of [{origin:'https://other.invalid'},{project:'https://other.invalid'},{userId:'bad'},{extra:true},{consentedAt:now+1},{consentedAt:now-api.ACCOUNT_TAB_ACCESS_TTL},{accessToken:'a'.repeat(14001)},{refreshToken:'with space'}])assert.throws(()=>api.inspectTabAccess(JSON.stringify({...JSON.parse(raw),...change}),origin,project,now),/conferência/);
+ for(const change of [{origin:'https://other.invalid'},{project:'https://other.invalid'},{userId:'bad'},{extra:true},{consentedAt:now+1},{consentedAt:now-api.ACCOUNT_TAB_ACCESS_TTL-1000,lastUsedAt:now-api.ACCOUNT_TAB_ACCESS_TTL},{lastUsedAt:now+1},{version:3},{accessToken:'a'.repeat(14001)},{refreshToken:'with space'}])assert.throws(()=>api.inspectTabAccess(JSON.stringify({...JSON.parse(raw),...change}),origin,project,now),/conferência/);
  for(const malformed of ['bad','[]','x'.repeat(32769)])assert.throws(()=>api.inspectTabAccess(malformed,origin,project,now));
 });
-test('refresh and reload preserve the original consent deadline; disposal retains access, explicit forgetting removes only its own marker',()=>{
+test('refresh and reload preserve the original consent date (the deadline slides with use); disposal retains access, explicit forgetting removes only its own marker',()=>{
  const f=saved(),initial=JSON.parse(f.raw);f.control.capture({...tokens,refresh_token:'rotated'});assert.equal(JSON.parse(f.storage.getItem(key)).consentedAt,initial.consentedAt);f.control.dispose();f.control.capture({...tokens,refresh_token:'late'});assert.equal(JSON.parse(f.storage.getItem(key)).refreshToken,'rotated');
- const raw=f.storage.getItem(key),next=api.createTabAccessControl({...opts(f.storage),previous:{raw,consentedAt:initial.consentedAt}});next.activate();assert.equal(next.deadline,initial.consentedAt+api.ACCOUNT_TAB_ACCESS_TTL);next.forget();assert.equal(f.storage.getItem(key),null);
+ const raw=f.storage.getItem(key),next=api.createTabAccessControl({...opts(f.storage),previous:{raw,consentedAt:initial.consentedAt}});next.activate();assert.equal(next.deadline,JSON.parse(f.storage.getItem(key)).lastUsedAt+api.ACCOUNT_TAB_ACCESS_TTL);next.forget();assert.equal(f.storage.getItem(key),null);
 });
 test('storage refusal, foreign replacement and wrong identity cannot silently persist or erase another access',()=>{
  const f=saved();f.storage.values.set(key,'newer access');assert.throws(()=>f.control.capture(tokens));assert.throws(()=>f.control.forget());assert.equal(f.storage.getItem(key),'newer access');
@@ -49,11 +49,11 @@ function resumeFixture({released=true,exclusive=true,wrong=false,pending=false,r
  return {f,storage,calls,get disposed(){return disposed;},run:()=>loaded.resumeAccountSession({config:{url:project,key:'synthetic-public'},origin,storage,accessStorage:f.storage,isExclusive:()=>exclusive})};
 }
 test('resume validates identity and binding before handing off; no progress is written or hydrated',async()=>{
- const f=resumeFixture();await f.run();assert.deepEqual(f.calls.map(c=>c[0]),['construct','setSession','getUser','review','prepare']);assert.equal(f.calls.at(-1)[1].previous.raw,f.f.raw);assert.deepEqual(f.storage.writes,[]);assert.equal(f.f.storage.getItem(key),f.f.raw);assert.equal(f.disposed,0);
+ const f=resumeFixture();await f.run();assert.deepEqual(f.calls.map(c=>c[0]),['construct','setSession','getUser','review','prepare']);assert.equal(f.calls.at(-1)[1].previous.raw,f.f.storage.getItem(key));assert.equal(JSON.parse(f.f.storage.getItem(key)).consentedAt,JSON.parse(f.f.raw).consentedAt);assert.deepEqual(f.storage.writes,[]);assert.equal(f.disposed,0);
 });
 test('closed gates, pending intent and missing lease stop before Auth; identity, revision and local changes stop before handoff',async()=>{
  for(const options of [{released:false},{exclusive:false},{pending:true}]){const f=resumeFixture(options);await assert.rejects(f.run());assert.deepEqual(f.calls,[]);assert.deepEqual(f.storage.writes,[]);}
- for(const options of [{wrong:true},{remoteConflict:true},{mutate:true}]){const f=resumeFixture(options);await assert.rejects(f.run());assert.equal(f.calls.some(c=>c[0]==='prepare'),false);assert.equal(f.disposed,1);assert.deepEqual(f.storage.writes,[]);assert.equal(f.f.storage.getItem(key),f.f.raw);}
+ for(const options of [{wrong:true},{remoteConflict:true},{mutate:true}]){const f=resumeFixture(options);await assert.rejects(f.run());assert.equal(f.calls.some(c=>c[0]==='prepare'),false);assert.equal(f.disposed,1);assert.deepEqual(f.storage.writes,[]);assert.equal(JSON.parse(f.f.storage.getItem(key)).userId,uid);}
 });
 
 test('live access persists only at activation; token rotations are synchronous and explicit stop clears remembered access',async()=>{
@@ -80,7 +80,7 @@ test('authenticated local mode exposes account state without a progress transpor
  await sync.flush();assert.deepEqual(calls,[]);assert.equal(sync.forgetAccess(),true);assert.deepEqual(calls,['forget','dispose']);assert.equal(sync.getSnapshot().status,'stopped');
 });
 
-test('saved Auth resumes independently from local progress and preserves the original twelve-hour deadline',async()=>{
+test('saved Auth resumes independently from local progress and preserves the original consent date',async()=>{
  const f=saved(),calls=[];let disposed=0;
  const opened={client:{auth:{setSession:async value=>{calls.push(['set',value]);return{data:{session:tokens},error:null};},getUser:async()=>{calls.push(['user']);return{data:{user:{id:uid,email:'synthetic@example.invalid'}},error:null};}}},dispose(){disposed++;}};
  const loaded=load('src/lib/backup/resume-authenticated-account.ts',{

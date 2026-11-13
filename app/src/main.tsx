@@ -2,6 +2,7 @@ import { accessEntry } from './lib/backup/access-entry';
 import type { LiveAccountSession } from './lib/backup/account-live-sync';
 import { ACCOUNT_TAB_ACCESS_KEY } from './lib/backup/account-resume-entry';
 import { inspectTabAccess } from './lib/backup/account-tab-access';
+import { accountAccessStorage } from './lib/backup/account-access-storage';
 import { captureRecoveryEntry, isPasswordRecoveryCallback } from './lib/backup/account-recovery-entry';
 import { captureAccountReturn, type AccountReturnNotice } from './lib/backup/account-return';
 import { needsReminderWorkspace } from './lib/reminders/reminder-entry'
@@ -18,7 +19,7 @@ document.documentElement.classList.add('dark');
 const root = document.getElementById('root')!;
 showProgressStartup(root);
 function hasValidAccountAccess() {
-  const raw=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
+  const raw=accountAccessStorage(undefined,window).getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
   if(!raw||!project)return false;
   try{inspectTabAccess(raw,window.location.origin,project);return true;}catch{return false;}
 }
