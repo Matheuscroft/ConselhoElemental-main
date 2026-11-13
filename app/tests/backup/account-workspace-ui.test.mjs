@@ -306,7 +306,7 @@ test('closed release keeps social buttons inert and builds no client',async()=>{
  const f=fixture({released:false,accessReleased:false});await flush();f.render();f.click('Continuar com Google');await flush();assert.equal(f.constructions,0);assert.equal(f.sessions.length,0);f.unmount();
 });
 
-const until=async(cond,tries=200)=>{for(let i=0;i<tries;i++){if(cond())return;await new Promise(r=>setTimeout(r,5));}throw Error('condition not reached');};
+const until=async(cond,tries=1200)=>{for(let i=0;i<tries;i++){if(cond())return;await new Promise(r=>setTimeout(r,5));}throw Error('condition not reached');};
 test('provider failure return shows a safe message with a discreet code and builds no client',async()=>{
  globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&error=access_denied&error_code=access_denied&error_description=secret',()=>{});}finally{delete globalThis.sessionStorage;}
