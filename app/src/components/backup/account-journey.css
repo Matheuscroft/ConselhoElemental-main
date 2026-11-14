@@ -9,3 +9,10 @@
 .account-advanced { margin-top: 1.5rem; border-top: 1px solid #303b49; }
 .account-advanced > summary { color: #adb8c8; }
 .account-workspace [hidden] { display: none !important; }
+.account-inventory-group { margin-top: .75rem; border: 1px solid #303b49; border-radius: .65rem; padding: .75rem; }
+.account-inventory-group summary { cursor: pointer; color: #dfc17b; }
+.account-inventory-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: .75rem; }
+.account-inventory-columns > div { min-width: 0; }
+.account-inventory-columns h3 { margin: 0 0 .5rem; font-size: 1rem; }
+.account-inventory-columns ol { max-height: 18rem; overflow: auto; overflow-wrap: anywhere; padding-left: 1.5rem; }
+@media (max-width: 640px) { .account-inventory-columns { grid-template-columns: 1fr; } }

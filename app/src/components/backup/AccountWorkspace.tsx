@@ -25,6 +25,7 @@ import { RESTORE_JOURNAL_KEY } from '@/lib/backup/restore-journal';
 import { LOCAL_PROGRESS_MODE_KEY } from '@/lib/backup/progress-mode';
 import { ACCOUNT_TAB_ACCESS_KEY } from '@/lib/backup/account-resume-entry';
 import { StoredProgressAuditError } from '@/lib/backup/stored-progress';
+import { inspectAccountDataInventory, type AccountDataInventory } from '@/lib/backup/account-data-inventory';
 import type { ProgressIssue } from '@/lib/backup/critical-progress';
 import { applyStoredProgressRepair, planStoredProgressRepair, settleStoredProgressRepair, STORED_PROGRESS_REPAIR_KEY, type StoredProgressRepairPlan, type StoredProgressRepairSummary } from '@/lib/backup/stored-progress-repair';
 type Session = ReturnType<typeof import('@/lib/backup/account-session').createAccountReviewSession>;
@@ -77,6 +78,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [binding,setBinding]=useState<Readonly<AccountBinding>|null>(null),[saveBinding,setSaveBinding]=useState(false);
   const [baseline,setBaseline]=useState<WorkspaceBaseline|null>(null),[copy,setCopy]=useState<string|null>(null);
   const [pending,setPending]=useState<{raw:string;intent:AccountIntent}|null>(null),[receipt,setReceipt]=useState<AccountCommitReceipt|null>(null);
+  const [inventory,setInventory]=useState<AccountDataInventory|null>(null);
   const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[userId,setUserId]=useState<string|null>(null);
   const [showPassword, setShowPassword] = useState(false), [showConfirmation, setShowConfirmation] = useState(false);
   const [busy,setBusy]=useState(false),[message,setMessage]=useState(''),[error,setError]=useState('');
@@ -102,6 +104,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     setError(restore?'Há uma recuperação pendente que precisa ser concluída antes de conectar a conta.':progress?reason.message:'A conexão anterior deste aparelho precisa ser reiniciada. Suas atividades locais e qualquer versão já salva na conta continuam preservadas.');
   }
   async function refresh(token:number) {
+    if(isCurrent(token))setInventory(null);
     await settleStoredProgressRepair(window.localStorage,window.location.origin);
     if(window.localStorage.getItem(RESTORE_JOURNAL_KEY)!==null)throw new Error('Conclua a recuperação da restauração antes de conferir a conta.');
     const resolutionRaw=window.localStorage.getItem(ACCOUNT_RESOLUTION_KEY);
@@ -164,6 +167,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     accessRaw.current=null;
   }
   function clearAccess(forget=false) {
+    setInventory(null);
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
     if(forget)forgetSavedAccess();
     session.current?.dispose();session.current=null;identity.current=null;setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setRememberAccess(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
@@ -279,6 +283,19 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function compareVersions(){
     if(!ACCOUNT_TRANSFER_WRITES_RELEASED||!userId||resolution||blocked)return;
     void run(async token=>{setVersions(null);const result=await reviewAccountVersions({origin:window.location.origin,expectedUserId:userId,storage:window.localStorage,isCurrent:context(token).isCurrent,transport:transport(token)});if(isCurrent(token)){setVersions(result);setMessage('Versões conferidas sem substituir ou mesclar dados. Guarde as cópias antes de decidir o próximo passo.');}});
+  }
+  function listAccountData(){
+    if(!ready||busy||!userId||!session.current||blocked)return;
+    const opened=session.current,id=userId;
+    void run(async token=>{
+      setInventory(null);
+      const result=await inspectAccountDataInventory({
+        client:opened.client,userId:id,origin:window.location.origin,storage:window.localStorage,
+        isCurrent:()=>isCurrent(token)&&session.current===opened&&identity.current===id,
+        readProgress:user=>transport(token).readProgress(user),
+      });
+      if(isCurrent(token))setInventory(result);
+    });
   }
   function startLive(){
     if(!ACCOUNT_TRANSFER_WRITES_RELEASED||resolution||!onStart||!binding||pending||!copy||!baseline||!userId||!tabs||!allProfiles||!liveConsent||blocked)return;
@@ -396,6 +413,25 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}</p>}
     </section>
+    {ready&&userId&&<section className="account-journey account-data-inventory" aria-labelledby="account-inventory-title">
+      <h2 id="account-inventory-title">Nomes deste PC e da conta</h2>
+      <p>Confira os registros lado a lado antes de decidir qual jornada usar. A leitura não envia, substitui nem exclui dados.</p>
+      <button type="button" className="restore-workspace-secondary" disabled={busy||blocked} onClick={listAccountData}>Listar nomes sem alterar dados</button>
+      {inventory&&<>
+        <p role="status">{inventory.kind==='legacy'?'A conta contém registros nas tabelas antigas. XP, ações, histórico e Treinos não fazem parte dessa leitura online.':inventory.kind==='empty'?'A conta não possui jornada integral salva.':'A conta possui uma jornada integral salva.'}</p>
+        {inventory.kind==='legacy'&&<p>O sincronizador antigo gravou {inventory.legacyCatalogAreas} áreas e {inventory.legacyCatalogSubareas} subáreas do catálogo padrão/seleção nesta conta. Elas não são personalizações e foram retiradas das listas abaixo. O catálogo padrão já existe no código do app; ainda não removemos as linhas antigas do banco.</p>}
+        <p>XP neste PC: {inventory.localXp.toLocaleString('pt-BR',{maximumFractionDigits:3})} · XP na conta: {inventory.onlineXp===null?'não disponível no formato antigo':inventory.onlineXp.toLocaleString('pt-BR',{maximumFractionDigits:3})}</p>
+        <p>Quantidades ou nomes iguais não comprovam que os registros completos são idênticos.</p>
+        {inventory.groups.map(group=><details key={group.label} className="account-inventory-group">
+          <summary>{group.label} · PC {group.local.length} · conta {group.online===null?'não disponível':group.online.length}</summary>
+          {group.comparison&&<p>{group.comparison.ambiguous?'Há IDs ausentes ou repetidos; esta categoria exige revisão manual.':`${group.comparison.identical} registros com mesmo ID e conteúdo; ${group.comparison.changed} com mesmo ID e conteúdo diferente; ${group.comparison.onlyLocal} apenas neste PC; ${group.comparison.onlyOnline} apenas na conta.`}</p>}
+          <div className="account-inventory-columns">
+            <div><h3>Neste PC</h3>{group.local.length?<ol>{group.local.map((name,index)=><li key={index}>{name}</li>)}</ol>:<p>Nenhum registro.</p>}</div>
+            <div><h3>Na conta Supabase</h3>{group.online===null?<p>Não disponível nas tabelas antigas.</p>:group.online.length?<ol>{group.online.map((name,index)=><li key={index}>{name}</li>)}</ol>:<p>Nenhum registro.</p>}</div>
+          </div>
+        </details>)}
+      </>}
+    </section>}
     {!userId && <p className="entry-local-note"><ShieldCheck size={18} aria-hidden="true" /><span>{baseline?.snapshot ? 'O progresso deste aparelho continua protegido. Depois de entrar, use o botão principal para salvá-lo na conta.' : 'Entre para receber sua jornada salva ou começar uma nova conta sincronizada.'}</span></p>}
     {ready&&!blocked&&baseline?.snapshot&&<section className="account-journey" aria-labelledby="account-health-title">
       <div className="account-journey-heading"><ShieldCheck size={28} aria-hidden="true" /><h2 id="account-health-title">Dados deste aparelho conferidos</h2></div>

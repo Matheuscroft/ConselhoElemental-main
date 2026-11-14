@@ -50,22 +50,30 @@ export function createAccountTransport(client: AccountRpcClient, input: AccountT
     return { userId: guard.expectedUserId };
   };
   async function rpc(name: string, args: Record<string, unknown>, signal?: AbortSignal): Promise<unknown> {
+    const stage = name === 'progress_account_adopt_legacy' ? 'a adoção dos registros anteriores'
+      : name === 'progress_account_commit' ? 'o envio do arquivo integral'
+      : name === 'progress_account_receipt' ? 'a consulta do recibo'
+      : 'a leitura da jornada online';
     check(signal);
     let result: RpcResult;
     try {
       const request = client.rpc(name, { ...args, p_expected_user_id: guard.expectedUserId });
       result = await (signal && request.abortSignal ? request.abortSignal(signal) : request);
-    } catch { check(signal); return fail('Não foi possível confirmar a resposta do servidor. Confira o recibo antes de tentar novamente.'); }
+    } catch { check(signal); return fail(`Não foi possível confirmar ${stage}. Confira o recibo antes de tentar novamente.`); }
     check(signal);
     if (result.error) {
       const message = object(result.error) && typeof result.error.message === 'string' ? result.error.message : '';
+      const code = object(result.error) && typeof result.error.code === 'string' && /^[A-Z0-9]{5}$/.test(result.error.code)
+        ? result.error.code : null;
       if (message.includes('progress_release_closed')) fail('A integração ainda não foi liberada no servidor. Seu progresso permanece local.');
       if (message.includes('progress_revision_conflict')) fail('O progresso online mudou. Refaça a comparação antes de enviar.');
       if (message.includes('progress_legacy_requires_review')) fail('Esta conta possui dados no formato anterior. Eles precisam de revisão antes da associação.');
       if (message.includes('progress_legacy_consent_required')) fail('Confirme a preservação dos registros anteriores e o uso da jornada deste aparelho.');
       if (message.includes('progress_legacy_state_changed')) fail('Os registros anteriores da conta mudaram. Refaça a conferência antes de sincronizar.');
       if (message.includes('progress_operation_reused')) fail('Esta tentativa já foi usada para outro conteúdo. Preserve o recibo original.');
-      fail('O servidor não confirmou a operação completa. Preserve a cópia local e confira o recibo.');
+      if (message.includes('progress_invalid_archive')) fail(`O servidor recusou a estrutura ou versão do arquivo durante ${stage}. Preserve a cópia local e confira a versão aceita no servidor.`);
+      if (message.includes('progress_auth_required')) fail(`A sessão não foi aceita durante ${stage}. Entre novamente na mesma conta antes de continuar.`);
+      fail(`O servidor não confirmou ${stage}${code ? ` (código ${code})` : ''}. Preserve a cópia local e confira o recibo.`);
     }
     return result.data;
   }

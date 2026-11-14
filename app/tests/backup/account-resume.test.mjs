@@ -73,6 +73,15 @@ test('verified login persists tab access before any progress binding or transpor
  assert.equal(saved.userId,uid);assert.equal(disposed,0);assert.deepEqual(target.writes,[key]);
 });
 
+test('verified access without a confirmed cloud journey never mounts editable local stores',async()=>{
+ const elements=[];const document={createElement(tag){const element={tag,children:[],append(...children){this.children.push(...children);},focus(){this.focused=true;}};elements.push(element);return element;}};
+ const loaded=load('src/mount-authenticated-account-app.ts',{'./lib/backup/progress-startup':{hasExclusiveProgressSession:()=>true}},{document});
+ let disposed=0,rendered;
+ await loaded.mountAuthenticatedAccountApp({replaceChildren(value){rendered=value;}},{dispose(){disposed++;}});
+ assert.equal(disposed,1);assert.equal(rendered.tag,'main');assert.equal(rendered.children[2].href,'/?progresso=conta');
+ assert.equal(elements.some(element=>element.tag==='script'),false);
+});
+
 test('authenticated local mode exposes account state without a progress transport and logout clears only access',async()=>{
  const calls=[];const loaded=load('src/lib/backup/authenticated-local-sync.ts');
  const sync=loaded.createAuthenticatedLocalSync({userId:uid,email:'synthetic@example.invalid',client:{},forgetResume(){calls.push('forget');},dispose(){calls.push('dispose');}});

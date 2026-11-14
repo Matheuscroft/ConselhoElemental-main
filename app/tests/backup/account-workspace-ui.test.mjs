@@ -39,6 +39,7 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   if(id.endsWith('/progress-mode'))return {LOCAL_PROGRESS_MODE_KEY:'conselho-elemental-local-progress-mode-v1'};
   if(id.endsWith('/account-resume-entry'))return {ACCOUNT_TAB_ACCESS_KEY:'conselho-elemental-tab-access-v1'};
   if(id.endsWith('/stored-progress'))return {StoredProgressAuditError:class StoredProgressAuditError extends Error{constructor(audit){super('synthetic progress audit');this.audit=audit;}}};
+  if(id.endsWith('/account-data-inventory'))return {inspectAccountDataInventory:(...args)=>new Promise((resolve,reject)=>requests.push({name:'inspectAccountDataInventory',args,resolve,reject}))};
   if(id.endsWith('/stored-progress-repair'))return {STORED_PROGRESS_REPAIR_KEY:'conselho-elemental-progress-repair-v1',settleStoredProgressRepair:async()=>{},planStoredProgressRepair:()=>null,applyStoredProgressRepair:async()=>{}};
   if(id.endsWith('/account-release'))return {ACCOUNT_TRANSFER_WRITES_RELEASED:released};
   if(id.endsWith('/account-access-release'))return {ACCOUNT_ACCESS_RELEASED:accessReleased};
@@ -75,6 +76,20 @@ test('login is independent from a file, while password clears and explicit copy/
  const request=f.requests[0];assert.equal(request.name,'beginAccountTransfer');assert.equal(request.args[1].previousCopy,'local archive');assert.equal(request.args[1].allProfilesConfirmed,true);
  f.memory.set(key,'synthetic intent');request.resolve({raw:'synthetic intent',receipt,storageConfirmed:true});await flush();f.render();assert.match(f.content(),/Arquivo enviado/);assert.equal(f.navigations.length,0);
  f.toggleLabel('Quero continuar usando o progresso local, sem ativar sincronização automática.');f.click('Encerrar conferência e continuar localmente');assert.equal(f.requests[1].name,'finishAccountTransferLocally');assert.equal(f.requests[1].args[1].bindAccountConfirmed,false);f.requests[1].resolve(receipt);await flush();assert.deepEqual(f.navigations,['/santuario']);assert.ok([...f.memory.keys()].every(k=>!/(password|token)/i.test(k)));f.unmount();assert.equal(f.listeners.size,0);
+});
+
+test('name inventory is private to a signed-in account and never starts a transfer',async()=>{
+ const f=fixture({pending:true});await flush();f.render();
+ assert.doesNotMatch(f.content(),/Listar nomes sem alterar dados/);
+ f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
+ f.click('Listar nomes sem alterar dados');assert.equal(f.requests.length,1);
+ assert.equal(f.requests[0].name,'inspectAccountDataInventory');
+ assert.equal(f.requests[0].args[0].userId,uid);
+ f.requests[0].resolve({kind:'legacy',localXp:51.705,onlineXp:null,legacyCatalogAreas:30,legacyCatalogSubareas:132,groups:[{label:'Rituais',local:['Ritual local'],online:['Ritual online']},{label:'Treinos salvos',local:['Treino local'],online:null}]});
+ await flush();f.render();assert.match(f.content(),/Ritual local/);assert.match(f.content(),/Ritual online/);
+ assert.match(f.content(),/Não disponível nas tabelas antigas/);
+ assert.match(f.content(),/30 áreas e 132 subáreas/);
+ assert.equal(f.requests.filter(r=>/Transfer|Resolution|Progress/.test(r.name)).length,0);f.unmount();
 });
 
 test('pending receipt check cannot resend without a separate consent, and offline pause does not construct a session',async()=>{

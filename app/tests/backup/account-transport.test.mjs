@@ -40,9 +40,18 @@ test('consent, fabricated command, cancelled preview and different user block be
  const command=await f.prepare();await assert.rejects(f.transport.commit({...command}),/Prepare novamente/);f.active(false);await assert.rejects(f.transport.commit(command),/mudou/);f.active(true);f.user(null);await assert.rejects(f.transport.commit(command),/mudou/);assert.equal(f.calls.length,0);
 });
 
+test('server errors identify the failed stage without exposing raw SQL details or archive bytes',async()=>{
+ const f=await setup(),command=await f.transport.prepare({archive:f.archive,expectedRevision:'legacy',allProfilesConfirmed:true});
+ f.hooks.beforeRpc=async call=>call.name==='progress_account_adopt_legacy'?{message:'progress_invalid_archive',code:'22023'}:null;
+ await assert.rejects(f.transport.commit(command),/servidor recusou a estrutura ou versão do arquivo durante a adoção/);
+ f.hooks.beforeRpc=async call=>call.name==='progress_account_adopt_legacy'?{message:'internal SQL detail that must stay private',code:'42702'}:null;
+ await assert.rejects(f.transport.commit(command),error=>error.message.includes('adoção dos registros anteriores (código 42702)')&&!error.message.includes('internal SQL detail'));
+ assert.equal((await f.transport.readProgress(f.userId)).kind,'empty');
+});
+
 test('server binds expected identity even when the SDK session changes between identity validation and RPC execution',async()=>{
  const f=await setup(),other=randomUUID();await db.query('insert into auth.users(id) values($1)',[other]);const command=await f.prepare();
- f.hooks.beforeRpc=async call=>{if(call.name==='progress_account_commit')f.session(other);};await assert.rejects(f.transport.commit(command),/servidor não confirmou/);
+ f.hooks.beforeRpc=async call=>{if(call.name==='progress_account_commit')f.session(other);};await assert.rejects(f.transport.commit(command),/A sessão não foi aceita durante o envio/);
  for(const uid of [f.userId,other])assert.equal((await userQuery(db,uid,'select public.progress_account_read($1) as value',[uid])).rows[0].value.kind,'empty');
 });
 
