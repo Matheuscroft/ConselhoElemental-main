@@ -2,8 +2,8 @@ import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/c
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
-import { elementoDominante } from '@/lib/momentos/elemento-do-dia';
 import { nivelDeVfx, nivelForcado } from '@/lib/momentos/nivel-vfx';
+import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
 import { beatUnless, stagger } from '@/lib/motion/motion';
 import { BotaoLua } from '@/components/cycles/ceu/BotaoLua';
 import { BotaoEstacao } from '@/components/cycles/ceu/BotaoEstacao';
@@ -1381,6 +1381,10 @@ export const Ciclos: React.FC = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const maestria = useMemo(() => getMasteryProgress(), [getMasteryProgress, xpDosElementos]);
   const vfxForcado = import.meta.env.DEV ? nivelForcado(location.search) : null;
+  // The frame's colour is the element the person finished most in the day's week
+  // (Monday to Sunday), so it resets every Monday and follows where the week goes.
+  const acoesDoApp = useAppStore(state => state.actions);
+  const conclusoes = useMemo(() => conclusoesDoApp(habits, acoesDoApp), [habits, acoesDoApp]);
 
   // Read-only: how many cycles each day of the Reel has done, from the same
   // store data the routine below reads.
@@ -1395,14 +1399,14 @@ export const Ciclos: React.FC = () => {
       ),
     }));
     const feitos = ciclos.filter((ciclo) => ciclo.feito).length;
-    const elemento = elementoDominante(ciclos);
+    const elemento = elementoDaSemana(conclusoes, date).elemento;
     return {
       dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()),
       elemento,
       nivel: vfxForcado ?? nivelDeVfx(elemento ? maestria[elemento].level : null),
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [visibleDaysCenterDate, getHabitsForDate, habits, maestria, vfxForcado]);
+  }), [visibleDaysCenterDate, getHabitsForDate, habits, maestria, vfxForcado, conclusoes]);
 
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 
