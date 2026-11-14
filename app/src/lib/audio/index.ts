@@ -28,6 +28,9 @@ function vibrar(padrao: number[]): void {
     if (!lerPreferencias().haptico) return;
     if (typeof document !== 'undefined' && document.hidden) return;
     if (typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+    // Browsers refuse vibration until the person has touched the page; asking earlier only logs an error.
+    const ativacao = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (ativacao && !ativacao.hasBeenActive) return;
     navigator.vibrate(padrao);
   } catch {
     /* no vibration support */
