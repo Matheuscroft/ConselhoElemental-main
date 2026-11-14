@@ -295,3 +295,11 @@ test('engine with a fake context: gesture gate, mute, hidden, polyphony, rate li
     if (antes === undefined) delete globalThis.localStorage;
   }
 });
+
+test('o háptico nunca lança fora de um navegador e o teste de vibração é seguro', () => {
+  const hap = loadComponent('src/lib/audio/haptico.ts');
+  assert.doesNotThrow(() => hap.dispararHaptico([20, 70, 20]));
+  assert.doesNotThrow(() => api.tocarVibracaoDeTeste());
+  assert.doesNotThrow(() => api.tocarConclusao('fogo', 0.5));
+  assert.doesNotThrow(() => api.tocarNivel('agua', 3));
+});

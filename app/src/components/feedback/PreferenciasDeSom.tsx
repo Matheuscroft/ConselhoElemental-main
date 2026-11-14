@@ -1,8 +1,38 @@
 import { useEffect, useId, useState } from 'react';
 import {
-  assinarPreferencias, definirHaptico, definirSilenciado, definirVolume, lerPreferencias, tocarToque,
-  type PreferenciasSom,
+  ativarSom, assinarPreferencias, definirHaptico, definirSilenciado, definirVolume, lerPreferencias,
+  tocarConclusao, tocarConquista, tocarNivel, tocarToque, tocarTrocaDeElemento, tocarVibracaoDeTeste,
+  type ElementoSom, type PreferenciasSom,
 } from '@/lib/audio';
+
+const ELEMENTOS_TESTE: readonly { id: ElementoSom; nome: string }[] = [
+  { id: 'fogo', nome: 'Fogo' }, { id: 'agua', nome: 'Água' }, { id: 'ar', nome: 'Ar' }, { id: 'terra', nome: 'Terra' },
+];
+
+/** Every signal by name, so each one can be heard and asked about by that name. */
+function OuvirOsSons() {
+  const tocar = (acao: () => void) => () => { void ativarSom().then(() => acao()); };
+  return (
+    <details className="pref-som__teste">
+      <summary>Ouvir os sons</summary>
+      <div className="pref-som__grade">
+        <button type="button" onClick={tocar(tocarToque)}>Toque de cristal</button>
+        {ELEMENTOS_TESTE.map(({ id, nome }) => (
+          <button key={id} type="button" onClick={tocar(() => tocarConclusao(id, 0.8))}>Conclusão · {nome}</button>
+        ))}
+        {ELEMENTOS_TESTE.map(({ id, nome }) => (
+          <button key={id} type="button" onClick={tocar(() => tocarNivel(id, 2))}>Fluxo · {nome}</button>
+        ))}
+        {ELEMENTOS_TESTE.map(({ id, nome }) => (
+          <button key={id} type="button" onClick={tocar(() => tocarNivel(id, 3))}>Domínio · {nome}</button>
+        ))}
+        <button type="button" onClick={tocar(() => tocarTrocaDeElemento('fogo', 'agua'))}>Troca de elemento</button>
+        <button type="button" onClick={tocar(tocarConquista)}>Conquista</button>
+        <button type="button" onClick={tocar(tocarVibracaoDeTeste)}>Só a vibração</button>
+      </div>
+    </details>
+  );
+}
 import './preferencias-de-som.css';
 
 /** Small reusable block: sound on/off, volume, vibration. Device settings only. */
@@ -42,6 +72,7 @@ export function PreferenciasDeSom({ className = '' }: { className?: string }) {
         <span className="pref-som__estado">{prefs.haptico ? 'Ligada' : 'Desligada'}</span>
         <span className="pref-som__chave" aria-hidden="true" />
       </button>
+      <OuvirOsSons />
     </div>
   );
 }

@@ -24,3 +24,15 @@ button.pref-som__linha > span:first-child { flex: 1 1 auto; }
 .pref-som__volume input[type="range"] { flex: 1 1 auto; min-width: 0; min-height: 2.75rem; accent-color: rgb(var(--el-gold)); }
 .pref-som__volume output { flex: none; min-width: 2.5rem; text-align: right; font-variant-numeric: tabular-nums; }
 .pref-som__volume input:disabled { opacity: 0.5; }
+
+.pref-som__teste summary {
+  min-height: 2.75rem; display: flex; align-items: center; padding: 0.375rem 0.875rem; cursor: pointer;
+  font-family: var(--ds-font-heading, Cinzel, Georgia, serif); font-size: var(--ds-text-small); color: rgb(var(--el-gold));
+}
+.pref-som__grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; padding: 0.25rem 0 0.5rem; }
+.pref-som__grade button {
+  min-height: 2.75rem; padding: 0.375rem 0.75rem; border-radius: 0.75rem; text-align: left; cursor: pointer;
+  font-size: var(--ds-text-micro); color: rgb(var(--el-text)); background: var(--ds-surface-raised); border: var(--ds-edge);
+}
+.pref-som__grade button:active { background: rgb(var(--el-gold) / 14%); }
+.pref-som__grade button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; }
