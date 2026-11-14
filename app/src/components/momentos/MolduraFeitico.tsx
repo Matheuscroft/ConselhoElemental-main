@@ -141,11 +141,15 @@ vec4 bordaViva(vec2 p, float d) {
   vec3 acc = vec3(0.0);
   float alfa = 0.0;
 
-  // Fire: tongues born on the border, rising, taller at the top.
+  // Fire: tongues born on the border, rising, taller at the top, with a second
+  // layer of small quick flames between the tall ones.
   if (uPeso.x > 0.003) {
-    float H = 6.0 + 30.0 * (0.25 + 0.75 * alto * alto);
-    float n1 = fbm3(vec2(p.x * 0.05, p.y * 0.05 - uTime * 1.7));
-    float f = clamp((n1 * 1.25 + 0.15 - d / H) * 1.6, 0.0, 1.0);
+    float H = 8.0 + 36.0 * (0.25 + 0.75 * alto * alto);
+    float n1 = fbm3(vec2(p.x * 0.07, p.y * 0.05 - uTime * 1.9));
+    float f1 = clamp((n1 * 1.25 + 0.15 - d / H) * 1.7, 0.0, 1.0);
+    float n2 = fbm2(vec2(p.x * 0.15 + 5.0, p.y * 0.09 - uTime * 2.7));
+    float f2 = clamp((n2 * 1.2 + 0.1 - d / (H * 0.5)) * 1.9, 0.0, 1.0);
+    float f = max(f1, f2 * 0.85);
     float m = smoothstep(0.0, 0.2, uDraw * 1.25 - alto);
     vec3 c = mix(vec3(0.32, 0.03, 0.02), uColour, smoothstep(0.05, 0.5, f));
     c = mix(c, vec3(1.0, 0.95, 0.78), smoothstep(0.62, 1.0, f));
@@ -154,7 +158,8 @@ vec4 bordaViva(vec2 p, float d) {
     alfa += uPeso.x * a;
   }
 
-  // Water: a ribbon of 6 to 10px running the perimeter, with caustic highlights.
+  // Water: a ribbon running the perimeter with caustic highlights, and wave crests
+  // that rise out of it and break into foam.
   if (uPeso.y > 0.003) {
     float larg = 4.5 + 0.9 * sin(tr * 62.831853 - uTime * 2.4);
     float fita = 1.0 - smoothstep(larg - 2.0, larg, abs(d - 8.0));
@@ -164,40 +169,71 @@ vec4 bordaViva(vec2 p, float d) {
     float m = smoothstep(0.0, 0.06, uDraw * 1.06 - tr);
     float a = fita * (0.45 + 0.6 * caust + 0.5 * cabeca) * m;
     vec3 c = mix(uColour, vec3(0.9, 1.0, 1.0), clamp(caust * 0.8 + cabeca * 0.6, 0.0, 1.0));
-    acc += uPeso.y * c * a;
-    alfa += uPeso.y * a;
+    // Crests: twenty waves, three swells that travel, foam at the tips.
+    float onda = 0.5 + 0.5 * sin(tr * 125.66371 - uTime * 2.2);
+    float inchaco = 0.5 + 0.5 * sin(tr * 18.849556 + uTime * 0.8);
+    float altCr = 3.0 + 13.0 * pow(onda, 3.0) * (0.35 + 0.65 * inchaco);
+    float corpoCr = (1.0 - smoothstep(8.0, 8.0 + altCr, d)) * step(8.0, d);
+    float espuma = smoothstep(0.55, 1.0, d - 8.0 > 0.0 ? (d - 8.0) / max(altCr, 0.001) : 0.0);
+    float aCr = corpoCr * 0.5 * pow(onda, 1.5) * m;
+    vec3 cCr = mix(uColour, vec3(0.95, 1.0, 1.0), 0.25 + 0.7 * espuma);
+    acc += uPeso.y * (c * a + cCr * aCr);
+    alfa += uPeso.y * (a + aCr);
   }
 
-  // Air: translucent arcs of wind sweeping the border in a spiral.
+  // Air: ribbons of wind spiralling round the card, each with a bright head and a
+  // fading tail, over a light haze that gives the wind a body.
   if (uPeso.z > 0.003) {
-    float s1 = ang * 3.0 + d * 0.42 - uTime * 2.8;
-    float s2 = ang * 5.0 - d * 0.3 + uTime * 1.9;
-    float arco = pow(0.5 + 0.5 * sin(s1), 7.0) * 1.3 + pow(0.5 + 0.5 * sin(s2), 9.0) * 0.8;
-    float modula = 0.6 + 0.4 * sin(ang * 2.0 - uTime * 1.1 + d * 0.1);
-    float caida = pow(1.0 - clamp(d / 52.0, 0.0, 1.0), 1.2);
+    float fitas = 0.0;
+    for (int k = 0; k < 4; k++) {
+      float fk = float(k);
+      float lobos = 2.0 + fk;
+      float sentido = mod(fk, 2.0) < 1.0 ? 1.0 : -1.0;
+      float vel = (0.9 + 0.35 * fk) * sentido;
+      float rumo = ang * lobos + uTime * vel + fk * 1.7;
+      float dist = 8.0 + 5.4 * fk + 7.0 * sin(rumo);
+      float larg = 1.5 + 1.3 * (0.5 + 0.5 * sin(ang * (fk + 1.0) + uTime * 0.6 * vel + fk));
+      float x = (d - dist) / larg;
+      float fita = exp(-x * x);
+      float cauda = pow(0.5 + 0.5 * sin(ang * (1.0 + fk) - uTime * vel * 0.7 + fk * 2.3), 3.0);
+      fitas += fita * (0.3 + 1.0 * cauda);
+    }
     float giro = fract(ang / 6.2831853 + 0.25 + d * 0.012);
     float m = smoothstep(0.0, 0.2, uDraw * 1.2 - giro);
-    // A drifting haze under the arcs, so the wind has a body and not only lines.
-    float bruma = fbm2(vec2(cos(ang) * 2.2 + uTime * 0.35, sin(ang) * 2.2 - uTime * 0.28) + d * 0.045);
-    float a = (arco * modula + bruma * 0.55) * caida * m;
-    vec3 c = mix(uColour, vec3(1.0), 0.5) * 1.15;
+    float bruma = fbm2(vec2(cos(ang) * 2.2 + uTime * 0.35, sin(ang) * 2.2 - uTime * 0.28) + d * 0.045) * 0.4;
+    float caida = 1.0 - clamp(d / 58.0, 0.0, 1.0);
+    float a = (fitas + bruma) * caida * m;
+    vec3 c = mix(uColour, vec3(1.0), 0.4 + 0.45 * clamp(fitas, 0.0, 1.0)) * 1.1;
     acc += uPeso.z * c * a;
     alfa += uPeso.z * a;
   }
 
-  // Earth: incandescent veins pulsing out of the border, lifted from below.
+  // Earth: magma veins under the crust and faceted crystals growing out of the border.
   if (uPeso.w > 0.003) {
     vec2 q = p * 0.085;
     float rid = 1.0 - abs(2.0 * fbm2(q + vec2(3.1, 1.7)) - 1.0);
-    float veio = pow(rid, 9.0);
-    float faixa = 1.0 - smoothstep(3.0, 20.0, d);
+    float veio = pow(rid, 7.0);
+    float faixa = 1.0 - smoothstep(3.0, 22.0, d);
     float pulso = 0.5 + 0.5 * sin(uTime * 1.7 + fbm2(q * 0.7) * 9.0);
     float m = smoothstep(0.0, 0.1, uDraw * 1.2 - floor(alto * 5.0) / 5.0);
     float brasa = (1.0 - smoothstep(0.0, 5.0, d)) * 0.25 * pulso;
-    float a = (veio * faixa * (0.35 + 0.85 * pulso) + brasa) * m;
+    float a = (veio * faixa * (0.4 + 0.9 * pulso) + brasa) * m;
     vec3 c = mix(uColour, vec3(1.0, 0.82, 0.4), 0.45 + 0.5 * pulso);
-    acc += uPeso.w * c * a;
-    alfa += uPeso.w * a;
+    // Crystals: one shard per slice of the perimeter, two facets each, a glint that comes and goes.
+    float sp = tr * 26.0 + 0.7 * sin(tr * 17.0);
+    float idc = floor(sp);
+    float u = fract(sp);
+    float presente = step(0.28, hash(vec2(idc, 5.3)));
+    float alt = (4.0 + 24.0 * pow(hash(vec2(idc, 3.7)), 2.0) + 6.0 * alto) * presente;
+    float tri = 1.0 - abs(2.0 * u - 1.0);
+    float dentro = 1.0 - smoothstep(0.0, 1.3, d - alt * tri);
+    float faceta = u < 0.5 ? 0.35 : 1.0;
+    float brilhoCr = pow(max(0.0, sin(uTime * (1.4 + 2.0 * hash(vec2(idc, 9.1))) + idc * 7.0)), 16.0);
+    float aresta = pow(clamp(1.0 - abs(d - alt * tri) / 2.0, 0.0, 1.0), 2.0) * step(0.001, tri);
+    vec3 ccr = mix(uColour * 0.35, vec3(0.9, 1.0, 0.86), clamp(faceta * 0.55 + brilhoCr * 0.9 + aresta * 0.5, 0.0, 1.0));
+    float acr = dentro * presente * (0.5 + 0.35 * faceta) * smoothstep(0.0, 0.15, uDraw * 1.15 - tr);
+    acc += uPeso.w * (c * a + ccr * acr);
+    alfa += uPeso.w * (a + acr);
   }
 
   return vec4(acc, alfa);
