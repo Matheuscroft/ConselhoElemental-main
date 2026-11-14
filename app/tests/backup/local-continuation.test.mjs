@@ -6,7 +6,7 @@ import {resolve} from 'node:path';
 import {webcrypto} from 'node:crypto';
 import {fixture} from './load-progress.mjs';
 const origin='http://fixture.test',M='conselho-elemental-local-progress-mode-v1';
-const bundle=await build({stdin:{contents:`export * from './src/lib/backup/progress-startup';export * from './src/lib/backup/exclusive-restore';export * from './src/lib/backup/restore-journal';export * from './src/lib/backup/progress-mode';export * from './src/lib/backup/account-intent';export * from './src/lib/backup/account-binding';export async function loadClient(){return import('./src/lib/supabase');}export async function loadAuth(){return import('./src/stores/authStore');}`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,logLevel:'silent',define:{'import.meta.env.VITE_SUPABASE_URL':'"https://synthetic.invalid"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"synthetic-public-key"','import.meta.env.VITE_ENABLE_SUPABASE_AUTH':'"true"','import.meta.env.VITE_FORCE_BOOTSTRAP_CLOUD_SYNC':'"false"'},plugins:[{name:'isolated-boundaries',setup(b){
+const bundle=await build({stdin:{contents:`export * from './src/lib/backup/progress-startup';export * from './src/lib/backup/exclusive-restore';export * from './src/lib/backup/restore-journal';export * from './src/lib/backup/progress-mode';export * from './src/lib/backup/account-intent';export * from './src/lib/backup/account-binding';export async function loadClient(){return import('./src/lib/supabase');}`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,logLevel:'silent',define:{'import.meta.env.VITE_SUPABASE_URL':'"https://synthetic.invalid"','import.meta.env.VITE_SUPABASE_ANON_KEY':'"synthetic-public-key"','import.meta.env.VITE_ENABLE_SUPABASE_AUTH':'"true"','import.meta.env.VITE_FORCE_BOOTSTRAP_CLOUD_SYNC':'"false"'},plugins:[{name:'isolated-boundaries',setup(b){
  b.onResolve({filter:/^@supabase\/supabase-js$/},()=>({path:'mock-sdk',external:true}));
  b.onResolve({filter:/^@\/stores\/appStore$/},()=>({path:'mock-core',external:true}));
  b.onResolve({filter:/^@\//},args=>{const base=resolve('src',args.path.slice(2));return {path:[base,base+'.ts',base+'.tsx',resolve(base,'index.ts')].find(p=>existsSync(p)&&statSync(p).isFile())};});
@@ -34,9 +34,9 @@ async function setup(local=false){
 }
 async function apply(f){assert.equal(await f.r.runExclusiveRestore(f.context,{mode:'apply',journal:f.journal,previousBackup:f.previousBackup,replacementConfirmed:true}),'applied');return f.r.reviewPendingRestore(f.storage,origin);}
 async function enterLocal(f){
- const r=realm(f.memory),blocked=[];let state,client,auth;
- await r.startProgressSession({storage:()=>f.storage,origin,lifetime:Promise.resolve(),blocked:v=>blocked.push(v),load:async()=>{state=r.setCore();client=await r.loadClient();auth=await r.loadAuth();await auth.useAuthStore.getState().initialize();}});
- return {r,blocked,state,client,auth};
+ const r=realm(f.memory),blocked=[];let state,client;
+ await r.startProgressSession({storage:()=>f.storage,origin,lifetime:Promise.resolve(),blocked:v=>blocked.push(v),load:async()=>{state=r.setCore();client=await r.loadClient();}});
+ return {r,blocked,state,client};
 }
 
 test('explicit continuation persists local mode before clearing the journal, and real client/auth stay disabled on reload',async()=>{
@@ -47,7 +47,6 @@ test('explicit continuation persists local mode before clearing the journal, and
  for(let reload=0;reload<2;reload++){
   const local=await enterLocal(f);assert.deepEqual(local.blocked,[]);assert.ok(local.r.isRestoredLocalDocument());
   assert.equal(local.client.supabase,null);assert.equal(local.client.isSupabaseAuthEnabled,false);assert.equal(local.client.isSupabaseConfigured,false);assert.deepEqual(local.r.calls,[]);
-  assert.equal(local.auth.useAuthStore.getState().isInitialized,true);assert.equal(local.auth.useAuthStore.getState().user,null);
   assert.equal(local.state.core.getState().user.xp_air,7);assert.equal(local.state.core.getState().drafts.length,2);
  }
  assert.equal(f.memory.get('sb-synthetic-session'),'untouched synthetic session');
@@ -129,7 +128,7 @@ test('recovery and local handoff recheck cancellation after asynchronous journal
 test('a paused account attempt still loads the actual client/auth in isolated local mode after a fresh document',async()=>{
  const f=await setup(),archive=f.previousBackup;
  const intent=await f.r.sealAccountIntent({format:'conselho-elemental-account-intent',version:1,phase:'paused',origin,userId:'11111111-1111-4111-8111-111111111111',operationId:'22222222-2222-4222-8222-222222222222',expectedRevision:'empty',archive,archiveSha256:await f.r.accountDigest(archive),baselineDigest:await f.r.accountBaselineDigest(f.storage),localMode:null});
- f.memory.set(f.r.ACCOUNT_INTENT_KEY,intent);f.memory.set(M,f.r.localProgressMode(origin));const local=await enterLocal(f);assert.deepEqual(local.blocked,[]);assert.equal(local.client.supabase,null);assert.equal(local.auth.useAuthStore.getState().isInitialized,true);assert.deepEqual(local.r.calls,[]);
+ f.memory.set(f.r.ACCOUNT_INTENT_KEY,intent);f.memory.set(M,f.r.localProgressMode(origin));const local=await enterLocal(f);assert.deepEqual(local.blocked,[]);assert.equal(local.client.supabase,null);assert.deepEqual(local.r.calls,[]);
  f.memory.delete(M);const blocked=await enterLocal(f);assert.deepEqual(blocked.blocked,['pending-account']);assert.equal(blocked.state,undefined);
 });
 
@@ -138,6 +137,6 @@ test('a durable receipt binding disables the actual legacy SDK and auth on a new
  const f=await setup();const id='11111111-1111-4111-8111-111111111111';
  const raw=await f.r.sealAccountBinding({format:'conselho-elemental-account-binding',version:1,origin,userId:id,operationId:id,revision:id,expectedRevision:'empty',archiveSha256:'a'.repeat(64),baselineDigest:'b'.repeat(64),createdAt:'2026-10-29T12:00:00Z'});
  f.memory.set(f.r.ACCOUNT_BINDING_KEY,raw);f.memory.delete(M);
- const entered=await enterLocal(f);assert.deepEqual(entered.blocked,[]);assert.equal(entered.client.supabase,null);assert.equal(entered.auth.useAuthStore.getState().user,null);assert.deepEqual(entered.r.calls,[]);
+ const entered=await enterLocal(f);assert.deepEqual(entered.blocked,[]);assert.equal(entered.client.supabase,null);assert.deepEqual(entered.r.calls,[]);
  f.memory.set(f.r.ACCOUNT_BINDING_KEY,raw+'x');const invalid=await enterLocal(f);assert.deepEqual(invalid.blocked,['pending-account']);assert.deepEqual(invalid.r.calls,[]);
 });

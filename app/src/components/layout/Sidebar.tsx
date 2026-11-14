@@ -1,12 +1,10 @@
 import { ArcaneIcon, RouteIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Heart, Zap } from 'lucide-react';
+import { Heart, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppStore } from '@/stores/appStore';
-import { useAuthStore } from '@/stores/authStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
-import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { SIDEBAR_ROUTES } from '@/lib/app-routes';
 import { hpDoDia } from '@/lib/recursos/vitalidade';
 
@@ -16,7 +14,6 @@ export const Sidebar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, getCompletedTasksToday, getCompletedHabitsToday, getStreak, getLevelProgress } = useAppStore();
-  const { signOut } = useAuthStore();
   const { getResourceSnapshot } = useWorkoutStore();
   
   const tasksToday = getCompletedTasksToday();
@@ -107,12 +104,6 @@ export const Sidebar: React.FC = () => {
             <p className="text-[9px] text-mystic-gold/60 uppercase mt-0.5">Streak</p>
           </div>
         </div>
-
-        {isSupabaseAuthEnabled && (
-          <button onClick={async () => { await signOut(); navigate('/auth', { replace: true }); }} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-xs font-medium text-white/50 hover:text-rose-400 hover:bg-rose-500/10 transition-colors">
-            <LogOut className="w-4 h-4" /> Sair do Grimório
-          </button>
-        )}
       </div>
     </aside>
   );

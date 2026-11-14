@@ -6,16 +6,12 @@ import { WorkoutPreview } from '@/pages/fitness/WorkoutPreview';
 import { ActiveWorkout } from '@/pages/fitness/ActiveWorkout';
 import { WorkoutSummary } from '@/pages/fitness/WorkoutSummary';
 import { lazy, Suspense, useContext, useEffect, useSyncExternalStore } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { Toaster } from '@/components/ui/sonner';
-import { useAuthStore } from '@/stores/authStore';
 import { RestoredLocalNotice } from '@/components/backup/RestoredLocalNotice';
-import { useAppStore } from '@/stores/appStore';
-import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { Onboarding } from '@/pages/Onboarding';
 import {
-  Auth,
   Rituais,
   Invocar,
   Grimorio,
@@ -57,84 +53,24 @@ function AccountEntryRedirect() {
 }
 
 function ProtectedRoute() {
-  const location = useLocation();
   const accountSync = useContext(AccountConnectionContext);
   const accountView = useSyncExternalStore(accountSync?.subscribe ?? subscribeSignedOut, accountSync?.getSnapshot ?? getSignedOutView, getSignedOutView);
-  const { isInitialized, user } = useAuthStore();
-  const onboarding = useAppStore((state) => state.onboarding);
-  const hasDomainData = useAppStore(
-    (state) =>
-      state.tasks.length +
-      state.habits.length +
-      state.projects.length +
-      state.quests.length +
-      state.drafts.length +
-      state.cycleSequences.length >
-      0
-  );
-
   if (accountSync && accountView.status !== 'stopped') {
     return <Outlet />;
   }
 
-  if (!isSupabaseAuthEnabled) return <AccountEntryRedirect />;
-
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-transparent text-white grid place-items-center">
-        <p className="text-white/70">Preparando sessao...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace state={{ from: location.pathname }} />;
-  }
-
-  const shouldShowOnboarding = !onboarding.isComplete && !hasDomainData;
-  if (shouldShowOnboarding && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  if (!shouldShowOnboarding && location.pathname === '/onboarding') {
-    return <Navigate to="/santuario" replace />;
-  }
-
-  return <Outlet />;
+  return <AccountEntryRedirect />;
 }
 
 function PublicAuthRoute() {
-  const location = useLocation();
   const accountSync = useContext(AccountConnectionContext);
   const accountView = useSyncExternalStore(accountSync?.subscribe ?? subscribeSignedOut, accountSync?.getSnapshot ?? getSignedOutView, getSignedOutView);
-  const { isInitialized, user } = useAuthStore();
 
   if (accountSync && accountView.status !== 'stopped') return <Navigate to="/santuario" replace />;
-  if (!isSupabaseAuthEnabled) return <AccountEntryRedirect />;
-
-  if (!isInitialized) {
-    return (
-      <div className="min-h-screen bg-transparent text-white grid place-items-center">
-        <p className="text-white/70">Preparando sessao...</p>
-      </div>
-    );
-  }
-
-  if (user) {
-    const from = (location.state as { from?: string } | null)?.from || '/santuario';
-    return <Navigate to={from} replace />;
-  }
-
-  return <Auth />;
+  return <AccountEntryRedirect />;
 }
 
 function App() {
-  const initialize = useAuthStore((state) => state.initialize);
-
-  useEffect(() => {
-    void initialize();
-  }, [initialize]);
-
   return (
     <BrowserRouter>
       <ScrollToTop />

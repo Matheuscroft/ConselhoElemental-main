@@ -45,7 +45,7 @@ test('every blur carries its prefixed twin, or it does nothing on an iPhone', ()
  * gradient mask reads the same for one. It only exists while a card is open,
  * so on a list of twenty journeys the runtime cost is a single blurred strip.
  */
-const TETO_VIDRO = 16;
+const TETO_VIDRO = 15;
 // 15 is a photograph of reality, not a goal: 11 declarations in .css plus four
 // Tailwind `backdrop-blur-*` classes that escaped the old guard. The four are
 // MobileBottomNav, Auth and the two VideoExercisePlayer. They should fall.

@@ -7,8 +7,6 @@ import { AllRoutesSheet } from './AllRoutesSheet';
 import './elemental-topbar.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '@/stores/appStore';
-import { useAuthStore } from '@/stores/authStore';
-import { isSupabaseAuthEnabled } from '@/lib/supabase';
 import { useWeekStartsOnPreference } from '@/lib/temporal';
 import { SANCTUARY_CITIES, useSanctuaryCityPreference } from '@/lib/temporal/sanctuary-city';
 import { useZodiacPreference } from '@/lib/sanctuary/zodiac';
@@ -19,7 +17,6 @@ const ELEMENTO_DA_AURA: Record<string, string> = {
 import {
   getGoogleCalendarConnectUrl,
   getGoogleCalendarConnection,
-  getGoogleCalendarSyncUrl,
   isGoogleCalendarIntegrationEnabled,
 } from '@/services/googleCalendarIntegration';
 import { Button } from '@/components/ui/button';
@@ -51,19 +48,12 @@ export const TopBar: React.FC<TopBarProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { accounts, currentAccountId, createAccount, switchAccount } = useAppStore();
-  const {
-    user: authUser,
-    session,
-    signOut,
-  } = useAuthStore();
   const [isAccountModalOpen, setIsAccountModalOpen] = React.useState(false);
   const [routesOpen, setRoutesOpen] = React.useState(false);
   const [newAccountName, setNewAccountName] = React.useState('');
   const [googleStatus, setGoogleStatus] = React.useState<
     'idle' | 'loading' | 'connected' | 'disconnected' | 'unavailable' | 'error'
   >('idle');
-  const [isGoogleSyncing, setIsGoogleSyncing] = React.useState(false);
-  const [isGoogleConnecting, setIsGoogleConnecting] = React.useState(false);
   const [googleEmail, setGoogleEmail] = React.useState<string | null>(null);
   const [googleStatusMessage, setGoogleStatusMessage] = React.useState<string>('');
   const { weekStartsOn, setWeekStartsOn } = useWeekStartsOnPreference();
@@ -72,7 +62,6 @@ export const TopBar: React.FC<TopBarProps> = ({
   // saw that survey: without it here their aura would stay gold for good.
   const { profile: signo, birthDate: nascimento, setBirthDate: setNascimento } = useZodiacPreference();
   const googleConnectUrl = React.useMemo(() => getGoogleCalendarConnectUrl(), []);
-  const googleSyncUrl = React.useMemo(() => getGoogleCalendarSyncUrl(), []);
 
   const activeAccount = React.useMemo(
     () => accounts.find((account) => account.id === currentAccountId) || null,
@@ -146,65 +135,6 @@ export const TopBar: React.FC<TopBarProps> = ({
     void loadGoogleConnection();
   }, [isAccountModalOpen]);
 
-  const handleGoogleConnect = React.useCallback(async () => {
-    if (!googleConnectUrl || !session?.access_token) return;
-
-    setIsGoogleConnecting(true);
-    setGoogleStatusMessage('Iniciando OAuth Google...');
-
-    try {
-      const response = await fetch(googleConnectUrl, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      const payload = (await response.json()) as { authUrl?: string; error?: string };
-      if (!response.ok || !payload.authUrl) {
-        throw new Error(payload.error || 'Falha ao iniciar conexão Google');
-      }
-
-      window.open(payload.authUrl, '_blank', 'noopener,noreferrer');
-      setGoogleStatusMessage('Consentimento aberto em nova aba. Complete o login e depois sincronize.');
-    } catch (error) {
-      setGoogleStatusMessage(error instanceof Error ? error.message : 'Erro ao iniciar conexão Google');
-      setGoogleStatus('error');
-    } finally {
-      setIsGoogleConnecting(false);
-    }
-  }, [googleConnectUrl, session?.access_token]);
-
-  const handleGoogleSync = React.useCallback(async () => {
-    if (!googleSyncUrl || !session?.access_token) return;
-
-    setIsGoogleSyncing(true);
-    setGoogleStatusMessage('Sincronizando Google Agenda...');
-
-    try {
-      const response = await fetch(googleSyncUrl, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const payload = (await response.json()) as { syncedCount?: number; error?: string };
-      if (!response.ok) {
-        throw new Error(payload.error || 'Falha na sincronização Google Agenda');
-      }
-
-      setGoogleStatus('connected');
-      setGoogleStatusMessage(`Sincronização concluída. ${payload.syncedCount ?? 0} eventos atualizados.`);
-    } catch (error) {
-      setGoogleStatusMessage(error instanceof Error ? error.message : 'Erro na sincronização Google Agenda');
-      setGoogleStatus('error');
-    } finally {
-      setIsGoogleSyncing(false);
-    }
-  }, [googleSyncUrl, session?.access_token]);
-
   return (
     <>
       {accountOnly ? <button type="button" className="elemental-account-button" onClick={() => setIsAccountModalOpen(true)} aria-label="Abrir conta" aria-haspopup="dialog" aria-expanded={isAccountModalOpen}><AccountSeal /></button> : <>
@@ -223,45 +153,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             </DialogDescription>
           </DialogHeader>
 
-          {(sync || !authUser) && <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />}
-
-          {!sync && isSupabaseAuthEnabled && authUser && (
-            <div className="space-y-2 rounded-lg border border-white/15 p-3">
-              <p className="text-sm font-medium text-white">Conclua a conexão da sua jornada</p>
-              <p className="text-xs text-white/70">
-                {authUser?.email || 'Conta autenticada'} · entre novamente na tela segura para escolher e sincronizar os dados deste aparelho.
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => {
-                    void (async () => {
-                      await signOut();
-                      setIsAccountModalOpen(false);
-                      window.location.replace('/auth');
-                    })();
-                  }}
-                >
-                  Conectar esta jornada
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => {
-                    void (async () => {
-                      await signOut();
-                      setIsAccountModalOpen(false);
-                      window.location.replace('/auth');
-                    })();
-                  }}
-                >
-                  Sair
-                </Button>
-              </div>
-            </div>
-          )}
+          <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />
 
           <details><summary>Perfis neste aparelho</summary><p className="mb-3 text-sm text-white/60">Perfis organizam jornadas dentro deste aparelho. Eles não são contas de acesso online.</p>
           <div className="space-y-2">
@@ -393,22 +285,16 @@ export const TopBar: React.FC<TopBarProps> = ({
               <Button
                 type="button"
                 variant="outline"
-                disabled={!googleConnectUrl || !session?.access_token || isGoogleConnecting}
-                onClick={() => {
-                  void handleGoogleConnect();
-                }}
+                disabled
               >
-                {isGoogleConnecting ? 'Conectando...' : 'Conectar Google'}
+                Conectar Google
               </Button>
               <Button
                 type="button"
                 variant="secondary"
-                disabled={!googleSyncUrl || !session?.access_token || googleStatus !== 'connected' || isGoogleSyncing}
-                onClick={() => {
-                  void handleGoogleSync();
-                }}
+                disabled
               >
-                {isGoogleSyncing ? 'Sincronizando...' : 'Sincronizar agora'}
+                Sincronizar agora
               </Button>
             </div>
             {!googleConnectUrl ? (
