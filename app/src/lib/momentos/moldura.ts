@@ -166,7 +166,7 @@ export interface ParametrosMoldura {
   readonly tremula: number;
   readonly giro: number;
   readonly ciclo: number;
-  /** 0 at level 1, 1 from level 2: the live edge in the glow shader. */
+  /** 0.4 at level 1 (a light signature), 1 from level 2: the live edge in the glow shader. */
   readonly vivo: number;
   /** Which element's live edge shows (one-hot; all zero is the neutral gold). */
   readonly pesoFogo: number;
@@ -196,7 +196,8 @@ export function parametrosDaMoldura(elemento: ElementoDoDia | null, nivel: Nivel
     tremula: verbo.tremula * forca,
     giro: 1 + (verbo.giro - 1) * forca,
     ciclo: verbo.ciclo,
-    vivo: nivel >= 2 ? 1 : 0,
+    // Level 1 already shows a light signature of the element; levels 2 and 3 show it in full.
+    vivo: nivel >= 2 ? 1 : 0.4,
     pesoFogo: elemento === 'fogo' ? 1 : 0,
     pesoAgua: elemento === 'agua' ? 1 : 0,
     pesoAr: elemento === 'ar' ? 1 : 0,

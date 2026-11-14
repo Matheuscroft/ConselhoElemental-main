@@ -82,7 +82,7 @@ test('os parâmetros: o nível sobe a força do verbo e o alcance, e liga a bord
   const um = parametrosDaMoldura('fogo', 1);
   const dois = parametrosDaMoldura('fogo', 2);
   const tres = parametrosDaMoldura('fogo', 3);
-  assert.equal(um.vivo, 0);
+  assert.equal(um.vivo, 0.4);
   assert.equal(dois.vivo, 1);
   assert.equal(tres.vivo, 1);
   assert.ok(Math.abs(dois.arrastoLinear) > Math.abs(um.arrastoLinear));

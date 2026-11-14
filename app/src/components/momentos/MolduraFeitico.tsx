@@ -172,13 +172,15 @@ vec4 bordaViva(vec2 p, float d) {
   if (uPeso.z > 0.003) {
     float s1 = ang * 3.0 + d * 0.42 - uTime * 2.8;
     float s2 = ang * 5.0 - d * 0.3 + uTime * 1.9;
-    float arco = pow(0.5 + 0.5 * sin(s1), 10.0) * 0.85 + pow(0.5 + 0.5 * sin(s2), 12.0) * 0.5;
+    float arco = pow(0.5 + 0.5 * sin(s1), 7.0) * 1.3 + pow(0.5 + 0.5 * sin(s2), 9.0) * 0.8;
     float modula = 0.6 + 0.4 * sin(ang * 2.0 - uTime * 1.1 + d * 0.1);
-    float caida = pow(1.0 - clamp(d / 40.0, 0.0, 1.0), 1.3);
+    float caida = pow(1.0 - clamp(d / 52.0, 0.0, 1.0), 1.2);
     float giro = fract(ang / 6.2831853 + 0.25 + d * 0.012);
     float m = smoothstep(0.0, 0.2, uDraw * 1.2 - giro);
-    float a = arco * modula * caida * m;
-    vec3 c = mix(uColour, vec3(1.0), 0.4);
+    // A drifting haze under the arcs, so the wind has a body and not only lines.
+    float bruma = fbm2(vec2(cos(ang) * 2.2 + uTime * 0.35, sin(ang) * 2.2 - uTime * 0.28) + d * 0.045);
+    float a = (arco * modula + bruma * 0.55) * caida * m;
+    vec3 c = mix(uColour, vec3(1.0), 0.5) * 1.15;
     acc += uPeso.z * c * a;
     alfa += uPeso.z * a;
   }
