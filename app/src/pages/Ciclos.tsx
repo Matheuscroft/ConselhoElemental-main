@@ -1,22 +1,38 @@
 import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/cycle-date-navigation';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
-import { TunelMomentos } from '@/components/momentos/TunelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
-import { beatUnless, stagger } from '@/lib/motion/motion';
+import {
+  ESPERA_ROLAGEM_MAX_MS,
+  FilaDeAscensoes,
+  intervaloEntreCerimonias,
+  planoDaCerimonia,
+  precisaRolarAteOReel,
+  reelAssentou,
+  type AscensaoDoReel,
+} from '@/lib/momentos/ascensao';
+import { assinarAscensoes, emitirAscensao } from '@/lib/progresso/canal';
+import type { AscensaoNova } from '@/lib/progresso/eventos';
+import { nivelDeVfx, nivelForcado } from '@/lib/momentos/nivel-vfx';
+import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
+import { DURATION, stagger } from '@/lib/motion/motion';
+import { ACENTO, AURA, TINTA, type ElementoId } from '@/lib/design/palette';
+import { CycleSigil } from '@/components/cycles/CycleSigil';
+import { BotaoLua } from '@/components/cycles/ceu/BotaoLua';
+import { BotaoEstacao } from '@/components/cycles/ceu/BotaoEstacao';
+import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
+import { fimDaEstacao, instanteDoCeu, rotuloDeData } from '@/lib/temporal/ceu-dos-ciclos';
 import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
 import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
 import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
 import { CycleXpRecovery } from '@/components/cycles/CycleXpRecovery';
 import { advanceDailyView } from '@/lib/cycles/daily-view';
-import { CycleCompletionFeedback } from '@/components/cycles/CycleCompletionFeedback';
 import { CycleDailyCounter } from '@/components/cycles/CycleDailyCounter';
 import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-semantics';
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
-import { ExpandedDayCard } from '@/components/cycles/ExpandedDayCard';
-import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
 import { toast } from 'sonner';
@@ -59,8 +75,8 @@ import {
   getAreaById,
   formatDuration, 
   formatTime,
-  getMoonPhase, 
-  getSeason, 
+  getSeason,
+  getHemisphereFromLatitude,
   WEEKDAYS,
   WEEKDAYS_SHORT,
   ELEMENTS,
@@ -126,7 +142,6 @@ const findHabitById = (items: Habit[], id: string): Habit | null => {
 export const Ciclos: React.FC = () => {
   const reducedMotion = useMotionPreference();
   /** Two ways to look at the same days: the calendar, or the moments kept in them. */
-  const [vistaDosDias, setVistaDosDias] = useState<'calendario' | 'momentos' | 'tunel'>('calendario');
   const navigate = useNavigate();
   const location = useLocation();
   const [destinyParams, setDestinyParams] = useSearchParams();
@@ -214,6 +229,13 @@ export const Ciclos: React.FC = () => {
   const [quickCreateSequenceDaysOfWeek, setQuickCreateSequenceDaysOfWeek] = useState<number[]>([0, 1, 2, 3, 4, 5, 6]);
   const [draggedMixedCard, setDraggedMixedCard] = useState<{ type: 'habit' | 'sequence'; id: string } | null>(null);
   const [dragOverMixedCard, setDragOverMixedCard] = useState<{ type: 'habit' | 'sequence'; id: string } | null>(null);
+  // Presentation only: ids whose seal is playing (cleared by a timer, never by an animation event) and the "Selados" group fold.
+  const [selando, setSelando] = useState<ReadonlySet<string>>(() => new Set());
+  const [selosAbertos, setSelosAbertos] = useState(false);
+  const marcarSelando = useCallback((habitId: string) => {
+    setSelando((prev) => new Set(prev).add(habitId));
+    window.setTimeout(() => setSelando((prev) => { const next = new Set(prev); next.delete(habitId); return next; }), DURATION.settle);
+  }, []);
   const [workspaceView, setWorkspaceView] = useState<'routine' | 'sequences'>('routine');
   const [cycleFilters, setCycleFilters] = useState<CycleFilterState>({ query: '', element: 'all', status: 'all' });
   const [sequenceQuery, setSequenceQuery] = useState('');
@@ -233,8 +255,6 @@ export const Ciclos: React.FC = () => {
   const [dragOverPromoteParentId, setDragOverPromoteParentId] = useState<string | null>(null);
   const newCycleTriggerRef = useRef<HTMLButtonElement | null>(null);
   const newSequenceTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const dayShortcutsContainerRef = useRef<HTMLDivElement | null>(null);
-  const selectedDayButtonRef = useRef<HTMLButtonElement | null>(null);
   const [userLatitude, setUserLatitude] = useState<number | null>(() => {
     if (typeof window === 'undefined') return null;
     const cachedLatitude = localStorage.getItem('ce:user-latitude');
@@ -285,18 +305,6 @@ export const Ciclos: React.FC = () => {
       return [...current, day].sort((a, b) => a - b);
     });
   };
-
-  useEffect(() => {
-    // Keep the horizontal rail in view without moving the page or stealing focus.
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const timeout = window.setTimeout(() => {
-      const rail = dayShortcutsContainerRef.current;
-      const day = selectedDayButtonRef.current;
-      if (!rail || !day) return;
-      rail.scrollTo({ left: day.offsetLeft - (rail.clientWidth - day.clientWidth) / 2, behavior: reduced ? 'auto' : 'smooth' });
-    }, reduced ? 0 : 260);
-    return () => window.clearTimeout(timeout);
-  }, [selectedDate, visibleDaysCenterDate]);
 
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -1327,6 +1335,87 @@ export const Ciclos: React.FC = () => {
     return Math.max(0, timer.elapsedSeconds - executionTaskStartCycleSeconds);
   }, [showExecutionMode, executionTaskStartCycleSeconds, timer.elapsedSeconds]);
 
+  // The ascension ceremony: one at a time. The page first brings the Reel into
+  // view (the person may be scrolled far down), waits for it to arrive, and only
+  // then hands the ascension to the Reel, so the animation is seen happening.
+  const reelBlocoRef = useRef<HTMLDivElement>(null);
+  const reducedMotionRef = useRef(reducedMotion);
+  const [ascensaoDoReel, setAscensaoDoReel] = useState<AscensaoDoReel | null>(null);
+  useEffect(() => { reducedMotionRef.current = reducedMotion; });
+  useEffect(() => {
+    const fila = new FilaDeAscensoes<AscensaoNova>();
+    const timers = new Set<number>();
+    let frame = 0;
+    let vivo = true;
+    let tocando = false;
+    let emPreparo: AscensaoNova | null = null;
+    let contador = 0;
+
+    const depois = (ms: number, fn: () => void) => {
+      const id = window.setTimeout(() => { timers.delete(id); fn(); }, ms);
+      timers.add(id);
+    };
+
+    const tocar = (proxima: AscensaoNova) => {
+      const reduzido = reducedMotionRef.current;
+      const plano = planoDaCerimonia(proxima.nivel, reduzido);
+      const comecar = () => {
+        if (!vivo) return;
+        emPreparo = null;
+        contador += 1;
+        setAscensaoDoReel({ n: contador, elemento: proxima.elemento, nivel: proxima.nivel });
+        depois(intervaloEntreCerimonias(proxima.nivel, reduzido), () => { tocando = false; seguir(); });
+      };
+      const rolarEEsperar = (bloco: HTMLElement) => {
+        const caixa = bloco.getBoundingClientRect();
+        if (!precisaRolarAteOReel(caixa.top, caixa.bottom, window.innerHeight)) { comecar(); return; }
+        bloco.scrollIntoView({ block: 'center', behavior: plano.rolagem });
+        const inicio = performance.now();
+        let ultimo = Number.NaN;
+        let parado = 0;
+        const medir = () => {
+          frame = 0;
+          if (!vivo) return;
+          const r = bloco.getBoundingClientRect();
+          const centro = r.top + r.height / 2;
+          parado = Math.abs(centro - ultimo) < 0.5 ? parado + 1 : 0;
+          ultimo = centro;
+          if (reelAssentou(centro, window.innerHeight, parado) || performance.now() - inicio > ESPERA_ROLAGEM_MAX_MS) { comecar(); return; }
+          frame = requestAnimationFrame(medir);
+        };
+        frame = requestAnimationFrame(medir);
+      };
+      // The Reel may still be loading: wait for its block to exist.
+      const esperarOReel = () => {
+        if (!vivo) return;
+        const bloco = reelBlocoRef.current;
+        if (bloco && bloco.getBoundingClientRect().height > 0) rolarEEsperar(bloco);
+        else depois(200, esperarOReel);
+      };
+      emPreparo = proxima;
+      esperarOReel();
+    };
+
+    function seguir() {
+      if (!vivo || tocando) return;
+      const proxima = fila.proxima();
+      if (!proxima) return;
+      tocando = true;
+      tocar(proxima);
+    }
+
+    const cancelar = assinarAscensoes((ascensao) => { fila.empurrar(ascensao); seguir(); });
+    return () => {
+      vivo = false;
+      cancelar();
+      timers.forEach((id) => window.clearTimeout(id));
+      if (frame) cancelAnimationFrame(frame);
+      // Whatever has not been shown yet is kept for the next time Ciclos opens.
+      if (emPreparo) emitirAscensao(emPreparo);
+      fila.esvaziar().forEach((resto) => emitirAscensao(resto));
+    };
+  }, []);
+
   useEffect(() => {
     if (!showExecutionMode || executionActionableChildren.length === 0) return;
 
@@ -1367,13 +1456,56 @@ export const Ciclos: React.FC = () => {
   ]);
 
   // Moon phase and season
-  const moonPhase = getMoonPhase(selectedDate);
   const season = getSeason(selectedDate, { latitude: userLatitude });
+  // The sky buttons follow the day picked in the Reel; hemisphere comes from the same latitude as the season.
+  const ceu = useMemo(() => {
+    const south = getHemisphereFromLatitude(userLatitude) === 'south';
+    const fim = fimDaEstacao(selectedDate, (dia) => getSeason(dia, { latitude: userLatitude }));
+    return {
+      south,
+      lua: lunarSnapshot(instanteDoCeu(selectedDate, new Date())),
+      fim: fim ? rotuloDeData(fim) : null,
+    };
+  }, [selectedDate, userLatitude]);
 
   // Stats
   const completedToday = habitsForDate.filter(isHabitCompleted).length;
   const totalToday = habitsForDate.length;
-  const progressToday = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
+
+  // The frame of the open day evolves with the mastery of the day's element
+  // (the Grimório's own scale). In development, ?vfx=1|2|3 forces a level.
+  const xpDosElementos = useAppStore(state => state.user);
+  const getMasteryProgress = useAppStore(state => state.getMasteryProgress);
+  // getMasteryProgress reads the store's user, so the user is what invalidates it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const maestria = useMemo(() => getMasteryProgress(), [getMasteryProgress, xpDosElementos]);
+  const vfxForcado = import.meta.env.DEV ? nivelForcado(location.search) : null;
+  // The frame's colour is the element the person finished most in the day's week
+  // (Monday to Sunday), so it resets every Monday and follows where the week goes.
+  const acoesDoApp = useAppStore(state => state.actions);
+  const conclusoes = useMemo(() => conclusoesDoApp(habits, acoesDoApp), [habits, acoesDoApp]);
+
+  // Read-only: how many cycles each day of the Reel has done, from the same
+  // store data the routine below reads.
+  const diasDoReel = useMemo(() => dayShortcuts.map((offset) => {
+    const date = new Date(visibleDaysCenterDate);
+    date.setDate(date.getDate() + offset);
+    const doDia = getHabitsForDate(date);
+    const ciclos = doDia.map((habit) => ({
+      elementId: habit.elementId,
+      feito: habit.completions.some(
+        (completion) => new Date(completion.completionDate).toDateString() === date.toDateString(),
+      ),
+    }));
+    const feitos = ciclos.filter((ciclo) => ciclo.feito).length;
+    const elemento = elementoDaSemana(conclusoes, date).elemento;
+    return {
+      dia: chaveDoDia(date), data: date, feitos, total: doDia.length, hoje: isSameDay(date, new Date()),
+      elemento,
+      nivel: vfxForcado ?? nivelDeVfx(elemento ? maestria[elemento].level : null),
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [visibleDaysCenterDate, getHabitsForDate, habits, maestria, vfxForcado, conclusoes]);
 
   const isAddTargetForHabit = (habitId: string) => activeAddHabitTarget === habitId;
 
@@ -1503,6 +1635,7 @@ export const Ciclos: React.FC = () => {
           const childCompletion = getCompletionForDate(child);
           const hasChildren = child.childHabits.length > 0;
           const childExpanded = child.isExpanded ?? false;
+          const childElementId: ElementoId = (allAreasForEdit.find((entry) => entry.id === child.areaId) || getAreaById(child.areaId))?.elementId ?? child.elementId;
 
           return (
             <div key={child.id} className="cycle-subitem-node space-y-2" data-kind={childType} data-completed={childType !== 'text' && childCompleted}>
@@ -1539,7 +1672,8 @@ export const Ciclos: React.FC = () => {
                     }}
                     aria-label={`${childCompleted ? 'Desmarcar' : 'Concluir'} ${child.name}`}
                     className="cycle-task-checkbox cycle-child-check">
-                    {childCompleted && <Check size={16} aria-hidden="true" />}
+                    <CycleSigil element={childElementId} size="child" filled={childCompleted} />
+                    {childCompleted && <Check size={12} aria-hidden="true" />}
                   </button>
                 ) : (
                   <span className="cycle-child-check-spacer" aria-hidden="true" />
@@ -1637,6 +1771,23 @@ export const Ciclos: React.FC = () => {
   });
   const visibleSequenceSummaries = sequenceSummaries.filter((item) => normalizeCycleSearch([item.sequence.name, item.sequence.description, item.currentHabitName].filter(Boolean).join(' ')).includes(normalizeCycleSearch(sequenceQuery)));
   const canReorderVisibleCards = !hasCycleFilters(cycleFilters) && cyclesViewMode === 'ordered';
+  const cardCurrentHabit = (card: (typeof visibleCycleCards)[number]) => card.type === 'habit' ? card.habit : card.summary?.currentHabit;
+  const cardElementId = (card: (typeof visibleCycleCards)[number]): ElementoId => {
+    const habit = cardCurrentHabit(card);
+    if (!habit) return 'terra';
+    const area = allAreasForEdit.find((entry) => entry.id === habit.areaId) || getAreaById(habit.areaId);
+    return area?.elementId ?? habit.elementId;
+  };
+  // "Selados": completed cards are shown after the pending ones; the stored order is untouched. A card that was
+  // just sealed stays in place until its seal animation ends.
+  const isSealedInGroup = (card: (typeof visibleCycleCards)[number]) => {
+    const habit = cardCurrentHabit(card);
+    return isMixedCardCompleted(card) && !(habit && selando.has(habit.id));
+  };
+  const groupSealed = cycleFilters.status === 'all' && visibleCycleCards.some(isSealedInGroup);
+  const pendingVisibleCards = groupSealed ? visibleCycleCards.filter((card) => !isSealedInGroup(card)) : visibleCycleCards;
+  const sealedVisibleCards = groupSealed ? visibleCycleCards.filter(isSealedInGroup) : [];
+  const orderedVisibleCards = [...pendingVisibleCards, ...sealedVisibleCards];
 
   return (
     <AppLayout>
@@ -1653,11 +1804,6 @@ export const Ciclos: React.FC = () => {
         section.querySelector('summary')?.focus({ preventScroll: true });
         section.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
       }}><ArcaneIcon name="conquista" size={19} />Ver pontuação elemental<ChevronDown size={18} aria-hidden="true" /></button>
-      <details className="cycle-routine-guide"><summary>Ciclo, sequência ou subitem?<ChevronDown size={18} /></summary>
-        <dl><div><dt>Ciclo: um hábito da rotina</dt><dd>Cada atividade da sua rotina pode ter seu próprio ciclo, disponível junto às demais no mesmo dia. Marque todos os dias da semana para uma rotina diária. As conclusões anteriores ficam no histórico. Depois de concluir, abra Feitos para acrescentar mais registros naquele dia.</dd></div>
-        <div><dt>Sequência: um ciclo por vez</dt><dd>Alterna os ciclos nos dias programados, como treino A e B. Não reúne todas as tarefas do dia em uma lista.</dd></div>
-        <div><dt>Subitens: etapas fixas</dt><dd>Organizam o que você repete na execução. Para somar ações repetidas ou medir quantidades de qualquer atividade, use “Adicionar contador” no cartão.</dd></div></dl>
-      </details>
       {/* Day Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -1671,97 +1817,42 @@ export const Ciclos: React.FC = () => {
         <CycleCalendarNavigation selectedDate={selectedDate} onPrevious={goToPreviousDay} onNext={goToNextDay} onToday={goToToday}
           onSelect={date => selectCalendarDate(date)} />
 
-        <div className="cycle-vista" role="group" aria-label="Como ver os dias">
-          {([['calendario', 'Calendário'], ['momentos', 'Momentos'], ['tunel', 'Túnel']] as const).map(([chave, rotulo]) => (
-            <button
-              key={chave}
-              type="button"
-              aria-pressed={vistaDosDias === chave}
-              onClick={() => setVistaDosDias(chave)}
-            >
-              {rotulo}
-            </button>
-          ))}
-        </div>
-
-        {vistaDosDias !== 'calendario' ? (() => {
-          const diasDoMomento = dayShortcuts.map((offset) => {
+        <div ref={reelBlocoRef}>
+        <ReelMomentos
+          ascensao={ascensaoDoReel}
+          dias={diasDoReel}
+          selecionado={dayShortcuts.findIndex((offset) => {
             const date = new Date(visibleDaysCenterDate);
             date.setDate(date.getDate() + offset);
-            return {
-              dia: chaveDoDia(date),
-              titulo: date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' }),
-              detalhe: date.toLocaleDateString('pt-BR', { weekday: 'long' }),
-            };
-          });
-          return vistaDosDias === 'momentos'
-            ? <ReelMomentos dias={diasDoMomento} />
-            : <TunelMomentos dias={diasDoMomento} />;
-        })() : null}
-
-        {/* Day shortcuts + full date picker */}
-        <div
-          ref={dayShortcutsContainerRef}
-          className="cycle-calendar-rail"
-          role="group"
-          aria-label="Dias do calendário: selecione para expandir"
-          hidden={vistaDosDias !== 'calendario'}
-        >
-          {dayShortcuts.map((offset) => {
-            const date = new Date(visibleDaysCenterDate);
-            date.setDate(date.getDate() + offset);
-            const active = isSameDay(selectedDate, date);
-            const isTodayShortcut = isSameDay(date, new Date());
-
-            return <ExpandedDayCard key={date.toDateString()} date={date} selected={active} today={isTodayShortcut}
-              completed={completedToday} total={totalToday} preview={active ? displayedMixedCards.slice(0, 2).map(card => card.type === 'habit' ? card.habit.name : card.summary.sequence.name) : []} onSelect={() => selectRelativeVisibleDay(offset)}
-              buttonRef={active ? selectedDayButtonRef : null} />;
+            return isSameDay(selectedDate, date);
           })}
-        </div>
-        {/* Moon Phase & Season */}
-        <div className="flex items-center justify-center gap-6 mb-4">
-          <button
-            type="button"
-            onClick={() => navigate('/lua')}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/5 transition-colors text-left"
-            title="Abrir pagina da Lua"
-          >
-            <span className="text-2xl"><ArcaneIcon name="lua" /></span>
-            <div className="text-left">
-              <p className="text-[10px] text-white/40">Fase Lunar</p>
-              <p className="text-xs">{moonPhase.name}</p>
-            </div>
-          </button>
-          <div className="w-px h-8 bg-white/10" />
-          <button
-            type="button"
-            onClick={() => navigate('/estacoes')}
-            className="flex items-center gap-2 rounded-lg px-2 py-1 hover:bg-white/5 transition-colors text-left"
-            title="Abrir pagina da Estacao"
-          >
-            <span className="text-2xl"><ArcaneIcon name="estacoes" /></span>
-            <div className="text-left">
-              <p className="text-[10px] text-white/40">Estação</p>
-              <p className="text-xs">{season.name}</p>
-            </div>
-          </button>
+          aoEscolher={(indice) => {
+            if (indice >= 0 && indice < dayShortcuts.length) {
+              selectRelativeVisibleDay(dayShortcuts[indice]);
+              return;
+            }
+            // One step past an end of the window: open that day and recentre on it.
+            const date = new Date(visibleDaysCenterDate);
+            date.setDate(date.getDate() + dayShortcuts[0] + indice);
+            selectCalendarDate(date);
+          }}
+        />
         </div>
 
-        {/* Progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-white/50">Ciclos concluídos nesta data</span>
-            <span className="text-mystic-gold">{completedToday}/{totalToday} ciclos</span>
-          </div>
-          <div role="progressbar" aria-label="Conclusão dos ciclos da data selecionada" aria-valuemin={0} aria-valuemax={totalToday || 1} aria-valuenow={completedToday} className="h-2 bg-black/30 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progressToday}%` }}
-              transition={beatUnless(reducedMotion, 'settle')}
-              className="h-full rounded-full bg-gradient-to-r from-mystic-gold to-orange-400"
-            />
-          </div>
+        {/* Moon Phase & Season */}
+        <div className="cycle-sky-links mb-4">
+          <BotaoLua
+            nome={ceu.lua.name}
+            phaseAngle={ceu.lua.phaseAngle}
+            illuminated={ceu.lua.illuminated}
+            waxing={ceu.lua.waxing}
+            south={ceu.south}
+            onAbrir={() => navigate('/lua')}
+          />
+          <BotaoEstacao nome={season.name} south={ceu.south} fim={ceu.fim} onAbrir={() => navigate('/estacoes')} />
         </div>
+
+        <p className="sr-only">{completedToday} de {totalToday} ciclos concluídos nesta data</p>
       </motion.div>
 
       <CycleXpRecovery />
@@ -1814,11 +1905,13 @@ export const Ciclos: React.FC = () => {
           filters={cycleFilters} onChange={setCycleFilters}
           total={displayedMixedCards.length} completed={displayedMixedCards.filter(isMixedCardCompleted).length}
           shown={visibleCycleCards.length} order={cyclesViewMode} onOrder={setCyclesViewMode}
+          selos={orderedVisibleCards.map((card) => ({ element: cardElementId(card), done: isMixedCardCompleted(card) }))}
         />}
         <AnimatePresence mode="popLayout">
           {visibleCycleCards.length > 0 ? (
             <div className="space-y-3">
-              {visibleCycleCards.map((card) => {
+              {(() => {
+              const renderCard = (card: (typeof visibleCycleCards)[number], sealedGroup: boolean) => {
                 if (card.type === 'sequence') {
                   const item = card.summary;
                   if (!item) return null;
@@ -1832,22 +1925,18 @@ export const Ciclos: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        draggable={canReorderVisibleCards}
+                        data-drag-over={dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id ? 'true' : undefined}
+                        style={{ '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
+                        draggable={canReorderVisibleCards && !sealedGroup}
                         onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
-                        onDragOver={(event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
-                        onDrop={() => canReorderVisibleCards && handleMixedCardDrop('sequence', item.sequence.id)}
+                        onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
+                        onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('sequence', item.sequence.id)}
                         onDragEnd={handleMixedCardDragEnd}
-                        className={`cycle-routine-card relative p-4 rounded-2xl border transition-all cursor-grab active:cursor-grabbing ${
-                          dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id
-                            ? 'border-mystic-gold/60 bg-mystic-gold/10'
-                            : 'border-white/10 bg-white/5 hover:border-white/20'
-                        }`}
+                        className="cycle-routine-card ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing"
                       >
                         <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium text-white/80">{item.sequence.name}</p>
-                          <Badge variant="outline" className="bg-white/5 text-[10px]">
-                            Sem ciclo atual
-                          </Badge>
+                          <p className="font-medium">{item.sequence.name}</p>
+                          <span className="cycle-card-meta-note">Sem ciclo atual</span>
                         </div>
                       </motion.div>
                     );
@@ -1867,23 +1956,21 @@ export const Ciclos: React.FC = () => {
                   return (
                     <motion.div
                       key={`sequence-${item.sequence.id}`}
-                    data-completed={completed} style={{ "--cycle-accent": seqElement.color } as React.CSSProperties}
+                      data-completed={completed} data-element={seqElement.id}
+                      data-em-andamento={activeHabit === sequenceHabit.id ? 'true' : undefined}
+                      data-selando={selando.has(sequenceHabit.id) ? 'true' : undefined}
+                      data-drag-over={dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id ? 'true' : undefined}
+                      style={{ '--cyc-acento': ACENTO[seqElement.id], '--cyc-tinta': TINTA[seqElement.id], '--cyc-aura': AURA[seqElement.id], '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
                       layout
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      draggable={canReorderVisibleCards && !isFitnessSequence}
+                      draggable={canReorderVisibleCards && !isFitnessSequence && !sealedGroup}
                       onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
-                      onDragOver={(event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
-                      onDrop={() => canReorderVisibleCards && handleMixedCardDrop('sequence', item.sequence.id)}
+                      onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
+                      onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('sequence', item.sequence.id)}
                       onDragEnd={handleMixedCardDragEnd}
-                      className={`cycle-routine-card relative p-4 rounded-2xl border transition-all cursor-grab active:cursor-grabbing ${
-                        dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id
-                          ? 'border-mystic-gold/60 bg-mystic-gold/10'
-                          : completed
-                            ? 'bg-mystic-gold/5 border-mystic-gold/20'
-                            : 'border-white/10 bg-white/5 hover:border-white/20'
-                      } ${
+                      className={`cycle-routine-card ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing ${
                         draggedMixedCard?.type === 'sequence' && draggedMixedCard.id === item.sequence.id
                           ? 'opacity-50 scale-[0.99]'
                           : ''
@@ -1907,10 +1994,11 @@ export const Ciclos: React.FC = () => {
                               <div className="cycle-task-title">
                                 <button type="button" role="checkbox" aria-checked={completed}
                                   aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${sequenceHabit.name}`}
-                                  className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(sequenceHabit); else handleQuickCompleteHabit(sequenceHabit); }}>
+                                  className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(sequenceHabit); else { handleQuickCompleteHabit(sequenceHabit); marcarSelando(sequenceHabit.id); } }}>
+                                  <CycleSigil element={seqElement.id} size="card" filled={completed} />
                                   {completed && <Check size={16} aria-hidden="true" />}
                                 </button>
-                                <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+                                <p className="cycle-task-name font-medium">
                                 {sequenceHabit.name}
                                 </p>
                                 {childHabits.length > 0 && <button type="button" className="cycle-children-disclosure" aria-expanded={!!sequenceHabit.isExpanded}
@@ -1977,43 +2065,29 @@ export const Ciclos: React.FC = () => {
                             </div>
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 mt-2 text-[10px] min-w-0">
+                          <div className="cycle-card-metadata cycle-meta-line">
                             {showSequenceElementBadge && (
-                              <span
-                                className="cycle-element-badge"
-                                style={{
-                                  backgroundColor: `${seqElement.color}1f`,
-                                  borderColor: `${seqElement.color}66`,
-                                  color: seqElement.color,
-                                }}
-                                title={seqElement.name}
-                              >
-                                <ElementIcon element={seqElement.id} /><span>{seqElement.name}</span>
+                              <span className="cycle-element-badge" title={seqElement.name}>
+                                <CycleSigil element={seqElement.id} size="trail" /><span>{seqElement.name}</span>
                               </span>
                             )}
-                            <Badge variant="outline" className="bg-mystic-arcane/20 border-mystic-arcane/40 text-mystic-gold text-[10px] truncate max-w-full sm:max-w-xs">
-                              Sequência: {item.sequence.name} ({item.currentPositionLabel})
-                            </Badge>
+                            <span className="cycle-meta-sequence" title={`Sequência: ${item.sequence.name} (${item.currentPositionLabel})`}>
+                              <ArcaneIcon name="ciclo" size={14} />Sequência: {item.sequence.name} ({item.currentPositionLabel})
+                            </span>
                             {seqAreaDisplayName && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] truncate max-w-full sm:max-w-xs"
-                                style={{
-                                  backgroundColor: `${(seqArea?.color || '#808080')}20`,
-                                  borderColor: `${(seqArea?.color || '#808080')}80`,
-                                  color: seqArea?.color || '#808080',
-                                }}
-                                title={`+${Math.round(sequenceHabit.plannedPoints || 0)} ${seqAreaDisplayName}${seqSubarea ? ` | ${seqSubarea.name}` : ''}`}
-                              >
-                                +{Math.round(sequenceHabit.plannedPoints || 0)} {seqAreaDisplayName}
+                              <span className="cycle-meta-points" title={`+${Math.round(sequenceHabit.plannedPoints || 0)} ${seqAreaDisplayName}${seqSubarea ? ` | ${seqSubarea.name}` : ''}`}>
+                                {seqArea ? `+${Math.round(sequenceHabit.plannedPoints || 0)} ${seqAreaDisplayName}` : `+${Math.round(sequenceHabit.plannedPoints || 0)}`}
                                 {seqSubarea ? ` | ${seqSubarea.name}` : ''}
-                              </Badge>
+                              </span>
                             )}
                             {sequenceHabit.plannedTimeMinutes > 0 && (
-                              <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px] flex-shrink-0">
-                                <Clock className="w-3 h-3 mr-1" />
+                              <span className="cycle-meta-time">
+                                <Clock size={12} aria-hidden="true" />
                                 {formatDuration(sequenceHabit.plannedTimeMinutes)}
-                              </Badge>
+                              </span>
+                            )}
+                            {subitemSummary.actionableCount > 0 && (
+                              <span className="cycle-meta-steps">{subitemSummary.completedCount} de {subitemSummary.actionableCount} etapas</span>
                             )}
                           </div>
 
@@ -2117,25 +2191,21 @@ export const Ciclos: React.FC = () => {
                 return (
                   <motion.div
                     key={habit.id}
-                    data-completed={completed} style={{ "--cycle-accent": element.color } as React.CSSProperties}
+                    data-completed={completed} data-element={element.id}
+                    data-em-andamento={activeHabit === habit.id ? 'true' : undefined}
+                    data-selando={selando.has(habit.id) ? 'true' : undefined}
+                    data-drag-over={dragOverMixedCard?.type === 'habit' && dragOverMixedCard.id === habit.id ? 'true' : undefined}
+                    style={{ '--cyc-acento': ACENTO[element.id], '--cyc-tinta': TINTA[element.id], '--cyc-aura': AURA[element.id], '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
                     layout
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    draggable={canReorderVisibleCards && !completed && !habit.controlledBySequenceId}
+                    draggable={canReorderVisibleCards && !completed && !sealedGroup && !habit.controlledBySequenceId}
                     onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
-                    onDragOver={(event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
-                    onDrop={() => canReorderVisibleCards && handleMixedCardDrop('habit', habit.id)}
+                    onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
+                    onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('habit', habit.id)}
                     onDragEnd={handleMixedCardDragEnd}
-                    className={`cycle-routine-card relative p-4 rounded-2xl border transition-all ${
-                      completed
-                        ? 'bg-mystic-gold/5 border-mystic-gold/20'
-                        : 'bg-white/5 border-white/10 hover:border-white/20'
-                    } ${
-                      dragOverMixedCard?.type === 'habit' && dragOverMixedCard.id === habit.id
-                        ? 'border-mystic-gold/60 bg-mystic-gold/10'
-                        : ''
-                    }`}
+                    className="cycle-routine-card ds-pane relative p-4 transition-all"
                   >
                     <div className="cycle-main-row">
                       <div className="cycle-main-content flex-1 min-w-0">
@@ -2144,10 +2214,11 @@ export const Ciclos: React.FC = () => {
                             <div className="cycle-task-title">
                               <button type="button" role="checkbox" aria-checked={completed}
                                 aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${habit.name}`}
-                                className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(habit); else handleQuickCompleteHabit(habit); }}>
+                                className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(habit); else { handleQuickCompleteHabit(habit); marcarSelando(habit.id); } }}>
+                                <CycleSigil element={element.id} size="card" filled={completed} />
                                 {completed && <Check size={16} aria-hidden="true" />}
                               </button>
-                              <p className={`font-medium ${completed ? 'line-through text-white/50' : 'text-white'}`}>
+                              <p className="cycle-task-name font-medium">
                               {habit.name}
                               </p>
                               {childHabits.length > 0 && <button type="button" className="cycle-children-disclosure" aria-expanded={!!habit.isExpanded}
@@ -2232,79 +2303,41 @@ export const Ciclos: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="cycle-card-metadata mt-2 flex items-start justify-between gap-2 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1">
+                        <div className="cycle-card-metadata">
+                          <div className="cycle-meta-line">
                             {elementBadgeIds.map((elementId) => {
                               const badgeElement = ELEMENTS[elementId];
                               if (!badgeElement) return null;
                               return (
-                                <span
-                                  key={elementId}
-                                  className="cycle-element-badge"
-                                  style={{
-                                    backgroundColor: `${badgeElement.color}1f`,
-                                    borderColor: `${badgeElement.color}66`,
-                                    color: badgeElement.color,
-                                  }}
-                                  title={badgeElement.name}
-                                >
-                                  <ElementIcon element={badgeElement.id} /><span>{badgeElement.name}</span>
+                                <span key={elementId} className="cycle-element-badge" data-element={badgeElement.id} title={badgeElement.name}>
+                                  <CycleSigil element={badgeElement.id} size="trail" /><span>{badgeElement.name}</span>
                                 </span>
                               );
                             })}
-                            {habit.controlledBySequenceId && (
-                              <Badge variant="outline" className="bg-mystic-gold/10 border-mystic-gold/40 text-mystic-gold text-[10px] truncate max-w-full sm:max-w-xs">
-                                Em sequência
-                              </Badge>
-                            )}
-
                             {primaryAreaBadgeLabel && (
-                              <Badge
-                                variant="outline"
-                                className="text-[10px] min-w-0 max-w-[calc(100vw-13rem)] sm:max-w-xs"
-                                style={{
-                                  backgroundColor: `${(area?.color || element.color)}15`,
-                                  borderColor: `${(area?.color || element.color)}40`,
-                                  color: area?.color || element.color,
-                                }}
-                                title={primaryAreaBadgeLabel}
-                              >
-                                <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                                  {primaryAreaBadgeLabel}
-                                </span>
-                              </Badge>
+                              <span className="cycle-meta-points" title={primaryAreaBadgeLabel}>
+                                {habit.areaId === 'sem-categoria' ? `+${Math.round(habit.plannedPoints)}` : primaryAreaBadgeLabel}
+                              </span>
                             )}
-
-                            {/* Badges de áreas agregadas dos filhos */}
+                            {/* Áreas agregadas dos filhos */}
                             {hasChildren && aggregatedAreaList.map(([areaId, data]) => {
                               const aggArea = allAreasForEdit.find((a) => a.id === areaId) || AREAS.find((a) => a.id === areaId);
                               const aggSubarea = data.subareaId ? getAreaById(data.subareaId) : undefined;
                               if (!aggArea) return null;
                               const badgeLabel = `+${Math.round(data.points)} ${aggArea.name}${aggSubarea ? ` | ${aggSubarea.name}` : ''}`;
-                              return (
-                                <Badge 
-                                  key={areaId}
-                                  variant="outline"
-                                  className="text-[10px] min-w-0 max-w-[calc(100vw-13rem)] sm:max-w-xs"
-                                  style={{ 
-                                    backgroundColor: `${aggArea.color}10`, 
-                                    borderColor: `${aggArea.color}50`,
-                                    color: aggArea.color 
-                                  }}
-                                  title={badgeLabel}
-                                >
-                                  <span className="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
-                                    {badgeLabel}
-                                  </span>
-                                </Badge>
-                              );
+                              return <span key={areaId} className="cycle-meta-points" title={badgeLabel}>{areaId === 'sem-categoria' ? `+${Math.round(data.points)}` : badgeLabel}</span>;
                             })}
-
                             {habit.plannedTimeMinutes > 0 && (
-                              <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px] flex-shrink-0">
-                                <Clock className="w-3 h-3 mr-1" />
+                              <span className="cycle-meta-time">
+                                <Clock size={12} aria-hidden="true" />
                                 {formatDuration(habit.plannedTimeMinutes)}
-                              </Badge>
+                              </span>
+                            )}
+                            {habit.controlledBySequenceId && (
+                              <span className="cycle-meta-sequence"><ArcaneIcon name="ciclo" size={14} />Em sequência</span>
+                            )}
+                            {subitemSummary.actionableCount > 0 && (
+                              <span className="cycle-meta-steps">{subitemSummary.completedCount} de {subitemSummary.actionableCount} etapas</span>
                             )}
                           </div>
 
@@ -2331,10 +2364,20 @@ export const Ciclos: React.FC = () => {
                     </div>
                   </motion.div>
                 );
-              })}
+              };
+              return <>
+                {pendingVisibleCards.map((card) => renderCard(card, false))}
+                {groupSealed && (
+                  <details className="cycle-sealed-group" open={selosAbertos} onToggle={(event) => setSelosAbertos(event.currentTarget.open)}>
+                    <summary>Selados ({sealedVisibleCards.length})</summary>
+                    <div className="space-y-3">{sealedVisibleCards.map((card) => renderCard(card, true))}</div>
+                  </details>
+                )}
+              </>;
+              })()}
             </div>
           ) : (
-            displayedMixedCards.length > 0 ? <div className="cycle-filter-empty"><Search size={28} aria-hidden="true" /><h3>Nenhum ciclo corresponde aos filtros</h3><p>Altere a busca ou veja todos os itens desta data.</p><button type="button" onClick={() => setCycleFilters({ query: '', element: 'all', status: 'all' })}>Ver todos os ciclos do dia</button></div> : <EmptyState onCreate={() => setShowQuickCreateCycle(true)} />
+            displayedMixedCards.length > 0 ? <div className="cycle-filter-empty cycle-empty" data-compact="true"><SigilDiamond /><h3>Nenhum ciclo corresponde aos filtros</h3><p>Altere a busca ou veja todos os itens desta data.</p><button type="button" onClick={() => setCycleFilters({ query: '', element: 'all', status: 'all' })}>Ver todos os ciclos do dia</button></div> : <EmptyState onCreate={() => setShowQuickCreateCycle(true)} />
           )}
         </AnimatePresence>
       </motion.div>
@@ -2402,6 +2445,11 @@ export const Ciclos: React.FC = () => {
       <details ref={insightsRef} className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e atividade recente</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
         <div className="cycle-score-showcase"><ScoreHierarchyPanel presentation="explorer" tasks={tasks} habits={habits} customAreas={customAreas} customSubareas={customSubareas} /></div>
       </div></details>
+      <details className="cycle-routine-guide cycle-guide"><summary>Ciclo, sequência ou subitem?<ChevronDown size={18} /></summary>
+        <dl><div><dt>Ciclo: um hábito da rotina</dt><dd>Cada atividade da sua rotina pode ter seu próprio ciclo, disponível junto às demais no mesmo dia. Marque todos os dias da semana para uma rotina diária. As conclusões anteriores ficam no histórico. Depois de concluir, abra Feitos para acrescentar mais registros naquele dia.</dd></div>
+        <div><dt>Sequência: um ciclo por vez</dt><dd>Alterna os ciclos nos dias programados, como treino A e B. Não reúne todas as tarefas do dia em uma lista.</dd></div>
+        <div><dt>Subitens: etapas fixas</dt><dd>Organizam o que você repete na execução. Para somar ações repetidas ou medir quantidades de qualquer atividade, use “Adicionar contador” no cartão.</dd></div></dl>
+      </details>
       {/* Timer Modal */}
       <Dialog open={showTimer} onOpenChange={handleTimerModalChange}>
         <DialogContent aria-labelledby="cycles-timer-title" aria-describedby="cycles-timer-description" className="cycle-dialog elemental-timer-dialog max-w-sm">
@@ -3001,8 +3049,6 @@ export const Ciclos: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      <CycleCompletionFeedback key={`${destinyAccountId}:${selectedDate.toDateString()}`} date={selectedDate} />
-
       {/* Quick Create Cycle Modal */}
       <Dialog open={showQuickCreateCycle} onOpenChange={setShowQuickCreateCycle}>
         <DialogContent onCloseAutoFocus={(event) => { event.preventDefault(); newCycleTriggerRef.current?.focus(); }} aria-labelledby="cycles-create-title" aria-describedby="cycles-create-description" className="cycle-dialog cycle-composer-dialog">
@@ -3030,9 +3076,9 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onCreate }) => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
-    className="cycle-welcome-showcase"
+    className="cycle-welcome-showcase cycle-empty"
   >
-    <span className="cycle-welcome-art" aria-hidden="true"><ArcaneIcon name="ritual" size={50} /></span>
+    <SigilDiamond />
     <div>
     <h3 className="font-mystic text-lg mb-2">Seu próximo passo começa aqui</h3>
     <p className="text-white/50 text-sm mb-4">
@@ -3044,4 +3090,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({ onCreate }) => (
     </Button>
     </div>
   </motion.div>
+);
+
+/** Four alchemical triangles in a diamond: fire on top, water at the bottom, air and earth at the sides. */
+const SigilDiamond: React.FC = () => (
+  <div className="cycle-empty-diamond" aria-hidden="true">
+    <CycleSigil element="fogo" size="card" />
+    <CycleSigil element="ar" size="card" />
+    <CycleSigil element="terra" size="card" />
+    <CycleSigil element="agua" size="card" />
+  </div>
 );

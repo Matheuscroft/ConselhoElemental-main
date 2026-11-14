@@ -1,8 +1,9 @@
 import { NavigationGroup } from '@/components/elemental/NavigationCards';
-import { RouteIcon } from '@/components/elemental/ArcaneIcon';
+import { ArcaneIcon, RouteIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { PreferenciasDeSom } from '@/components/feedback/PreferenciasDeSom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { APP_ROUTES, type RouteGroup } from '@/lib/app-routes';
 import { cn } from '@/lib/utils';
@@ -72,7 +73,7 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
             <SheetTitle ref={titleRef} tabIndex={-1} className={styles.title}>Todas as páginas</SheetTitle>
             <SheetDescription>Encontre o que você quer fazer e continue sua jornada.</SheetDescription>
           </SheetHeader>
-          <label className="elemental-route-search mt-3"><Search size={18} aria-hidden="true" /><span className="sr-only">Buscar páginas do app</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar ritual, treino, calendário…" /></label>
+          <label className="elemental-route-search mt-3"><ArcaneIcon name="buscar" size={18} /><span className="sr-only">Buscar páginas do app</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar ritual, treino, calendário…" /></label>
           {search && <p className="mt-2 text-sm text-fitness-muted" role="status">{routes.length} páginas encontradas</p>}
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4">
@@ -110,6 +111,7 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
               </div>
             </NavigationGroup>
           ))}
+          {!search && <PreferenciasDeSom />}
         </div>
       </SheetContent>
     </Sheet>

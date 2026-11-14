@@ -1,0 +1,248 @@
+/*
+ * Floating notice for a completion or an ascension. No blur: the
+ * glass look is a gradient over the element's wash, so the blur budget is
+ * untouched. Motion is transform/opacity only, on the --ds-duration tokens.
+ * Loops are multiples of a token, never a literal time.
+ */
+.noticias {
+  position: fixed;
+  /* Above the bottom nav (4rem bar), in the thumb zone: it never covers the brand or the resource row. */
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 4.75rem);
+  left: 0;
+  right: 0;
+  z-index: 45; /* above content and the bottom nav, below dialogs (z-50) */
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  pointer-events: none;
+}
+
+.noticia {
+  --noticia-acento: rgb(var(--el-gold));
+  --noticia-aura: rgb(var(--el-gold));
+  --noticia-tinta: rgb(var(--el-surface));
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  box-sizing: border-box;
+  max-width: min(26rem, 100%);
+  min-height: 3.25rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+  border-radius: 999px;
+  color: rgb(var(--el-text));
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 9%), rgb(255 255 255 / 0%) 45%),
+    linear-gradient(120deg, var(--noticia-tinta), rgb(var(--el-surface) / 96%));
+  border: 1px solid color-mix(in srgb, var(--noticia-acento) 45%, transparent);
+  box-shadow: var(--ds-rim), var(--ds-lift-near);
+  animation: noticia-entra var(--ds-duration-conjure) var(--ds-ease-conjure) both;
+}
+.noticia.is-saindo {
+  animation: noticia-sai var(--ds-duration-reveal) var(--ds-ease-exit) both;
+}
+
+.noticia__fx { position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; border-radius: inherit; }
+.noticia__fx > span { position: absolute; display: block; opacity: 0; }
+
+.noticia__icone {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  color: var(--noticia-acento);
+}
+.noticia__texto { display: grid; min-width: 0; flex: 1 1 auto; line-height: var(--ds-leading-snug); }
+.noticia__nome {
+  font-size: var(--ds-text-small);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.noticia__rotulo {
+  font-size: var(--ds-text-micro);
+  color: var(--noticia-acento);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.noticia__xp {
+  flex: none;
+  font-size: var(--ds-text-small);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--noticia-acento);
+  white-space: nowrap;
+}
+.noticia__ver {
+  flex: none;
+  min-height: 2.75rem;
+  padding: 0 0.875rem;
+  border-radius: 999px;
+  font-size: var(--ds-text-micro);
+  font-weight: 600;
+  color: rgb(var(--el-text));
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid var(--noticia-acento);
+  cursor: pointer;
+}
+.noticia__fechar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  font-size: var(--ds-text-lead);
+  line-height: 1;
+  color: rgb(var(--el-text));
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.noticia__fechar:focus-visible, .noticia__ver:focus-visible { outline: 2px solid var(--noticia-acento); outline-offset: 2px; }
+
+/* Ascension: larger, lit by the element's colour, the level name in Cinzel. */
+.noticia--ascensao {
+  max-width: min(30rem, 100%);
+  min-height: 4.5rem;
+  padding-left: 1.125rem;
+  border-radius: 1.5rem;
+  border-width: 2px;
+  box-shadow: var(--ds-rim), var(--ds-lift),
+    0 0 1.5rem color-mix(in srgb, var(--noticia-aura) 55%, transparent);
+}
+.noticia--ascensao .noticia__icone { width: 2.75rem; height: 2.75rem; font-size: var(--ds-text-title); }
+.noticia--ascensao .noticia__nivel {
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-lead);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--noticia-aura);
+}
+.noticia--ascensao .noticia__nome { font-size: var(--ds-text-body); }
+.noticia--dominio { animation-name: noticia-entra, noticia-brilho; animation-duration: var(--ds-duration-conjure), calc(var(--ds-duration-conjure) * 4); animation-timing-function: var(--ds-ease-conjure), ease-in-out; animation-iteration-count: 1, infinite; animation-fill-mode: both, none; }
+.noticia--dominio.is-saindo { animation: noticia-sai var(--ds-duration-reveal) var(--ds-ease-exit) both; }
+
+@keyframes noticia-entra {
+  from { opacity: 0; transform: translateY(1.25rem) scale(0.86); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes noticia-sai {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(0.5rem) scale(0.97); }
+}
+@keyframes noticia-brilho {
+  0%, 100% { transform: none; }
+  50% { transform: scale(1.015); }
+}
+
+/* Fire: the flame flickers, sparks rise. */
+.noticia--fogo .noticia__icone { animation: fx-cintila calc(var(--ds-duration-settle) * 1.2) ease-in-out infinite; transform-origin: 50% 90%; }
+.noticia--fogo .noticia__fx > span { bottom: 0; width: 0.25rem; height: 0.25rem; border-radius: 50%; background: var(--noticia-aura); animation: fx-faisca calc(var(--ds-duration-conjure) * 2.5) ease-out infinite; }
+.noticia--fogo .noticia__fx-0 { left: 8%; }
+.noticia--fogo .noticia__fx-1 { left: 22%; animation-delay: var(--ds-duration-settle); }
+.noticia--fogo .noticia__fx-2 { left: 48%; animation-delay: var(--ds-duration-reveal); }
+.noticia--fogo .noticia__fx-3 { left: 70%; animation-delay: calc(var(--ds-duration-settle) * 1.5); }
+.noticia--fogo .noticia__fx-4 { left: 88%; animation-delay: var(--ds-duration-feedback); }
+@keyframes fx-cintila {
+  0%, 100% { transform: scale(1) rotate(0); }
+  30% { transform: scale(1.12, 0.94) rotate(-4deg); }
+  60% { transform: scale(0.95, 1.1) rotate(3deg); }
+}
+@keyframes fx-faisca {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  15% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-3.5rem) scale(0.3); }
+}
+
+/* Water: concentric ripples spread from the icon, droplets fall. */
+.noticia--agua .noticia__icone::before, .noticia--agua .noticia__icone::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px solid var(--noticia-aura); opacity: 0;
+  animation: fx-onda calc(var(--ds-duration-conjure) * 3) ease-out infinite;
+}
+.noticia--agua .noticia__icone::after { animation-delay: calc(var(--ds-duration-conjure) * 1.5); }
+.noticia--agua .noticia__fx > span { top: 0; width: 0.25rem; height: 0.5rem; border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; background: var(--noticia-aura); animation: fx-gota calc(var(--ds-duration-conjure) * 3) ease-in infinite; }
+.noticia--agua .noticia__fx-0 { left: 12%; }
+.noticia--agua .noticia__fx-1 { left: 30%; animation-delay: var(--ds-duration-settle); }
+.noticia--agua .noticia__fx-2 { left: 55%; animation-delay: var(--ds-duration-reveal); }
+.noticia--agua .noticia__fx-3 { left: 75%; animation-delay: calc(var(--ds-duration-settle) * 2); }
+.noticia--agua .noticia__fx-4 { left: 92%; animation-delay: var(--ds-duration-conjure); }
+@keyframes fx-onda {
+  0% { opacity: 0.7; transform: scale(0.8); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes fx-gota {
+  0% { opacity: 0; transform: translateY(-0.5rem); }
+  20% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateY(4rem); }
+}
+
+/* Air: arcs of wind turn around the icon. */
+.noticia--ar .noticia__icone::before, .noticia--ar .noticia__icone::after {
+  content: ''; position: absolute; inset: -0.25rem; border-radius: 50%;
+  border: 2px solid transparent; border-top-color: var(--noticia-aura); border-left-color: var(--noticia-aura);
+  opacity: 0.7; animation: fx-gira calc(var(--ds-duration-conjure) * 2) linear infinite;
+}
+.noticia--ar .noticia__icone::after { inset: 0.125rem; opacity: 0.45; animation-direction: reverse; animation-duration: calc(var(--ds-duration-conjure) * 3); }
+.noticia--ar .noticia__fx > span { top: 50%; left: 0; width: 2.5rem; height: 0.125rem; border-radius: 1px; background: linear-gradient(90deg, transparent, var(--noticia-aura), transparent); animation: fx-sopro calc(var(--ds-duration-conjure) * 3) ease-in-out infinite; }
+.noticia--ar .noticia__fx-0 { margin-top: -0.75rem; }
+.noticia--ar .noticia__fx-1 { margin-top: 0.5rem; animation-delay: var(--ds-duration-settle); }
+.noticia--ar .noticia__fx-2 { margin-top: -0.1rem; animation-delay: var(--ds-duration-conjure); }
+.noticia--ar .noticia__fx-3 { margin-top: 0.9rem; animation-delay: calc(var(--ds-duration-conjure) * 1.5); }
+.noticia--ar .noticia__fx-4 { margin-top: -1rem; animation-delay: calc(var(--ds-duration-conjure) * 2); }
+@keyframes fx-gira { to { transform: rotate(360deg); } }
+@keyframes fx-sopro {
+  0% { opacity: 0; transform: translateX(-3rem); }
+  30% { opacity: 0.7; }
+  100% { opacity: 0; transform: translateX(26rem); }
+}
+
+/* Earth: glowing cracks pulse, pebbles fall. */
+.noticia--terra .noticia__icone::before {
+  content: ''; position: absolute; left: 50%; top: 12%; width: 2px; height: 76%;
+  background: linear-gradient(var(--noticia-aura), transparent);
+  transform: translateX(-50%) rotate(18deg); opacity: 0;
+  animation: fx-rachadura calc(var(--ds-duration-conjure) * 2.5) ease-in-out infinite;
+}
+.noticia--terra .noticia__fx > span { top: 0; width: 0.3125rem; height: 0.25rem; border-radius: 40%; background: var(--noticia-acento); animation: fx-pedra calc(var(--ds-duration-conjure) * 2.5) ease-in infinite; }
+.noticia--terra .noticia__fx-0 { left: 10%; }
+.noticia--terra .noticia__fx-1 { left: 28%; animation-delay: var(--ds-duration-settle); }
+.noticia--terra .noticia__fx-2 { left: 52%; animation-delay: var(--ds-duration-reveal); }
+.noticia--terra .noticia__fx-3 { left: 74%; animation-delay: calc(var(--ds-duration-settle) * 1.5); }
+.noticia--terra .noticia__fx-4 { left: 90%; animation-delay: var(--ds-duration-conjure); }
+@keyframes fx-rachadura {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+@keyframes fx-pedra {
+  0% { opacity: 0; transform: translateY(-0.5rem) rotate(0); }
+  20% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(4rem) rotate(160deg); }
+}
+
+@media (max-width: 400px) {
+  .noticia__rotulo { letter-spacing: 0.02em; }
+}
+
+/* Reduced motion: nothing moves, only opacity fades. */
+@media (prefers-reduced-motion: reduce) {
+  .noticia, .noticia--dominio { animation: noticia-fade var(--ds-duration-reveal) linear both; }
+  .noticia.is-saindo, .noticia--dominio.is-saindo { animation: noticia-fade-sai var(--ds-duration-reveal) linear both; }
+  .noticia .noticia__icone, .noticia .noticia__icone::before, .noticia .noticia__icone::after { animation: none; }
+  .noticia .noticia__fx { display: none; }
+  @keyframes noticia-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes noticia-fade-sai { from { opacity: 1; } to { opacity: 0; } }
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  .noticias { --ds-ease-conjure: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.077 22.1%, 1.121 24.7%, 1.149 27.4%, 1.158 30.1%, 1.134 36.3%, 1.077 41.5%, 1.036 46.5%, 1.012 51.4%, 0.996 57.4%, 0.99 63.7%, 1 100%); }
+}

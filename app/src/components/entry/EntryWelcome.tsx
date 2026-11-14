@@ -13,8 +13,8 @@ const ELEMENTOS: ReadonlyArray<{ id: ElementId; nome: string; papel: string }> =
 
 /**
  * The entry, reached after the awakening. It keeps the sanctuary behind it so
- * the opening reads as one place, and it offers one clear way forward instead
- * of five equal ones. Every destination the access guards rely on is kept.
+ * the opening reads as one place, and it offers one clear way forward and one for
+ * people who already have an account.
  */
 export function EntryWelcome() {
   const nome = getOpeningName();
@@ -29,9 +29,6 @@ export function EntryWelcome() {
 
       <header className="boas-topo">
         <EntryBrand />
-        <a className="boas-entrar" href="/auth">
-          Entrar
-        </a>
       </header>
 
       <main className="boas-corpo" aria-labelledby="boas-titulo">
@@ -57,21 +54,13 @@ export function EntryWelcome() {
 
         <div className="boas-acoes">
           <a className="boas-primaria" href="/auth?modo=cadastro">
-            Criar minha conta
+            Começar
           </a>
-          <a className="boas-secundaria" href="/santuario">
-            Experimentar sem conta
+          <a className="boas-secundaria" href="/auth">
+            Já tenho conta
           </a>
         </div>
-        <small className="boas-nota">
-          Experimentando, o progresso fica neste aparelho. Você pode conectar uma conta depois.
-        </small>
       </main>
-
-      <footer className="boas-rodape">
-        <a href="/?progresso=restaurar">Já uso o app. Quero trazer meu progresso.</a>
-        <a href="/onboarding">Conhecer os quatro elementos</a>
-      </footer>
     </div>
   );
 }

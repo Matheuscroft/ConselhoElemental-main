@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { PRODUCTION_APP_ORIGIN } from './account-recovery-entry';
+import { AccountAuthError, accountAuthMessage, type AccountAuthAction } from './account-auth-messages';
 
 export type AccountAccessMode = 'login' | 'signup';
 export function validAccountEmail(email: string) {
@@ -16,11 +17,8 @@ export function accountConfirmationRedirect(origin: string) {
   return `${PRODUCTION_APP_ORIGIN}/?progresso=conta`;
 }
 /** Known operational failures only; never show opaque server messages or credentials. */
-export function accountAccessFailure(error: unknown, fallback: string): string {
-  const code = error && typeof error === 'object' && 'code' in error ? error.code : null;
-  if (code === 'email_address_not_authorized') return 'O envio de confirmação para novos testadores ainda está sendo configurado. Seu progresso continua salvo neste aparelho.';
-  if (code === 'over_email_send_rate_limit' || code === 'over_request_rate_limit') return 'O limite de e-mails foi atingido. Aguarde antes de pedir outro link; seu progresso continua salvo.';
-  return fallback;
+export function accountAccessFailure(error: unknown, fallback: string, action: AccountAuthAction = 'signup'): AccountAuthError {
+  return new AccountAuthError(accountAuthMessage(error, action, fallback));
 }
 type Client = Pick<SupabaseClient, 'auth'>;
 /** Authentication only: no archive, storage, binding, sync or data transfer. */
@@ -32,12 +30,13 @@ export async function accessAccount(client: Client, input: { mode: AccountAccess
   if (input.mode === 'signup') {
     const result = await client.auth.signUp({ ...credentials, options: { emailRedirectTo: accountConfirmationRedirect(input.origin) } });
     check();
-    if (result.error) throw new Error(accountAccessFailure(result.error, 'Não foi possível confirmar o pedido. Confira seu e-mail antes de repetir e revise a política de senha.'));
+    if (result.error) throw accountAccessFailure(result.error, 'Não foi possível confirmar o pedido. Confira seu e-mail antes de repetir e revise a política de senha.', 'signup');
     // Even an autoconfirm session is not adopted. The following login is explicit.
     return { kind: 'confirmation' as const, message: 'Se este e-mail precisar de confirmação, você receberá um link. Depois, entre para validar o acesso. Nenhum progresso foi enviado.' };
   }
   const result = await client.auth.signInWithPassword(credentials); check();
-  if (result.error || !result.data.session) throw new Error('Não foi possível entrar. Confira os dados e a confirmação do e-mail.');
+  if (result.error) throw accountAccessFailure(result.error, 'Não foi possível entrar. Confira os dados e a confirmação do e-mail.', 'login');
+  if (!result.data.session) throw new Error('Não foi possível entrar. Confira os dados e a confirmação do e-mail.');
   const signedId=result.data.user?.id;
   const verified = await client.auth.getUser(); check();
   if (verified.error || !verified.data.user?.id) throw new Error('Não foi possível validar a conta no servidor.');
@@ -48,6 +47,6 @@ export async function resendAccountConfirmation(client: Client, email: string, o
   if (!current() || !validAccountEmail(email)) throw new Error('Confira o e-mail antes de solicitar outro link.');
   const result = await client.auth.resend({ type: 'signup', email: email.trim(), options: { emailRedirectTo: accountConfirmationRedirect(origin) } });
   if (!current()) throw new Error('A conferência mudou. Confira o e-mail antes de repetir.');
-  if (result.error) throw new Error(accountAccessFailure(result.error, 'Não foi possível confirmar o envio. Aguarde e confira seu e-mail antes de repetir.'));
+  if (result.error) throw accountAccessFailure(result.error, 'Não foi possível confirmar o envio. Aguarde e confira seu e-mail antes de repetir.', 'resend');
   return 'Se houver confirmação pendente para este e-mail, você receberá outro link. Nenhum progresso foi enviado.';
 }

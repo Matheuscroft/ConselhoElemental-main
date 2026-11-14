@@ -1,5 +1,4 @@
 export { Onboarding } from './Onboarding';
-export { Auth } from './Auth.tsx';
 export { Rituais } from './Rituais';
 export { Invocar } from './Invocar';
 export { Grimorio } from './Grimorio';

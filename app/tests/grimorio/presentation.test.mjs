@@ -16,13 +16,13 @@ test('resource meter exposes accurate accessible values and proportional fill', 
   assert.match(html, /aria-label="Prana"/);
   assert.match(html, /aria-valuenow="25.5"/);
   assert.match(html, /aria-valuetext="25,5 de 100"/);
-  assert.match(html, /width:25.5%/);
+  assert.match(html, /--medidor-valor:0.255/);
 });
 test('out-of-range fill is bounded without changing supplied values; invalid values stay unknown', () => {
   const large = render(ResourceMeter, { ...meter, value: 120 });
-  assert.match(large, /width:100%/); assert.match(large, /aria-valuenow="100"/); assert.match(large, /120 de 100/);
+  assert.match(large, /--medidor-valor:1[;"]/); assert.match(large, /aria-valuenow="100"/); assert.match(large, /120 de 100/);
   const negative = render(ResourceMeter, { ...meter, value: -5 });
-  assert.match(negative, /width:0%/); assert.match(negative, /-5 de 100/);
+  assert.match(negative, /--medidor-valor:0[;"]/); assert.match(negative, /-5 de 100/);
   const invalid = render(ResourceMeter, { ...meter, maximum: 0 });
   assert.doesNotMatch(invalid, /aria-valuenow=/); assert.match(invalid, /Sem valor disponível/);
 });

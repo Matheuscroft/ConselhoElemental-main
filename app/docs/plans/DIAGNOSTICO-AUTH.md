@@ -1,0 +1,66 @@
+# Diagnóstico de autenticação — Conselho Elemental (só leitura, 09/11/2026)
+
+Nada foi editado, commitado ou publicado. Sem credenciais, sem criar conta, sem chaves lidas. Produção só em leitura: `app-version.json` = 0.1.145, `/auth` = 200, bundle de entrada sem referência ao QA bypass. Testes `tests/backup/account-access|account-recovery|account-build-config|legacy-account-guard`: 22/22 passam.
+
+Importante: em produção o app de conta é o `AccountWorkspace` (+ `AccountRecoveryWorkspace`), montado por `main.tsx`. `pages/Auth.tsx` e `authStore.ts` são código legado morto (a build hospedada exige `VITE_ENABLE_SUPABASE_AUTH=false`, `account-build-config.ts:14`, `scripts/build-release.mjs:11`). Os erros "Invalid login credentials" etc. de `toFriendlyAuthError` não aparecem na tela real.
+
+## 1. Sintoma → causa provável → evidência → confiança
+
+| # | Sintoma | Causa provável | Evidência | Confiança |
+|---|---|---|---|---|
+| 1a | Não entra / não cria conta **em localhost** | `app/.env.local` só tem `VITE_QA_BYPASS_AUTH`; faltam `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`. Em dev não há fallback (só o `build-release.mjs` injeta `config/supabase-public.json`). `createAccountReviewSession` lança "A conexão com a conta ainda não está disponível nesta versão". `main.tsx:21` também trata projeto ausente como sem acesso. | `.env.local` (só nomes lidos); `account-session.ts:6`; `build-release.mjs:8-9`; `main.tsx:20-24` | Alta (para quem testa local) |
+| 1b | Não entra com conta existente (hospedado) | Login mostra **uma única** mensagem para qualquer falha: "Não foi possível entrar. Confira os dados e a confirmação do e-mail". Esconde `email_not_confirmed`, `invalid_credentials`, 429, rede. Só 3 códigos têm texto próprio. Conta criada e nunca confirmada (SMTP padrão) fica presa aqui. | `account-access.ts:19-24, 39-40` | Alta (que esconde a causa); a causa real exige painel/logs |
+| 1c | Entra e volta a pedir login | Acesso fica só em `sessionStorage` (por aba, TTL 12 h). Nova aba, PWA reaberto ou aba descartada pelo iOS = `/auth` de novo. Refresh token rotacionado e reutilizado (duas abas/reload) = "O acesso expirou. Entre novamente". | `account-tab-access.ts:4,18-31`; `main.tsx:75-82,93`; `resume-authenticated-account.ts:23-26` | Média (comportamento por desenho; não é bug de laço) |
+| 2 | Não cria conta | (i) E-mail de confirmação via SMTP padrão do Supabase: limite baixo, e `email_address_not_authorized` (só e-mails da equipe) ou `over_email_send_rate_limit`. Para outros erros a mensagem é genérica. (ii) Senha: o cliente exige ≥ 8; a política do servidor pode ser mais rígida e o texto não diz qual. (iii) Retorno de confirmação sempre vai para o Vercel, mesmo se iniciado em localhost. | `account-access.ts:13-17,21-22,35`; FILA linha ~82 ("SMTP custom desativado com confirmação exigida"); CONTINUIDADE:168 | Média-alta (precisa do painel) |
+| 3 | E-mail/link de confirmação ou recuperação não chega, expira ou quebra | (a) SMTP padrão = poucos envios/hora e entrega ruim (spam). (b) Recuperação: `resetPasswordForEmail` devolve mensagem genérica mesmo com erro, e o cooldown é só 60 s no cliente. (c) Link de recuperação é implícito e de uso único; abrir duas vezes, scanner de e-mail que pré-visita o link, ou link antigo após novo pedido = "link não pôde ser aceito". (d) Redirect URL fora da allowlist faz o Auth cair no Site URL. Histórico: Site URL já foi `conselho-elemental-testes.vercel.app` (N04) e `localhost:3000`; hoje o doc diz oficial `conselho-elemental-main.vercel.app` + 2 rotas, mas 2 redirects locais antigos ainda estavam "selecionados para remoção". O domínio `-testes` ainda responde 200 (link antigo ainda abre app velho). | `account-recovery.ts:46-56`; `account-recovery-entry.ts:7-40`; `AccountRecoveryWorkspace.tsx:40-43,78`; CONTINUIDADE:132,142,168; `FECHAMENTO-F6-N04` | Média (painel decide) |
+| 4a | Sincronização recusa | O servidor valida `appVersion` do arquivo contra uma allowlist (`^0.1.(…|145)$`) e a migração 145 só amplia a lista. A FILA N13 diz que a base "ainda registra 144" e que 145 era necessária antes do teste; N17 não registra que 145 foi aplicada. Se não foi, qualquer commit de um app 0.1.145 é recusado e o cliente mostra só "O servidor não confirmou a operação completa". Todo bump de versão precisa de nova migração. | `20261108060000_account_archive_version_145.sql:8-17`; `20261030202517_progress_account_atomic.sql:101-103`; `account-transport.ts:68`; FILA:50-52 | Média (depende de leitura da versão no banco) |
+| 4b | Conta `legacy` | Conta já tinha linhas nas dez tabelas antigas. `progress_account_commit` comum recusa (`progress_legacy_requires_review`). A adoção explícita existe e está **acessível na UI**: aparece "Registros anteriores encontrados" + caixa de consentimento + "Preservar registros e sincronizar" — mas só se o aparelho tem jornada local completa (`baseline.snapshot`). Num aparelho vazio/outro navegador aparece só o texto "Este aparelho está vazio…", sem ação. A RPC `progress_account_adopt_legacy` está definida, mas a migração 20261109123000 só vale se de fato aplicada (FILA N17 diz que foi, com readback). A migração exige os dez guards ativos e levanta exceção se não. | `AccountWorkspace.tsx:337-344,436-442`; `account-transfer.ts:59-65`; `account-transport.ts:64-65,121`; `20261109123000_legacy_account_adoption.sql:8-25,56-106`; FILA:28-30 | Alta (mecanismo); aplicada = só o painel/SQL confirma |
+| 4c | Após login, tela travada em "bloqueado" | `markBlocked` (progresso local com campos inválidos, restauração pendente, conexão antiga) não impede o login mas impede enviar. Mensagem de erro é a do auditor local. | `AccountWorkspace.tsx:94-103,121`; FILA N15 | Média |
+
+## 2. Hipóteses pedidas
+
+- (a) SMTP padrão + confirmação obrigatória: **plausível, não confirmável pelo código**; consistente com FILA:82, CONTINUIDADE:168. Painel decide.
+- (b) Redirect URLs: **o código está alinhado** (`PRODUCTION_APP_ORIGIN`, `/?progresso=conta`, `/?progresso=recuperar`). Se o painel ainda tiver Site URL `-testes`/`localhost:3000` ou faltar uma das duas rotas, falha. **Depende do painel.** Localhost nunca é usado como retorno de e-mail (`account-access.ts:16`).
+- (c) Laço de redirecionamento: **descartada**. `/auth` é tratado por `accessEntry` antes de `openProgress`; `ProtectedRoute` só roda com `isSupabaseAuthEnabled` falso → `AccountEntryRedirect` → `/auth` (rota sem React Router). A única ressalva é 1c (sessão por aba).
+- (d) Recuperação implícita: **fragmento é lido e apagado de forma síncrona antes de importar o app** (`main.tsx:48-55`, `captureRecoveryEntry` com `history.replaceState`), então não há remoção cedo demais. Risco real: link de uso único + scanner de e-mail; `StrictMode` desligado de propósito. **Descartada como bug; fica como fragilidade operacional.**
+- (e) `legacy`: **confirmada** como causa do sintoma 4; adoção acessível com a ressalva do aparelho vazio.
+- (f) Mensagens amigáveis escondendo a causa: **confirmada** no login (`account-access.ts:40`), no cadastro (`:35` só 2 códigos) e no reset (`account-recovery.ts:54`). `toFriendlyAuthError` é código morto.
+- (g) Versão 142–145 do banco: **possível divergência** (ver 4a). O repositório tem as migrações até 145 e `20261109123000`; só o banco diz o que está aplicado.
+
+## 3. O que só o painel/SQL do Supabase confirma (projeto `myvxvgeyseoyugskqlqr`)
+
+Fábio ou Matheus, na ordem:
+1. Authentication → Logs (Auth) nos minutos de uma tentativa: procurar `email_not_confirmed`, `invalid_credentials`, `over_email_send_rate_limit`, `email_address_not_authorized`, `weak_password`, `refresh_token_already_used`, `otp_expired`. É a forma de ver a causa que o app esconde.
+2. Authentication → Emails / SMTP Settings: SMTP custom desligado? Rate limits de e-mail por hora. Esperado hoje: padrão do Supabase (poucos por hora, remetentes só da equipe).
+3. Authentication → Sign In / Providers → Email: "Confirm email" ligado? Mínimo de senha e requisitos.
+4. Authentication → URL Configuration: Site URL exatamente `https://conselho-elemental-main.vercel.app`; Redirect URLs exatamente `https://conselho-elemental-main.vercel.app/?progresso=conta` e `…/?progresso=recuperar`; sem restos `-testes` ou `localhost:3000`/`127.0.0.1:5173` se não forem necessários.
+5. Authentication → Users: o e-mail de Fábio existe? "Confirmed at" preenchido? Última entrada? (isso não deve ser feito pelo agente.)
+6. Authentication → Sessions/Refresh token reuse interval (padrão 10 s).
+7. SQL Editor (leitura): validador aceita 145? `select encode(sha256(convert_to(prosrc,'UTF8')),'hex'), prosrc ~ '145' from pg_proc where oid='progress_private.validate_archive(text)'::regprocedure;` e `select version from supabase_migrations.schema_migrations order by 1 desc limit 5;`. Esperado: migração `20261109123000` e `20261108060000` presentes; função `public.progress_account_adopt_legacy` existe; `progress_private.release_gate.writes_enabled = true`.
+8. Para a conta de Fábio: `select progress_private.legacy_has_data('<uuid>')` (só Matheus/SQL), para saber se a conta é `legacy`.
+
+## 4. Plano de conserto mínimo e seguro (em ordem)
+
+1. **Painel (Matheus + Fábio, sem código, risco nulo para dados).** Itens 1–4 acima. Se SMTP padrão for o gargalo: configurar SMTP próprio (Resend/Brevo/SES) com remetente verificado; ou, para o beta fechado, desligar "Confirm email". Isso resolve 2 e 3 sem tocar no app. Risco: desligar confirmação permite cadastro com e-mail alheio — só no beta.
+2. **Matheus (`supabase/`).** Confirmar que 145 e `20261109123000` estão aplicadas; se faltar 145, aplicar pelo fluxo oficial (aditiva, não altera dados). Risco: baixo (a migração verifica hash do validador e aborta sem mudar nada). Fixar regra: cada bump de versão do app exige migração da allowlist antes do deploy.
+3. **Fábio (frontend, só `.env.local`, sem commit).** Adicionar `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` (chave publicável de `config/supabase-public.json`) ao `.env.local` para testar login real local; manter `VITE_QA_BYPASS_AUTH` desligada durante o teste real. Sem risco em dados; não afeta produção.
+4. **Fábio, com alinhamento de Matheus (arquivos `src/lib/backup/` e `AccountWorkspace.tsx` são zona de Matheus).** Mensagens de erro específicas, sem enumerar contas: usar `error.code` do SDK para mapear `email_not_confirmed` → "confirme o e-mail antes de entrar" (mensagem igual não revela se a conta existe? ela revela que existe e não confirmou — mitigar: texto único "confira e-mail/senha e se confirmou o cadastro" + link "reenviar confirmação" sempre visível no login), `weak_password` → regras de senha, `over_*_rate_limit` e `email_address_not_authorized` já mapeados também em login/reset. Código novo, testes em `tests/backup/account-access.test.mjs`. Risco para dados: nenhum (só texto), não mexe em pontuação/XP/stores.
+5. **Fábio (UI).** No estado `legacy` com aparelho vazio, em vez de só texto, oferecer "Importar cópia completa" e "Abrir no aparelho original" como ações; e na tela de login um botão visível "Reenviar confirmação" fora do cadastro. Risco: baixo; não altera a adoção.
+6. **Fábio, opcional e depois.** Sessão: avaliar manter `sessionStorage` (mais seguro) mas avisar "Você será desconectado ao fechar a aba"; persistir só um aviso, não tokens, em `localStorage`. Não recomendado trocar o modelo agora.
+
+Ordem de risco para dados já migrados: 1 e 3 nenhum; 2 aditivo/idempotente; 4 e 5 só interface; a adoção `legacy` não deve ser disparada até Matheus conferir o aparelho de Fábio, pois substitui o estado ativo (os registros antigos ficam preservados num snapshot privado com SHA-256).
+
+## 5. Segurança (observado)
+
+- Tokens (access+refresh) ficam em `sessionStorage` em texto (`account-tab-access.ts:51`): XSS os lê; mitigado por TTL de 12 h, origem/projeto vinculados, e escopo por aba. Aceitável, ressalva documentada.
+- Recuperação: fragmento apagado antes do app; credenciais só em memória; cliente isolado, sem persistir. Bom.
+- Retornos de e-mail fixos em origem canônica; `accountConfirmationRedirect` valida a origem mas depois ignora o valor (código morto menor).
+- Enumeração de contas: cadastro e reset respondem de forma genérica (bom); login genérico (bom, mas esconde a causa). `resend` também genérico. O 429 do reset aparece como o mesmo texto genérico de erro de envio.
+- Rate limit de reset é só de cliente (60 s); a proteção real é do Supabase.
+- Chave do Supabase é publicável e aparece no repositório em `config/supabase-public.json` (esperado, mas confirmar que é a publicável, não a `service_role`). Não li o valor.
+- Build da Vercel recusa `VITE_QA_BYPASS_AUTH` (`vite.config.ts`, mudança não commitada): ok. O bundle de produção não contém QA bypass.
+- Domínio antigo `conselho-elemental-testes.vercel.app` ainda serve app (HTTP 200): se não deve existir, desativar para evitar links de e-mail antigos aterrissando em versão velha.
+
+## 6. Não verificado
+
+Estado real do painel (SMTP, limites, Redirect URLs, "Confirm email", política de senha); migrações realmente aplicadas e versão do validador; se a conta de Fábio existe/está confirmada/é `legacy`; logs de Auth; comportamento em iPhone/PWA; bundles lazy (chunks de conta) em produção; a suíte completa (rodei só 4 arquivos de teste).

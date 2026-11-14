@@ -1,0 +1,47 @@
+/* The photograph of the open day, at the top of the day dialog. */
+.momento-do-dia {
+  display: grid;
+  gap: 8px;
+}
+
+.momento-do-dia-foto {
+  inline-size: 100%;
+  aspect-ratio: 16 / 9;
+  max-block-size: 200px;
+  margin: 0;
+  overflow: clip;
+  border: var(--ds-edge);
+  border-radius: var(--ds-radius-control);
+  background: var(--ds-surface-raised);
+}
+
+.momento-do-dia-foto img {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  animation: momento-do-dia-surge var(--ds-duration-feedback) var(--ds-ease) both;
+}
+
+@keyframes momento-do-dia-surge {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.momento-do-dia-privado {
+  margin: 0;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  text-align: center;
+}
+
+.momento-do-dia-aviso {
+  margin: 0;
+  color: #f5ad83;
+  font-size: var(--ds-text-micro);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .momento-do-dia-foto img { animation: none; }
+}

@@ -4,9 +4,9 @@ import {resolve} from 'node:path';
 import {webcrypto} from 'node:crypto';
 import {fixture} from './load-progress.mjs';
 
-// Real authStore + cloud service, with a synthetic client. No real Supabase module,
+// Real cloud service (the old authStore was removed in LOTE 8), with a synthetic client. No real Supabase module,
 // env files, HTTP, credentials, browser storage or personal sessions are evaluated.
-const output=await build({stdin:{contents:`export {useAuthStore} from './src/stores/authStore';export * from './src/services/supabaseCloudSync';`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,metafile:true,logLevel:'silent',define:{'import.meta.env.VITE_FORCE_BOOTSTRAP_CLOUD_SYNC':'false'},plugins:[{name:'synthetic-boundaries',setup(b){
+const output=await build({stdin:{contents:`export * from './src/services/supabaseCloudSync';`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,metafile:true,logLevel:'silent',define:{'import.meta.env.VITE_FORCE_BOOTSTRAP_CLOUD_SYNC':'false'},plugins:[{name:'synthetic-boundaries',setup(b){
  b.onResolve({filter:/account-release$/},()=>({path:'synthetic-account-release',external:true}));
  b.onResolve({filter:/^@\/lib\/supabase$/},()=>({path:'synthetic-supabase',external:true}));
  b.onResolve({filter:/^@\/stores\/appStore$/},()=>({path:'synthetic-core',external:true}));
@@ -58,6 +58,8 @@ export function authFixture({enabled=true,session={user:{id:'synthetic-remote-a'
   async focus(){for(const fn of listeners.window.get('focus')??[])fn();await settle();},
   async visibility(value){visibility=value;for(const fn of listeners.document.get('visibilitychange')??[])fn();await settle();},
   async runTimers(){const pending=[...timers];for(const [id,timer]of pending){timers.delete(id);await timer.fn();}await settle();},
-  async close(){await mod.exports.useAuthStore.getState().signOut();},
+  async close(){},
+  // Inert stand-in kept only for post-restore-barrier.test.mjs (outside LOTE 8 scope); drop with its call.
+  useAuthStore:{getState:()=>({initialize:async()=>{},signOut:async()=>{}})},
  };
 }

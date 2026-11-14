@@ -1,44 +1,108 @@
-.elemental-topbar { position: sticky; top: 0; z-index: 40; padding-top: env(safe-area-inset-top); background: #080b12f2; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid rgb(var(--el-gold) / .16); }
-.elemental-topbar-inner { display: flex; align-items: center; gap: 18px; min-height: 76px; max-width: 1104px; margin: auto; padding: 12px 32px; }
-.elemental-topbar-brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; color: rgb(var(--el-text)); font: 400 11px/1.25 Cinzel, Georgia, serif; }
-.elemental-topbar-brand > svg { color: rgb(var(--el-gold)); }
-.elemental-topbar-brand strong { display: block; font-size: var(--ds-text-body); font-weight: 500; }
-.elemental-topbar-location { border-left: 1px solid rgb(var(--el-gold) / .2); padding-left: 18px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.elemental-topbar-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
-.elemental-topbar button, .elemental-account-button { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 12px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); }
-.elemental-topbar-actions > button:first-child { padding-inline: 10px; }
-.elemental-account-button { border: 1px solid rgb(var(--el-gold) / .3); background: rgb(var(--el-gold) / .06); }
-.elemental-topbar :is(button,a):focus-visible, .elemental-account-button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
-.elemental-topbar button:hover, .elemental-account-button:hover { background: rgb(var(--el-gold) / .12); }
-@media (min-width: 768px) { .elemental-topbar { margin-left: 18rem; } }
-@media (max-width: 640px) { .elemental-topbar-inner { min-height: 68px; padding: 10px 16px; gap: 8px; } .elemental-topbar-location { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); } .elemental-topbar-actions { gap: 6px; } .elemental-topbar-brand { gap: 7px; } }
-@media (max-width: 380px) { .elemental-topbar-actions > button:first-child > span { display: none; } }
-
 /*
- * The resources, kept on screen wherever you are. They used to live on the
- * Sanctuary alone, which meant that everywhere else they did not exist -- a
- * resource you cannot see while you spend it is a number on another page.
- *
- * One row, compact on purpose: this is a status line, not the panel. The
- * Sanctuary keeps the detailed view.
+ * The only header: a temple lintel. A dark band with one gold thread at its
+ * base, Cinzel for the place, fine-line sigils, gold only for what is active
+ * or earned. Two rows on a phone (place, then the resource thread); one row
+ * from 1180px.
  */
-.hud-recursos {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  max-width: 1104px;
-  margin: auto;
-  padding: 0 clamp(14px, 4vw, 32px) 9px;
+.elemental-topbar {
+  --hdr-linha: 52px;
+  --hdr-hud: 44px;
+  --hdr-fio: rgb(var(--el-gold) / .16);
+  --hdr-raio: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: env(safe-area-inset-top);
+  background: var(--ds-surface-float);
+  -webkit-backdrop-filter: blur(var(--ds-blur-soft));
+  backdrop-filter: blur(var(--ds-blur-soft));
+  border-bottom: 1px solid var(--hdr-fio);
 }
 
-.hud-nivel { flex-shrink: 0; }
+.elemental-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-block-size: var(--hdr-linha);
+  padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+}
 
+.elemental-topbar :is(button, a) { -webkit-tap-highlight-color: transparent; }
+
+.elemental-topbar button,
+.elemental-account-button {
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--hdr-raio);
+  background: transparent;
+  color: rgb(var(--el-gold));
+  font: 400 var(--ds-text-small)/1.2 Cinzel, Georgia, serif;
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.elemental-topbar button:hover,
+.elemental-account-button:hover { background: rgb(var(--el-gold) / .1); }
+.elemental-topbar :is(button, a):focus-visible,
+.elemental-account-button:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+
+.elemental-account-seal { display: inline-flex; }
+
+.elemental-topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 10px;
+  min-inline-size: 44px;
+  min-block-size: 44px;
+  color: rgb(var(--el-text));
+  font: 400 var(--ds-text-micro)/1.25 Cinzel, Georgia, serif;
+}
+.elemental-topbar-brand > svg { color: rgb(var(--el-gold)); }
+.elemental-topbar-brand > span { display: none; }
+.elemental-topbar-brand strong { display: block; font-size: var(--ds-text-body); font-weight: 500; }
+
+/* The place never disappears, not even on a phone: it ellipsises instead. */
+.elemental-topbar-location {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgb(var(--el-text));
+  font: 500 var(--ds-text-lead)/1.2 Cinzel, Georgia, serif;
+}
+
+.elemental-topbar-actions { display: flex; align-items: center; gap: 0; margin-inline-start: auto; flex-shrink: 0; }
+.elemental-topbar-actions > button > span:not(.elemental-account-seal) { display: none; }
+
+.elemental-topbar-abas { display: none; }
+
+/* -- the resource thread ("Fio do Nivel") -- */
+.hud-recursos { padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); }
+
+.elemental-topbar .hud-fio {
+  inline-size: 100%;
+  block-size: var(--hdr-hud);
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 0;
+  border-radius: var(--hdr-raio);
+}
+.elemental-topbar .hud-fio:hover { background: transparent; }
+
+.hud-nivel { display: inline-flex; flex-shrink: 0; }
 .hud-selo {
   display: grid;
   place-items: center;
-  inline-size: 26px;
-  block-size: 26px;
-  border: 1px solid rgb(var(--el-gold) / 52%);
+  inline-size: 28px;
+  block-size: 28px;
+  border: 1.5px solid rgb(var(--el-gold));
   border-radius: 50%;
   color: rgb(var(--el-gold));
   font-family: Cinzel, Georgia, serif;
@@ -46,65 +110,131 @@
   font-variant-numeric: tabular-nums;
 }
 
-.hud-xp {
+.hud-trilho {
+  position: relative;
   flex: 1 1 auto;
-  min-width: 0;
-  display: grid;
-  gap: 3px;
-}
-
-.hud-xp-trilho {
-  block-size: 4px;
+  min-inline-size: 0;
+  block-size: 2px;
   border-radius: 999px;
   background: rgb(var(--el-muted) / 20%);
-  overflow: hidden;
 }
-
-.hud-xp-trilho > span {
+.hud-trilho > span {
+  position: relative;
   display: block;
   block-size: 100%;
   border-radius: inherit;
-  background: linear-gradient(to right, rgb(var(--el-action)), rgb(var(--el-gold)));
+  background: rgb(var(--el-gold));
   transition: inline-size var(--ds-duration-settle) var(--ds-ease);
 }
-
-.hud-xp small {
-  color: rgb(var(--el-muted));
-  font-size: var(--ds-text-micro);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+/* The glowing tip of the thread. */
+.hud-trilho > span::after {
+  content: '';
+  position: absolute;
+  inset-inline-end: -2px;
+  inset-block-start: 50%;
+  inline-size: 4px;
+  block-size: 4px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: rgb(var(--el-gold));
+  box-shadow: 0 0 6px 1px rgb(var(--el-gold) / .7);
 }
 
-.hud-marcas {
-  display: flex;
-  gap: 10px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  flex-shrink: 0;
+.hud-contas { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.hud-conta {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 22px;
+  block-size: 22px;
+  color: var(--hud-cor, rgb(var(--el-muted)));
+}
+.hud-anel { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; stroke: currentColor; }
+.hud-anel-trilho { stroke-opacity: .22; }
+.hud-anel-arco { transition: stroke-dasharray var(--ds-duration-settle) var(--ds-ease); }
+
+/* Reading states: only how the existing rules look, never the rules. */
+.hud-conta[data-recurso="vida"][data-estado="base"] .hud-anel,
+.hud-conta[data-estado="baixo"] .hud-anel { opacity: .45; }
+.hud-conta[data-estado="baixo"] > svg:not(.hud-anel) { opacity: .6; }
+.hud-conta[data-estado="esgotado"] { opacity: .45; }
+.hud-conta[data-estado="repouso"] { color: rgb(var(--el-muted)); }
+
+/* -- the tray: overlays inside the header, never pushes the page -- */
+.hud-bandeja {
+  position: absolute;
+  inset-inline: 16px;
+  inset-block-start: 100%;
+  z-index: 1;
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-block-start: 6px;
+  border-radius: var(--hdr-raio);
+  /* The sunken tone sits on an opaque base so text over the page stays legible. */
+  background: linear-gradient(var(--ds-surface-sunken), var(--ds-surface-sunken)), rgb(var(--el-surface));
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--ds-duration-reveal) var(--ds-ease-exit),
+    opacity var(--ds-duration-reveal) var(--ds-ease-exit),
+    visibility 0s linear var(--ds-duration-reveal);
+}
+.hud-bandeja[data-aberto="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--ds-duration-reveal) var(--ds-ease),
+    opacity var(--ds-duration-reveal) var(--ds-ease),
+    visibility 0s;
+}
+.hud-bandeja-miolo { min-block-size: 0; overflow: hidden; border-radius: inherit; }
+.hud-bandeja-conteudo { display: grid; gap: 12px; padding: 16px; }
+.hud-bandeja-nivel { margin: 0; color: rgb(var(--el-text)); font-size: var(--ds-text-small); font-variant-numeric: tabular-nums; }
+.hud-bandeja-barra { block-size: 2px; border-radius: 999px; background: rgb(var(--el-muted) / 20%); }
+.hud-bandeja-barra > span { display: block; block-size: 100%; border-radius: inherit; background: rgb(var(--el-gold)); }
+
+.hud-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; margin: 0; }
+.hud-item { min-inline-size: 0; color: var(--hud-cor); }
+.hud-item dt { display: flex; align-items: center; gap: 8px; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); }
+.hud-item dt > svg { color: var(--hud-cor); }
+.hud-item dd { margin: 4px 0 0; color: rgb(var(--el-text)); font: 500 var(--ds-text-body)/1.3 Cinzel, Georgia, serif; font-variant-numeric: tabular-nums; }
+.hud-item dd > small { display: block; margin-block-start: 2px; color: rgb(var(--el-muted)); font: 400 var(--ds-text-micro)/1.35 Inter, system-ui, sans-serif; }
+.hud-item[data-estado="repouso"] dt > svg { color: rgb(var(--el-muted)); }
+
+/* -- from 768px: tabs, the Explorar label, the rail offset -- */
+@media (min-width: 768px) {
+  .elemental-topbar-inner { padding-inline: 32px; gap: 8px; }
+  .hud-recursos { padding-inline: 32px; }
+  .elemental-topbar[data-lugar="interna"] { margin-inline-start: 18rem; }
+  .elemental-topbar-brand > span { display: block; }
+  .elemental-topbar[data-lugar="santuario"] .elemental-topbar-brand > span { display: none; }
+  .elemental-topbar-location { flex: 0 1 auto; padding-inline-start: 16px; border-inline-start: 1px solid var(--hdr-fio); font-size: var(--ds-text-body); }
+  .elemental-topbar-abas { display: flex; align-items: center; gap: 4px; margin-inline-start: 12px; }
+  .elemental-topbar-abas a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 44px;
+    padding-inline: 12px;
+    color: rgb(var(--el-muted));
+    font: 400 var(--ds-text-small)/1.2 Cinzel, Georgia, serif;
+    border-block-end: 2px solid transparent;
+    transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+  }
+  .elemental-topbar-abas a:hover { color: rgb(var(--el-text)); }
+  .elemental-topbar-abas a[aria-current="page"] { color: rgb(var(--el-gold)); border-block-end-color: rgb(var(--el-gold)); }
+  .elemental-topbar-actions > button > span:not(.elemental-account-seal) { display: inline; }
+  .hud-bandeja { inset-inline: auto 32px; inline-size: min(560px, calc(100% - 64px)); }
+  .hud-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
-.hud-marcas li {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: rgb(var(--el-text) / 82%);
-  font-size: var(--ds-text-micro);
-  font-variant-numeric: tabular-nums;
-}
-
-.hud-marcas li:nth-child(1) svg { color: #f5ad83; }
-.hud-marcas li:nth-child(2) svg { color: #e0708a; }
-.hud-marcas li:nth-child(3) svg { color: #e8c572; }
-.hud-marcas li:nth-child(4) svg { color: #8bcee3; }
-
-/* The XP figure is the first thing to go when there is no room for it. */
-@media (max-width: 420px) {
-  .hud-recursos { gap: 9px; }
-  .hud-xp small { display: none; }
-  .hud-marcas { gap: 8px; }
+/* One row of 64px from 1180px. */
+@media (min-width: 1180px) {
+  .elemental-topbar { display: flex; align-items: center; }
+  .elemental-topbar-inner { flex: 1 1 auto; min-inline-size: 0; min-block-size: 64px; padding-inline-end: 0; }
+  .hud-recursos { flex: 0 0 clamp(280px, 28vw, 360px); padding-inline: 16px 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hud-xp-trilho > span { transition: none; }
+  .hud-trilho > span, .hud-anel-arco, .hud-bandeja, .elemental-topbar button, .elemental-topbar-abas a { transition: none; }
 }

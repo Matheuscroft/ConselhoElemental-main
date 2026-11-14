@@ -1,21 +1,37 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Menu } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { HudRecursos } from './HudRecursos';
 
+const ABAS = [
+  { to: '/santuario', rotulo: 'Santuário' },
+  { to: '/pilares', rotulo: 'Pilares' },
+  { to: '/ciclos', rotulo: 'Ciclos' },
+] as const;
+
+/** Text tabs like Ciclos' Rotina/Sequências switcher; hidden below 768px by CSS. */
+function AbasDeLugares() {
+  const { pathname } = useLocation();
+  return <nav aria-label="Lugares principais" className="elemental-topbar-abas">
+    {ABAS.map((aba) => <Link key={aba.to} to={aba.to} aria-current={pathname === aba.to || pathname.startsWith(`${aba.to}/`) ? 'page' : undefined}>{aba.rotulo}</Link>)}
+  </nav>;
+}
+
 /** Presentation only: account and navigation operations stay with TopBar. */
-export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, children }: {
+export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, children, lugar = 'interna', abas = true }: {
   title: string; onBack?: () => void; onExplore: () => void;
   exploreOpen: boolean; children: ReactNode;
+  lugar?: 'santuario' | 'interna'; abas?: boolean;
 }) {
-  return <header className="elemental-topbar">
+  return <header className="elemental-topbar" data-lugar={lugar}>
     <div className="elemental-topbar-inner">
       {onBack && <button type="button" className="elemental-topbar-back" onClick={onBack} aria-label="Voltar à página anterior"><ArrowLeft size={20} /></button>}
-      <Link to="/santuario" className="elemental-topbar-brand" aria-label="Conselho Elemental — Santuário"><ArcaneIcon name="santuario" size={32} /><span>Conselho<strong>Elemental</strong></span></Link>
-      <h1 className="elemental-topbar-location">{title}</h1>
+      <Link to="/santuario" className="elemental-topbar-brand" aria-label="Conselho Elemental — Santuário"><ArcaneIcon name="santuario" size={28} /><span>Conselho<strong>Elemental</strong></span></Link>
+      <h1 className="elemental-topbar-location">{lugar === 'santuario' ? 'Conselho Elemental' : title}</h1>
+      {abas && <AbasDeLugares />}
       <nav aria-label="Navegação global" className="elemental-topbar-actions">
-        <button type="button" onClick={onExplore} aria-label="Explorar todas as páginas" aria-haspopup="dialog" aria-expanded={exploreOpen}><Menu size={20} aria-hidden="true" /><span>Explorar</span></button>
+        <button type="button" onClick={onExplore} aria-label="Explorar todas as páginas" aria-haspopup="dialog" aria-expanded={exploreOpen}><ArcaneIcon name="explorar" size={28} /><span>Explorar</span></button>
         {children}
       </nav>
     </div>
@@ -24,5 +40,5 @@ export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, childre
 }
 
 export function AccountSeal() {
-  return <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M12 2 21 7v10l-9 5-9-5V7l9-5Z M12 6a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z M6 18c1-6 11-6 12 0" /></svg>;
+  return <span className="elemental-account-seal" aria-hidden="true"><ArcaneIcon name="conta" size={28} /></span>;
 }

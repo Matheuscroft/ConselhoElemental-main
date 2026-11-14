@@ -1,4 +1,5 @@
 import { ACCOUNT_TAB_ACCESS_KEY } from './lib/backup/account-resume-entry';
+import { accountAccessStorage } from './lib/backup/account-access-storage';
 import { resumeAccountSession } from './lib/backup/resume-account-session';
 import { hasExclusiveProgressSession } from './lib/backup/progress-startup';
 import { isRestoredLocalDocument } from './lib/backup/progress-mode';
@@ -7,17 +8,17 @@ import { ACCOUNT_BINDING_KEY } from './lib/backup/account-binding';
 
 /** Loaded under the exclusive progress lease; failures never fall through to App. */
 export async function mountAccountResume(root: HTMLElement) {
-  let captured: string | null | undefined;
+  // The record stays wherever it was saved (this tab or this device); reads cover both.
+  const access=accountAccessStorage(undefined,window);
   try {
-    captured=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY);
     const config={url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY};
     if(window.localStorage.getItem(ACCOUNT_BINDING_KEY)!==null){
       if(!isRestoredLocalDocument())throw new Error('Confira o vínculo local.');
-      const session=await resumeAccountSession({config,origin:window.location.origin,storage:window.localStorage,accessStorage:window.sessionStorage,isExclusive:hasExclusiveProgressSession});
+      const session=await resumeAccountSession({config,origin:window.location.origin,storage:window.localStorage,accessStorage:access,isExclusive:hasExclusiveProgressSession});
       try { await mountAccountApp(root,session); } catch(error) { session.dispose();throw error; }
     }else{
       const {resumeAuthenticatedAccountSession}=await import('./lib/backup/resume-authenticated-account');
-      const session=await resumeAuthenticatedAccountSession({config,origin:window.location.origin,accessStorage:window.sessionStorage,isCurrent:hasExclusiveProgressSession});
+      const session=await resumeAuthenticatedAccountSession({config,origin:window.location.origin,accessStorage:access,isCurrent:hasExclusiveProgressSession});
       try{const {mountAuthenticatedAccountApp}=await import('./mount-authenticated-account-app');await mountAuthenticatedAccountApp(root,session);}
       catch(error){session.dispose();throw error;}
     }
@@ -31,9 +32,9 @@ export async function mountAccountResume(root: HTMLElement) {
     const forget=document.createElement('button');forget.type='button';forget.textContent='Esquecer acesso salvo';
     forget.onclick=()=>{
       try{
-        if(captured===undefined || window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)!==captured)throw new Error();
-        window.sessionStorage.removeItem(ACCOUNT_TAB_ACCESS_KEY);
-        if(window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY)!==null)throw new Error();
+        // Explicit action: clears this device and this tab. A restore may already have rotated the saved pair.
+        access.removeItem(ACCOUNT_TAB_ACCESS_KEY);
+        if(access.getItem(ACCOUNT_TAB_ACCESS_KEY)!==null)throw new Error();
         window.location.assign('/?progresso=conta');
       }catch{message.textContent='Não foi possível esquecer este acesso. Abra a conferência da conta; seu progresso não foi alterado.';}
     };

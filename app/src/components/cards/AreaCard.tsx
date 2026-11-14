@@ -1,6 +1,5 @@
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
-import { motion } from 'framer-motion';
 import type { Area } from '@/types';
 import { ELEMENTS } from '@/constants';
 
@@ -20,96 +19,38 @@ export const AreaCard: React.FC<AreaCardProps> = ({
   compact = false,
 }) => {
   const element = ELEMENTS[area.elementId];
+  const interactive = onClick ? {
+    role: 'button' as const,
+    tabIndex: 0,
+    onKeyDown: (event: React.KeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } },
+  } : {};
 
   if (compact) {
     return (
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        onClick={onClick}
-        role={onClick ? 'button' : undefined}
-        tabIndex={onClick ? 0 : undefined}
-        onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
-        className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/10 
-                   hover:border-white/20 transition-colors cursor-pointer"
-      >
-        <div 
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-xl"
-          style={{ backgroundColor: `${area.color}20` }}
-        >
-          <ElementIcon element={element.id} />
+      <div onClick={onClick} {...interactive} className="ds-linha" data-element={area.elementId}>
+        <ElementIcon element={element.id} size={28} />
+        <div className="min-w-0">
+          <p className="truncate">{area.name}</p>
+          <p className="ds-nota">{element.name}</p>
         </div>
-        
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-white truncate">{area.name}</p>
-          <p className="text-xs text-white/40">{element.name}</p>
-        </div>
-        
-        <div className="text-right">
-          <p className="text-sm font-bold text-mystic-gold">{score}</p>
-          <p className="text-[10px] text-white/40">pts</p>
-        </div>
-      </motion.div>
+        <span className="ds-linha-valor">{score}<small className="ds-nota"> pts</small></span>
+      </div>
     );
   }
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.01, y: -2 }}
-      whileTap={{ scale: 0.99 }}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
-      className="relative p-4 rounded-2xl overflow-hidden cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold
-                 border border-white/10 hover:border-white/20 transition-all"
-      style={{
-        background: `linear-gradient(135deg, ${area.color}10 0%, rgba(26, 16, 37, 0.9) 100%)`,
-      }}
-    >
-      {/* Glow effect */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          boxShadow: `inset 0 0 40px ${element.glow}`,
-        }}
-      />
-
-      <div className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div 
-              className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-              style={{ backgroundColor: `${area.color}30` }}
-            >
-              <ElementIcon element={element.id} />
-            </div>
-            
-            <div>
-              <h3 className="font-medium text-white">{area.name}</h3>
-              <p className="text-xs text-white/50">{element.name}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center gap-4">
-            <div>
-              <p className="text-2xl font-bold text-mystic-gold">{score}</p>
-              <p className="text-[10px] text-white/40">pontos</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{taskCount}</p>
-              <p className="text-[10px] text-white/40">rituais</p>
-            </div>
-          </div>
-          
-          <div 
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: area.color }}
-          />
+    <div onClick={onClick} {...interactive} className="ds-runa" data-element={area.elementId}>
+      <div className="ds-runa-cabeca">
+        <ElementIcon element={element.id} size={28} />
+        <div className="min-w-0 flex-1">
+          <h3 className="ds-runa-titulo">{area.name}</h3>
+          <p className="ds-nota">{element.name}</p>
         </div>
       </div>
-    </motion.div>
+      <div className="ds-cifras">
+        <div className="ds-cifra">{score}<small>pontos</small></div>
+        <div className="ds-cifra">{taskCount}<small>rituais</small></div>
+      </div>
+    </div>
   );
 };

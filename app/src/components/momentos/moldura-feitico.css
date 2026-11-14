@@ -1,0 +1,276 @@
+/*
+ * The frame of the open card: a hairline, four corner brackets and the four
+ * alchemical triangles (SVG, pinned to the card and turning with the rail),
+ * plus one canvas of orbiting light over the whole Reel. No backdrop-filter
+ * here; the canvas never covers the card, it is only the halo around it.
+ *
+ * The colour of the day arrives as --runa-cor on the card, set by the
+ * component. Without it the frame is gold.
+ */
+
+/*
+ * Centred on the open card: the rail pads 10px above it and the card is 3:4.
+ * The canvas leaves --moldura-margem of room on every side: 24px at level 1,
+ * 40px from level 2, where the element is drawn on the border. The value must
+ * match MARGEM_POR_NIVEL in moldura.ts, which the shader uses.
+ */
+.reel-feitico {
+  --moldura-margem: 24px;
+  position: absolute;
+  inset-block-start: calc(10px + var(--reel-largura) * 2 / 3);
+  inset-inline-start: 50%;
+  inline-size: calc(var(--reel-largura) + var(--moldura-margem) * 2);
+  block-size: calc(var(--reel-largura) * 4 / 3 + var(--moldura-margem) * 2);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0;
+  /* Leaving is a feedback beat; the Reel dims it as soon as the rail moves. */
+  transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+  /* Above the neighbours (z-index 1..3) and the open card (4): it only draws outside the card. */
+  z-index: 5;
+}
+
+.reel-feitico[data-visivel='true'][data-modo='3d'][data-pronto='true'] {
+  opacity: 1;
+  transition-duration: var(--ds-duration-reveal);
+}
+
+.reel-feitico canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.reel-feitico[data-nivel='2'],
+.reel-feitico[data-nivel='3'] { --moldura-margem: 40px; }
+
+.reel-feitico[data-modo='simples'] { display: none; }
+
+/* The ascension overflow: the canvas opens wider for its duration, so the reach is not clipped. */
+.reel-feitico[data-transbordo='true'] { --moldura-margem: 44px; }
+.reel-feitico[data-nivel='2'][data-transbordo='true'],
+.reel-feitico[data-nivel='3'][data-transbordo='true'] { --moldura-margem: 60px; }
+
+/*
+ * Reduced motion: no overflow and no leap, only a still, brief glow on the
+ * frame while the new level and colour are applied (set by the Reel for a
+ * fixed time). No transition: it appears and goes.
+ */
+.reel-palco[data-realce='true'] .reel-feitico { filter: brightness(1.7) saturate(1.3); }
+
+/*
+ * The leap of level 3: a canvas as big as the window, in a portal on the body.
+ * It sits above the page (main is 10) and the topbar (40), and below the
+ * bottom bar and every dialog (50). It never takes a touch, and while no leap
+ * is running it is hidden, so it costs nothing.
+ */
+.reel-dobra {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.reel-dobra[data-ativa='true'] { visibility: visible; }
+
+.reel-dobra canvas {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+/* The hairline, inset 6px from the edge of the card. */
+.reel-moldura[data-ativo='true']::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  z-index: 1;
+  border: 1px solid rgb(var(--el-gold) / 55%);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.reel-moldura[data-ativo='true'][data-foto='sim']::before {
+  box-shadow: 0 0 0 1px rgb(7 11 18 / 50%);
+}
+
+.reel-runas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.reel-cantoneira {
+  position: absolute;
+  inline-size: 16px;
+  block-size: 16px;
+  fill: none;
+  stroke: rgb(var(--el-gold));
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.85;
+  animation: reel-runa-entra var(--ds-duration-reveal) var(--ds-ease) both;
+}
+
+.reel-cantoneira .reel-losango { fill: rgb(var(--el-gold)); stroke: none; }
+
+.reel-cantoneira[data-canto='nw'] { inset-block-start: 6px; inset-inline-start: 6px; }
+.reel-cantoneira[data-canto='ne'] { inset-block-start: 6px; inset-inline-end: 6px; transform: scaleX(-1); }
+.reel-cantoneira[data-canto='se'] { inset-block-end: 6px; inset-inline-end: 6px; transform: scale(-1, -1); }
+.reel-cantoneira[data-canto='sw'] { inset-block-end: 6px; inset-inline-start: 6px; transform: scaleY(-1); }
+
+.reel-triangulo {
+  position: absolute;
+  inline-size: 14px;
+  block-size: 14px;
+  /* Centred on the hairline, 6px in from the edge. */
+  --recuo: calc(6px - 7px);
+}
+
+.reel-triangulo circle { fill: rgb(7 11 18 / 70%); }
+
+.reel-triangulo polygon,
+.reel-triangulo line {
+  fill: none;
+  stroke: rgb(var(--el-gold) / 70%);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  transition: stroke var(--ds-duration-reveal) var(--ds-ease), fill var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.reel-triangulo[data-lado='topo'] { inset-block-start: var(--recuo); inset-inline-start: calc(50% - 7px); }
+.reel-triangulo[data-lado='base'] { inset-block-end: var(--recuo); inset-inline-start: calc(50% - 7px); }
+.reel-triangulo[data-lado='esquerda'] { inset-inline-start: var(--recuo); inset-block-start: calc(50% - 7px); }
+.reel-triangulo[data-lado='direita'] { inset-inline-end: var(--recuo); inset-block-start: calc(50% - 7px); }
+
+/* A lit triangle takes the colour of the day and a soft glow of its own. */
+.reel-triangulo[data-aceso='true'] polygon { stroke: var(--runa-cor, rgb(var(--el-gold))); fill: rgb(var(--el-canvas) / 0%); }
+.reel-triangulo[data-aceso='true'] line { stroke: var(--runa-cor, rgb(var(--el-gold))); }
+.reel-triangulo[data-aceso='true'] { filter: drop-shadow(0 0 3px var(--runa-cor, rgb(var(--el-gold)))); }
+
+@keyframes reel-runa-entra {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+
+/* A conquered day: brackets swell 1 -> 1.08 -> 1, then the triangles light in turn. */
+@keyframes reel-conquista-a {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.08; }
+}
+
+@keyframes reel-conquista-b {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.08; }
+}
+
+@keyframes reel-triangulo-acende-a {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+@keyframes reel-triangulo-acende-b {
+  from { opacity: 0.2; }
+  to { opacity: 1; }
+}
+
+.reel-runas[data-conquista='a'] .reel-cantoneira { animation: reel-conquista-a var(--ds-duration-conjure) var(--ds-ease-conjure) both; }
+.reel-runas[data-conquista='b'] .reel-cantoneira { animation: reel-conquista-b var(--ds-duration-conjure) var(--ds-ease-conjure) both; }
+
+.reel-runas[data-conquista='a'] .reel-triangulo[data-aceso='true'] {
+  animation: reel-triangulo-acende-a var(--ds-duration-settle) var(--ds-ease) both;
+  animation-delay: calc(var(--ordem) * var(--ds-stagger));
+}
+
+.reel-runas[data-conquista='b'] .reel-triangulo[data-aceso='true'] {
+  animation: reel-triangulo-acende-b var(--ds-duration-settle) var(--ds-ease) both;
+  animation-delay: calc(var(--ordem) * var(--ds-stagger));
+}
+
+/*
+ * Level 3, the premium border. A second filet outside the hairline (::after at
+ * 3px; the hairline stays at 6px), a beaded filigree inside it, a light that
+ * runs along the filigree, one more ornament on each bracket, and the four
+ * triangles turning slowly in their discs. Only at data-nivel='3'; reduced
+ * motion has already made the level 1.
+ */
+.reel-moldura[data-ativo='true'][data-nivel='3']::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  z-index: 1;
+  border: 1px solid rgb(var(--el-gold) / 38%);
+  border-radius: 19px;
+  pointer-events: none;
+}
+
+.reel-filigrana {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  inline-size: calc(100% - 20px);
+  block-size: calc(100% - 20px);
+  fill: none;
+  overflow: visible;
+}
+
+/* The rect is 120x160 in a box that is 3:4 within 4%, so the stroke scales evenly. */
+.reel-filigrana rect { stroke-linecap: round; }
+
+.reel-filigrana-fio {
+  stroke: rgb(var(--el-gold) / 45%);
+  stroke-width: 1.4;
+  stroke-dasharray: 0.6 2.4;
+}
+
+/* The light is a short dash that runs the whole filet; the halo is the same dash, wider and faint. */
+.reel-filigrana-luz {
+  stroke: rgb(var(--el-gold));
+  stroke-width: 1.8;
+  stroke-dasharray: 9 91;
+  animation: reel-filigrana-corre calc(var(--ds-duration-conjure) * 8) linear infinite;
+}
+
+.reel-filigrana-halo {
+  stroke: rgb(var(--el-gold) / 28%);
+  stroke-width: 5;
+}
+
+.reel-runas[data-nivel='3'] .reel-adorno {
+  stroke: rgb(var(--el-gold) / 60%);
+  stroke-width: 1;
+}
+
+.reel-runas[data-nivel='3'] .reel-gota { fill: rgb(var(--el-gold)); stroke: none; }
+
+.reel-runas[data-nivel='3'] .reel-triangulo polygon,
+.reel-runas[data-nivel='3'] .reel-triangulo line {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: reel-triangulo-gira calc(var(--ds-duration-conjure) * 12) linear infinite;
+}
+
+@keyframes reel-filigrana-corre {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -100; }
+}
+
+@keyframes reel-triangulo-gira {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion: a still frame, lit and complete, with no burst. */
+.reel-momentos[data-reduzido='true'] .reel-cantoneira,
+.reel-momentos[data-reduzido='true'] .reel-triangulo { animation: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-cantoneira,
+  .reel-triangulo,
+  .reel-filigrana-luz,
+  .reel-triangulo polygon,
+  .reel-triangulo line { animation: none !important; }
+}

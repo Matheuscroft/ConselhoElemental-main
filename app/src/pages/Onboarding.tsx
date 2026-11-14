@@ -6,14 +6,11 @@ import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ELEMENTS, getAreasByElement } from '@/constants';
 import type { ElementId } from '@/types';
 import { useAppStore } from '@/stores/appStore';
-import { useAuthStore } from '@/stores/authStore';
-import { isSupabaseAuthEnabled } from '@/lib/supabase';
 
 const ELEMENT_ORDER: ElementId[] = ['terra', 'fogo', 'agua', 'ar'];
 const examples = { terra: 'Corpo, saúde, casa e recursos.', fogo: 'Trabalho, iniciativa e projetos.', agua: 'Relações, emoções e cuidado.', ar: 'Estudo, ideias e conhecimento.' };
 
 export function Onboarding() {
-  const authUser = useAuthStore(state => state.user);
   const onboarding = useAppStore(state => state.onboarding);
   const hasDomainData = useAppStore(state => state.tasks.length + state.habits.length + state.projects.length + state.quests.length + state.drafts.length + state.cycleSequences.length > 0);
   const setOnboardingStep = useAppStore(state => state.setOnboardingStep);
@@ -22,7 +19,6 @@ export function Onboarding() {
   const completeOnboarding = useAppStore(state => state.completeOnboarding);
   const selectedAreaSet = useMemo(() => new Set(onboarding.selectedAreas), [onboarding.selectedAreas]);
 
-  if (isSupabaseAuthEnabled && !authUser) return <Navigate to="/auth" replace />;
   if (onboarding.isComplete || hasDomainData) return <Navigate to="/santuario" replace />;
   const toggle = (id: string) => selectedAreaSet.has(id) ? deselectArea(id) : selectArea(id);
   const choosing = onboarding.step >= 1;

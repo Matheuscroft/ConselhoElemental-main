@@ -1,0 +1,560 @@
+/*
+ * The mage's level ceremony: three scenes that hit one after the other.
+ *   1. Impact  (~1.6 s): flash, a slanted panel with the mage, the title.
+ *   2. Cards   (~2.2 s): the mage settles, four element cards jump in.
+ *   3. Number  (~2.6 s): a grey seal drops, lights up, counts, the bar fills.
+ *
+ * The final scene is the base style of every element. Each scene only animates
+ * towards that base, so the end state (and reduced motion, and a skip) is
+ * simply "no animation". Only transform, opacity and clip-path move.
+ * Whole screen above the header and the notices; no blur, the veil is opaque.
+ * Timings are multiples of the motion tokens, never numbers of their own.
+ */
+.cerimonia-nivel {
+  /* Constants of the ceremony's own palette (the four elements come from the app). */
+  --cn-fundo: #05070c;          /* the dark the scenes sit on */
+  --cn-flash: #fff6d6;          /* the near-white gold of the flash */
+  --cn-petroleo: #0e4a5a;       /* panel gradient, start: deep teal */
+  --cn-esmeralda: #12805a;      /* panel gradient, middle: emerald */
+  --cn-ouro-claro: #f3dc9a;     /* light gold: highlights, shards */
+  --cn-ouro-escuro: #8a6a26;    /* dark gold: ring shadow side */
+  --cn-cinza: #5b616d;          /* the seal before it lights up */
+  --cn-cinza-escuro: #2a2e37;   /* the seal ring before it lights up */
+  --cn-borda: #fff3cf;          /* light edge of the gold button */
+  --ouro: rgb(var(--el-gold));
+  --c: var(--ds-duration-conjure);
+  --cn-mola: var(--ds-ease-conjure);
+  /* A real spring (settles with a few small rebounds) where the browser can draw it; the one-bump curve elsewhere. */
+
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  overflow: hidden;
+  background: var(--cn-fundo);
+  color: rgb(var(--el-text));
+  outline: none;
+}
+
+.cerimonia-nivel[data-reduzido='true'] {
+  animation: cn-abrir var(--ds-duration-reveal) var(--ds-ease) both;
+}
+
+@keyframes cn-abrir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cn-cena {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+/* ---------- The flash between scenes ---------- */
+.cn-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: var(--cn-flash);
+  opacity: 0;
+  animation: cn-clarao calc(var(--c) * 1.1) var(--ds-ease) both;
+}
+
+.cerimonia-nivel[data-cena='cartoes'] .cn-flash { background: var(--cn-esmeralda); }
+.cerimonia-nivel[data-cena='numero'] .cn-flash { background: var(--cn-ouro-claro); }
+
+@keyframes cn-clarao {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ---------- Scene 1: impact ---------- */
+.cn-painel {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 5%;
+  block-size: 56%;
+  clip-path: polygon(0 0, 100% 9%, 100% 90%, 0 100%);
+  overflow: hidden;
+  will-change: transform;
+  animation: cn-bater var(--c) var(--cn-mola) calc(var(--ds-duration-settle) * 0.3) both;
+}
+
+@keyframes cn-bater {
+  from { translate: -115% 0; rotate: -5deg; }
+  to { translate: 0 0; rotate: 0deg; }
+}
+
+.cn-painel__cor {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 40%, rgb(var(--el-gold) / 35%), transparent 70%),
+    linear-gradient(160deg, var(--cn-petroleo) 0%, var(--cn-esmeralda) 55%, var(--cn-ouro-escuro) 115%);
+}
+
+.cn-feixe {
+  position: absolute;
+  inset-inline-start: var(--esq);
+  inset-block: -20% auto;
+  inline-size: 5%;
+  block-size: 140%;
+  background: linear-gradient(180deg, transparent, rgb(255 255 255 / 55%) 40%, transparent);
+  opacity: 0;
+  rotate: 14deg;
+  animation: cn-varrer calc(var(--c) * 1.3) linear calc(var(--ds-duration-settle) + var(--i) * var(--ds-stagger) * 2) both;
+}
+
+@keyframes cn-varrer {
+  0% { opacity: 0; translate: -80% 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; translate: 380% 0; }
+}
+
+.cn-painel__mago {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: 50% 10%;
+  rotate: -6deg;
+  scale: 1.18;
+  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 45%));
+  animation: cn-mago-pop calc(var(--c) * 1.1) var(--cn-mola) calc(var(--ds-duration-settle) * 0.9) both;
+}
+
+@keyframes cn-mago-pop {
+  from { scale: 0.7; opacity: 0; }
+  to { scale: 1.18; opacity: 1; }
+}
+
+.cn-titulo-caixa {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 71%;
+  display: grid;
+  place-items: center;
+}
+
+.cn-titulo {
+  margin: 0;
+  color: var(--cn-ouro-claro);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-hero);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 0 24px rgb(var(--el-gold) / 55%), 0 3px 0 var(--cn-ouro-escuro);
+  scale: 1.45;
+  will-change: transform;
+  animation: cn-titulo-pop var(--c) var(--cn-mola) calc(var(--c) * 0.9) both;
+}
+
+@keyframes cn-titulo-pop {
+  from { scale: 0.1; opacity: 0; }
+  to { scale: 1.45; opacity: 1; }
+}
+
+.cn-estilhaco {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: var(--s);
+  block-size: var(--s);
+  margin: calc(var(--s) / -2) 0 0 calc(var(--s) / -2);
+  background: linear-gradient(135deg, var(--cn-flash), var(--cn-ouro-claro) 50%, var(--cn-ouro-escuro));
+  opacity: 0;
+  animation: cn-voar calc(var(--c) * 1.1) var(--ds-ease) calc(var(--c) * 0.95 + var(--i) * var(--ds-stagger) * 0.4) both;
+}
+
+.cn-estilhaco--losango { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.cn-estilhaco--triangulo { clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.cn-estilhaco--ponto { border-radius: 50%; }
+
+@keyframes cn-voar {
+  0% { opacity: 1; translate: 0 0; rotate: 0deg; scale: 0.4; }
+  100% { opacity: 0; translate: var(--tx) var(--ty); rotate: var(--rot); scale: 1.1; }
+}
+
+/* ---------- Scene 2: the four cards ---------- */
+.cn-halo {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 38%;
+  margin-inline: auto;
+  inline-size: 110vmin;
+  block-size: 110vmin;
+  translate: 0 -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(var(--el-gold) / 30%), rgb(var(--el-gold) / 8%) 45%, transparent 70%);
+}
+
+.cn-halo--topo {
+  inset-block-start: 22%;
+  animation: cn-respirar calc(var(--c) * 3) ease-in-out both;
+}
+
+@keyframes cn-respirar {
+  from { scale: 0.6; opacity: 0; }
+  50% { scale: 1; opacity: 1; }
+  to { scale: 1.08; opacity: 0.85; }
+}
+
+.cn-mago {
+  position: relative;
+  inline-size: min(60%, 260px);
+  block-size: 38dvh;
+  margin-block-start: 5dvh;
+  object-fit: contain;
+  object-position: 50% 0;
+  filter: drop-shadow(0 6px 16px rgb(0 0 0 / 50%));
+  will-change: transform;
+  animation: cn-assentar calc(var(--c) * 1.2) var(--cn-mola) both;
+}
+
+@keyframes cn-assentar {
+  from { translate: 0 22dvh; scale: 1.6; }
+  to { translate: 0 0; scale: 1; }
+}
+
+.cn-subtitulo {
+  position: relative;
+  margin: 10px 0 0;
+  color: rgb(var(--el-muted));
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--ds-text-lead);
+  letter-spacing: 0.08em;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--ds-duration-settle) * 0.6) both;
+}
+
+@keyframes cn-subir {
+  from { opacity: 0; translate: 0 24px; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+.cn-cartoes {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  inline-size: min(calc(100% - 40px), 380px);
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cn-cartao {
+  --cor: rgb(var(--el-gold));
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 10px;
+  min-block-size: 60px;
+  padding: 8px 14px 8px 8px;
+  border: 2px solid var(--cor);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--cor) 16%, var(--cn-fundo));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--cor) 35%, transparent);
+  will-change: transform;
+  animation:
+    cn-saltar var(--ds-duration-settle) var(--cn-mola) var(--atraso) both,
+    cn-vibrar var(--ds-duration-settle) ease-in-out calc(var(--atraso) + var(--ds-duration-settle) * 0.7) both;
+}
+
+@keyframes cn-saltar {
+  from { opacity: 0; scale: 0.2; translate: 0 44px; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
+}
+
+@keyframes cn-vibrar {
+  0%, 100% { rotate: 0deg; }
+  25% { rotate: -2.5deg; }
+  50% { rotate: 2.5deg; }
+  75% { rotate: -1.2deg; }
+}
+
+.cn-cartao__esfera {
+  grid-row: 1 / span 2;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.cn-cartao__nome {
+  align-self: end;
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-small);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.cn-cartao__nivel {
+  align-self: start;
+  color: var(--cor);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: var(--ds-text-micro);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Four-pointed sparks: around a card in the colour of its element, and around
+   the seal in gold. */
+.cn-faisca {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  inline-size: 14px;
+  block-size: 14px;
+  margin: -7px 0 0 -7px;
+  background: var(--cor, var(--cn-ouro-claro));
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0;
+  animation: cn-faiscar calc(var(--ds-duration-settle) * 1.6) var(--ds-ease) calc(var(--atraso, 0ms) + var(--ds-duration-settle) * 0.35 + var(--k) * var(--ds-stagger) * 0.5) both;
+}
+
+@keyframes cn-faiscar {
+  0% { opacity: 0; translate: 0 0; scale: 0; rotate: 0deg; }
+  20% { opacity: 1; scale: 1.1; }
+  100% { opacity: 0; translate: var(--tx) var(--ty); scale: 0.3; rotate: 90deg; }
+}
+
+/* ---------- Scene 3: the number (and the end state) ---------- */
+.cn-c3 {
+  justify-content: center;
+  gap: 14px;
+  padding: 24px 20px calc(96px + env(safe-area-inset-bottom));
+  text-align: center;
+}
+
+.cn-selo {
+  position: relative;
+  inline-size: min(46vw, 240px);
+  aspect-ratio: 1;
+  flex: none;
+  margin-block-end: 8px;
+}
+
+.cn-selo__corpo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, var(--cn-cinza-escuro), var(--cn-cinza), var(--cn-cinza-escuro), var(--cn-cinza), var(--cn-cinza-escuro));
+}
+
+/* The dark inner disc, above both rings (grey and gold), under the number. */
+.cn-selo__corpo::after {
+  content: '';
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, rgb(24 27 36), var(--cn-fundo));
+}
+
+.cn-selo__aceso {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 200deg, var(--cn-ouro-claro), var(--ouro), var(--cn-ouro-escuro), var(--ouro), var(--cn-ouro-claro));
+  box-shadow: 0 0 70px rgb(var(--el-gold) / 50%);
+}
+
+.cn-selo strong {
+  position: relative;
+  z-index: 1;
+  color: var(--cn-ouro-claro);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-hero);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  scale: 2.3;
+  text-shadow: 0 0 18px rgb(var(--el-gold) / 55%);
+}
+
+.cn-selo__onda {
+  position: absolute;
+  inset: 0;
+  border: 4px solid var(--cn-ouro-claro);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cn-nivel {
+  margin: 0;
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-fluid-display);
+  font-weight: 600;
+  line-height: var(--ds-leading-tight, 1.1);
+}
+
+.cn-titulo-pilula {
+  margin: 0;
+  padding: 4px 16px;
+  border: 1px solid rgb(var(--el-gold) / 55%);
+  border-radius: 999px;
+  color: var(--ouro);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-body);
+  letter-spacing: 0.08em;
+}
+
+.cn-progresso {
+  display: grid;
+  gap: 10px;
+  inline-size: min(100%, 340px);
+  margin-block-start: 6px;
+}
+
+.cn-progresso p {
+  margin: 0;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small);
+}
+
+.cn-barra {
+  inline-size: 100%;
+  block-size: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(var(--el-gold) / 14%);
+  box-shadow: inset 0 0 0 1px rgb(var(--el-gold) / 30%);
+}
+
+.cn-barra i {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cn-ouro-escuro), var(--ouro) 70%, var(--cn-flash));
+  box-shadow: 0 0 12px rgb(var(--el-gold) / 70%);
+  transform-origin: left center;
+  scale: var(--fracao) 1;
+}
+
+.cn-continuar {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: max(28px, env(safe-area-inset-bottom));
+  inline-size: min(calc(100% - 40px), 320px);
+  min-block-size: 44px;
+  margin-inline: auto;
+  border: 2px solid var(--cn-borda);
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--cn-ouro-claro), var(--ouro));
+  color: rgb(var(--el-canvas));
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-body);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.cn-continuar[data-pronto='false'] { pointer-events: none; }
+
+.cn-continuar:focus-visible {
+  outline: 2px solid rgb(var(--el-text));
+  outline-offset: 3px;
+}
+
+/* Before scene 3 the button is not there yet. */
+.cerimonia-nivel:is([data-cena='impacto'], [data-cena='cartoes']) .cn-continuar { visibility: hidden; }
+
+/* Scene 3 plays towards the base style above. */
+.cerimonia-nivel[data-cena='numero'] .cn-selo {
+  will-change: transform;
+  animation: cn-cair calc(var(--c) * 0.9) var(--cn-mola) both;
+}
+
+@keyframes cn-cair {
+  from { translate: 0 -95dvh; rotate: -8deg; }
+  to { translate: 0 0; rotate: 0deg; }
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-selo__aceso {
+  animation: cn-acender var(--ds-duration-settle) var(--ds-ease) var(--c) both;
+}
+
+@keyframes cn-acender {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-selo strong {
+  animation: cn-numero-acende var(--ds-duration-settle) var(--ds-ease) var(--c) both;
+}
+
+@keyframes cn-numero-acende {
+  from { color: var(--cn-cinza); text-shadow: none; }
+  to { color: var(--cn-ouro-claro); text-shadow: 0 0 18px rgb(var(--el-gold) / 55%); }
+}
+
+/* The count pulses once, as it starts. */
+.cerimonia-nivel[data-cena='numero'] .cn-selo[data-pulsa='true'] strong {
+  animation: cn-pulso var(--ds-duration-settle) var(--cn-mola) both;
+}
+
+@keyframes cn-pulso {
+  50% { scale: 2.65; }
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-selo__onda--a {
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) var(--c) both;
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-selo__onda--b {
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) calc(var(--c) + var(--ds-stagger) * 3) both;
+}
+
+@keyframes cn-onda {
+  from { opacity: 0.95; scale: 0.7; }
+  to { opacity: 0; scale: 2.6; }
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-faisca--selo {
+  animation-delay: calc(var(--c) + var(--k) * var(--ds-stagger) * 0.4);
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-halo {
+  animation: cn-respirar calc(var(--c) * 2) ease-in-out both;
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-nivel {
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.5) both;
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-titulo-pilula {
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.7) both;
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-progresso {
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.95) both;
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-barra i {
+  animation: cn-encher calc(var(--c) * 1.1) var(--cn-mola) calc(var(--c) * 2.1) both;
+}
+
+@keyframes cn-encher {
+  from { scale: 0 1; }
+  to { scale: var(--fracao) 1; }
+}
+
+.cerimonia-nivel[data-cena='numero'] .cn-continuar {
+  will-change: transform;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 2.9) both;
+}
+
+@supports (transition-timing-function: linear(0, 1)) {
+  .cerimonia-nivel { --cn-mola: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.077 22.1%, 1.121 24.7%, 1.149 27.4%, 1.158 30.1%, 1.134 36.3%, 1.077 41.5%, 1.036 46.5%, 1.012 51.4%, 0.996 57.4%, 0.99 63.7%, 1 100%); }
+}

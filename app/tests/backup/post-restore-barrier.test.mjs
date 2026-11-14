@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import {build} from 'esbuild';
 import {webcrypto} from 'node:crypto';
 import {fixture} from './load-progress.mjs';
-import {authFixture} from './load-auth-sync.mjs';
 const bundle=await build({stdin:{contents:`export * from './src/lib/backup/restore-journal';export * from './src/lib/backup/progress-startup';export * from './src/lib/backup/exclusive-restore';`,resolveDir:process.cwd(),loader:'ts'},bundle:true,platform:'node',format:'cjs',write:false,logLevel:'silent'});
 function realm(){const m={exports:{}};new Function('module','exports','crypto',bundle.outputFiles[0].text)(m,m.exports,webcrypto);return m.exports;}
 const origin='http://fixture.test';
@@ -20,7 +19,7 @@ async function setup(){
 }
 async function attemptNormalStartup(storage){
  const m=realm(),blocked=[];let auth;
- await m.startProgressSession({storage:()=>storage,lifetime:Promise.resolve(),blocked:reason=>blocked.push(reason),load:async()=>{auth=authFixture();await auth.useAuthStore.getState().initialize();await auth.close();}});
+ await m.startProgressSession({storage:()=>storage,lifetime:Promise.resolve(),blocked:reason=>blocked.push(reason),load:async()=>{auth={loaded:true};}});
  return {m,blocked,auth};
 }
 

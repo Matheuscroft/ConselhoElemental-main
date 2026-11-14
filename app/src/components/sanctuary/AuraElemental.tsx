@@ -37,8 +37,15 @@ void main() {
 }
 `;
 
+/**
+ * Brightest alpha the aura can reach (0..1). The soft curve saturates here, so
+ * this is the one number to nudge by eye: 0.9 is bright, 0.8 is subtler.
+ */
+const AURA_PEAK = 0.9;
+
 const FRAGMENT = `
 precision highp float;
+#define AURA_PEAK ${AURA_PEAK.toFixed(3)}
 varying vec2 vUv;
 uniform float uTime;
 uniform vec3 uColour;
@@ -92,11 +99,19 @@ void main() {
   float bloom = (1.0 - smoothstep(0.92, 1.96, d)) * 0.26;
 
   // Thinner overhead than at the feet, the way heat leaves a body.
-  float climb = mix(1.0, 0.58, smoothstep(0.42, 1.0, vUv.y));
+  float climb = mix(1.0, 0.32, smoothstep(0.40, 0.92, vUv.y));
 
   float field = (shell * (0.30 + 1.45 * tongues) + bloom) * climb;
   float breath = 0.88 + 0.12 * sin(uTime * uPulse);
-  float a = clamp(field * breath, 0.0, 1.0);
+
+  // Soft tone-mapping instead of a hard clamp: the raw field reaches ~1.95 and
+  // clamping flattened everything above 1 into a plateau of one flat colour.
+  // The curve keeps a slope near 1 for the weak parts and saturates at AURA_PEAK.
+  float a = AURA_PEAK * (1.0 - exp(-1.2 * field * breath));
+
+  // Fade out before the quad's edge so the glow never ends in a straight line.
+  vec2 edge = abs(vUv - 0.5) * 2.0;
+  a *= (1.0 - smoothstep(0.78, 1.0, edge.x)) * (1.0 - smoothstep(0.78, 1.0, edge.y));
 
   gl_FragColor = vec4(uColour * a, a);
 }

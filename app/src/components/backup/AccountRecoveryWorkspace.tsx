@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, Eye, EyeOff, LoaderCircle } from 'lucide-react';
 import type { RecoveryEntry } from '@/lib/backup/account-recovery-entry';
 import type { createPasswordRecovery } from '@/lib/backup/account-recovery';
+import { accountErrorCode } from '@/lib/backup/account-auth-messages';
 import { ACCOUNT_ACCESS_RELEASED } from '@/lib/backup/account-access-release';
 
 export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
@@ -10,7 +11,7 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   const [cooldownUntil, setCooldownUntil] = useState(0), [clock, setClock] = useState(Date.now());
   const [showPassword, setShowPassword] = useState(false), [showConfirm, setShowConfirm] = useState(false);
   const [verified, setVerified] = useState<{ email: string } | null>(null);
-  const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [done, setDone] = useState(false);
+  const [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [error, setError] = useState(''), [errorCode, setErrorCode] = useState<string | null>(null), [done, setDone] = useState(false);
   const session = useRef<ReturnType<typeof createPasswordRecovery> | null>(null), working = useRef(false), alive = useRef(true), heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     alive.current = true;
@@ -26,8 +27,8 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
   }, [cooldownUntil, clock]);
   async function run(action: () => Promise<void>) {
     if (!ACCOUNT_ACCESS_RELEASED || working.current) return;
-    working.current = true; setBusy(true); setError(''); setMessage('');
-    try { await action(); } catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : 'Não foi possível conferir o acesso.'); }
+    working.current = true; setBusy(true); setError(''); setErrorCode(null); setMessage('');
+    try { await action(); } catch (reason) { if (alive.current) { setError(reason instanceof Error ? reason.message : 'Não foi possível conferir o acesso.'); setErrorCode(accountErrorCode(reason)); } }
     finally { working.current = false; if (alive.current) setBusy(false); }
   }
   async function open() {
@@ -83,6 +84,6 @@ export function AccountRecoveryWorkspace({ entry }: { entry: RecoveryEntry }) {
     </>)}
     {done && <a className="restore-workspace-back" href="/?progresso=conta">Entrar com a nova senha</a>}
     <p role="status" aria-live="polite">{busy ? 'Conferindo o acesso. Aguarde.' : message}</p>
-    {error && <p className="restore-workspace-error" role="alert">{error}</p>}
+    {error && <p className="restore-workspace-error" role="alert">{error}{errorCode && <small className="entry-auth-code" style={{ display: 'block', opacity: 0.7, fontSize: '.75em', marginTop: 4 }}>código: {errorCode}</small>}</p>}
   </main></div><footer className="entry-footer">Um novo acesso. A mesma jornada.</footer></div>;
 }

@@ -1,18 +1,80 @@
-## F6-N20 — Supabase como fonte da jornada — diagnóstico e migração em andamento (09/11/2026)
+## FE-W3 — acesso simples à conta e tela inicial — publicado; acabamento em fila (13/11/2026)
 
-10/11/2026 — Matheus executou a migração 145 no SQL Editor. O hash remoto `6fc8e26adb2d7a312f785c85a9dac92990f1be50c7e0ccd0c2c55195fad22635` coincide com o validador 145 local; a tabela `schema_migrations` continua sem a marca 145 porque a execução manual não a registra. Verificação sem reenvio não encontrou recibo; tentativa explícita posterior retornou `code=22023`, `message=progress_invalid_archive` no POST `progress_account_adopt_legacy`; nova consulta de recibo continuou vazia. O arquivo baixado desta tentativa e o intent compactado no navegador têm os mesmos 2.306.493 bytes, versão 0.1.145 e SHA-256 iniciado em `99893d84e3e59788`. A adoção desse arquivo junto com o snapshot legacy real produziu recibo, `account_state=1` e cópia legacy=1 somente em PGlite isolado; a chamada levou 5,9 s. O validador percorre aproximadamente 45 mil nós JSON e converte qualquer exceção em `progress_invalid_archive`; o limite padrão documentado do papel `authenticated` é 8 s. Timeout é hipótese concreta, não conclusão: confirmar duração do POST ou logs antes de ajustar tempo/validador. `account-transport` agora identifica a etapa e mapeia erros conhecidos sem exibir dados brutos; 9/9 testes de transporte e TypeScript passaram. O adaptador de memória pura foi retirado após Matheus esclarecer que quer cache/filas locais para uso offline, com Supabase canônico. Nenhum deploy, limpeza ou nova escrita remota pelo agente. Próximo: obter a duração real do POST, corrigir causa remota, conferir recibo/readback e só então ampliar o fluxo automático.
+Origem: Matheus entrou, viu "A conta possui registros anteriores, mas este aparelho não contém uma jornada completa para adotar…", não entendeu e pensou em excluir a conta. Os dados dele estão em outro computador. Fábio pediu uma só tela de login (a bonita), acesso fácil para leigo e melhorias na tela inicial.
 
-Matheus determinou: rotas da jornada somente após autenticação; Supabase como fonte canônica, disponível em outro aparelho, e cache local para edições rápidas e uso sem internet. Sem deploy nesta etapa. Código anterior contradizia essa regra: `mountAuthenticatedAccountApp` abria as rotas com `createAuthenticatedLocalSync`, sem transporte de progresso; o modo live envia o arquivo integral após debounce de 900 ms, mas pode ficar pendente sem explicar a etapa. A rota autenticada sem vínculo integral foi fechada localmente e conduz à conferência; teste direcionado 10/10. O adaptador provisório apenas em memória foi retirado após Matheus esclarecer a necessidade de cache offline durável. Falta bootstrap autenticado a partir da versão online, fila local protegida e envio automático ao recuperar rede, CAS/recibo/readback, diagnóstico de estados e recuperação de conflito antes de considerar uma alteração salva na conta. Não alterar pontuação nem apagar dados anteriores durante a transição.
+Conceito: [CONCEITO-ACESSO-E-INICIO.md](plans/CONCEITO-ACESSO-E-INICIO.md) (Líder de design, Opus). Repasse para Matheus: [REPASSE-ACESSO-SIMPLES.md](plans/REPASSE-ACESSO-SIMPLES.md).
 
-Arquivo de tentativa encontrado neste PC fora do repositório, sem copiar dados pessoais ao Git. Checksum SHA-256 válido; appVersion 0.1.145; contém 5 rituais, 34 ciclos, 17 ações, 3 execuções, 2 sequências, 2 treinos, 1 sessão, 7 históricos nativos e 51,705 XP. O mesmo arquivo foi recusado por `validate_archive` 144 (`progress_invalid_archive`) e aceito após aplicar a migração 145 em PGlite isolado. Readback real de Matheus confirmou migration 145 ausente e hash do validador 144 exatamente igual ao guard da migração 145 (`a7d8b1f1…1939b`). Export somente de leitura de `snapshot_legacy` encontrado em Downloads e comparado com `scripts/compare-account-legacy.mjs`: 5/5 rituais, 34/34 ciclos, 2/2 sequências e 5/5 vínculos com IDs e payloads idênticos; projetos/jornadas/rascunhos vazios em ambos; zero áreas/subáreas customizadas, 30/132 entradas de catálogo padrão antigo. As 17 ações, 3 logs, XP e Fitness existem apenas na cópia integral. Não há conflito nessas categorias, portanto a tentativa integral exata pode ser adotada sem substituir conteúdo divergente nas tabelas legacy; a migração de adoção preserva um snapshot privado das linhas antigas. A aplicação remota da migração aditiva 145 foi solicitada a Matheus, ainda pendente. Transporte/SQL local PGlite 8/8 passou. Nenhum envio, limpeza ou publicação foi feito. Depois do readback 145, conferir recibo da tentativa antes de reenvio idempotente, verificar arquivo online e só então planejar remoção dos stores locais.
+Decisões de Fábio (13/11/2026):
+- D1: ler a conta automaticamente após o login (só leitura).
+- D4: consentimento de um toque quando nada se perde.
+- D5: boas-vindas só com "Começar" e "Já tenho conta".
+- D7: o frontend pode editar os arquivos de conta (só interface e texto), avisando Matheus.
 
-## F6-N19 — decisão de fonte canônica e Treinos — auditoria em andamento (09/11/2026)
+Feito e publicado na main:
+- Lote A: entrada `/auth` e textos errados (`c24b510`).
+- Lote B: boas-vindas (`f877c8e`).
+- Lote C: Santuário com "faltam X XP" (`78a6bd1`).
+- Lote 3: uma pergunta por tela depois do login, incluindo o caso conta `legacy` + aparelho sem a jornada ("Seu progresso está em outro aparelho"). Publicado em `b6f89ae`; documentação em `594c447`. Verificação: 947/947 testes.
+- Lote 6: `/` abre as boas-vindas num aparelho sem dados locais e sem acesso, depois do Despertar e das três perguntas; quem tem dados ou acesso segue o caminho antigo. Publicado em `3915b6a`.
+- Lote 4: tela separada "Opções avançadas", faixa dos quatro elementos fora do login, textos sem jargão. Publicado em `c954e38`. Verificação completa: 951/951.
+- Lote 8: apagados `src/pages/Auth.tsx` e `src/stores/authStore.ts` (código legado que não rodava em produção); `ProtectedRoute` com a mesma decisão de antes; 8 de 9 testes de `auth-bootstrap-audit` removidos por testarem só o código apagado; `TETO_VIDRO` de 16 para 15. Publicado em `619534d`. Verificação completa na cópia limpa: 943/943; build ok.
 
-Matheus quer usar rituais, ciclos e sequências do Supabase legacy como referência e enviar 2 Treinos salvos, 1 sessão e 7 registros de histórico deste PC. Decidiu preservar os 51,705 XP locais e seus recibos; portanto, não excluir em bloco as 17 ações nem os 3 registros de execução. Auditoria de código: `actions` é projeção/vínculo de tarefas e hábitos; `executionLogs` inclui recibos de conclusão e treino, podendo sustentar XP/reversão. O serviço legacy gravava as áreas/subáreas padrão por usuário com `syncSource=base-catalog`; o protocolo integral atual usa o catálogo no código e reserva `customAreas`/`customSubareas` para personalização. As dez tabelas antigas não cobrem o arquivo Core/Fitness integral; transferência de Treinos para acesso em outro aparelho precisa de um plano de adoção/mescla explícito, com IDs, XP, recibos e rollback preservados. Nenhum dado foi removido ou enviado. A comparação estrutural local agora resume rituais, ciclos e sequências por ID e conteúdo; ainda falta executá-la com a conta real antes de definir a mescla.
+Evidência, reportada pelo orquestrador e não reexecutada neste registro: cópia limpa com 940/940 testes, tipos e lint limpos. QA visual no Chromium a 390 e 768px: sem estouro, sem texto abaixo de 12px, sem erros de console; contraste do botão dourado 9,4:1.
 
-## F6-N18 — comparação nominal local/Supabase — implementada localmente; publicação pendente (09/11/2026)
+Evidência de QA, reportada pelo orquestrador (Chromium, 390 e 768px, Lotes 4 e 6): sem estouro horizontal, sem texto abaixo de 12px, sem erro de console. Não reexecutada neste registro.
 
-Matheus pediu uma lista privada dos nomes salvos neste PC e na conta para decidir sobre descarte local. Implementado painel somente de leitura em Minha conta, após login: nomes de Core/Fitness locais e das tabelas antigas da própria conta, ou do arquivo integral quando houver; campos não cobertos pelo formato antigo são explicitamente indisponíveis. A consulta confere identidade antes/depois, restringe linhas ao usuário, recusa listas truncadas e não grava stores nem banco. Linhas legacy com `syncSource=base-catalog`/`onboarding-selection` são contadas separadamente e não aparecem como áreas personalizadas. Comparação por ID e conteúdo, além do nome, distingue registros iguais, alterados, apenas locais e apenas online em rituais, ciclos e sequências; respostas ambíguas não autorizam inferir equivalência. Responsável sequencial: Astro Boy (backend e interface); reservas de arquivos encerradas. Evidência local: testes direcionados de UI 29/29 e inventário 4/4, TypeScript, ESLint direcionado, diff-check e build de produção passaram; somente avisos preexistentes de Browserslist/chunks. O teste de inventário e o build precisaram rodar fora do sandbox pelo bloqueio conhecido de leitura do esbuild no Windows. Sem leitura de dados pessoais pelo agente, QA visual real, push ou publicação. Próximo: conferir o resumo estrutural na conta real; nova publicação requer escopo próprio.
+Ajustes menores, ainda em fila:
+- Alvos de toque: link "Pilares" do topo com 38×44 e marca "Conselho Elemental" com 43px de altura (alvo de 44px).
+- CLS 0,12 e LCP 3,9 s em `/auth` na produção.
+- Rótulos do rodapé e "pontos" abaixo de 12px.
+- Flash preto do canvas da aura no Reel.
+- Limpeza de `tests/backup/post-restore-barrier.test.mjs`, linha 23: chama um `useAuthStore` inerte do fixture `load-auth-sync.mjs`.
+
+Decisões pendentes de Fábio:
+- D2: "Começar do zero (progresso antigo guardado)" no caso legacy (função nova, a validar com Matheus).
+- D3: "usar este aparelho" no P3 exige baixar e reenviar arquivos.
+- Pergunta aberta sobre a ordem: hoje o primeiro acesso em `/` é Despertar → três perguntas → boas-vindas (desenho do M11). Fábio pode preferir as boas-vindas antes do Despertar.
+
+Não verificado: WebKit, iPhone real, login real, retorno do Google no PWA; "Opções avançadas" e as telas pós-login (exigem conta); foco por teclado; movimento reduzido real; Safari.
+
+## Teste do Matheus em 14/11 — dados no computador — aguardando
+
+Matheus fez o passo a passo e "não mostrou nenhum ciclo". Ele testa de novo amanhã, logado no localhost.
+
+Nota técnica: a conta dele (`24d1ea2b`) tem no banco 5 tarefas, 34 hábitos e 2 sequências legadas. No localhost, o login só funciona com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no `.env.local` dele, e por e-mail e senha (o retorno do Google vai sempre para o endereço de produção). O progresso é por endereço: localhost, `-testes` e produção são locais diferentes. Alternativa: exportar a cópia no Grimório e importar em `/?progresso=restaurar`.
+
+## Backlog mantido — sem execução nesta data (13/11/2026)
+
+- Pilares com Element Cards: espera decisão de Fábio sobre a referência; vídeos do Scrolltide já analisados.
+- Spiral Slider em Momentos.
+- Migrações do banco do Matheus: histórico divergiu depois do conserto manual da função `adopt_legacy_account`.
+- Teste de `tests/backup` instável sob carga: espera subida para 6s.
+- Skills pendentes de instalação por Fábio: `gsap-skills`, `anatomy`, `blender-director`.
+- Análise com chrome-devtools em `plans/ANALISE-DEVTOOLS-2026-11-13.md`: LCP/INP de `/santuario` e `/ciclos` em produção e GPU de iPhone continuam pendentes.
+- Decisão sobre a dependência `gsap`.
+- Atalho de login de QA continua só local.
+
+## FE-W2 — Pilares com Element Cards, Ciclos com Reel Slider, aura refinada — em revisão parcial (10/11/2026)
+
+Pedido de Fábio em 09/11/2026. Fonte: três gravações de tela (09/11, 16:00 a 16:08), a serem reenviadas se não abrirem, mais [thread no X](https://x.com/dr_cintas/status/2119555538144911525/photo/1), o [README do site do reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/site/README.md) e a [skill reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/skills/reanimate/SKILL.md), que serve para aprender e copiar movimento de UI por engenharia reversa.
+
+Estado atual: execução iniciada em 09/11/2026. Itens 3, 4 e 5 estão em revisão, com a publicação na main confirmada até `22cb609`; só `47f5277` está local. Item 1 saiu com o Santuário em `dbdbaf5`. Item 2 aguarda referência de Fábio. Nenhum item está aceito. Só o orquestrador marca aceita. Detalhes e commits em [CONTINUIDADE.md](CONTINUIDADE.md), seção FE-W2.
+
+1. **Aura:** ajustar o ganho no shader de `AuraElemental.tsx`. A cor chapada e o vazamento vertical vieram do QA do Santuário. Status: referenciado em `dbdbaf5` (outra frente); sem aceite de FE-W2 neste item.
+2. **Pilares elementais:** refazer. As animações atuais não ficaram como desejado. Efeito de Element Cards; pesquisar o material acima e comparar layouts antes de escolher. Status: aguarda a referência de Fábio; sem execução.
+3. **Ciclos (Reel Slider):** Reel para rolar entre os dias e acompanhar o que foi feito em cada dia, com a data e o que a tela já tem. Status: em revisão. Publicado em `ac22965` (B1+B2), com `1f18e2d`, `6dc0a71` e `22cb609` no mesmo front.
+4. **Flow Tunnel:** remover (não funciona bem). Status: em revisão. Publicado em `61fdf81` (B0).
+5. **Momentos (calendário e Reel):** integrar ao calendário e ao Reel. Status: em revisão. Foto do dia no `DayDetailsDialog` e pontas da janela de 9 dias em `47f5277` (item C), **publicado** (conferido em `origin/main` em 13/11/2026).
+
+Trabalho de Ciclos fora dos cinco itens, da mesma frente: botões reais de Lua e Estação (`1f18e2d`), céu vivo e moldura de mago (`6dc0a71`), VFX elemental em três níveis (`22cb609`). Rótulos e commits, em [CONTINUIDADE.md](CONTINUIDADE.md).
+
+Restrições: pontuação, XP e stores não mudam sem aprovação de Fábio; mesmas regras do design system (movimento, superfície, tipografia) e do time em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Líder de design em Opus para o conceito, sob aviso. Não verificado: WebKit, aparelho real, desempenho no iPhone com WebGL, seletor de arquivo real.
+
+Próximo: `47f5277` já está em `origin/main` (conferido em 13/11/2026); referência de Fábio para o item 2; WebKit e aparelho real se Fábio quiser aceite.
+
+## FE-W1 — onda 1 de migração de telas ao design system — publicada; ressalvas abertas
+
+Rituais, Temporal e Grimório migrados para os degraus tipográficos, as durações do sistema de movimento e a camada de superfície; Forja, Domínios e Astrolábio já estavam conformes, por inspeção estática. Commit `91d52b9`, CI verde. Aceite com ressalvas: telas vistas só com perfil vazio; badges de 12px em Rituais não medidos; `.domain-rail-art` não investigado; foco ao fechar o diálogo do dia a repetir com teclado real; nada visto em WebKit nem em aparelho real. O token `settle` não zerava em movimento reduzido e foi corrigido à parte em `b0e7121`. Detalhes em [CONTINUIDADE.md](CONTINUIDADE.md). Próximo: segunda onda com perfil de teste populado, e Treinos sozinho, sem HUD.
 
 ## F6-N17 — sessão obrigatória e sincronização direta — migração aplicada; publicação em andamento
 

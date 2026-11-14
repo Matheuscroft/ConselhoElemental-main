@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { PRODUCTION_APP_ORIGIN, type RecoveryCredentials } from './account-recovery-entry';
+import { AccountAuthError, accountAuthMessage } from './account-auth-messages';
 
 export const RECOVERY_LOCK = 'conselho-elemental-password-recovery-operation-v1';
 interface Options {
@@ -51,7 +52,7 @@ export function createPasswordRecovery(options: Options, construct: typeof creat
       // uses the canonical app, so the link also works on another device.
       const redirectTo = `${PRODUCTION_APP_ORIGIN}/?progresso=recuperar`;
       const result = await client.auth.resetPasswordForEmail(address, { redirectTo }); live();
-      if (result.error) throw new Error('Não foi possível enviar o link agora. Aguarde e tente novamente.');
+      if (result.error) throw new AccountAuthError(accountAuthMessage(result.error, 'reset', 'Não foi possível enviar o link agora. Aguarde e tente novamente.'));
       // Generic response avoids disclosing whether this email has an account.
       return 'Se houver uma conta com esse e-mail, você receberá um link. Ele pode ser aberto em outro aparelho. Apenas o link mais recente será válido.';
     }); },

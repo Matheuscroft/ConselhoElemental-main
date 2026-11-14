@@ -1,8 +1,9 @@
 import { ColoredElementIcon } from './ColoredElementIcon';
 import type { CSSProperties } from 'react';
 import type { ElementId } from '@/types';
+import { SIGILOS } from './sigilos';
 
-/** Original 24-unit linework. Meaning comes from the adjacent label, never color alone. */
+/** Legacy 24-unit linework, kept only as fallback; SIGILOS wins. The count may only shrink (see tests/elemental/sigilos.test.mjs). Meaning comes from the adjacent label, never color alone. */
 const PATHS = {
   terra: 'M4 17 8 8l7-4 5 11-5 5-11-3Z M8 8l4 6 3-10 M4 17l8-3 3 6 M12 14l8 1',
   fogo: 'M13 3c1 5 6 7 6 12a7 7 0 0 1-14 0c0-3 2-5 4-7 0 3 1 4 2 5 2-3 3-6 2-10Z M12 14c-2 2-3 3-2 5s4 2 4-1c0-1-1-3-2-4Z',
@@ -40,18 +41,23 @@ const PATHS = {
   alerta: 'M12 3 2 21h20L12 3Z M12 9v6 M12 18v.1',
   meteoro: 'M20 3 9 14 M21 8l-5 5 M15 3 9 9 M8 13a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',
 } as const;
-export type ArcaneIconName = keyof typeof PATHS;
+export type ArcaneIconName = keyof typeof SIGILOS | keyof typeof PATHS;
 interface IconProps { size?: number | string; className?: string; label?: string; style?: CSSProperties }
 
-export function ArcaneIcon({ name, size = '1em', className = '', label, style }: IconProps & { name: ArcaneIconName }) {
-  return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" className={`arcane-icon ${className}`} style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0, ...style }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false"><path d={PATHS[name]} /></svg>;
+export function ArcaneIcon({ name, size = '1em', className = '', label, style, ativo = false }: IconProps & { name: ArcaneIconName; ativo?: boolean }) {
+  const sigilo = SIGILOS[name];
+  const traco = sigilo ? sigilo.traco : PATHS[name as keyof typeof PATHS];
+  const pequeno = typeof size === 'number' && size <= 16;
+  const stroke = pequeno ? 2 : 1.5;
+  const brilho = ativo ? { filter: 'drop-shadow(0 0 3px currentColor)' } : null;
+  return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={`arcane-icon ${className}`} style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0, ...brilho, ...style }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">{!pequeno && sigilo?.ornamento ? <path d={sigilo.ornamento} strokeWidth={1} opacity={0.55} fill="none" /> : null}<path d={traco} />{ativo && sigilo?.nucleo ? <path d={sigilo.nucleo} fill="currentColor" /> : null}</svg>;
 }
 
 export function ElementIcon({ element, tone = 'color', ...props }: IconProps & { element: ElementId; tone?: 'color' | 'outline' }) {
   return tone === 'outline' ? <ArcaneIcon {...props} name={element} /> : <ColoredElementIcon {...props} element={element} />;
 }
 
-const ROUTE_ICONS: Record<string, ArcaneIconName> = {
+export const ROUTE_ICONS: Record<string, ArcaneIconName> = {
   santuario: 'santuario', rituais: 'ritual', ciclos: 'ciclo', jornadas: 'jornada', 'grandes-obras': 'obra',
   grimorio: 'grimorio', invocar: 'invocar', forja: 'forja', pilares: 'pilares', astrolabio: 'astrolabio', mapa: 'mapa',
   temporal: 'semana', 'temporal-mes': 'calendario', 'temporal-ano': 'ano', 'temporal-calendario': 'agenda',

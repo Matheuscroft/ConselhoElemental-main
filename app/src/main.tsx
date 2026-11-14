@@ -1,12 +1,14 @@
-import { accessEntry } from './lib/backup/access-entry';
+import { accessEntry, shouldShowWelcome } from './lib/backup/access-entry';
 import type { LiveAccountSession } from './lib/backup/account-live-sync';
 import { ACCOUNT_TAB_ACCESS_KEY } from './lib/backup/account-resume-entry';
 import { inspectTabAccess } from './lib/backup/account-tab-access';
+import { accountAccessStorage } from './lib/backup/account-access-storage';
 import { captureRecoveryEntry, isPasswordRecoveryCallback } from './lib/backup/account-recovery-entry';
 import { captureAccountReturn, type AccountReturnNotice } from './lib/backup/account-return';
 import { needsReminderWorkspace } from './lib/reminders/reminder-entry'
 import './index.css'
 import './styles/elemental-fundacao.css'
+import './styles/elemental-blocos.css'
 import './lib/backup/startup-screen.css'
 import { startProgressSession } from './lib/backup/progress-startup'
 import { showProgressStartup } from './lib/backup/startup-screen'
@@ -18,7 +20,7 @@ document.documentElement.classList.add('dark');
 const root = document.getElementById('root')!;
 showProgressStartup(root);
 function hasValidAccountAccess() {
-  const raw=window.sessionStorage.getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
+  const raw=accountAccessStorage(undefined,window).getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
   if(!raw||!project)return false;
   try{inspectTabAccess(raw,window.location.origin,project);return true;}catch{return false;}
 }
@@ -67,7 +69,14 @@ else {
     else if(progressView==='inicio')void openWelcome();
     else if(accessEntry(window.location.pathname, window.location.search)==='account')void openAccountWorkspace();
     else if(accessEntry(window.location.pathname, window.location.search)==='welcome')void openWelcome();
-    else void openProgress();
+    else {
+      let fresh=false,blocked=false;
+      try { fresh=shouldShowWelcome(window.location.pathname,window.localStorage)&&!hasValidAccountAccess(); }
+      catch { blocked=true;showProgressStartup(root,'storage-unavailable'); }
+      if(blocked){/* protection screen already shown */}
+      else if(fresh)void openWelcome();
+      else void openProgress();
+    }
   }catch{showProgressStartup(root,'startup-failed');}
 }
 async function openProgress() {

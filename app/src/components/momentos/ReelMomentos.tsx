@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, Trash2 } from 'lucide-react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
-import { MENSAGEM_RECUSA } from '@/lib/momentos/momento';
+import { MENSAGENS_MOMENTO, podeGuardarFoto } from '@/lib/momentos/momento';
 import {
   apagarMomento,
   enderecoTemporario,
@@ -9,38 +9,112 @@ import {
   momentosDisponiveis,
   salvarMomento,
 } from '@/lib/momentos/momento-store';
+import { AURA, TINTA } from '@/lib/design/palette';
+import { DURATION } from '@/lib/motion/motion';
+import { corDaMoldura, diaConquistado, nivelEfetivo, type EstadoDoDia } from '@/lib/momentos/moldura';
+import {
+  duracaoDaCerimonia,
+  elementoDaMoldura,
+  nivelDaMoldura,
+  planoDaCerimonia,
+  type AscensaoDoReel,
+} from '@/lib/momentos/ascensao';
 import { distanciaDoCentro, indiceAtivo, posicaoReel } from '@/lib/momentos/reel';
+import type { ElementoDoDia } from '@/lib/momentos/elemento-do-dia';
+import type { NivelVfx } from '@/lib/momentos/nivel-vfx';
+import { AcoesMomento } from './AcoesMomento';
+import type { DisparoDeDobra } from './DobraTelaCheia';
+import { RunasMoldura } from './RunasMoldura';
 import './reel-momentos.css';
 
+// three.js only arrives when a card is open; the SVG frame never waits for it.
+const MolduraFeitico = lazy(() => import('./MolduraFeitico'));
+// The leap across the screen belongs to level 3 alone, so it is its own chunk.
+const DobraTelaCheia = lazy(() => import('./DobraTelaCheia'));
+
+/** How long a conquest stays on the frame before it is cleared. */
+const CONQUISTA_DURA_MS = 1800;
+
 export interface DiaDoReel {
+  /** Chave local do dia, a mesma do Temporal e dos Momentos. */
   readonly dia: string;
-  readonly titulo: string;
-  readonly detalhe: string;
+  readonly data: Date;
+  readonly feitos: number;
+  readonly total: number;
+  readonly hoje: boolean;
+  /** O elemento que lidera os ciclos do dia; null no dia vazio ou empatado. */
+  readonly elemento: ElementoDoDia | null;
+  /** O nível de VFX da moldura: a maestria do elemento do dia (nivel-vfx.ts). */
+  readonly nivel: NivelVfx;
 }
 
-const MENSAGENS: Record<string, string> = {
-  ...MENSAGEM_RECUSA,
-  indisponivel: 'Este navegador não guarda fotos. Tente pelo app instalado.',
-  espaco: 'Não há espaço no aparelho para mais uma foto.',
-  falha: 'Não consegui guardar essa foto. Tente de novo.',
+const MENSAGENS = MENSAGENS_MOMENTO;
+
+/** After this long without a scroll event the rail counts as settled. */
+const ASSENTAR_MS = 120;
+
+/**
+ * Neighbours fade no lower than this: the text on a card at 0.38 measured
+ * 2.2-3.2:1. At 0.75 the muted text (170 180 196 over 8 11 18) estimates at
+ * about 5.5:1. The depth is carried by tilt, scale and the fixed blur instead.
+ */
+const PISO_OPACIDADE = 0.75;
+
+const rotulo = (item: DiaDoReel, comFoto: boolean) => {
+  const data = item.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const ciclos = item.total ? `${item.feitos} de ${item.total} ciclos` : 'sem ciclos';
+  return `${data}${item.hoje ? ', hoje' : ''}, ${ciclos}${comFoto ? ', com foto' : ''}`;
 };
 
 /**
- * The days as a coverflow you throw with a finger.
+ * The days as a coverflow you throw with a finger, and the calendar itself:
+ * the card in front is the open day.
  *
- * The rail is a native scroller with snap points, so the momentum, the
- * keyboard and the screen reader are the browser's own and not a
- * reimplementation. The turn and the softening are written straight to the
- * cards from a rAF loop reading scrollLeft: a scroll fires far too often for
- * React to be in the middle of it.
+ * The rail is a native scroller with snap points, so momentum, keyboard and
+ * screen reader are the browser's own. The turn is written straight to the
+ * cards from a rAF loop (transform and opacity only); the softening is a fixed
+ * blur per distance class, never animated. Scrolling selects a day only after
+ * a gesture of the person and only once the rail settles: a scroll the
+ * component started itself never selects.
  */
-export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
+export function ReelMomentos({ dias, selecionado, aoEscolher, ascensao }: {
+  dias: DiaDoReel[];
+  /** Index of the open day in `dias`, or -1 when it is outside the window. */
+  selecionado: number;
+  aoEscolher: (indice: number) => void;
+  /**
+   * An element rose to level 2 or 3: the frame plays the ceremony (the element
+   * overflows, the screen fills with its particles) and goes back on its own.
+   * `n` grows with each one; the page decides when the Reel is in view.
+   */
+  ascensao?: AscensaoDoReel | null;
+}) {
   const reduced = useMotionPreference();
   const trilhoRef = useRef<HTMLUListElement>(null);
-  const [ativo, setAtivo] = useState(0);
   const [fotos, setFotos] = useState<Record<string, string>>({});
   const [aviso, setAviso] = useState<string | null>(null);
   const soltarRef = useRef<Array<() => void>>([]);
+  const carregadosRef = useRef(new Set<string>());
+  const gestoRef = useRef(false);
+  const visualRef = useRef(0);
+  const [rolando, setRolando] = useState(false);
+  const [conquista, setConquista] = useState({ dia: '', n: 0 });
+  const [dobra, setDobra] = useState<DisparoDeDobra>({ n: 0, tipo: 'troca' });
+  const [dobraMontada, setDobraMontada] = useState(false);
+  const dobraPendenteRef = useRef(true);
+  const [cerimonia, setCerimonia] = useState<AscensaoDoReel | null>(null);
+  const cerimoniaTocadaRef = useRef(0);
+  const cerimoniaTimersRef = useRef<number[]>([]);
+  const nivelRef = useRef<NivelVfx>(1);
+  const anteriorRef = useRef<EstadoDoDia | null>(null);
+  const selecionadoRef = useRef(selecionado);
+  const aoEscolherRef = useRef(aoEscolher);
+  useEffect(() => {
+    selecionadoRef.current = selecionado;
+    aoEscolherRef.current = aoEscolher;
+  });
+
+  const chaves = dias.map((item) => item.dia).join('|');
 
   // Every object URL is released on the way out. Thirty blobs held by URLs
   // nobody revoked is how a gallery eats a phone's memory.
@@ -54,17 +128,20 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     let vivo = true;
 
     void (async () => {
-      for (const { dia } of dias) {
-        const momento = await lerMomento(dia);
-        if (!vivo || !momento) continue;
+      for (const chave of chaves.split('|')) {
+        if (!chave || carregadosRef.current.has(chave)) continue;
+        const momento = await lerMomento(chave);
+        if (!vivo) return;
+        carregadosRef.current.add(chave);
+        if (!momento) continue;
         const { url, soltar } = enderecoTemporario(momento.miniatura);
         soltarRef.current.push(soltar);
-        setFotos((atual) => ({ ...atual, [dia]: url }));
+        setFotos((atual) => ({ ...atual, [chave]: url }));
       }
     })();
 
     return () => { vivo = false; };
-  }, [dias]);
+  }, [chaves]);
 
   // The turn follows the finger, so it is written per frame rather than per
   // render, and only while the rail is actually moving.
@@ -75,36 +152,58 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     let frame = 0;
     let parar = 0;
 
-    const pintar = () => {
+    const medidas = () => {
       const cartoes = [...trilho.children] as HTMLElement[];
-      if (!cartoes.length) return;
+      if (!cartoes.length) return null;
       const largura = cartoes[0].offsetWidth;
       const passo = cartoes.length > 1 ? cartoes[1].offsetLeft - cartoes[0].offsetLeft : largura;
-      const recuo = cartoes[0].offsetLeft;
+      return { cartoes, largura, passo, recuo: cartoes[0].offsetLeft };
+    };
 
-      cartoes.forEach((cartao, indice) => {
-        const d = distanciaDoCentro(trilho.scrollLeft, trilho.clientWidth, passo, largura, recuo, indice);
+    const pintar = () => {
+      const m = medidas();
+      if (!m) return;
+      m.cartoes.forEach((cartao, indice) => {
+        const d = distanciaDoCentro(trilho.scrollLeft, trilho.clientWidth, m.passo, m.largura, m.recuo, indice);
         const p = posicaoReel(d);
         cartao.style.transform = reduced
           ? 'none'
           : `perspective(1100px) translateZ(${p.profundidade}px) rotateY(${p.rotacao}deg) scale(${p.escala})`;
-        cartao.style.opacity = String(reduced ? 1 : p.opacidade);
-        cartao.style.filter = reduced || p.desfoque < 0.2 ? 'none' : `blur(${p.desfoque.toFixed(2)}px)`;
+        cartao.style.opacity = String(reduced ? 1 : Math.max(p.opacidade, PISO_OPACIDADE));
+        const classe = String(Math.min(3, Math.round(Math.abs(d))));
+        if (cartao.dataset.distancia !== classe) cartao.dataset.distancia = classe;
       });
+      visualRef.current = indiceAtivo(trilho.scrollLeft, trilho.clientWidth, m.passo, m.largura, m.recuo, m.cartoes.length);
+    };
 
-      setAtivo(indiceAtivo(trilho.scrollLeft, trilho.clientWidth, passo, largura, recuo, cartoes.length));
+    const assentou = () => {
+      pintar();
+      setRolando(false);
+      if (!gestoRef.current) return;
+      gestoRef.current = false;
+      if (visualRef.current !== selecionadoRef.current) aoEscolherRef.current(visualRef.current);
     };
 
     const aoRolar = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(() => { frame = 0; pintar(); });
+      setRolando(true);
+      if (!frame) frame = requestAnimationFrame(() => { frame = 0; pintar(); });
       window.clearTimeout(parar);
-      parar = window.setTimeout(pintar, 120);
+      parar = window.setTimeout(assentou, ASSENTAR_MS);
+    };
+
+    // A resize moves every card, so the open day is brought back to the middle.
+    // Programmatic, so it never selects.
+    const recentrar = () => {
+      pintar();
+      const cartao = trilho.children[selecionadoRef.current] as HTMLElement | undefined;
+      if (!cartao) return;
+      gestoRef.current = false;
+      trilho.scrollTo({ left: cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2, behavior: 'auto' });
     };
 
     pintar();
     trilho.addEventListener('scroll', aoRolar, { passive: true });
-    const observador = new ResizeObserver(pintar);
+    const observador = new ResizeObserver(recentrar);
     observador.observe(trilho);
 
     return () => {
@@ -113,9 +212,123 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
       trilho.removeEventListener('scroll', aoRolar);
       observador.disconnect();
     };
-  }, [reduced, dias.length]);
+  }, [reduced, chaves]);
 
-  const escolher = useCallback(async (dia: string, arquivo: File | undefined) => {
+  // The open day is brought to the middle by the component itself. That scroll
+  // is programmatic: it drops any pending gesture so it can never select.
+  useEffect(() => {
+    const trilho = trilhoRef.current;
+    const cartao = trilho?.children[selecionado] as HTMLElement | undefined;
+    if (!trilho || !cartao) return;
+    gestoRef.current = false;
+    trilho.scrollTo({
+      left: cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2,
+      behavior: reduced ? 'auto' : 'smooth',
+    });
+    if (trilho.contains(document.activeElement)) {
+      (cartao.firstElementChild as HTMLElement | null)?.focus({ preventScroll: true });
+    }
+  }, [selecionado, chaves, reduced]);
+
+  const abertoDia = selecionado >= 0 ? dias[selecionado] : undefined;
+  const abertoChave = abertoDia?.dia;
+  const abertoFeitos = abertoDia?.feitos ?? 0;
+  const abertoTotal = abertoDia?.total ?? 0;
+  // Reduced motion turns every level into level 1: no live edge, no leap.
+  const nivelAberto = nivelEfetivo(abertoDia?.nivel ?? 1, reduced);
+  const temAberto = abertoDia !== undefined;
+
+  // The leap canvas is mounted the first time a level 3 day opens, and stays
+  // until the Reel goes or motion is reduced: no context churn between days.
+  // An ascension to level 2 also needs it, for its lighter leap.
+  if ((nivelAberto === 3 || (cerimonia !== null && !reduced)) && !dobraMontada) setDobraMontada(true);
+
+  useEffect(() => {
+    nivelRef.current = nivelAberto;
+  });
+
+  // The leap of a day change: once the rail has settled on the new day. A day
+  // chosen by the person lands with the rail already centred; a day chosen by
+  // an arrow or a tap is still travelling, so it waits for the rail to rest.
+  useEffect(() => {
+    dobraPendenteRef.current = true;
+  }, [abertoChave]);
+
+  useEffect(() => {
+    if (!dobraPendenteRef.current || rolando || !abertoChave) return;
+    const trilho = trilhoRef.current;
+    const cartao = trilho?.children[selecionado] as HTMLElement | undefined;
+    if (!trilho || !cartao) return;
+    const centro = cartao.offsetLeft - (trilho.clientWidth - cartao.offsetWidth) / 2;
+    if (Math.abs(trilho.scrollLeft - centro) > 4) return;
+    dobraPendenteRef.current = false;
+    if (nivelAberto !== 3) return;
+    const agendado = window.setTimeout(() => setDobra((d) => ({ n: d.n + 1, tipo: 'troca' })), 0);
+    return () => window.clearTimeout(agendado);
+  }, [rolando, abertoChave, selecionado, nivelAberto]);
+
+  // Where the open card is on screen, asked at the moment a leap starts.
+  const medirOrigem = useCallback((): DOMRect | null => {
+    const cartao = trilhoRef.current?.children[selecionadoRef.current] as HTMLElement | undefined;
+    return (cartao?.firstElementChild as HTMLElement | null)?.getBoundingClientRect() ?? null;
+  }, []);
+
+  // Only the last cycle of the open day, completed right here, is a conquest.
+  // It is held back one conjure beat so it never lands on top of the XP receipt.
+  useEffect(() => {
+    const atual: EstadoDoDia | null = abertoChave === undefined
+      ? null
+      : { dia: abertoChave, feitos: abertoFeitos, total: abertoTotal };
+    const conquistou = diaConquistado(anteriorRef.current, atual);
+    anteriorRef.current = atual;
+    if (!conquistou || !atual) return;
+    let limpar = 0;
+    const atraso = window.setTimeout(() => {
+      setConquista((c) => ({ dia: atual.dia, n: c.n + 1 }));
+      // At level 3 the conquest is also the biggest leap: four elements, all together.
+      if (nivelRef.current === 3) setDobra((d) => ({ n: d.n + 1, tipo: 'conquista' }));
+      limpar = window.setTimeout(() => setConquista((c) => ({ ...c, dia: '' })), CONQUISTA_DURA_MS);
+    }, DURATION.conjure);
+    return () => { window.clearTimeout(atraso); window.clearTimeout(limpar); };
+  }, [abertoChave, abertoFeitos, abertoTotal]);
+
+  // The ascension ceremony. It waits for an open card and a rail at rest (the
+  // frame is hidden while it moves), plays once per `n`, and ends by itself: the
+  // frame then returns to the week's leader at the card's own level.
+  const ascensaoN = ascensao?.n ?? 0;
+  useEffect(() => () => {
+    cerimoniaTimersRef.current.forEach((t) => window.clearTimeout(t));
+    cerimoniaTimersRef.current = [];
+    cerimoniaTocadaRef.current = 0;
+  }, []);
+  useEffect(() => {
+    if (!ascensao || ascensao.n <= cerimoniaTocadaRef.current || !temAberto || rolando) return;
+    cerimoniaTocadaRef.current = ascensao.n;
+    const plano = planoDaCerimonia(ascensao.nivel, reduced);
+    // The timers outlive this effect on purpose: a rail that moves mid-ceremony must not strand it.
+    cerimoniaTimersRef.current.push(
+      window.setTimeout(() => {
+        setCerimonia(ascensao);
+        if (plano.dobra) {
+          setDobra((d) => ({ n: d.n + 1, tipo: 'ascensao', elemento: ascensao.elemento, nivel: ascensao.nivel }));
+        }
+      }, 0),
+      window.setTimeout(() => setCerimonia(null), duracaoDaCerimonia(ascensao.nivel, reduced)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by the ascension's n, not by its object
+  }, [ascensaoN, temAberto, rolando, reduced]);
+
+  const anotarGesto = useCallback(() => { gestoRef.current = true; }, []);
+
+  const mover = useCallback((passo: number) => {
+    const base = selecionadoRef.current >= 0 ? selecionadoRef.current : visualRef.current;
+    // One step past either end is allowed: the page turns it into the next
+    // date and recentres the window, so the arrows never go dead.
+    const alvo = Math.min(dias.length, Math.max(-1, base + passo));
+    aoEscolherRef.current(alvo);
+  }, [dias.length]);
+
+  const guardar = useCallback(async (dia: string, arquivo: File | undefined) => {
     if (!arquivo) return;
     setAviso(null);
     const resultado = await salvarMomento(dia, arquivo);
@@ -137,47 +350,137 @@ export function ReelMomentos({ dias }: { dias: DiaDoReel[] }) {
     });
   }, []);
 
+  const aberto = selecionado >= 0 ? dias[selecionado] : undefined;
+  // The window slides at the ends, so both arrows always lead somewhere.
+  const podeVoltar = dias.length > 0;
+  const podeAvancar = dias.length > 0;
+
   return (
-    <div className="reel-momentos">
-      <ul className="reel-trilho" ref={trilhoRef} aria-label="Seus dias, um momento por dia">
-        {dias.map((item, indice) => {
-          const foto = fotos[item.dia];
-          const eAtivo = indice === ativo;
-          return (
-            <li key={item.dia} className="reel-cartao" data-ativo={eAtivo} aria-current={eAtivo ? 'true' : undefined}>
-              <div className="reel-moldura">
-                {foto ? (
-                  <img src={foto} alt={`Seu momento de ${item.titulo}`} loading="lazy" decoding="async" />
-                ) : (
-                  <p className="reel-vazio">O ápice do seu dia ainda não tem foto.</p>
-                )}
-                <div className="reel-legenda">
-                  <strong>{item.titulo}</strong>
-                  <small>{item.detalhe}</small>
-                </div>
-              </div>
-              <div className="reel-acoes">
-                <label className="reel-acao">
-                  <Camera size={16} aria-hidden="true" />
-                  {foto ? 'Trocar foto' : 'Guardar momento'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={(evento) => void escolher(item.dia, evento.target.files?.[0])}
-                  />
-                </label>
-                {foto ? (
-                  <button type="button" className="reel-acao" onClick={() => void remover(item.dia)}>
-                    <Trash2 size={16} aria-hidden="true" />
-                    Remover
-                  </button>
-                ) : null}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="reel-momentos" data-reduzido={reduced}>
+      <div className="reel-palco" data-rolando={rolando} data-realce={cerimonia !== null && reduced}>
+        <ul
+          className="reel-trilho"
+          ref={trilhoRef}
+          aria-label="Seus dias"
+          onPointerDown={anotarGesto}
+          onWheel={anotarGesto}
+          onTouchStart={anotarGesto}
+          onKeyDown={(evento) => {
+            if (evento.key !== 'ArrowLeft' && evento.key !== 'ArrowRight') return;
+            evento.preventDefault();
+            mover(evento.key === 'ArrowLeft' ? -1 : 1);
+          }}
+        >
+          {dias.map((item, indice) => {
+            const foto = fotos[item.dia];
+            const eAberto = indice === selecionado;
+            const cor = item.elemento ? corDaMoldura(item.elemento, AURA) : undefined;
+            const completo = item.total > 0 && item.feitos >= item.total;
+            const nivelDoCartao = nivelEfetivo(item.nivel, reduced);
+            return (
+              <li key={item.dia} className="reel-cartao" data-distancia="0">
+                <button
+                  type="button"
+                  className="reel-moldura"
+                  data-ativo={eAberto}
+                  data-foto={foto ? 'sim' : 'nao'}
+                  data-tinta={eAberto && item.elemento ? item.elemento : undefined}
+                  data-nivel={eAberto ? nivelDoCartao : undefined}
+                  style={eAberto && item.elemento
+                    ? ({ '--runa-cor': cor, '--runa-tinta': TINTA[item.elemento] } as React.CSSProperties)
+                    : undefined}
+                  aria-pressed={eAberto}
+                  aria-current={item.hoje ? 'date' : undefined}
+                  aria-label={rotulo(item, Boolean(foto))}
+                  tabIndex={eAberto || selecionado < 0 ? 0 : -1}
+                  onClick={() => {
+                    gestoRef.current = false;
+                    if (!eAberto) aoEscolher(indice);
+                    // Tapping the card that is already open invokes the leap (level 3).
+                    else if (nivelDoCartao === 3) setDobra((d) => ({ n: d.n + 1, tipo: 'toque' }));
+                  }}
+                >
+                  {foto ? <img src={foto} alt="" loading="lazy" decoding="async" draggable={false} /> : null}
+                  <span className="reel-pelicula" aria-hidden="true" />
+                  {eAberto ? (
+                    <RunasMoldura
+                      elemento={item.elemento}
+                      completo={completo}
+                      conquista={conquista.dia === item.dia ? conquista.n : 0}
+                      nivel={nivelDoCartao}
+                    />
+                  ) : null}
+                  <span className="reel-texto" aria-hidden="true">
+                    <span className="reel-semana">{item.data.toLocaleDateString('pt-BR', { weekday: 'short' }).replace('.', '')}</span>
+                    <strong className="reel-numero">{String(item.data.getDate()).padStart(2, '0')}</strong>
+                    <span className="reel-mes">{item.data.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</span>
+                    <span className="reel-hoje">{item.hoje ? 'Hoje' : ' '}</span>
+                    <span className="reel-ciclos">{item.total ? `${item.feitos}/${item.total} ciclos` : 'Sem ciclos'}</span>
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        {aberto ? (
+          <Suspense fallback={null}>
+            <MolduraFeitico
+              elemento={elementoDaMoldura(aberto.elemento, cerimonia)}
+              nivel={nivelDaMoldura(aberto.nivel, cerimonia)}
+              transbordo={cerimonia ? { n: cerimonia.n, nivel: cerimonia.nivel } : undefined}
+              completo={aberto.total > 0 && aberto.feitos >= aberto.total}
+              rolando={rolando}
+              ativo
+              conquista={conquista.dia === aberto.dia ? conquista.n : 0}
+              reduzido={reduced}
+            />
+          </Suspense>
+        ) : null}
+        {dobraMontada && !reduced ? (
+          <Suspense fallback={null}>
+            <DobraTelaCheia
+              elemento={aberto?.elemento ?? null}
+              disparo={dobra}
+              medirOrigem={medirOrigem}
+            />
+          </Suspense>
+        ) : null}
+      </div>
+
+      <div className="reel-navegacao">
+      <button
+        type="button"
+        className="reel-seta"
+        data-lado="anterior"
+        aria-label="Dia anterior"
+        disabled={!podeVoltar}
+        onClick={() => mover(-1)}
+      >
+        <ChevronLeft size={18} aria-hidden="true" />
+      </button>
+        <div className="reel-pontos" aria-hidden="true">
+          {dias.map((item, indice) => <i key={item.dia} data-ativo={indice === selecionado} />)}
+        </div>
+      <button
+        type="button"
+        className="reel-seta"
+        data-lado="proximo"
+        aria-label="Próximo dia"
+        disabled={!podeAvancar}
+        onClick={() => mover(1)}
+      >
+        <ChevronRight size={18} aria-hidden="true" />
+      </button>
+      </div>
+
+      {aberto && (fotos[aberto.dia] || podeGuardarFoto(aberto.dia, new Date())) ? (
+        <AcoesMomento
+          temFoto={Boolean(fotos[aberto.dia])}
+          aoEscolher={(arquivo) => void guardar(aberto.dia, arquivo)}
+          aoRemover={() => void remover(aberto.dia)}
+        />
+      ) : null}
+      <p className="reel-privado">Fica só neste aparelho.</p>
       {aviso ? <p className="reel-aviso" role="alert">{aviso}</p> : null}
     </div>
   );

@@ -1,10 +1,7 @@
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
-import { motion } from 'framer-motion';
 import type { ElementId } from '@/types';
 import { ELEMENTS } from '@/constants';
-import { useMotionPreference } from '@/components/motion/useMotionPreference';
-import { beatUnless, stagger } from '@/lib/motion/motion';
 
 interface ElementCardProps {
   elementId: ElementId;
@@ -21,92 +18,32 @@ export const ElementCard: React.FC<ElementCardProps> = ({
   onClick,
   size = 'md',
 }) => {
-  const reduced = useMotionPreference();
   const element = ELEMENTS[elementId];
   
-  const sizeClasses = {
-    sm: 'p-3',
-    md: 'p-4',
-    lg: 'p-5',
-  };
-
-  const iconSizes = {
-    sm: 'text-2xl',
-    md: 'text-3xl',
-    lg: 'text-4xl',
-  };
-
-  const titleSizes = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
-  };
+  const interactive = onClick ? {
+    role: 'button' as const,
+    tabIndex: 0,
+    onKeyDown: (event: React.KeyboardEvent) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } },
+  } : {};
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.02, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onClick(); } } : undefined}
-      className={`
-        relative overflow-hidden rounded-2xl cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold
-        border border-white/10 transition-all duration-300
-        ${sizeClasses[size]}
-      `}
-      style={{
-        background: `linear-gradient(135deg, ${element.color}15 0%, rgba(26, 16, 37, 0.9) 100%)`,
-      }}
-    >
-      {/* Glow effect */}
-      <motion.div
-        animate={{
-          opacity: [0.3, 0.5, 0.3],
-        }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="absolute inset-0 rounded-2xl"
-        style={{
-          boxShadow: `inset 0 0 30px ${element.glow}`,
-        }}
-      />
-
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-3">
-          <div className={iconSizes[size]}><ElementIcon element={element.id} /></div>
-          <div className="text-right">
-            <div className="text-mystic-gold font-bold text-lg">
-              {score.toLocaleString()}
-            </div>
-            <div className="text-white/40 text-xs">pts</div>
-          </div>
+    <div onClick={onClick} {...interactive} className="ds-runa" data-element={elementId} data-tamanho={size}>
+      <div className="ds-runa-cabeca">
+        <ElementIcon element={element.id} size={size === 'lg' ? 36 : size === 'md' ? 30 : 24} />
+        <div className="min-w-0 flex-1">
+          <h3 className="ds-runa-titulo">{element.name}</h3>
+          <p className="ds-nota">{element.domain}</p>
         </div>
-
-        {/* Title */}
-        <h3 className={`font-mystic ${titleSizes[size]} mb-1 text-white`}>
-          {element.name}
-        </h3>
-        <p className="text-xs text-white/50 mb-3">{element.domain}</p>
-
-        {/* Progress bar */}
-        <div className="relative">
-          <div className="h-1.5 bg-black/30 rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${percentage}%` }}
-              transition={beatUnless(reduced, 'settle', { delay: stagger(2) })}
-              className="h-full rounded-full"
-              style={{
-                background: `linear-gradient(90deg, ${element.color}, ${element.lightColor})`,
-              }}
-            />
-          </div>
-          <div className="flex justify-between mt-1">
-            <span className="text-[10px] text-white/40">{percentage}%</span>
-          </div>
-        </div>
+        <span className="ds-cifra">{score.toLocaleString()}<small>pts</small></span>
       </div>
-    </motion.div>
+      <span
+        className="ds-medidor"
+        data-forma="fio"
+        role="img"
+        aria-label={`${percentage}%`}
+        style={{ '--medidor-valor': Math.min(Math.max(percentage / 100, 0), 1) } as React.CSSProperties}
+      />
+      <p className="ds-meta">{percentage}%</p>
+    </div>
   );
 };

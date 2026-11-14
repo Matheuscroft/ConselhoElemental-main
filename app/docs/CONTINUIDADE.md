@@ -1,30 +1,130 @@
-## F6-N20 — arquivo rejeitado após validador 145 (10/11/2026)
+## Retomada em 13/11/2026
 
-Matheus confirmou que o POST `progress_account_adopt_legacy` ainda devolve `22023/progress_invalid_archive` depois de o hash remoto do validador passar para a versão 145. Uma nova consulta sem reenvio não encontrou recibo. Portanto a adoção não está confirmada; preservar intent, stores e arquivo local e não repetir o envio enquanto se diagnostica. O arquivo baixado da tentativa tem versão 0.1.145, 2.306.493 bytes e SHA-256 iniciado em `99893d84e3e59788`; o resumo somente de leitura do intent compactado no navegador confirmou exatamente os mesmos três valores. Esse arquivo tem aproximadamente 45 mil nós JSON e passou na adoção completa somente em PGlite isolado com o snapshot legacy exportado, levando 5,9 s na chamada de adoção. O validador atual percorre todo o JSON e converte qualquer exceção em `progress_invalid_archive`; o limite padrão documentado para o papel `authenticated` do Supabase é 8 s. Timeout remoto é hipótese concreta, ainda dependente do tempo de resposta real/logs; foi solicitado o tempo aproximado do POST no DevTools. Se não for timeout, investigar projeto e funções dependentes no servidor real; o hash de `validate_archive` não comprova o estado de `compact_json` nem a configuração da conexão. O transporte local preparado já distingue a etapa, mas ainda não foi publicado. Nenhum deploy, exclusão ou nova escrita remota pelo agente.
+Ponto de retomada: FE-W3, em [FILA-ENTREGAS.md](FILA-ENTREGAS.md), agora "publicado; acabamento em fila". Checkout `main`, HEAD publicado `619534d` (igual a `origin/main`, conferido por `git fetch` e `git log` nesta data). Publicados nesta data, em ordem: `b6f89ae` (Lote 3), `594c447` (documentação), `3915b6a` (Lote 6), `c954e38` (Lote 4) e `619534d` (Lote 8). CI e Vercel verdes foram reportados pelo orquestrador; não conferidos aqui.
 
-## F6-N19 — fonte canônica, catálogo e Treinos (09/11/2026)
+Só local, não commitado e não tocado por este registro:
+- `app/src/App.tsx` e `app/vite.config.ts` (modificados): atalho de login de QA.
+- `app/src/main.qa.tsx`, `app/src/lib/dev/` e `app/tests/dev/` (não versionados): atalho de QA.
+- `app/docs/plans/ANALISE-DEVTOOLS-2026-11-13.md`, `INSTALACAO-SKILLS.md`, `PLANO-REMASTER.md` e `RETOMADA-ORQUESTRADOR.md` (não versionados).
+- `app/.env.local` (ignorado pelo git): onde fica o flag do atalho de QA. Não inspecionado nesta data.
 
-Matheus observou rituais/ciclos/sequências com nomes iguais nos dois lados, 17 ações e 3 logs somente locais, 2 Treinos salvos, 1 sessão e 7 entradas de histórico de treino no PC, e 30 áreas/132 subáreas na conta. Quer usar os registros Supabase como fonte canônica e sincronizar Treinos. Decidiu preservar os 51,705 XP locais e os recibos correspondentes; não excluir as 17 ações nem os 3 logs em bloco. Nomes/quantidades iguais ainda não provam IDs, conteúdo ou recibos iguais. Auditoria de código mostrou que `actions` é projeção e vínculo de tarefas/hábitos, e `executionLogs` participa de recibos de XP/treino; exclusão em bloco pode quebrar hierarquia, reversão e saldo. Os Treinos não existem nas dez tabelas legacy. Nenhum dado foi excluído ou enviado.
+Pendências de código, fora de qualquer commit:
+- Ajustes menores de FILA-ENTREGAS (alvos de toque, CLS/LCP de `/auth`, rótulos abaixo de 12px, flash da aura, limpeza do `post-restore-barrier`).
+- `src/pages/Invocar.tsx`, `supabaseCloudSync.ts`, `supabaseImport.ts` e `googleCalendarIntegration.ts` ainda usam `isSupabaseAuthEnabled` de `lib/supabase`.
+- `TopBar.tsx`: os botões do Google Agenda ficam sempre desabilitados (igual ao anterior). Decisão de Fábio se o bloco "Google Agenda (beta)" sai.
 
-O sync legacy grava catálogo padrão por usuário com `syncSource=base-catalog` e algumas seleções sintéticas; a leitura antiga já os filtra de `customAreas`/`customSubareas`. O protocolo integral atual tem catálogo padrão no código e guarda personalizações separadamente. O painel F6-N18 conta essas linhas padrão/seleção à parte e mostra apenas áreas realmente personalizadas. Passou a resumir comparação estrutural por ID e conteúdo de rituais, ciclos e sequências, apontando iguais/alterados/apenas locais/apenas online/ambíguos. Testes direcionados de UI 29/29 e inventário 4/4, TypeScript, ESLint, diff-check e build de produção passaram após o ajuste; somente avisos preexistentes de Browserslist/chunks. Nenhum deployment, SQL ou limpeza foi feito. Próximo: ler o resumo na conta real e comparar recibos antes de resolver fonte canônica e desenhar transferência de Fitness preservando XP.
+Tetos após o Lote 8, conferidos por leitura: `TETO_VIDRO = 15` em `tests/design/superficie.test.mjs`; `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs`. Os arquivos `src/pages/Auth.tsx` e `src/stores/authStore.ts` não existem mais no checkout.
 
-## F6-N18 — nomes locais e Supabase para decisão pessoal (09/11/2026)
+Orquestração: passa a uma sessão nova em Sonnet médio. Ela chama os subagentes de `.claude/agents`: implementador-tela, qa-visual, verificador e versionamento. O líder de design roda em Opus só para decisão visual nova. Também existe `movimento.md` na mesma pasta. A sessão antiga "Time de frontend" (Opus alto) foi aposentada por custo.
 
-Matheus pediu que a tela Minha conta mostre os nomes do progresso deste PC e da conta antes de decidir o descarte. Painel implementado localmente, disponível somente após login e por ação explícita. Lê os dois stores locais conferidos e, após validar a identidade e o estado remoto, lista títulos/nomes das tabelas legacy com filtro do usuário e RLS já existente, ou do arquivo integral online quando houver. Também mostra XP local/online quando disponível e identifica XP, ações, histórico e Treinos como indisponíveis no protocolo legacy. Não infere igualdade por nomes/contagens; erro ou resposta truncada não vira lista vazia. Não altera login, stores, XP, tabelas, intent ou recibo.
+Este lote é só documental: nenhum código, teste ou versão foi alterado, e nada foi commitado nem publicado. Versão do produto não foi alterada por este lote (não conferida nos manifests nesta data). Evidência de testes (947/947, 951/951 e 943/943, build ok) é reportada pelo orquestrador e não foi reexecutada aqui. Aceite dos Lotes 3, 4, 6 e 8 pendente do orquestrador.
 
-Evidência local: testes de AccountWorkspace 29/29 e módulo de inventário 4/4, `npx tsc -b`, ESLint direcionado, `npm run build` e `git diff --check` passaram. Esbuild bloqueou leitura no sandbox Windows, então teste do módulo e build foram repetidos fora dele com sucesso. Build transformou 4.288 módulos e manteve somente avisos conhecidos de Browserslist e tamanho dos chunks. Nenhuma leitura autenticada de dados pessoais, QA visual no navegador, push ou deploy foi executado; o painel ainda não está no site público. Próximo: publicação com escopo próprio e conferência na conta real, sem descartar armazenamento local antes da comparação.
+## FE-W2 — Ciclos com Reel como calendário, céu, moldura, VFX e foto do dia — em revisão (10/11/2026)
 
-## F6-N17 — incidente de adoção pessoal (09/11/2026)
+Estado: **em revisão**. Só o orquestrador marca aceita. Fila: [FILA-ENTREGAS.md](FILA-ENTREGAS.md), entrada FE-W2. Este registro é só documental: não alterou código, testes, versão, manifests nem commit. Itens A (Pilares) e D (aura) não estão aceitos (ver Em aberto).
 
-Ao concluir a tentativa pendente, o RPC `progress_account_adopt_legacy` respondeu HTTP 400 com `code=22023` e `message=progress_invalid_archive`; a consulta anterior não encontrou recibo. O transporte mostra apenas erro genérico. O app 0.1.145 gera arquivos com `appVersion=0.1.145`, enquanto o último readback documentado do validador remoto era 144 e a migração `20261108060000_account_archive_version_145.sql` permanecia pendente. Essa incompatibilidade é a causa mais provável, ainda não confirmada por readback remoto nesta sessão. Preservar o aparelho, a cópia local e a tentativa; não repetir o envio. Próximo: conferir `schema_migrations` e o hash/allowlist de `validate_archive` no projeto oficial; aplicar a migração 145 pelo fluxo oficial se ainda pendente, confirmar readback e só então retomar a mesma tentativa pelo app. Nenhuma escrita remota ou adoção foi executada pelo agente neste diagnóstico.
+Ponto de retomada (conferido por `git status -sb` e `git log origin/main..main` em 10/11/2026): checkout `main`, HEAD `47f5277`. `origin/main` está em `22cb609`; a main está **1 commit à frente** (`ahead 1`). Só `47f5277` não está publicado.
 
-Matheus mudou a preferência depois do erro: deseja conservar os registros existentes no Supabase e descartar o progresso local, sem migrá-lo. Essa escolha suspende o plano de envio local acima. O estado remoto identificado é `kind=legacy`; o fluxo atual de conta não transforma essas tabelas em arquivo integral nem as mostra como jornada ativa após limpar o aparelho. Antes de qualquer limpeza, decidir se os registros devem continuar acessíveis no app; se sim, será necessário um caminho de leitura/conversão próprio. Nenhuma limpeza local ou remota foi realizada.
+Rótulos desta frente, usados também na fila: **A** = Pilares (fila, item 2); **B0** = Flow Tunnel (item 4); **B1+B2** = Reel como calendário de Ciclos (item 3, toca o item 5); **C** = foto do dia nos Momentos (item 5); **D** = aura (item 1). A numeração 1 a 5 é da fila; os rótulos A a D são desta frente.
 
-Esclarecimento posterior: a limpeza desejada é no Chrome deste PC. Inventário de chaves fornecido por Matheus mostra os dois stores locais de Core/Fitness (aproximadamente 190 mil e 1,04 milhão de caracteres), um intent pendente (~199 mil), duas cópias de emergência legadas locais e tokens Auth de dois projetos. Não há chave `conselho-elemental-account-binding-v1` na lista: este navegador não tem vínculo integral confirmado. Os tamanhos não demonstram conteúdo ou total de atividades; as cópias de emergência não são leitura atual do banco. Nenhuma chave ou arquivo foi excluído. Próximo: resumir os stores por perfil sem expor valores privados e conferir os registros atuais do projeto Supabase por leitura autenticada antes de qualquer descarte.
+Commits da frente (conferidos com `git show --stat` e `git branch -r --contains`):
+- `61fdf81` **B0**, remove o Flow Tunnel: 5 arquivos, 3 inserções, 453 remoções. Removidos `TunelMomentos.tsx`, `tunel-momentos.css`, `lib/momentos/tunel.ts` e `tests/momentos/tunel.test.mjs`. **Publicado.**
+- `ac22965` **B1+B2**, Reel como calendário: cartões com ciclos feitos/total e foto do dia; 6 arquivos, 394 inserções, 201 remoções. Toca `components/momentos/ReelMomentos.tsx`, `reel-momentos.css`, `AcoesMomento.tsx` (novo), `pages/Ciclos.tsx`, `pages/ciclos.css` e `docs/plans/MOMENTOS-E-REEL.md`. **Publicado.**
+- `1f18e2d`: Lua e Estação viram botões reais; 2 arquivos. **Publicado.**
+- `6dc0a71`: céu vivo para Lua e Estação (Lua com shader e borda pela fase; Estação com partículas e vidro `.ceu-peitoril`) e moldura de mago no cartão aberto, com cor pelo elemento dominante do dia. Em `tests/design/superficie.test.mjs`, `TETO_VIDRO` foi de 15 para 16, aprovado por Fábio. 20 arquivos. **Publicado.**
+- `22cb609`: VFX elemental em três níveis, pela maestria do elemento do dia. Nível 1, Faísca (maestria abaixo de 10): moldura com o verbo de cada elemento. Nível 2, Fluxo (10 a 24): a borda vira o próprio elemento. Nível 3, Domínio (25 ou mais): borda premium dupla com filigrana, 60fps e dobra de tela cheia. Movimento reduzido fica sempre no nível 1, parado. `?vfx=1|2|3` força um nível e só existe em DEV. Conceito em `docs/plans/CONCEITO-VFX-ELEMENTAL.md`. Também traz o céu mais vivo (Lua escura com limbo, luz da Terra e estrelas; estações com horizonte, paralaxe, raios e eventos raros). 16 arquivos, 1928 inserções, 85 remoções. **Publicado.**
+- `47f5277`, **C e pontas da janela**: foto do dia no topo do `DayDetailsDialog` (`components/momentos/MomentoDoDia.tsx`, `momento-do-dia.css`, `lib/momentos/momento.ts`), com as mesmas ações do Reel, a linha "Fica só neste aparelho." e sem foto em dia futuro, no diálogo e no Reel. As pontas da janela de 9 dias ficaram destravadas: setas e teclado abrem o dia seguinte e recentram. 7 arquivos, 197 inserções, 13 remoções. **Publicado** (conferido em `origin/main` em 13/11/2026; a nota antiga "só local" ficou superada).
 
-Matheus executou resumo somente de leitura no Chrome deste PC: 1 perfil, 5 rituais, 34 ciclos, 17 ações, 3 registros de execução, 0 projetos, 51,705 XP, 1 entrada em `fitness.accountDataById.sessions` e 7 em `fitness.nativeDataById.nativeHistory`. Esses totais são locais; a primeira entrada é sessão, não treino salvo. O esquema das dez tabelas legacy contém rituais/ciclos e outros registros parciais, mas não um arquivo integral de Core/Fitness; comparar apenas quantidade de linhas não provaria que XP, histórico e Treinos estão no banco. Não limpar os stores até decidir com essa diferença conhecida.
+Pendência anterior fechada: as pontas da janela de 9 dias, que estavam inertes, foram resolvidas em `47f5277`. A decisão de produto que estava aberta foi tomada pelo orquestrador e não está em nenhum documento de regra.
 
-Matheus executou consulta agregada somente de leitura no banco para a conta: 5 linhas em `tasks`, 34 em `habits`, 0 em `projects`, 0 em `progress_private.account_state` e 0 em `progress_private.account_receipts`. As quantidades de rituais/ciclos coincidem com o PC, mas não comprovam IDs/conteúdo iguais; a conta continua sem jornada integral ou recibo do protocolo novo. XP, ações, logs e Treinos locais não foram conferidos no banco. Nenhuma exclusão foi realizada.
+Evidência, separada por origem:
+- **Git, conferido nesta sessão:** hashes, publicação em `origin/main`, estatísticas de `git show --stat` e `ahead 1`.
+- **Reportado pelo orquestrador, não reexecutado aqui:** `47f5277` com Verificador em 932/932 e build verde. QA visto no navegador a 390px: foto de teste no dia 3, remoção pela própria tela, dia futuro sem bloco e pontas funcionando nos dois sentidos. CI verde e Vercel ok em `6dc0a71` e `22cb609`, conferidos no ar.
+- **Reportado em B1+B2 (`ac22965`), não reexecutado aqui:** Verificador 865/865 e build verde; QA em Chromium com perfil vazio, 390 e 768px: sem estouro horizontal, setas e botões de 44px, cartões de 148px e 180px, blur estático, `scrollTo` programático não seleciona, recentra ao redimensionar; contraste estimado 5,3:1 no texto muted com opacidade 0,75.
+
+Tetos (inspeção por grep nesta sessão): `TETO_TAMANHOS = 11` em `app/tests/design/fundacao.test.mjs`; `TETO_VIDRO = 16` em `app/tests/design/superficie.test.mjs`. O 16 foi subido em `6dc0a71`, aprovado por Fábio. Este registro não altera teto.
+
+Não verificado (registrar): WebKit e Safari em tudo; aparelho real; desempenho no iPhone com até quatro contextos WebGL; a moldura nos níveis Fogo, Ar e Terra foi vista só em navegador sem GPU; conquista ao vivo; hemisfério Norte; seletor de arquivo real; película sobre foto real (QA com perfil vazio); movimento reduzido real (emulado só por JS, sem `@media`); contraste por pixel.
+
+Em aberto:
+- **A, Pilares (fila 2):** aguarda a referência de Fábio. Sem execução.
+- **D, aura (fila 1):** saiu com o Santuário em `dbdbaf5`, outra frente. Referenciado aqui; o ganho do shader de `AuraElemental.tsx` não tem aceite de FE-W2.
+- **Limiares de maestria 10 e 25:** ajustáveis. Não há decisão final registrada.
+- **Peso:** o three.js pesa 747 kB (190 kB gzip) e carrega sob demanda.
+- Santuário: ver seção própria abaixo.
+
+Versão do produto: este registro não altera versão. Eventual incremento do lote fica para decisão do orquestrador no encerramento.
+
+Próximo passo: (1) `47f5277` já está em `origin/main` (conferido em 13/11/2026), nada a publicar deste item; (2) Verificador roda `verify:release` e build sobre o conjunto final, depois que todos os escritores terminarem; (3) Fábio envia a referência de A; (4) WebKit e aparelho real, se Fábio quiser esse aceite; (5) decisão sobre os limiares de maestria, se Fábio quiser mudá-los.
+
+Limites deste registro: não consultei a fonte de domínio em `docs-conselho-master`, porque o lote é documental e não faz afirmação de regra de produto. Nenhum número de pontuação, XP ou store foi alterado.
+
+## Santuário: conceito e implementação (09/11/2026)
+
+Estado: **publicado** em `dbdbaf5` (com a correção do platô da aura) e documentado em `9fae215`, ambos em `origin/main` (conferido por git em 10/11/2026). Aceite pessoal de Fábio no aparelho pendente. Conceito aprovado por Fábio com ajustes: [CONCEITO-SANTUARIO.md](plans/CONCEITO-SANTUARIO.md). O texto abaixo é o registro de 09/11, quando ainda não havia commit; o `TETO_VIDRO` citado ali (15) subiu depois para 16 em `6dc0a71`, pelo vidro dos botões do céu em Ciclos.
+
+Passo 0 (commit `a4ea31f`): a guarda de vidro (`tests/design/superficie.test.mjs`) passa a ler `.tsx`. `TETO_VIDRO` sobe de 12 para 15 como retrato da realidade: 11 ocorrências em `.css` e 4 classes Tailwind `backdrop-blur-*` em MobileBottomNav, Auth e nos dois VideoExercisePlayer, que devem cair em lote próprio. Falha comprovada ao acrescentar uma classe. Teto subido: depende de aceite explícito do orquestrador, porque o protocolo reserva os tetos a ele.
+
+Passos 1 a 5 (sem commit): `ElementalPreview.tsx` e `elemental-preview.css` (duplicatas do HUD e rótulos removidos, um "Conjurar" a menos; órbita mantida, sem setas, pausar ou dica; ids `ep-entry-*` nas pedras; próximo passo em `.ds-pane`; grade de nove caminhos trocada por "Todos os caminhos"; `EquipmentSheet`/`EQUIPMENT` removidos do arquivo; cabeçalho com `--ds-surface-float` e `blur(var(--ds-blur-soft))`; durações de 180ms por token). Novos: `src/components/sanctuary/AnelXp.tsx` e `anel-xp.css`, anel de XP em SVG. Correção: o QA achou que `non-scaling-stroke` quebrava o `pathLength`; medido por contagem de pixels, ~21%, 48% e 78% para 25, 50 e 75%, vazio em 0.
+
+Causa da aura: o corte duro vinha do `overflow: clip` da órbita (confirmado por execução). Troca por `overflow-x: clip`. Com `overflow-y: visible` a aura esmaece, mas vaza ~114 a 150px acima e abaixo, sob o cabeçalho sticky e atrás do nome e do cartão. Separado e **não corrigido** (fora do escopo): o platô de cor vem do shader em `AuraElemental.tsx`, porque `shell*(0.30+1.45*tongues)` passa de 1 e o clamp achata. O corte da Terra não foi reproduzido a 390px; o "Ter" do briefing provavelmente era rótulo atrás do corpo.
+
+Evidência reportada pelo implementador e pelo QA, não reexecutada por este registro: Verificador (Haiku) com `verify:release` 872/872, build verde, `TETO_TAMANHOS = 11`, `TETO_VIDRO = 15`. QA no Chromium com perfil vazio (atalho de login só local, não versionado): estouro 0 a 390 e 768px em `/santuario` e `/santuario/elementos/terra`; Terra sem corte numa volta (margem 15px); órbita pausa fora da tela, com hover e com foco; foco volta à pedra Terra com "Voltar ao Santuário"; alvos de toque ≥44px; contraste de "Nível N" 9,41:1 e do link 10,08:1. Inspeção deste registro, por leitura: `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs`, `TETO_VIDRO = 15` em `tests/design/superficie.test.mjs`, commit `a4ea31f` existe no histórico.
+
+Arquivos: `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/pages/ElementalPreview.tsx`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/pages/elemental-preview.css`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/components/sanctuary/AnelXp.tsx`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src/components/sanctuary/anel-xp.css`, `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/tests/design/superficie.test.mjs` (commit `a4ea31f`).
+
+Limites e pendências:
+- Perfil vazio, XP 0. Não visto com dados.
+- Anel preenchido só por sonda no DOM e pela medição do implementador; sem QA independente depois da correção.
+- Movimento reduzido só por stub de `matchMedia`; o `@media` do CSS e o colapso do token não foram executados.
+- Aura em nível alto (1,75×) e a 768px com e sem clip não vistas.
+- Contraste sobre a mancha da aura não medido por pixel.
+- Barra inferior a 768px parece não ocupar a largura (possível artefato, não investigado).
+- Hover só pausa a rotação; aura e canvas das pedras seguem.
+- "Nível N" repete o selo do HUD (decisão de Fábio).
+- Corpo genérico do personagem, maior ganho de acabamento, depende de arte nova.
+- Água e corpo como ecossistema não construídos.
+- Nada visto em WebKit nem em aparelho real.
+- Os 4 `backdrop-blur-*` Tailwind e as 11 ocorrências em `.css` ainda precisam cair para o teto voltar a 11 de vidro.
+
+Próximo passo: o orquestrador confere o diff, aceita ou devolve; depois o Verificador roda `verify:release` e build sobre o conjunto final, e só então o orquestrador commita e publica na main após `git fetch` e merge. Versão do produto: este registro não altera versão.
+
+## Onda 1 de migração de telas — publicada em 91d52b9 (09/11/2026)
+
+Lote: três implementadores em paralelo, em telas disjuntas, orquestrados conforme [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Publicada na `main` no commit `91d52b9` (CI verde, execução 42670245567), com autorização expressa de Fábio. Aceita pelo orquestrador **com ressalvas**, listadas abaixo. Entrada `FE-W1` em [FILA-ENTREGAS.md](FILA-ENTREGAS.md). Deploy conferido: os 9 arquivos CSS de um build local do commit existem na produção com o mesmo hash de conteúdo, o que prova que a Vercel serve o CSS exato dele.
+
+Mudou (código, pelos implementadores): Rituais (8 `text-[9px]`/`text-[10px]` trocados por `--ds-text-micro`; 4 durações trocadas por tokens em `rituals.css`); Temporal (`DayDetailsDialog` usa `ds-glass-float`; `.temporal-stat` de 25px para `--ds-text-title`; `.season-panel` usa `--ds-duration-settle`; 2 `text-[10px]` viraram micro em `TemporalCalendarPage`; "0 feitos" com `text-white/55`); Grimório (`.grimoire-resources` usa `.ds-glass`; 4 durações viraram tokens em `grimorio.css`). Arquivos: `src/components/rituals/rituals.css`, `src/pages/Rituais.tsx`, `src/components/temporal/DayDetailsDialog.tsx`, `src/pages/temporal/TemporalCalendarPage.tsx`, `src/pages/temporal/temporal-elemental.css`, `src/pages/Grimorio.tsx`, `src/pages/grimorio.css`, todos sob `/Users/fabioandre/Developer/Conselheiro_Elemental_MAIN/app/src`.
+
+Já conformes, sem edição (inspeção estática por grep): Forja, Domínios, Astrolábio. Domínios usa cartões próprios sem `.ds-pane`/`.ds-glass`. Ticks do Recharts com `fontSize` numérico ficaram, porque o guarda só conta `font-size` em CSS. A animação `grimoire-light-pass` de 1,8s ficou, sem token adequado.
+
+Fora desta onda e **não versionados, só na máquina de Fábio**: um atalho de login para desenvolvimento, criado porque o login estava indisponível e o QA não conseguia ver as telas (`src/App.tsx` com uma linha, `vite.config.ts`, `src/main.qa.tsx`, `src/lib/dev/qa-bypass.ts`, `tests/dev/`, e `app/.env.local`, ignorado pelo git). Liga só com `VITE_QA_BYPASS_AUTH=true` no `.env.local` **e** no servidor de desenvolvimento; o servidor serve `main.qa.tsx` no lugar de `main.tsx`, que fica intacto porque os testes de partida do Matheus fixam os módulos que ele pode carregar. Não cria sessão nem lê credenciais. Provado fora da produção: um build com a variável ligada sai sem o atalho, e um build da Vercel com a variável presente falha. Não commitado de propósito, por tocar `App.tsx` e `vite.config.ts` ao lado do portão que o Matheus está consertando.
+
+Evidência reportada pelo orquestrador, não reexecutada por este registro: Verificador (Haiku) com `verify:release` 871/871 e build verde; QA no navegador a 390 e 768px com estouro 0 nas 8 rotas e console sem erros. Inspeção deste registro, por leitura: `ds-glass-float` em `DayDetailsDialog.tsx`; `ds-glass` em `Grimorio.tsx`; zero `text-[9px]`/`text-[10px]` em `rituals.css` e `Rituais.tsx`; `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs` e `TETO_VIDRO = 12` em `tests/design/superficie.test.mjs`. Nenhum teto foi alterado.
+
+Limites: telas vistas só com perfil vazio, sem dados. Badges de 12px em Rituais não medidos. Token `--ds-duration-settle` (420ms) não zerava em movimento reduzido: defeito do sistema de movimento, não desta onda; corrigido no commit `b0e7121` (ver abaixo). "0 feitos" do Calendário quebra em duas linhas e já quebrava a 10px. Contraste de `/55` não remedido (era 4,53:1 com `/45`). Foco não voltou à célula ao fechar o diálogo do dia; pode ser artefato do clique programático. `.domain-rail-art` ultrapassa a janela a 390px em `/dominios` sem estouro de página; não investigado. `prefers-reduced-motion` não pôde ser emulado. Nada visto em WebKit nem em aparelho real.
+
+Versão do produto: este registro não altera versão. Eventual bump da onda fica para decisão do orquestrador no encerramento do lote.
+
+Pendências: investigação de `.domain-rail-art`; remedição de contraste e foco; medição de badges. Treinos segue para depois, sozinho, sem HUD.
+
+Movimento reduzido (commit `b0e7121`, 09/11/2026): só duas das cinco batidas eram cobertas, e só dentro de `.elemental-system`; `settle` e `conjure` não tinham regra e nove folhas de estilo as usam. Agora todas colapsam no próprio token (`0.01ms`, e o escalonamento a `0`), então nenhuma tela precisa lembrar de desligar a sua animação. Um teste falha se uma batida for acrescentada sem colapsar, e foi provado falhando. Verificado no navegador pela regra real: a transição da barra do Grimório passa de 0,42s para 0,00001s. O QA não pôde emular a preferência; esta checagem aplicou a regra sem o `@media`, então a ativação pela preferência do sistema continua sem execução real em aparelho.
+
+## Equipe de frontend com Claude e retomada (09/11/2026)
+
+Fábio pediu um time de agentes orquestrado, numa sessão nova, para gastar menos do uso semanal: o frontend rodava sempre no Opus. O time e as regras estão em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md), que adapta ao Claude o protocolo de [COORDENACAO-AGENTES.md](COORDENACAO-AGENTES.md) e de [POLITICA-MODELOS.md](POLITICA-MODELOS.md), escritos para o Codex. Só o orquestrador commita e publica. Instrução permanente de Fábio: publicar sempre na main.
+
+Estado de retomada: main com CI verde e `verify:release` incluindo `tsc -b`. O design system tem quatro camadas, cada uma com guarda: movimento, cor, tipografia e superfície. Entregues nesta rodada, cada uma com seu documento em `plans/`:
+
+- Sistema de movimento e migração das telas: [SISTEMA-DE-MOVIMENTO](plans/SISTEMA-DE-MOVIMENTO.md).
+- Cor e tipografia: [FUNDACAO-COR-E-TIPOGRAFIA](plans/FUNDACAO-COR-E-TIPOGRAFIA.md).
+- Camada de vidro, cartões de elemento e cartão de projeto: [REDESIGN-SUPERFICIE-E-ELEMENTOS](plans/REDESIGN-SUPERFICIE-E-ELEMENTOS.md).
+- Fotos por dia e reel nos Ciclos: [MOMENTOS-E-REEL](plans/MOMENTOS-E-REEL.md). O túnel foi removido em `61fdf81` (B0) e não existe mais.
+- Cerimônia de subida de nível: [CERIMONIA-DE-CONCLUSAO](plans/CERIMONIA-DE-CONCLUSAO.md).
+- HUD permanente e a fórmula única de HP: [HUD-PERMANENTE](plans/HUD-PERMANENTE.md).
+- Aura por signo: [AURA-ELEMENTAL-POR-SIGNO](plans/AURA-ELEMENTAL-POR-SIGNO.md).
+- Peso do deploy, de 58 MB para 18 MB: [AUDITORIA-PUBLICACAO](AUDITORIA-PUBLICACAO.md).
+
+Pendências conhecidas. Nada disso foi visto em WebKit nem em aparelho real. O Safari do iOS descarta o IndexedDB das fotos após sete dias sem uso se o app não estiver instalado. `/treinos` ficou sem HUD de propósito, por ter casca de foco. Faltam 11 literais de `font-size` (cinco tamanhos distantes dos degraus e seis títulos de display) e o reflexo dos cartões de elemento só existe em WebKit e Blink. O corpo como ecossistema, com a água, espera decisões de produto de Fábio. Próximo lote proposto: onda 1 de migração de telas, com três implementadores em telas disjuntas.
 
 ## F6-N17 — sessão obrigatória e sincronização direta (09/11/2026)
 

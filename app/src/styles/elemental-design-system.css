@@ -4,7 +4,7 @@
   --ds-radius-panel: 24px;
   --ds-space-unit: 4px;
   --ds-font-heading: Cinzel, Georgia, serif;
-  --ds-font-body: Inter, system-ui, sans-serif;
+  --ds-font-body: Inter, 'Inter Fallback', system-ui, sans-serif;
   color: rgb(var(--el-text));
   font-family: var(--ds-font-body);
 }

@@ -86,7 +86,7 @@ module.exports = {
       fontFamily: {
         mystic:  ['Cinzel', 'serif'],
         display: ['Cinzel Decorative', 'cursive'],
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
+        sans:    ['Inter', 'Inter Fallback', 'system-ui', 'sans-serif'],
         mono:    ["ui-monospace", "SFMono-Regular", "monospace"],
       },
       backgroundImage: {

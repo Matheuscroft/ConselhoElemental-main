@@ -4,19 +4,23 @@ import {readFileSync,existsSync,statSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {resolve,dirname} from 'node:path';
 import ts from 'typescript';
+const messagesModule={exports:{}};new Function('exports',ts.transpileModule(readFileSync('src/lib/backup/account-auth-messages.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(messagesModule.exports);
 const require=createRequire(import.meta.url),flush=()=>new Promise(r=>setImmediate(r));
 const flatten=n=>!n||typeof n!=='object'?[]:Array.isArray(n)?n.flatMap(flatten):[n,...flatten(n.props?.children)];
 const text=n=>Array.isArray(n)?n.map(text).join(''):typeof n==='object'?text(n?.props?.children):String(n??'');
 const uid='11111111-1111-4111-8111-111111111111',key='conselho-elemental-account-intent-v1';
-const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
+const loadTs=(file,deps={})=>{const m={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync(file,'utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>{const hit=Object.keys(deps).find(k=>id.endsWith(k));if(!hit)throw Error('unexpected '+id);return deps[hit];},m.exports);return m.exports;};
+const accessStorageModule=loadTs('src/lib/backup/account-access-storage.ts'),returnModule=loadTs('src/lib/backup/account-return.ts'),recoveryEntry=loadTs('src/lib/backup/account-recovery-entry.ts');
+const oauthModule=loadTs('src/lib/backup/account-oauth.ts',{'/account-recovery-entry':recoveryEntry,'/account-return':returnModule,'/account-auth-messages':messagesModule.exports});
+const accessModule={exports:{}};new Function('require','exports',ts.transpileModule(readFileSync('src/lib/backup/account-access.ts','utf8'),{compilerOptions:{target:ts.ScriptTarget.Latest,module:ts.ModuleKind.CommonJS}}).outputText)(id=>id.endsWith('/account-auth-messages')?messagesModule.exports:id.endsWith('/account-recovery-entry')?{PRODUCTION_APP_ORIGIN:'https://conselho-elemental-main.vercel.app'}:require(id),accessModule.exports);
 const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-revision',createdAt:'2026-10-29T12:00:00Z'};
- function fixture({released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false,snapshotData}={}){
- let si,ri,mounted=false,tree,cleanup,authId=uid,constructions=0,disposals=0,staleCopy=false,download=0;const handoffs=[];const slots=[],refs=[],listeners=new Set(),requests=[],navigations=[],sessions=[],timers=[];
+ function fixture({rememberChoice,released=true,accessReleased=released,pending=false,bound=false,handoff=false,notice='none',empty=false,contextFailure=false,snapshotData,remoteKind='empty'}={}){
+ let remoteNow=remoteKind,si,ri,mounted=false,tree,cleanup,authId=uid,constructions=0,disposals=0,staleCopy=false,download=0;const handoffs=[];const slots=[],refs=[],listeners=new Set(),requests=[],navigations=[],sessions=[],timers=[];
  const memory=new Map([['conselho-elemental-storage','synthetic core'],['dominio-do-mago-workout-storage-v1','synthetic fitness']]);if(empty)memory.clear();if(pending)memory.set(key,'synthetic intent');if(bound)memory.set('conselho-elemental-account-binding-v1','synthetic binding');
  const baseline={pair:{core:empty?null:'synthetic core',fitness:empty?null:'synthetic fitness'},snapshot:empty?null:(snapshotData??{}),localMode:null};
  const react={useState(initial){const i=si++;if(!(i in slots))slots[i]=initial;return [slots[i],next=>slots[i]=next];},useRef(initial){return refs[ri++]??={current:initial};},useEffect(fn){if(!mounted)cleanup=fn();}};
- const sessionMemory=new Map();
- const window={location:{origin:'https://fixture.test',assign:url=>navigations.push(url),reload:()=>navigations.push('reload')},localStorage:{getItem:k=>memory.get(k)??null},sessionStorage:{getItem:k=>sessionMemory.get(k)??null,setItem:(k,v)=>sessionMemory.set(k,v),removeItem:k=>sessionMemory.delete(k)},addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn)};
+ const ACCESS='conselho-elemental-tab-access-v1',device=new Map(),sessionMemory=new Map(rememberChoice===undefined?[]:[['conselho-elemental-account-remember-v1',rememberChoice]]),remembered=[],signOuts=[];
+ const window={location:{origin:'https://fixture.test',assign:url=>navigations.push(url),reload:()=>navigations.push('reload')},localStorage:{getItem:k=>(k===ACCESS?device:memory).get(k)??null,setItem:(k,v)=>(k===ACCESS?device:memory).set(k,v),removeItem:k=>(k===ACCESS?device:memory).delete(k)},sessionStorage:{getItem:k=>sessionMemory.get(k)??null,setItem:(k,v)=>sessionMemory.set(k,v),removeItem:k=>sessionMemory.delete(k)},addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn)};
  const source=ts.transpileModule(readFileSync('src/components/backup/AccountWorkspace.tsx','utf8').replaceAll('import.meta.env.VITE_SUPABASE_URL',JSON.stringify('https://synthetic.invalid')).replaceAll('import.meta.env.VITE_SUPABASE_ANON_KEY',JSON.stringify('synthetic-public-key')),{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX},reportDiagnostics:true});
  assert.deepEqual(source.diagnostics?.filter(d=>d.category===ts.DiagnosticCategory.Error).map(d=>ts.flattenDiagnosticMessageText(d.messageText,' ')),[]);
  const compiledSource=source.outputText;
@@ -26,6 +30,9 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   if(id.endsWith('.css'))return {};
   if(id.endsWith('/connect-account-progress'))return Object.fromEntries(['connectCurrentAccountProgress','receiveReviewedAccountProgress','resumeAccountConnection'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
   if(id.endsWith('/account-access'))return accessModule.exports;
+  if(id.endsWith('/account-oauth'))return oauthModule;
+  if(id.endsWith('/account-return'))return returnModule;
+  if(id.endsWith('/account-auth-messages'))return messagesModule.exports;
    if(id.endsWith('/workspace-preview'))return {readWorkspaceBaseline:()=>{if(contextFailure)throw Error('synthetic context failure');return baseline;},createWorkspaceSafetyCopy:async()=>({baseline,text:'local archive'})};
   if(id.endsWith('/restore-confirmation'))return {verifyPreviousSafetyCopy:async()=>{if(staleCopy)throw Error('Cópia diferente');}};
   if(id.endsWith('/progress-backup'))return {MAX_BACKUP_BYTES:20*1024*1024,STORE_KEYS:{core:'conselho-elemental-storage',fitness:'dominio-do-mago-workout-storage-v1'}};
@@ -37,34 +44,36 @@ const receipt={userId:uid,operationId:'synthetic-operation',revision:'synthetic-
   if(id.endsWith('/account-intent'))return {ACCOUNT_INTENT_KEY:key,accountBaselineDigest:async()=> 'baseline',inspectAccountIntent:async()=>({userId:uid,archive:'local archive',phase:'pending',baselineDigest:'baseline'})};
   if(id.endsWith('/restore-journal'))return {RESTORE_JOURNAL_KEY:'conselho-elemental-restore-journal-v1'};
   if(id.endsWith('/progress-mode'))return {LOCAL_PROGRESS_MODE_KEY:'conselho-elemental-local-progress-mode-v1'};
+  if(id.endsWith('/account-access-storage'))return accessStorageModule;
   if(id.endsWith('/account-resume-entry'))return {ACCOUNT_TAB_ACCESS_KEY:'conselho-elemental-tab-access-v1'};
   if(id.endsWith('/stored-progress'))return {StoredProgressAuditError:class StoredProgressAuditError extends Error{constructor(audit){super('synthetic progress audit');this.audit=audit;}}};
   if(id.endsWith('/account-data-inventory'))return {inspectAccountDataInventory:(...args)=>new Promise((resolve,reject)=>requests.push({name:'inspectAccountDataInventory',args,resolve,reject}))};
   if(id.endsWith('/stored-progress-repair'))return {STORED_PROGRESS_REPAIR_KEY:'conselho-elemental-progress-repair-v1',settleStoredProgressRepair:async()=>{},planStoredProgressRepair:()=>null,applyStoredProgressRepair:async()=>{}};
   if(id.endsWith('/account-release'))return {ACCOUNT_TRANSFER_WRITES_RELEASED:released};
   if(id.endsWith('/account-access-release'))return {ACCOUNT_ACCESS_RELEASED:accessReleased};
-  if(id.endsWith('/account-transport'))return {createSupabaseAccountTransport:(_,guard)=>({guard,readProgress:async()=>({complete:true,userId:uid,kind:'empty',revision:'empty',archive:null,coverage:{}})})};
+  if(id.endsWith('/account-transport'))return {createSupabaseAccountTransport:(_,guard)=>({guard,readProgress:async()=>{if(remoteNow==='fail')throw Error('synthetic read failure');if(remoteNow==='legacy')return {complete:false,userId:uid,kind:'legacy',revision:'legacy'};if(remoteNow==='snapshot')return {complete:true,userId:uid,kind:'snapshot',revision:'22222222-2222-4222-8222-222222222222',archive:'online archive',coverage:{}};return {complete:true,userId:uid,kind:'empty',revision:'empty',archive:null,coverage:{}};}})};
   if(id.endsWith('/account-transfer'))return Object.fromEntries(['beginAccountTransfer','reviewAccountTransfer','finishAccountTransferLocally','pauseAccountTransferLocally'].map(name=>[name,(...args)=>new Promise((resolve,reject)=>requests.push({name,args,resolve,reject}))]));
   if(id.endsWith('/new-account-progress'))return {startNewAccountProgress:(...args)=>new Promise((resolve,reject)=>requests.push({name:'startNewAccountProgress',args,resolve,reject}))};
-  if(id.endsWith('/account-live-access'))return {rememberAuthenticatedAccountAccess:async()=>{},prepareLiveAccountAccess:async(owned,options)=>({...options,allProfilesConfirmed:true,client:owned.client,dispose:owned.dispose})};
-  if(id.endsWith('/account-session'))return {createAccountReviewSession(){constructions++;const client={auth:{onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signInWithPassword:args=>new Promise((resolve,reject)=>sessions.push({kind:'login',args,resolve,reject})),signUp:args=>new Promise((resolve,reject)=>sessions.push({kind:'signup',args,resolve,reject})),resend:args=>new Promise((resolve,reject)=>sessions.push({kind:'resend',args,resolve,reject})),getUser:async()=>({data:{user:{id:authId}},error:null})}};return {client,dispose(){disposals++;}};}};
+  if(id.endsWith('/account-live-access'))return {rememberAuthenticatedAccountAccess:async(_,options)=>{remembered.push(options);options.storage.setItem('conselho-elemental-tab-access-v1','synthetic access');},prepareLiveAccountAccess:async(owned,options)=>({...options,allProfilesConfirmed:true,client:owned.client,dispose:owned.dispose})};
+  if(id.endsWith('/account-session'))return {createAccountReviewSession(){constructions++;const client={auth:{signOut:args=>{signOuts.push(args);return Promise.resolve({error:null});},onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}}),signInWithPassword:args=>new Promise((resolve,reject)=>sessions.push({kind:'login',args,resolve,reject})),signUp:args=>new Promise((resolve,reject)=>sessions.push({kind:'signup',args,resolve,reject})),resend:args=>new Promise((resolve,reject)=>sessions.push({kind:'resend',args,resolve,reject})),signInWithOAuth:args=>new Promise((resolve,reject)=>sessions.push({kind:'oauth',args,resolve,reject})),exchangeCodeForSession:code=>new Promise((resolve,reject)=>sessions.push({kind:'exchange',args:code,resolve,reject})),getUser:async()=>({data:{user:{id:authId}},error:null})}};return {client,dispose(){disposals++;}};}};
   return require(id);
  },mod,mod.exports,window,{locks:{}},{body:{append(){}},createElement:()=>({click(){download++;},remove(){}})},{createObjectURL:()=> 'blob:synthetic',revokeObjectURL(){}},fn=>timers.push(fn));
  function render(){si=ri=0;tree=mod.exports.AccountWorkspace({notice,onStart:handoff?session=>handoffs.push(session):undefined});mounted=true;}render();const nodes=()=>flatten(tree);
- return {panel:()=>{const panels=nodes().filter(n=>typeof n.type==='function'&&n.type.name==='AccountResolutionPanel');assert.equal(panels.length,1);return panels[0].props;},render,nodes,handoffs,requests,sessions,memory,navigations,listeners,timers,get constructions(){return constructions;},get disposals(){return disposals;},get downloads(){return download;},content:()=>text(tree),
+ return {device,remembered,signOuts,sessionMemory,panel:()=>{const panels=nodes().filter(n=>typeof n.type==='function'&&n.type.name==='AccountResolutionPanel');assert.equal(panels.length,1);return panels[0].props;},render,nodes,handoffs,requests,sessions,memory,navigations,listeners,timers,get constructions(){return constructions;},get disposals(){return disposals;},get downloads(){return download;},content:()=>text(tree),
   click(label){const b=nodes().find(n=>n.type==='button'&&text(n.props.children)===label);assert.ok(b,label);b.props.onClick?.();render();},
   fill(type,value,index=0){nodes().filter(n=>n.type==='input'&&n.props.type===type)[index].props.onChange({target:{value}});render();},
-  toggle(index,value=true){nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox')[index].props.onChange({target:{checked:value}});render();},
+  toggle(index,value=true){nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox'&&n.props.name!=='keep-connected')[index].props.onChange({target:{checked:value}});render();},
   toggleLabel(label,value=true){const node=nodes().find(n=>n.type==='label'&&text(n.props.children)===label);assert.ok(node,label);flatten(node).find(n=>n.type==='input'&&n.props.type==='checkbox').props.onChange({target:{checked:value}});render();},
   file(file={size:10,text:async()=> 'local archive'}){nodes().find(n=>n.type==='input'&&n.props.type==='file').props.onChange({target:{files:[file],value:'selected'}});render();},
   submit(){nodes().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});render();},
+  setRemote(kind){remoteNow=kind;},pick(value){nodes().find(n=>n.type==='input'&&n.props.type==='radio'&&n.props.value===value).props.onChange({target:{checked:true}});render();},
   emit(storageKey){listeners.forEach(fn=>fn({key:storageKey}));render();},wrongCopy(value=true){staleCopy=value;},auth(value){authId=value;},unmount(){cleanup();}};
 }
 async function prepared(f){await flush();f.render();f.file();await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');}
 async function signed(f){f.submit();await flush();assert.ok(f.sessions.length);f.sessions.at(-1).resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();}
 
 test('distributed release cannot construct Auth or send even if disabled handlers are invoked directly; local copy tools remain usable',async()=>{
- const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
+ const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta com e-mail');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
  f.click('Baixar cópia antes do envio');await flush();f.render();assert.equal(f.downloads,1);assert.equal(f.constructions,0);f.unmount();
  // Closed-release behavior is injected above, independently of the published beta.
 
@@ -97,11 +106,15 @@ test('pending receipt check cannot resend without a separate consent, and offlin
  const g=fixture({pending:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.toggleLabel('Fechei as outras abas e janelas deste app.');g.click('Conferir recibo sem reenviar');assert.equal(g.requests[0].args[1].retryConfirmed,false);g.requests[0].resolve({receipt:null,localChanged:false});await flush();g.render();g.click('Repetir tentativa conferida');assert.equal(g.requests.length,1);g.toggleLabel('Autorizo reenviar exatamente o arquivo desta tentativa se não houver recibo confirmado.');g.click('Repetir tentativa conferida');assert.equal(g.requests[1].args[1].retryConfirmed,true);g.requests[1].resolve({receipt:null,localChanged:false});await flush();g.unmount();
 });
 
-test('pending journey can retry the exact protected operation and connect from the main section',async()=>{
+test('pending journey verifies first; only after a failure does the separate consent unlock writing again',async()=>{
  const f=fixture({pending:true,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- f.click('Concluir envio protegido e conectar');assert.equal(f.requests.length,0);
- f.toggleLabel('Fechei as outras abas e autorizo concluir exatamente esta tentativa se o servidor confirmar que não há recibo.');f.click('Concluir envio protegido e conectar');await flush();assert.equal(f.requests[0].name,'reviewAccountTransfer');assert.equal(f.requests[0].args[1].retryConfirmed,true);
- f.requests[0].resolve({receipt,localChanged:false});await flush();assert.equal(f.requests[1].name,'finishAccountTransferLocally');assert.equal(f.requests[1].args[1].bindAccountConfirmed,true);f.memory.set('conselho-elemental-account-binding-v1','connected binding');f.requests[1].resolve(receipt);await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'connected binding');assert.equal(f.handoffs[0].remember,true);f.unmount();
+ assert.match(f.content(),/Terminar o que ficou pela metade/);assert.match(f.content(),/Uma gravação na conta foi interrompida\. Seu progresso está protegido\./);
+ assert.equal(f.nodes().some(n=>n.type==='button'&&text(n.props.children)==='Gravar de novo'),false);
+ f.click('Verificar e terminar');await flush();assert.equal(f.requests[0].name,'resumeAccountConnection');f.requests[0].reject(Error('synthetic failure'));await flush();f.render();
+ assert.match(f.content(),/Não deu para terminar agora/);
+ f.click('Gravar de novo');assert.equal(f.requests.length,1);
+ f.toggleLabel('Fechei as outras abas e autorizo gravar de novo exatamente esta tentativa, se a conta confirmar que ela não chegou.');f.click('Gravar de novo');await flush();assert.equal(f.requests[1].name,'reviewAccountTransfer');assert.equal(f.requests[1].args[1].retryConfirmed,true);
+ f.requests[1].resolve({receipt,localChanged:false});await flush();assert.equal(f.requests[2].name,'finishAccountTransferLocally');assert.equal(f.requests[2].args[1].bindAccountConfirmed,true);f.memory.set('conselho-elemental-account-binding-v1','connected binding');f.requests[2].resolve(receipt);await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'connected binding');assert.equal(f.handoffs[0].remember,true);f.unmount();
 });
 
 test('wrong identity, failed copy and late responses after storage changes or unmount never show a successful transfer',async()=>{
@@ -124,7 +137,7 @@ test('saving the account binding is a separate explicit consent and does not cla
 
 test('bound account describes revision protection, refuses another identity and invalidates consents on binding changes',async()=>{
  const f=fixture({bound:true});await prepared(f);assert.match(f.content(),/Vínculo guardado/);assert.match(f.content(),/versão online ainda corresponder/);f.auth('different-user');await signed(f);assert.match(f.content(),/mesma conta/);assert.equal(f.requests.length,0);
- f.emit('conselho-elemental-account-binding-v1');await flush();f.render();assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox').every(n=>!n.props.checked),true);f.unmount();
+ f.emit('conselho-elemental-account-binding-v1');await flush();f.render();assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox'&&n.props.name!=='keep-connected').every(n=>!n.props.checked),true);f.unmount();
 });
 
 
@@ -146,22 +159,35 @@ test('an unbound device authenticates without adopting data and hands only an ex
 });
 
 test('signup needs matching confirmation and discards an autoconfirm session without sending local progress',async()=>{
- const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
+ const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
  f.fill('password','synthetic password',1);f.submit();f.submit();await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');assert.equal(f.sessions[0].args.options.emailRedirectTo,'https://conselho-elemental-main.vercel.app/?progresso=conta');
  f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.match(f.content(),/Se este e-mail precisar/);assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.deepEqual([...f.memory.entries()],before);assert.equal(f.disposals,1);assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='password').length,1);f.unmount();
 });
 
-test('resending confirmation is explicit, needs no password and cannot be duplicated while pending',async()=>{
- const f=fixture();await flush();f.render();f.fill('email','synthetic@example.invalid');f.click('Reenviar confirmação de e-mail');f.click('Reenviar confirmação de e-mail');await flush();assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'resend');assert.equal(f.sessions[0].args.type,'signup');assert.equal('password' in f.sessions[0].args,false);
- f.sessions[0].resolve({data:{},error:null});await flush();f.render();assert.match(f.content(),/Se houver confirmação pendente/);assert.equal(f.requests.length,0);assert.equal(f.disposals,1);f.unmount();
+test('resending confirmation only appears after the signup notice, needs no password and cannot be duplicated while pending',async()=>{
+ const f=fixture();await flush();f.render();f.fill('email','synthetic@example.invalid');assert.equal(f.nodes().some(n=>n.type==='button'&&text(n.props.children)==='Reenviar confirmação de e-mail'),false);assert.doesNotMatch(f.content(),/Não recebeu o e-mail de confirmação/);
+ f.click('Criar conta com e-mail');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.sessions[0].resolve({data:{session:null,user:{id:uid}},error:null});await flush();f.render();
+ f.click('Reenviar confirmação de e-mail');f.click('Reenviar confirmação de e-mail');await flush();assert.equal(f.sessions.length,2);assert.equal(f.sessions[1].kind,'resend');assert.equal(f.sessions[1].args.type,'signup');assert.equal('password' in f.sessions[1].args,false);
+ f.sessions[1].resolve({data:{},error:null});await flush();f.render();assert.match(f.content(),/Se houver confirmação pendente/);assert.equal(f.requests.length,0);assert.equal(f.disposals,2);f.unmount();
+});
+
+test('the entry shows Google first, the e-mail form opens on demand, and no name or tab promise leaks',async()=>{
+ const f=fixture();await flush();f.render();const c=f.content();
+ assert.ok(c.indexOf('Continuar com Google')<c.indexOf('Manter conectado neste aparelho')&&c.indexOf('Manter conectado neste aparelho')<c.indexOf('Entrar com e-mail'));
+ assert.match(c,/Não tem conta\? Criar conta com e-mail/);assert.doesNotMatch(c,/Acesso à conta|Já tenho conta|Fábio|nesta aba/);
+ const panel=()=>f.nodes().find(n=>n.props?.id==='account-email-panel');assert.equal(panel().props['data-open'],false);
+ f.click('Entrar com e-mail');assert.equal(panel().props['data-open'],true);
+ assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/privacidade.html'));
+ assert.equal(f.nodes().find(n=>n.type==='a'&&n.props.href==='/santuario'&&String(n.props.className).includes('entry-top-link')).props.hidden,true);
+ f.unmount();
 });
 
 test('mode switches clear typed credentials and changing a verified access preserves pending data but removes authority to send',async()=>{
- const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);const before=[...f.memory.entries()];f.click('Sair desta conta');assert.doesNotMatch(f.content(),/Conta confirmada/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta com e-mail');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Entrar');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Terminar o que ficou pela metade/);const before=[...f.memory.entries()];f.click('Sair desta conta');assert.doesNotMatch(f.content(),/Terminar o que ficou pela metade/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('late signup response after local context changes never restores access or shows a success result',async()=>{
- const f=fixture();await flush();f.render();f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture();await flush();f.render();f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('confirmation return is only an informational notice and never constructs Auth or grants transfer authority',async()=>{
@@ -175,7 +201,7 @@ test('authentication waits for initial pending-context inspection, even with val
 test('a failed data inspection keeps transfers blocked but releases email and password access',async()=>{
  const f=fixture({contextFailure:true});await flush();f.render();assert.match(f.content(),/conexão anterior deste aparelho precisa ser reiniciada/);
  const fields=f.nodes().filter(n=>n.type==='input'&&['email','password'].includes(n.props.type));assert.equal(fields.length,2);assert.ok(fields.every(n=>n.props.disabled===false));
- f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);assert.equal(f.requests.length,0);assert.doesNotMatch(f.content(),/Sincronizar este aparelho/);f.unmount();
+ f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Reconectar este aparelho/);assert.match(f.content(),/Nada do seu progresso é apagado/);assert.equal(f.requests.length,0);assert.doesNotMatch(f.content(),/Salvar meu progresso na conta/);f.unmount();
 });
 
 test('a failed choice mounts recovery controls, never resends on receipt check, and can explicitly re-evaluate while keeping local data',async()=>{
@@ -184,33 +210,65 @@ test('a failed choice mounts recovery controls, never resends on receipt check, 
  f.panel().onKeepLocal();assert.equal(f.requests[3].name,'keepLocalAfterResolution');f.requests[3].resolve('review-ready');await flush();assert.deepEqual(f.navigations,['/?progresso=conta']);f.unmount();
 });
 
-test('remembered access has its own unchecked consent and is selected only at the reviewed live handoff',async()=>{
- const f=fixture({bound:true,handoff:true});await prepared(f);await signed(f);f.toggle(0);f.toggle(1);f.toggle(2);
- const checks=f.nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox');assert.equal(checks.at(-1).props.checked,false);
- f.toggle(3);f.click('Sincronizar enquanto uso o app');await flush();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].remember,true);assert.equal(f.requests.length,0);f.unmount();f.handoffs[0].dispose();
+test('keeping the access is a single login choice, on by default; the later handoff no longer asks again',async()=>{
+ const f=fixture({bound:true,handoff:true});await prepared(f);
+ assert.match(f.content(),/Manter conectado neste aparelho/);assert.match(f.content(),/Desmarque se o aparelho não for seu\./);
+ const keep=()=>f.nodes().find(n=>n.type==='input'&&n.props.name==='keep-connected');assert.equal(keep().props.checked,true);
+ assert.doesNotMatch(f.content(),/Retomar o acesso após recarregar|até 12 horas/);
+ await signed(f);f.toggle(0);f.toggle(1);f.toggle(2);f.click('Sincronizar enquanto uso o app');await flush();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].remember,true);f.unmount();f.handoffs[0].dispose();
+});
+test('checked: the access record goes to this device only; unchecked: to this tab only; never both',async()=>{
+ const where=async choice=>{
+  const f=fixture();await prepared(f);if(!choice)f.nodes().find(n=>n.type==='input'&&n.props.name==='keep-connected').props.onChange({target:{checked:false}}),f.render();
+  await signed(f);const storage=f.remembered.at(-1).storage;const K='conselho-elemental-tab-access-v1',result={local:f.device.get(K)??null,tab:f.sessionMemory.get(K)??null};
+  storage.removeItem(K);assert.equal(f.device.has(K),false);assert.equal(f.sessionMemory.has(K),false);f.unmount();return result;
+ };
+ assert.deepEqual(await where(true),{local:'synthetic access',tab:null});
+ assert.deepEqual(await where(false),{local:null,tab:'synthetic access'});
+});
+test('Google keeps only the boolean across the redirect and applies it on return; a missing marker means this tab only',async()=>{
+ const f=fixture();await flush();f.render();f.nodes().find(n=>n.type==='input'&&n.props.name==='keep-connected').props.onChange({target:{checked:false}});f.render();
+ f.click('Continuar com Google');await flush();f.sessions.at(-1).resolve({data:{url:'https://synthetic.invalid/auth/v1/authorize?provider=google'},error:null});await flush();
+ assert.equal(f.sessionMemory.get('conselho-elemental-account-remember-v1'),'0');f.unmount();
+ const withMarker=async value=>{
+  globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
+  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&code=synthetic-code-0001',()=>{});}finally{delete globalThis.sessionStorage;}
+  const g=fixture({notice:'oauth',rememberChoice:value});await until(()=>g.sessions.some(x=>x.kind==='exchange'));
+  g.sessions.find(x=>x.kind==='exchange').resolve({data:{session:{user:{id:uid}}},error:null});await until(()=>g.remembered.length>0);
+  const K='conselho-elemental-tab-access-v1',result={local:g.device.get(K)??null,tab:g.sessionMemory.get(K)??null,marker:g.sessionMemory.has('conselho-elemental-account-remember-v1')};g.unmount();return result;
+ };
+ assert.deepEqual(await withMarker('1'),{local:'synthetic access',tab:null,marker:false});
+ assert.deepEqual(await withMarker(undefined),{local:null,tab:'synthetic access',marker:false});
+});
+test('Sair erases both copies and revokes only this session on the server',async()=>{
+ const f=fixture();await prepared(f);await signed(f);
+ f.sessionMemory.set('conselho-elemental-tab-access-v1','tab copy');// a stray second copy must go too
+ f.click('Sair desta conta');await flush();f.render();
+ assert.equal(f.device.has('conselho-elemental-tab-access-v1'),false);assert.equal(f.sessionMemory.has('conselho-elemental-tab-access-v1'),false);
+ assert.deepEqual(f.signOuts,[{scope:'local'}]);assert.equal(f.disposals,1);
 });
 
 
 test('new empty account has its own start path, explicit consent and one handoff; no existing data uses it',async()=>{
  const f=fixture({empty:true,handoff:true});await flush();f.render();assert.match(f.content(),/Sua primeira jornada/);assert.doesNotMatch(f.content(),/Baixar cópia antes do envio/);
  f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- f.click('Começar minha jornada');assert.equal(f.requests.length,0);
- f.toggle(0);f.toggle(1);f.toggle(2);f.click('Começar minha jornada');f.click('Começar minha jornada');await flush();f.render();
- assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'startNewAccountProgress');assert.equal(f.requests[0].args[0].startConfirmed,true);
+ assert.match(f.content(),/Tudo pronto/);assert.match(f.content(),/Sua conta é nova\. Comece agora e o que você fizer fica salvo nela\./);
+ f.click('Começar minha jornada');f.click('Começar minha jornada');await flush();f.render();
+ assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'startNewAccountProgress');assert.equal(f.requests[0].args[0].startConfirmed,true);assert.equal(f.requests[0].args[0].otherTabsClosed,true);
  f.requests[0].resolve({bindingRaw:'new binding',receipt});await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].remember,true);assert.equal(f.handoffs[0].bindingRaw,'new binding');f.unmount();
- const existing=fixture({handoff:true});await flush();existing.render();assert.doesNotMatch(existing.content(),/Começar minha jornada/);existing.unmount();
+ const existing=fixture({handoff:true});await flush();existing.render();existing.fill('email','synthetic@example.invalid');existing.fill('password','synthetic test password');await signed(existing);assert.doesNotMatch(existing.content(),/Tudo pronto/);assert.match(existing.content(),/Salvar seu progresso na conta/);existing.unmount();
 });
 
 test('new account start stays closed in product and storage changes revoke its consent and late handoff',async()=>{
  const closed=fixture({empty:true,handoff:true,released:false});await flush();closed.render();closed.toggle(0);closed.toggle(1);closed.click('Começar minha jornada');assert.equal(closed.requests.length,0);closed.unmount();
- const f=fixture({empty:true,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);f.toggle(0);f.toggle(1);f.click('Começar minha jornada');await flush();
- f.emit('conselho-elemental-storage');f.requests[0].resolve({bindingRaw:'stale',receipt});await flush();f.render();assert.equal(f.handoffs.length,0);assert.ok(f.nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox').every(n=>!n.props.checked));f.unmount();
+ const f=fixture({empty:true,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);f.click('Começar minha jornada');await flush();
+ f.emit('conselho-elemental-storage');f.requests[0].resolve({bindingRaw:'stale',receipt});await flush();f.render();assert.equal(f.handoffs.length,0);assert.ok(f.nodes().filter(n=>n.type==='input'&&n.props.type==='checkbox'&&n.props.name!=='keep-connected').every(n=>!n.props.checked));f.unmount();
 });
 
 
 test('access-only release permits signup and verified login without progress RPCs, writes, handoff or loss of XP projections',async()=>{
  const f=fixture({released:false,accessReleased:true,handoff:true});await flush();f.render();const before=[...f.memory.entries()];
- f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
+ f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
  assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');f.sessions[0].resolve({data:{session:null,user:{id:uid}},error:null});await flush();f.render();
  assert.equal(f.disposals,1);assert.equal(f.requests.length,0);assert.deepEqual([...f.memory.entries()],before);
  f.fill('password','synthetic password');await signed(f);f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');f.click('Quero receber progresso de uma conta');await flush();f.render();
@@ -224,16 +282,16 @@ test('access-only release permits signup and verified login without progress RPC
 
 test('access-only release also keeps new-account start closed for an empty device after login',async()=>{
  const f=fixture({released:false,accessReleased:true,handoff:true,empty:true});await flush();f.render();const before=[...f.memory.entries()];
- f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);f.toggle(0);f.toggle(1);f.toggle(2);f.click('Começar minha jornada');await flush();
+ f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');await signed(f);f.toggle(0);f.toggle(1);f.click('Começar minha jornada');await flush();
  assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.deepEqual([...f.memory.entries()],before);f.unmount();
 });
 
 
 test('one explicit connection reuses the current journey without a file roundtrip and starts only a confirmed handoff',async()=>{
  const f=fixture({handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- assert.equal(f.downloads,0);f.click('Sincronizar este aparelho');f.click('Sincronizar este aparelho');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[0].otherTabsClosed,true);assert.equal(f.requests[0].args[1].confirmed,true);assert.equal(f.requests[0].args[1].userId,uid);
+ assert.equal(f.downloads,0);assert.match(f.content(),/Salvar seu progresso na conta/);f.click('Salvar meu progresso na conta');f.click('Salvar meu progresso na conta');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[0].otherTabsClosed,true);assert.equal(f.requests[0].args[1].confirmed,true);assert.equal(f.requests[0].args[1].userId,uid);
  f.requests[0].resolve({bindingRaw:'confirmed binding'});await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'confirmed binding');assert.equal(f.handoffs[0].remember,true);assert.equal(f.downloads,0);f.unmount();
- for(const mode of ['change','unmount']){const g=fixture({handoff:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.click('Sincronizar este aparelho');await flush();if(mode==='change')g.emit('conselho-elemental-storage');else g.unmount();g.requests[0].resolve({bindingRaw:'late binding'});await flush();assert.equal(g.handoffs.length,0);if(mode==='change')g.unmount();}
+ for(const mode of ['change','unmount']){const g=fixture({handoff:true});await flush();g.render();g.fill('email','synthetic@example.invalid');g.fill('password','synthetic test password');await signed(g);g.click('Salvar meu progresso na conta');await flush();if(mode==='change')g.emit('conselho-elemental-storage');else g.unmount();g.requests[0].resolve({bindingRaw:'late binding'});await flush();assert.equal(g.handoffs.length,0);if(mode==='change')g.unmount();}
 });
 
 
@@ -242,7 +300,7 @@ test('password visibility is explicit, keeps credentials only in the form, and m
  let input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');
  f.nodes().find(n=>n.type==='button'&&n.props['aria-label']==='Mostrar senha').props.onClick();f.render();
  input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'text');assert.equal(input.props.value,'synthetic private value');assert.equal(f.constructions,0);
- f.click('Criar conta');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
+ f.click('Criar conta com e-mail');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('connection summary includes every local profile while identifying an empty active profile',async()=>{
@@ -252,14 +310,162 @@ test('connection summary includes every local profile while identifying an empty
   [other]:{tasks:[{id:'ritual'},{id:'filho',parentId:'ritual'}],habits:[{id:'ciclo'}],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:51.705,xp_fire:0,xp_water:0,xp_air:0}}
  },tasks:[],habits:[],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:0,xp_fire:0,xp_water:0,xp_air:0}}},fitness:{state:{accountDataById:{[other]:{sessions:[{}]}},nativeDataById:{}}}}};
  const f=fixture({snapshotData,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- assert.match(f.content(),/Perfis no arquivo2/);assert.match(f.content(),/Rituais em todos os perfis1/);assert.match(f.content(),/Ciclos em todos os perfis1/);assert.match(f.content(),/XP em todos os perfis51,705/);assert.match(f.content(),/Treinos salvos1/);
- assert.match(f.content(),/Perfil ativo: Perfil ativo — 0 rituais, 0 ciclos e 0 XP/);assert.match(f.content(),/arquivo contém progresso em outros perfis/);f.unmount();
+ assert.match(f.content(),/Encontramos seu progresso neste aparelho: 51,705 XP, 1 ritual e 1 ciclo\./);
+ assert.match(f.content(),/O perfil ativo está vazio, mas há progresso em outros perfis/);f.unmount();
 });
 
-test('a structurally valid but activity-free local journey needs explicit consent before first upload to an empty account',async()=>{
+test('a structurally valid but activity-free device with a new account is the all-set step: the one tap is the consent',async()=>{
  const active='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
  const snapshotData={stores:{core:{state:{accounts:[{id:active,name:'Perfil vazio'}],currentAccountId:active,accountDataById:{},tasks:[],habits:[],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:0,xp_fire:0,xp_water:0,xp_air:0}}},fitness:{state:{accountDataById:{},nativeDataById:{}}}}};
  const f=fixture({snapshotData,handoff:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);
- assert.match(f.content(),/Jornada local sem atividade registrada/);f.click('Sincronizar este aparelho');await flush();f.render();assert.equal(f.requests.length,0);assert.match(f.content(),/conta ainda não possui uma jornada salva/);
- f.toggleLabel('Conferi os totais e quero usar esta jornada vazia somente se a conta também estiver vazia.');f.click('Sincronizar este aparelho');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');f.unmount();
+ assert.match(f.content(),/Tudo pronto/);assert.equal(f.requests.length,0);
+ f.click('Começar minha jornada');await flush();assert.equal(f.requests.length,1);assert.equal(f.requests[0].name,'connectCurrentAccountProgress');f.unmount();
+});
+
+// ── Social sign-in (Google): authentication only ──────────────────────
+test('the Google button sits under the e-mail form and goes straight to the provider; failures stay safe',async()=>{
+ const f=fixture();await flush();f.render();
+ assert.match(f.content(),/Continuar com Google/);assert.doesNotMatch(f.content(),/Apple|GitHub/);
+ f.click('Continuar com Google');await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.at(-1).kind,'oauth');
+ assert.deepEqual(f.sessions.at(-1).args,{provider:'google',options:{redirectTo:'https://conselho-elemental-main.vercel.app/?progresso=conta',skipBrowserRedirect:true}});
+ f.sessions.at(-1).resolve({data:{url:'https://synthetic.invalid/auth/v1/authorize?provider=google'},error:null});await flush();f.render();
+ assert.deepEqual(f.navigations,['https://synthetic.invalid/auth/v1/authorize?provider=google']);assert.equal(f.requests.length,0);f.unmount();
+ const g=fixture();await flush();g.render();g.click('Continuar com Google');await flush();
+ g.sessions.at(-1).resolve({data:{url:null},error:{code:'provider_disabled',status:400,message:'Unsupported provider: secret'}});await flush();g.render();
+ assert.match(g.content(),/ainda não está disponível/);assert.match(g.content(),/Código para suporte: provider_disabled/);assert.doesNotMatch(g.content(),/secret/);assert.deepEqual(g.navigations,[]);g.unmount();
+});
+
+test('closed release keeps social buttons inert and builds no client',async()=>{
+ const f=fixture({released:false,accessReleased:false});await flush();f.render();f.click('Continuar com Google');await flush();assert.equal(f.constructions,0);assert.equal(f.sessions.length,0);f.unmount();
+});
+
+const until=async(cond,tries=1200)=>{for(let i=0;i<tries;i++){if(cond())return;await new Promise(r=>setTimeout(r,5));}throw Error('condition not reached');};
+test('provider failure return shows a safe message with a discreet code and builds no client',async()=>{
+ globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
+ try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&error=access_denied&error_code=access_denied&error_description=secret',()=>{});}finally{delete globalThis.sessionStorage;}
+ const f=fixture({notice:'oauth'});await until(()=>{f.render();return /cancelado ou negado/.test(f.content());});
+ assert.match(f.content(),/cancelado ou negado/);assert.match(f.content(),/Código para suporte: access_denied/);assert.doesNotMatch(f.content(),/secret/);assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
+});
+
+test('provider code return becomes the same authenticated access as an e-mail login, without adoption, transfer or sync',async()=>{
+ globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
+ try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&code=synthetic-code-0001',()=>{});}finally{delete globalThis.sessionStorage;}
+ const f=fixture({notice:'oauth'});await until(()=>f.sessions.some(s=>s.kind==='exchange'));
+ const exchange=f.sessions.find(s=>s.kind==='exchange');assert.ok(exchange);assert.equal(exchange.args,'synthetic-code-0001');
+ exchange.resolve({data:{session:{user:{id:uid}}},error:null});await until(()=>{f.render();return /Salvar seu progresso na conta/.test(f.content());});
+ assert.match(f.content(),/Sair desta conta/);assert.match(f.content(),/Opções avançadas/);
+ assert.equal(f.requests.length,0);assert.deepEqual(f.navigations,[]);assert.ok([...f.memory.keys()].every(k=>!/(code|token|password)/i.test(k)));
+ f.unmount();
+});
+
+// ── Post-login steps (P0 to P8): the question is derived from a read-only look at the account ──
+const loginAs=async f=>{await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic test password');await signed(f);};
+const onlineArchive=JSON.stringify({stores:{core:{state:{accounts:[{id:'a',name:'Perfil'}],currentAccountId:'a',accountDataById:{},tasks:[{id:'t1'},{id:'t2'}],habits:[{id:'h1'}],actions:[],executionLogs:[],projects:[],quests:[],drafts:[],cycleSequences:[],commitments:[],user:{xp_earth:120.5,xp_fire:0,xp_water:0,xp_air:0}}},fitness:{state:{accountDataById:{},nativeDataById:{}}}}});
+const reviewed=(local=null)=>({localArchive:local,remoteArchive:onlineArchive,pendingArchive:null,revision:'22222222-2222-4222-8222-222222222222',localSummary:null,remoteSummary:{createdAt:'2026-10-29T12:00:00Z',tasks:2,habits:1,sessions:0},comparison:null});
+const stepBoxes=f=>flatten(f.nodes().find(n=>n.type==='section'&&n.props['data-step'])).filter(n=>n.type==='input'&&n.props.type==='checkbox');
+const buttons=f=>f.nodes().filter(n=>n.type==='button').map(n=>text(n.props.children));
+
+test('P0: a failed look is read-only, says so, and offers retry or this device only',async()=>{
+ const f=fixture({remoteKind:'fail',handoff:true});await loginAs(f);
+ assert.match(f.content(),/Procurando seu progresso…/);assert.match(f.content(),/Você entrou como synthetic@example\.invalid\./);assert.match(f.content(),/Não deu para olhar sua conta agora\. Nada foi alterado\./);
+ assert.ok(buttons(f).includes('Tentar de novo'));assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/santuario'&&text(n.props.children)==='Usar só neste aparelho por enquanto'));
+ assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);
+ f.setRemote('empty');f.click('Tentar de novo');await flush();f.render();assert.match(f.content(),/Salvar seu progresso na conta/);assert.equal(f.requests.length,0);f.unmount();
+});
+
+test('P1: account empty and device with data; one tap saves, a failure keeps the progress on the device',async()=>{
+ const f=fixture({handoff:true});await loginAs(f);
+ assert.match(f.content(),/Ao tocar, o progresso deste aparelho e o que você fizer depois ficam salvos na sua conta\./);assert.match(f.content(),/Usar só neste aparelho por enquanto/);
+ assert.equal(stepBoxes(f).length,0);
+ f.click('Salvar meu progresso na conta');await flush();assert.equal(f.requests[0].name,'connectCurrentAccountProgress');f.requests[0].reject(Error('synthetic'));await flush();f.render();
+ assert.match(f.content(),/Não deu para salvar agora\. Seu progresso continua neste aparelho\./);assert.ok(buttons(f).includes('Tentar de novo'));f.unmount();
+});
+
+test('P2: account with data and empty device; one tap brings it, nothing is written before it',async()=>{
+ const f=fixture({empty:true,handoff:true,remoteKind:'snapshot'});await loginAs(f);
+ assert.match(f.content(),/Procurando seu progresso…/);assert.equal(f.requests[0].name,'reviewAccountVersions');f.requests[0].resolve(reviewed());await flush();f.render();
+ assert.match(f.content(),/Seu progresso está na conta/);assert.match(f.content(),/Salvo em \d{2}\/10\/2026: 120,5 XP, 2 rituais e 1 ciclo\./);
+ assert.match(f.content(),/Você entrou como synthetic@example\.invalid\. Não é essa conta\?/);assert.match(f.content(),/Este aparelho ainda não tem atividades, então nada se perde\. O XP não é somado de novo\./);
+ assert.equal(f.requests.length,1);assert.equal(stepBoxes(f).length,0);
+ f.click('Trazer meu progresso para este aparelho');await flush();assert.equal(f.requests[1].name,'receiveReviewedAccountProgress');assert.equal(f.requests[1].args[1].confirmed,true);assert.equal(f.requests[1].args[1].review.remoteArchive,onlineArchive);
+ f.requests[1].resolve({bindingRaw:'brought'});await flush();f.render();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].bindingRaw,'brought');f.unmount();
+});
+
+test('P3: both have data; the choice is a radio group, replacing needs its box, and the device path shows the protected panel',async()=>{
+ const f=fixture({handoff:true,remoteKind:'snapshot'});await loginAs(f);f.requests[0].resolve(reviewed('local archive'));await flush();f.render();
+ assert.match(f.content(),/Qual progresso você quer usar\?/);assert.match(f.content(),/Eles não se juntam: escolha um\./);
+ assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='radio').length,2);assert.equal(f.nodes().some(n=>n.props?.role==='radiogroup'),true);
+ assert.equal(buttons(f).includes('Usar o progresso da conta'),false);
+ f.pick('account');const use=()=>f.nodes().find(n=>n.type==='button'&&text(n.props.children)==='Usar o progresso da conta');assert.equal(use().props.disabled,true);
+ f.toggleLabel('Entendo: o progresso deste aparelho será trocado pelo da conta.');assert.equal(use().props.disabled,false);assert.ok(buttons(f).includes('Guardar uma cópia deste aparelho antes'));
+ f.click('Usar o progresso da conta');await flush();assert.equal(f.requests[1].name,'receiveReviewedAccountProgress');f.requests[1].resolve({bindingRaw:'chosen'});await flush();f.render();assert.equal(f.handoffs.length,1);f.unmount();
+ const g=fixture({handoff:true,remoteKind:'snapshot'});await loginAs(g);g.requests[0].resolve(reviewed('local archive'));await flush();g.render();
+ g.pick('device');assert.ok(buttons(g).includes('Baixar cópia da conta'));assert.equal(g.panel().resolution,undefined);assert.ok(g.panel().versions);assert.equal(g.requests.length,1);g.unmount();
+});
+
+test('P4: legacy account and empty device only explains, searches again read-only, and never writes',async()=>{
+ const f=fixture({empty:true,handoff:true,remoteKind:'legacy'});await loginAs(f);
+ assert.match(f.content(),/Seu progresso está em outro aparelho/);assert.match(f.content(),/Ele está guardado; nada foi apagado\./);
+ assert.match(f.content(),/No aparelho onde você usava:/);assert.match(f.content(),/Entre com synthetic@example\.invalid\./);assert.match(f.content(),/Toque em “Salvar meu progresso na conta”\./);
+ assert.doesNotMatch(f.content(),/Começar do zero|Ainda não encontramos/);
+ assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/?progresso=restaurar'&&text(n.props.children)==='Tenho um arquivo de cópia'));
+ assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/santuario'&&text(n.props.children)==='Usar só neste aparelho por enquanto'));
+ f.click('Já fiz isso, procurar de novo');await flush();f.render();assert.match(f.content(),/Ainda não encontramos\. Confira se entrou com a mesma conta no outro aparelho\./);
+ assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.equal(f.constructions,1);
+ f.setRemote('empty');f.click('Já fiz isso, procurar de novo');await flush();f.render();assert.match(f.content(),/Tudo pronto/);assert.equal(f.requests.length,0);f.unmount();
+});
+
+test('P5: legacy account and device with data keeps its box and hands the legacy consent to the connection',async()=>{
+ const f=fixture({handoff:true,remoteKind:'legacy'});await loginAs(f);
+ assert.match(f.content(),/Atualizar sua conta com este aparelho/);assert.match(f.content(),/Os números não se somam\./);
+ const save=()=>f.nodes().find(n=>n.type==='button'&&text(n.props.children)==='Salvar meu progresso na conta');assert.equal(save().props.disabled,true);
+ f.toggleLabel('Entendo: a conta passa a usar o progresso deste aparelho e os registros antigos ficam guardados.');assert.equal(save().props.disabled,false);
+ f.click('Salvar meu progresso na conta');await flush();assert.equal(f.requests[0].name,'connectCurrentAccountProgress');assert.equal(f.requests[0].args[1].legacyReplacementConfirmed,true);
+ f.requests[0].resolve({bindingRaw:'legacy bound'});await flush();f.render();assert.equal(f.handoffs.length,1);assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/santuario'&&text(n.props.children)==='Agora não'));f.unmount();
+});
+
+test('P6: a bound device opens the app; the footer of every post-login step has advanced options and sign-out',async()=>{
+ const f=fixture({bound:true,handoff:true});await loginAs(f);
+ assert.match(f.content(),/Este aparelho já está ligado à sua conta/);f.click('Abrir o app');await flush();assert.equal(f.requests[0].name,'connectCurrentAccountProgress');
+ const screen=()=>f.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced'),step=()=>f.nodes().find(n=>n.type==='section'&&n.props['data-step']);
+ assert.equal(screen().props.hidden,true);assert.equal(step().props.hidden,false);
+ f.click('Opções avançadas');assert.equal(screen().props.hidden,false);assert.equal(step().props.hidden,true);assert.equal(f.timers.length>0,true);
+ assert.ok(buttons(f).includes('Sair desta conta'));f.unmount();
+});
+
+test('Opções avançadas is its own screen: it shows the technical content, keeps it in the tree while closed, and Voltar returns to the step',async()=>{
+ const f=fixture({handoff:true});await loginAs(f);
+ const screen=()=>f.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced'),step=()=>f.nodes().find(n=>n.type==='section'&&n.props['data-step']),h1=()=>text(f.nodes().find(n=>n.type==='h1'));
+ assert.equal(screen().props.hidden,true);assert.equal(h1(),'Salvar seu progresso na conta');
+ // closed: the technical content is still rendered (hidden), the file input and the form are always in the tree
+ assert.ok(buttons(f).includes('Baixar cópia antes do envio'));assert.ok(f.nodes().some(n=>n.type==='input'&&n.props.type==='file'));assert.ok(f.nodes().some(n=>n.type==='form'));
+ const before=f.timers.length;f.click('Opções avançadas');
+ assert.equal(screen().props.hidden,false);assert.equal(step().props.hidden,true);assert.equal(h1(),'Opções avançadas');
+ assert.match(f.content(),/Para guardar arquivos de cópia ou resolver um problema\. Você não precisa disto no dia a dia\./);
+ assert.equal(f.timers.length,before+1);// focus moves to the title
+ assert.ok(flatten(screen()).some(n=>n.type==='button'&&text(n.props.children)==='Baixar cópia antes do envio'));assert.ok(flatten(screen()).some(n=>n.type==='input'&&n.props.type==='file'));
+ assert.ok(flatten(screen()).some(n=>n.type==='button'&&text(n.props.children)==='Voltar'));
+ assert.equal(f.nodes().filter(n=>n.type==='h1').length,1);
+ f.click('Voltar');assert.equal(screen().props.hidden,true);assert.equal(step().props.hidden,false);assert.equal(h1(),'Salvar seu progresso na conta');assert.equal(f.timers.length,before+2);// focus returns to the link
+ assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);f.unmount();
+});
+
+test('Opções avançadas keeps one resolution panel and closes when the account is left; the account screen drops the four-elements strip',async()=>{
+ const f=fixture({bound:true});await prepared(f);await signed(f);
+ f.click('Opções avançadas');f.click('Comparar versão local e online');f.requests[0].resolve({localArchive:'local',remoteArchive:'remote',pendingArchive:null,localSummary:{tasks:2,habits:1,sessions:0},remoteSummary:{tasks:1,habits:0,sessions:0}});await flush();f.render();
+ assert.match(f.content(),/2 \/ 1/);assert.ok(f.panel());
+ const artwork=f.nodes().find(n=>typeof n.type==='function'&&n.type.name==='EntryArtwork');assert.ok(artwork);assert.equal(artwork.props.elements,false);
+ f.click('Voltar');f.click('Opções avançadas');f.click('Voltar');
+ f.unmount();
+ const g=fixture({handoff:true});await loginAs(g);g.click('Opções avançadas');
+ const screen=()=>g.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced');assert.equal(screen().props.hidden,false);
+ g.click('Sair desta conta');await flush();g.render();assert.equal(screen().props.hidden,true);g.unmount();
+});
+
+test('static: the strip is a prop of the artwork (welcome keeps it), and the advanced screen replaces the old details',()=>{
+ const visuals=readFileSync('src/components/entry/EntryVisuals.tsx','utf8'),account=readFileSync('src/components/backup/AccountWorkspace.tsx','utf8'),css=readFileSync('src/components/backup/account-journey.css','utf8');
+ assert.match(visuals,/elements: showElements = true/);assert.match(visuals,/\{showElements && <dl className="entry-elements">/);
+ assert.match(account,/<EntryArtwork elements=\{false\} \/>/);assert.doesNotMatch(readFileSync('src/components/entry/EntryWelcome.tsx','utf8'),/elements=\{false\}/);
+ assert.doesNotMatch(account,/<details id="account-advanced"|Cópias, versões e recuperação<\/summary>/);
+ assert.doesNotMatch(css,/backdrop-filter|font-size:\s*\d/);
 });

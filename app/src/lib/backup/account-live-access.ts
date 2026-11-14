@@ -1,6 +1,6 @@
 import type { createAccountReviewSession } from './account-session';
 import type { LiveAccountSession } from './account-live-sync';
-import { createTabAccessControl } from './account-tab-access';
+import { createTabAccessControl, watchAccessDeadline } from './account-tab-access';
 import type { RestoreStorage } from './restore-journal';
 
 export interface AuthenticatedAccountSession {
@@ -43,8 +43,8 @@ export async function prepareAuthenticatedAccountAccess(owned: ReturnType<typeof
         try { if (!next || next.user.id !== options.userId) invalidate(); else control.capture(next); }
         catch { invalidate(); }
       });
-      const timeout=control.deadline===null?undefined:setTimeout(invalidate,Math.max(0,control.deadline-Date.now()));
-      return ()=>{subscription.unsubscribe();if(timeout!==undefined)clearTimeout(timeout);};
+      const stopDeadline=watchAccessDeadline(control,invalidate);
+      return ()=>{subscription.unsubscribe();stopDeadline();};
     },
   };
 }
@@ -69,8 +69,8 @@ export async function prepareLiveAccountAccess(owned: ReturnType<typeof createAc
         try { if (!next || next.user.id !== options.userId) invalidate(); else control.capture(next); }
         catch { invalidate(); }
       });
-      const timeout=control.deadline===null?undefined:setTimeout(invalidate,Math.max(0,control.deadline-Date.now()));
-      return ()=>{subscription.unsubscribe();if(timeout!==undefined)clearTimeout(timeout);};
+      const stopDeadline=watchAccessDeadline(control,invalidate);
+      return ()=>{subscription.unsubscribe();stopDeadline();};
     },
   };
 }

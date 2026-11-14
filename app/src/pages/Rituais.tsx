@@ -11,24 +11,6 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { QuestHub } from '@/components/quests/QuestHub';
-import { 
-  Plus, 
-  Search, 
-  Filter,
-  Play, 
-  Check,
-  Clock,
-  ChevronDown,
-  ChevronUp,
-  MoreVertical,
-  Edit2,
-  Trash2,
-  ListTodo,
-  PlusCircle,
-  X,
-  ArrowUp,
-  ArrowDown
-} from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { ScoreHierarchyPanel } from '@/components/cards';
 import { useAppStore } from '@/stores/appStore';
@@ -40,8 +22,9 @@ import {
   EFFORT_LABELS,
   AREAS,
 } from '@/constants';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Vazio, MarcaElemento, Medidor } from '@/components/elemental/blocos';
+import { CycleSigil } from '@/components/cycles/CycleSigil';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -182,24 +165,17 @@ export const Rituais: React.FC = () => {
 
 
 
-  // Filter tasks
-  const filteredTasks = tasks.filter((task) => {
-    // Filter by status
-    if (activeTab === 'pending' && task.isCompleted) return false;
-    if (activeTab === 'completed' && !task.isCompleted) return false;
-    
-    // Filter by search
+  // Filter tasks: texto e elemento valem para todos; o estado só separa pendentes de selados.
+  const matchingTasks = tasks.filter((task) => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
-    
-    // Filter by element
-    if (filterElement) {
-      if (task.elementId !== filterElement) return false;
-    }
-    
+    if (filterElement && task.elementId !== filterElement) return false;
     return true;
-  }).sort((a, b) => a.displayOrder - b.displayOrder); // Ordenação manual! 🎯
+  }).sort((a, b) => a.displayOrder - b.displayOrder); // Ordenação manual salva, intacta.
+  const filteredTasks = matchingTasks.filter((task) => activeTab === 'completed' ? task.isCompleted : !task.isCompleted);
+  // Selados: os concluídos aparecem recolhidos no fim de Pendentes; só muda a exibição, não a ordem.
+  const sealedTasks = matchingTasks.filter((task) => task.isCompleted);
 
   // Stats
   const pendingCount = tasks.filter(t => !t.isCompleted).length;
@@ -615,47 +591,45 @@ export const Rituais: React.FC = () => {
         setActiveTab(task?.isCompleted ? 'completed' : 'pending');
       }} />}
       {showQuestList && <>
-      {/* Header */}
-      <div className="ritual-list-heading">
-        <div>
-          <h1>Rituais</h1>
-          <p>Suas tarefas pontuais, para realizar no seu ritmo.</p>
-          <p className="text-sm text-white/50">
-            {pendingCount} pendentes • {completedCount} concluídos
-          </p>
+      {/* Cabeçalho */}
+      <header className="ds-cabecalho">
+        <h1>Rituais</h1>
+        <p>Suas tarefas pontuais, para realizar no seu ritmo.</p>
+        <div className="ds-cabecalho-acao">
+          <button
+            type="button"
+            className="ds-botao"
+            data-tipo="secundario"
+            onClick={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }}
+          >
+            <ArcaneIcon name="criar" size={18} />
+            Novo ritual
+          </button>
         </div>
-        <Button 
-          onClick={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }}
-          className="bg-mystic-arcane hover:bg-mystic-arcane/80"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Novo ritual
-        </Button>
-      </div>
+      </header>
 
       <ActivityGuide />
 
-
-      {/* Search and Filter */}
-      <div className="ritual-search flex gap-2 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-white/40" />
+      {/* Busca e filtro numa linha de 48 */}
+      <div className="flex items-center gap-2 mb-4">
+        <label className="ds-campo flex-1" data-tipo="busca">
+          <span className="sr-only">Buscar ritual</span>
+          <ArcaneIcon name="buscar" size={18} />
           <Input
             aria-label="Buscar ritual"
             placeholder="Buscar ritual..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 border-white/10"
           />
-        </div>
-        
+        </label>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon" className="border-white/20" aria-label="Filtrar rituais por elemento">
-              <Filter className="w-4 h-4" />
-            </Button>
+            <button type="button" className="ds-botao" data-icone="" data-tipo="fantasma" aria-label="Filtrar rituais por elemento">
+              <ArcaneIcon name="filtrar" size={20} />
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-mystic-purple border-white/10">
+          <DropdownMenuContent align="end" className="ds-menu">
             <DropdownMenuItem onClick={() => setFilterElement(null)}>
               Todos os elementos
             </DropdownMenuItem>
@@ -664,7 +638,7 @@ export const Rituais: React.FC = () => {
                 key={element.id} 
                 onClick={() => setFilterElement(element.id)}
               >
-                <span className="mr-2"><ElementIcon element={element.id} /></span>
+                <ElementIcon element={element.id} />
                 {element.name}
               </DropdownMenuItem>
             ))}
@@ -672,36 +646,34 @@ export const Rituais: React.FC = () => {
         </DropdownMenu>
       </div>
 
-      {/* Active Filter */}
+      {/* Filtro ativo */}
       <AnimatePresence>
         {filterElement && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="mb-4"
           >
             <button type="button" className="ritual-filter-chip" onClick={() => setFilterElement(null)} aria-label={`Remover filtro de ${ELEMENTS[filterElement].name}`}>
-              <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} <X size={16} aria-hidden="true" />
+              <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} <ArcaneIcon name="fechar" size={16} />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="ritual-tabs mb-4">
-        <TabsList className="grid w-full grid-cols-2 bg-white/5">
-          <TabsTrigger value="pending" className="data-[state=active]:bg-mystic-arcane">
-            <ListTodo className="w-4 h-4 mr-1" />
-            Pendentes ({pendingCount})
+      {/* Abas: Pendentes (com Selados recolhido no fim) e Feitos (concluídos direto, sem recolher) */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="ds-abas h-auto w-full justify-start">
+          <TabsTrigger value="pending">
+            Pendentes <span>{pendingCount}</span>
           </TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:bg-mystic-arcane">
-            <Check className="w-4 h-4 mr-1" />
-            Concluídos ({completedCount})
+          <TabsTrigger value="completed">
+            Feitos <span>{completedCount}</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="pending" className="mt-4">
+        <TabsContent value="pending">
           <AnimatePresence mode="popLayout">
             {filteredTasks.length > 0 ? (
               <div className="space-y-3">
@@ -767,9 +739,31 @@ export const Rituais: React.FC = () => {
               <EmptyState type="pending" filtered={!!searchQuery || !!filterElement} onClear={() => { setSearchQuery(''); setFilterElement(null); }} onCreate={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }} />
             )}
           </AnimatePresence>
+
+          {sealedTasks.length > 0 && (
+            <details className="ds-grupo">
+              <summary>
+                <span>Selados</span>
+                <small>({sealedTasks.length})</small>
+                <ArcaneIcon name="chevron" size={16} />
+              </summary>
+              <div className="space-y-3">
+                {sealedTasks.map((task) => (
+                  <TaskCard 
+                    key={task.id} 
+                    task={task}
+                    customAreas={customAreas}
+                    customSubareas={customSubareas}
+                    completed
+                    onUncomplete={() => uncompleteTask(task.id)}
+                  />
+                ))}
+              </div>
+            </details>
+          )}
         </TabsContent>
 
-        <TabsContent value="completed" className="mt-4">
+        <TabsContent value="completed">
           <AnimatePresence mode="popLayout">
             {filteredTasks.length > 0 ? (
               <div className="space-y-3">
@@ -790,14 +784,18 @@ export const Rituais: React.FC = () => {
           </AnimatePresence>
         </TabsContent>
       </Tabs>
-      <details className="ritual-evolution"><summary><ArcaneIcon name="conquista" size={20} />Sua evolução elemental</summary>
-      <ScoreHierarchyPanel
-        presentation="showcase"
-        tasks={tasks}
-        habits={habits}
-        customAreas={customAreas}
-        customSubareas={customSubareas}
-      />
+      <details className="ds-grupo">
+        <summary>
+          <span>Sua evolução elemental</span>
+          <ArcaneIcon name="chevron" size={16} />
+        </summary>
+        <ScoreHierarchyPanel
+          presentation="showcase"
+          tasks={tasks}
+          habits={habits}
+          customAreas={customAreas}
+          customSubareas={customSubareas}
+        />
       </details>
       </>}
 
@@ -806,9 +804,9 @@ export const Rituais: React.FC = () => {
         setShowTimer(open);
         if (!open) { setActiveTask(null); const next = new URLSearchParams(questParams); next.delete('cronometro'); setQuestParams(next, { replace: true, preventScrollReset: true }); }
       }}>
-        <DialogContent className="elemental-timer-dialog max-w-sm">
+        <DialogContent className="ds-folha elemental-timer-dialog">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-center text-xl">
+            <DialogTitle>
               Ritual em Andamento
             </DialogTitle>
             <DialogDescription className="sr-only">
@@ -833,15 +831,14 @@ export const Rituais: React.FC = () => {
       <AnimatePresence>
         {completedTaskId && (
           <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className="fixed bottom-24 left-4 right-4 z-50"
           >
-            <div className="bg-gradient-to-r from-mystic-gold to-orange-400 text-black rounded-2xl p-4 
-                          shadow-lg shadow-mystic-gold/30 text-center">
-              <p className="font-mystic text-lg"><ArcaneIcon name="conquista" /> Ritual completado!</p>
-              <p className="text-sm font-medium">+{earnedPoints} pontos ganhos</p>
+            <div className="ds-altar text-center" role="status">
+              <p className="font-mystic"><ArcaneIcon name="conquista" /> Ritual completado!</p>
+              <p className="ds-nota mx-auto">+{earnedPoints} pontos ganhos</p>
             </div>
           </motion.div>
         )}
@@ -849,9 +846,9 @@ export const Rituais: React.FC = () => {
 
       {/* Quick Create Modal */}
       <Dialog open={showQuickCreate} onOpenChange={setShowQuickCreate}>
-        <DialogContent className="quest-dialog quest-quick-create" aria-labelledby="ritual-create-title" aria-describedby="ritual-create-description">
+        <DialogContent className="ds-folha quest-quick-create" aria-labelledby="ritual-create-title" aria-describedby="ritual-create-description">
           <DialogHeader>
-            <DialogTitle id="ritual-create-title" className="font-mystic text-xl">
+            <DialogTitle id="ritual-create-title">
               Novo Ritual
             </DialogTitle>
             <DialogDescription id="ritual-create-description">
@@ -860,66 +857,57 @@ export const Rituais: React.FC = () => {
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            <div>
-              <label htmlFor="ritual-create-name" className="text-sm text-white/70 mb-2 block">Nome do Ritual</label>
+            <label htmlFor="ritual-create-name" className="ds-campo">
+              <span>Nome do Ritual</span>
               <Input
                 id="ritual-create-name"
                 placeholder="Digite o nome..."
                 value={quickCreateName}
                 onChange={(e) => setQuickCreateName(e.target.value)}
-                className="bg-white/5 border-white/10"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleQuickCreate();
                   if (e.key === 'Escape') setShowQuickCreate(false);
                 }}
               />
-            </div>
+            </label>
 
             <RitualElementChoice value={quickElement} onChange={setQuickElement} />
-            <p className="text-sm text-white/60">O ritual ficará em {ELEMENTS[quickElement].name}. A área pode ser definida depois.</p>
-            <div className="flex gap-3">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowQuickCreate(false)}
-                className="flex-1 border-white/20"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleQuickCreate}
-                disabled={!quickCreateName.trim()}
-                className="flex-1 bg-mystic-arcane hover:bg-mystic-arcane/80"
-              >
-                Criar
-              </Button>
-            </div>
+            <p className="ds-nota">O ritual ficará em {ELEMENTS[quickElement].name}. A área pode ser definida depois.</p>
+          </div>
+          <div className="ds-folha-pe">
+            <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setShowQuickCreate(false)}>
+              Cancelar
+            </button>
+            <button type="button" className="ds-botao" data-tipo="primario" onClick={handleQuickCreate} disabled={!quickCreateName.trim()}>
+              Criar
+            </button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Edit Modal */}
       <Dialog open={showQuickEdit} onOpenChange={setShowQuickEdit}>
-        <DialogContent className="quest-dialog ritual-edit-dialog">
+        <DialogContent className="ds-folha ritual-edit-dialog">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-xl">
+            <DialogTitle>
               {editingItemId ? 'Editar Subitem' : 'Editar Ritual'}
             </DialogTitle>
-            <DialogDescription className="text-white/50">
+            <DialogDescription>
               {editingItemId ? 'Atualize as informações do subitem' : 'Atualize as informações do ritual'}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-4 py-4">
             {isAggregatorLocked && (
-              <div className="rounded-md border border-yellow-400/30 bg-yellow-400/10 px-3 py-2 text-xs text-yellow-300">
+              <div className="ds-nota" role="note">
                 Este ritual é agregador (tem filhos). Áreas, tempo e pontuação base são herdados/somados dos subitens e não podem ser alterados aqui.
               </div>
             )}
 
             {/* Nome */}
-            <div>
-              <label className="text-sm text-white/70 mb-2 block">Nome</label>
+            <label className="ds-campo">
+              <span>Nome</span>
               <Input
                 placeholder="Nome do ritual..."
                 value={editName}
@@ -930,24 +918,25 @@ export const Rituais: React.FC = () => {
                     handleSaveEdit();
                   }
                 }}
-                className="bg-white/5 border-white/10"
               />
-            </div>
+            </label>
 
             {editingTaskId && <div className="space-y-2">
-              <label htmlFor="ritual-planned-date" className="text-sm text-white/70">Data planejada (opcional)</label>
-              <Input id="ritual-planned-date" type="date" value={editDueDate}
-                onChange={event => { setEditDueDate(event.target.value); setEditDateError(''); }}
-                className="min-h-12 bg-white/5 border-white/10 text-base" />
-              <p className="text-sm text-white/60">Aparece no Temporal nesta data. A data de cadastro e o histórico são preservados.</p>
-              {editDateError && <p role="alert" className="text-sm text-red-300">{editDateError}</p>}
+              <label htmlFor="ritual-planned-date" className="ds-campo">
+                <span>Data planejada (opcional)</span>
+                <Input id="ritual-planned-date" type="date" value={editDueDate}
+                  aria-invalid={editDateError ? true : undefined}
+                  onChange={event => { setEditDueDate(event.target.value); setEditDateError(''); }} />
+              </label>
+              <p className="ds-nota">Aparece no Temporal nesta data. A data de cadastro e o histórico são preservados.</p>
+              {editDateError && <p role="alert" className="ds-nota" style={{ color: 'var(--ds-perigo)' }}>{editDateError}</p>}
             </div>}
 
             {editArea === 'none' && !isAggregatorLocked && <RitualElementChoice value={editElement} onChange={setEditElement} />}
             {/* Área Primária e Subárea Primária */}
-            <div className="grid grid-cols-2 gap-3 pb-4 border-b border-white/10">
-              <div>
-                <label className="text-sm text-white/70 mb-2 block">Área Primária</label>
+            <div className="grid grid-cols-2 gap-3 pb-4">
+              <div className="ds-campo">
+                <span>Área Primária</span>
                 <Select 
                   value={editArea} 
                   onValueChange={(value) => {
@@ -960,12 +949,12 @@ export const Rituais: React.FC = () => {
                   disabled={isAggregatorLocked}
                 >
                   <SelectTrigger
-                    className="bg-white/5 border-white/10"
+                    className="ds-campo-controle"
                     style={selectedAreaForEdit ? { borderColor: `${selectedAreaForEdit.color}80` } : undefined}
                   >
                     <SelectValue placeholder="Sem categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-mystic-purple border-white/10">
+                  <SelectContent className="ds-menu">
                     <SelectItem value="none">Sem categoria (+1 pt)</SelectItem>
                     {allAreasForEdit.map((area) => (
                       <SelectItem key={area.id} value={area.id}>
@@ -979,20 +968,20 @@ export const Rituais: React.FC = () => {
                 </Select>
               </div>
 
-              <div>
-                <label className="text-sm text-white/70 mb-2 block">Subárea Primária</label>
+              <div className="ds-campo">
+                <span>Subárea Primária</span>
                 <Select
                   value={editSubarea}
                   onValueChange={setEditSubarea}
                   disabled={isAggregatorLocked || !editArea || editArea === 'none'}
                 >
                   <SelectTrigger
-                    className="bg-white/5 border-white/10"
+                    className="ds-campo-controle"
                     style={selectedAreaForEdit ? { borderColor: `${selectedAreaForEdit.color}60` } : undefined}
                   >
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-mystic-purple border-white/10">
+                  <SelectContent className="ds-menu">
                     <SelectItem value="none">Nenhuma</SelectItem>
                     {dynamicSubareasForEdit.map((subarea) => (
                       <SelectItem key={subarea.id} value={subarea.id}>
@@ -1011,7 +1000,7 @@ export const Rituais: React.FC = () => {
             </div>
 
             {/* Área Secundária e Subárea Secundária */}
-            <div className="space-y-3 py-4 border-b border-white/10">
+            <div className="space-y-3 py-4">
               <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
@@ -1029,17 +1018,17 @@ export const Rituais: React.FC = () => {
                     }
                   }}
                   disabled={isAggregatorLocked}
-                  className="w-4 h-4 rounded cursor-pointer"
+                  className="w-5 h-5 cursor-pointer"
                 />
-                <label htmlFor="enableSecondary" className={`text-sm cursor-pointer ${isAggregatorLocked ? 'text-white/40' : 'text-white/70'}`}>
+                <label htmlFor="enableSecondary" className={`flex min-h-11 flex-1 cursor-pointer items-center ${isAggregatorLocked ? 'opacity-50' : ''}`}>
                   Ativar área secundária
                 </label>
               </div>
 
               {enableSecondary && (
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Área Secundária</label>
+                  <div className="ds-campo">
+                    <span>Área Secundária</span>
                     <Select 
                       value={editAreaSecondary} 
                       onValueChange={(value) => {
@@ -1054,12 +1043,12 @@ export const Rituais: React.FC = () => {
                       disabled={isAggregatorLocked}
                     >
                       <SelectTrigger
-                        className="bg-white/5 border-white/10"
+                        className="ds-campo-controle"
                         style={selectedAreaSecondaryForEdit ? { borderColor: `${selectedAreaSecondaryForEdit.color}80` } : undefined}
                       >
                         <SelectValue placeholder="Nenhuma" />
                       </SelectTrigger>
-                      <SelectContent className="bg-mystic-purple border-white/10">
+                      <SelectContent className="ds-menu">
                         <SelectItem value="none">Nenhuma</SelectItem>
                         {allAreasForEdit.map((area) => (
                           <SelectItem key={area.id} value={area.id}>
@@ -1073,20 +1062,20 @@ export const Rituais: React.FC = () => {
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Subárea Secundária</label>
+                  <div className="ds-campo">
+                    <span>Subárea Secundária</span>
                     <Select
                       value={editSubareaSecondary}
                       onValueChange={setEditSubareaSecondary}
                       disabled={isAggregatorLocked || !editAreaSecondary || editAreaSecondary === 'none'}
                     >
                       <SelectTrigger
-                        className="bg-white/5 border-white/10"
+                        className="ds-campo-controle"
                         style={selectedAreaSecondaryForEdit ? { borderColor: `${selectedAreaSecondaryForEdit.color}60` } : undefined}
                       >
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-mystic-purple border-white/10">
+                      <SelectContent className="ds-menu">
                         <SelectItem value="none">Nenhuma</SelectItem>
                         {dynamicSubareasSecondaryForEdit.map((subarea) => (
                           <SelectItem key={subarea.id} value={subarea.id}>
@@ -1124,17 +1113,17 @@ export const Rituais: React.FC = () => {
                     }
                   }}
                   disabled={isAggregatorLocked || !enableSecondary || editAreaSecondary === 'none'}
-                  className="w-4 h-4 rounded cursor-pointer"
+                  className="w-5 h-5 cursor-pointer"
                 />
-                <label htmlFor="enableTertiary" className={`text-sm cursor-pointer ${(isAggregatorLocked || !enableSecondary || editAreaSecondary === 'none') ? 'text-white/40' : 'text-white/70'}`}>
+                <label htmlFor="enableTertiary" className={`flex min-h-11 flex-1 cursor-pointer items-center ${(isAggregatorLocked || !enableSecondary || editAreaSecondary === 'none') ? 'opacity-50' : ''}`}>
                   Ativar área terciária
                 </label>
               </div>
 
               {enableTertiary && (
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Área Terciária</label>
+                  <div className="ds-campo">
+                    <span>Área Terciária</span>
                     <Select 
                       value={editAreaTertiary} 
                       onValueChange={(value) => {
@@ -1144,12 +1133,12 @@ export const Rituais: React.FC = () => {
                       disabled={isAggregatorLocked}
                     >
                       <SelectTrigger
-                        className="bg-white/5 border-white/10"
+                        className="ds-campo-controle"
                         style={selectedAreaTertiaryForEdit ? { borderColor: `${selectedAreaTertiaryForEdit.color}80` } : undefined}
                       >
                         <SelectValue placeholder="Nenhuma" />
                       </SelectTrigger>
-                      <SelectContent className="bg-mystic-purple border-white/10">
+                      <SelectContent className="ds-menu">
                         <SelectItem value="none">Nenhuma</SelectItem>
                         {allAreasForEdit.map((area) => (
                           <SelectItem key={area.id} value={area.id}>
@@ -1163,20 +1152,20 @@ export const Rituais: React.FC = () => {
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Subárea Terciária</label>
+                  <div className="ds-campo">
+                    <span>Subárea Terciária</span>
                     <Select
                       value={editSubareaTertiary}
                       onValueChange={setEditSubareaTertiary}
                       disabled={isAggregatorLocked || !editAreaTertiary || editAreaTertiary === 'none'}
                     >
                       <SelectTrigger
-                        className="bg-white/5 border-white/10"
+                        className="ds-campo-controle"
                         style={selectedAreaTertiaryForEdit ? { borderColor: `${selectedAreaTertiaryForEdit.color}60` } : undefined}
                       >
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-mystic-purple border-white/10">
+                      <SelectContent className="ds-menu">
                         <SelectItem value="none">Nenhuma</SelectItem>
                         {dynamicSubareasTertiaryForEdit.map((subarea) => (
                           <SelectItem key={subarea.id} value={subarea.id}>
@@ -1199,19 +1188,19 @@ export const Rituais: React.FC = () => {
             )}
 
             {/* Pontuação */}
-            <div>
-              <label className="text-sm text-white/70 mb-2 block">Pontuação Base</label>
+            <div className="ds-campo">
+              <span>Pontuação Base</span>
               <Input
                 type="number"
                 min="1"
                 max="100"
+                aria-label="Pontuação base"
                 value={editPoints}
                 onChange={(e) => setEditPoints(Math.max(1, parseInt(e.target.value) || 1))}
                 disabled={isAggregatorLocked}
-                className="bg-white/5 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
               />
               {isAggregatorLocked && (
-                <p className="text-xs text-yellow-400/70 mt-1">
+                <p className="ds-nota">
                   <ArcaneIcon name="alerta" /> Este item é agregador (tem filhos). Pontuação vem dos subitens.
                 </p>
               )}
@@ -1226,22 +1215,23 @@ export const Rituais: React.FC = () => {
                   checked={hasTime}
                   onChange={(e) => setHasTime(e.target.checked)}
                   disabled={isAggregatorLocked}
-                  className="w-4 h-4 rounded cursor-pointer"
+                  className="w-5 h-5 cursor-pointer"
                 />
-                <label htmlFor="hasTime" className={`text-sm cursor-pointer flex-1 ${isAggregatorLocked ? 'text-white/40' : 'text-white/70'}`}>
+                <label htmlFor="hasTime" className={`flex min-h-11 flex-1 cursor-pointer items-center ${isAggregatorLocked ? 'opacity-50' : ''}`}>
                   Adicionar tempo estimado
                 </label>
               </div>
 
               {hasTime && (
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Minutos</label>
+                  <div className="ds-campo">
+                    <span>Minutos</span>
                     <Input
                       type="number"
                       min="0"
                       max="300"
                       placeholder="Ex: 30"
+                      aria-label="Minutos estimados"
                       value={editTimeMinutes === 0 ? '' : editTimeMinutes}
                       onChange={(e) => {
                         const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
@@ -1253,16 +1243,16 @@ export const Rituais: React.FC = () => {
                         }
                       }}
                       disabled={isAggregatorLocked}
-                      className="bg-white/5 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
-                  <div>
-                    <label className="text-sm text-white/70 mb-2 block">Segundos</label>
+                  <div className="ds-campo">
+                    <span>Segundos</span>
                     <Input
                       type="number"
                       min="0"
                       max="59"
                       placeholder="Ex: 30"
+                      aria-label="Segundos estimados"
                       value={editTimeSeconds === 0 ? '' : editTimeSeconds}
                       onChange={(e) => {
                         const value = e.target.value === '' ? 0 : parseInt(e.target.value) || 0;
@@ -1274,29 +1264,20 @@ export const Rituais: React.FC = () => {
                         }
                       }}
                       disabled={isAggregatorLocked}
-                      className="bg-white/5 border-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="flex gap-3 pt-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowQuickEdit(false)}
-                className="flex-1 border-white/20"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleSaveEdit}
-                disabled={!editName.trim()}
-                className="flex-1 bg-mystic-arcane hover:bg-mystic-arcane/80"
-              >
-                Salvar
-              </Button>
-            </div>
+          </div>
+          <div className="ds-folha-pe">
+            <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setShowQuickEdit(false)}>
+              Cancelar
+            </button>
+            <button type="button" className="ds-botao" data-tipo="primario" onClick={handleSaveEdit} disabled={!editName.trim()}>
+              Salvar
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1522,11 +1503,59 @@ const TaskCard: React.FC<TaskCardProps> = ({
     };
   };
 
+  /** Formulário de novo item ou subitem: campos de 48, alvos de 44, quebra de linha no celular. */
+  const renderAddRow = (parentItemId: string | null, kind: 'item' | 'subitem') => (
+    <div className="flex flex-wrap items-center gap-2 min-w-0">
+      <label className="ds-campo flex-1 basis-48 min-w-0">
+        <span className="sr-only">Nome do {kind}</span>
+        <Input
+          value={newItemTitle}
+          onChange={(e) => setNewItemTitle?.(e.target.value)}
+          placeholder={kind === 'subitem' ? 'Novo subitem...' : 'Novo item...'}
+          aria-label={`Nome do ${kind}`}
+          autoFocus
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSubmitItem?.(parentItemId);
+            if (e.key === 'Escape') onCancelAddItem?.();
+          }}
+        />
+      </label>
+      <label className="ds-campo w-24">
+        <span className="sr-only">Pontos</span>
+        <Input
+          type="number"
+          min={1}
+          value={newItemValue}
+          onChange={(e) => setNewItemValue?.(Number(e.target.value))}
+          placeholder="Pts"
+          aria-label="Valor do item em pontos"
+        />
+      </label>
+      <label className="ds-campo w-24">
+        <span className="sr-only">Minutos</span>
+        <Input
+          type="number"
+          min={0}
+          value={newItemMinutes}
+          onChange={(e) => setNewItemMinutes?.(e.target.value)}
+          placeholder="Min"
+          aria-label="Duração prevista em minutos"
+        />
+      </label>
+      <button type="button" className="ds-botao" data-icone="" data-tipo="fantasma" onClick={() => onCancelAddItem?.()} title="Cancelar" aria-label="Cancelar">
+        <ArcaneIcon name="fechar" size={16} />
+      </button>
+      <button type="button" className="ds-botao" data-icone="" data-tipo="secundario" aria-label={`Adicionar ${kind}`} onClick={() => onSubmitItem?.(parentItemId)}>
+        <ArcaneIcon name="criar" size={18} />
+      </button>
+    </div>
+  );
+
   const renderTaskItems = (items: TaskItem[], depth = 0, parentItemId: string | null = null) => {
     const sortedItems = [...items].sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
     return (
-      <div className={depth > 0 ? 'ml-4 border-l border-white/10 pl-3' : ''}>
+      <div className={depth > 0 ? 'ml-4 pl-3' : ''}>
         {sortedItems.map((item) => {
           const hasChildren = item.childItems.length > 0;
           const isExpanded = item.isExpanded ?? false;
@@ -1556,124 +1585,141 @@ const TaskCard: React.FC<TaskCardProps> = ({
             });
 
           return (
-            <div key={item.id} className="space-y-2">
-              <div className="flex items-center gap-2 p-2 rounded-lg bg-black/20">
-                {!item.isCompleted ? (
-                  <button
-                    onClick={() => onCompleteItem?.(item.id)}
-                    aria-label={`Concluir ${item.title}`}
-                    className="w-5 h-5 rounded border flex items-center justify-center border-white/30 hover:border-white/50"
-                  >
-                    <Check className="w-3 h-3" />
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onUncompleteItem?.(item.id)}
-                    className="w-5 h-5 rounded border flex items-center justify-center bg-mystic-gold border-mystic-gold hover:bg-mystic-gold/80"
-                    title="Desmarcar"
-                  >
-                    <X className="w-3 h-3 text-black" />
-                  </button>
-                )}
+            <React.Fragment key={item.id}>
+              <div className="ds-linha" data-densa="" data-estado={item.isCompleted ? 'selado' : undefined} data-element={element.id}>
+                <div className="flex min-w-0 items-center gap-1">
+                  {!item.isCompleted ? (
+                    <button
+                      type="button"
+                      className="ds-selo"
+                      data-tamanho="filho"
+                      onClick={() => onCompleteItem?.(item.id)}
+                      aria-label={`Concluir ${item.title}`}
+                    >
+                      <CycleSigil element={element.id} size="trail" />
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="ds-selo"
+                      data-tamanho="filho"
+                      aria-pressed="true"
+                      onClick={() => onUncompleteItem?.(item.id)}
+                      aria-label={`Desmarcar ${item.title}`}
+                      title="Desmarcar"
+                    >
+                      <CycleSigil element={element.id} size="trail" filled />
+                    </button>
+                  )}
 
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${item.isCompleted ? 'line-through text-white/40' : ''}`}>
-                    {item.title}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 text-[10px] flex-wrap">
-                    {itemArea && itemPrimaryBadgeLabel && (
-                      <Badge 
-                        style={{ 
-                          backgroundColor: `${itemArea.color}20`, 
-                          color: itemArea.color,
-                          borderColor: `${itemArea.color}80`
-                        }}
-                        className="text-[9px] px-1.5 py-0 border"
-                      >
-                        {itemPrimaryBadgeLabel}
-                      </Badge>
-                    )}
-                    {/* 🎯 Badges agregados dos netos (se for agregador) */}
-                    {hasChildren && itemAggregatedAreaList.map(([areaId, data]) => {
-                      const aggArea = areaLookup.get(areaId);
-                      const aggSubarea = data.subareaId ? areaLookup.get(data.subareaId) : undefined;
-                      const aggAreaName = aggArea?.name || (areaId === 'sem-categoria' ? 'Sem Categoria' : null);
-                      if (!aggAreaName) return null;
-                      return (
+                  <div className="min-w-0 flex-1">
+                    <p className="m-0">{item.title}</p>
+                    <div className="ds-meta">
+                      {itemArea && itemPrimaryBadgeLabel && (
                         <Badge 
-                          key={areaId}
                           style={{ 
-                            backgroundColor: `${aggArea?.color || '#9CA3AF'}10`, 
-                            color: aggArea?.color || '#D1D5DB',
-                            borderColor: `${aggArea?.color || '#9CA3AF'}50`
+                            backgroundColor: `${itemArea.color}20`, 
+                            color: itemArea.color,
+                            borderColor: `${itemArea.color}80`
                           }}
-                          className="text-[9px] px-1.5 py-0 border"
+                          className="px-1.5 py-0 border"
                         >
-                          +{Math.round(data.points)} {aggAreaName}
-                          {aggSubarea ? ` | ${aggSubarea.name}` : ''}
+                          {itemPrimaryBadgeLabel}
                         </Badge>
-                      );
-                    })}
-                    {itemAggregate.time > 0 && (
-                      <span className="flex items-center gap-1 text-white/50">
-                        <Clock className="w-3 h-3" />
-                        {itemAggregate.time < 1 
-                          ? `${Math.round(itemAggregate.time * 60)}s`
-                          : `${itemAggregate.time}min`
-                        }
-                      </span>
-                    )}
+                      )}
+                      {/* 🎯 Badges agregados dos netos (se for agregador) */}
+                      {hasChildren && itemAggregatedAreaList.map(([areaId, data]) => {
+                        const aggArea = areaLookup.get(areaId);
+                        const aggSubarea = data.subareaId ? areaLookup.get(data.subareaId) : undefined;
+                        const aggAreaName = aggArea?.name || (areaId === 'sem-categoria' ? 'Sem Categoria' : null);
+                        if (!aggAreaName) return null;
+                        return (
+                          <Badge 
+                            key={areaId}
+                            style={{ 
+                              backgroundColor: `${aggArea?.color || '#9CA3AF'}10`, 
+                              color: aggArea?.color || '#D1D5DB',
+                              borderColor: `${aggArea?.color || '#9CA3AF'}50`
+                            }}
+                            className="px-1.5 py-0 border"
+                          >
+                            +{Math.round(data.points)} {aggAreaName}
+                            {aggSubarea ? ` | ${aggSubarea.name}` : ''}
+                          </Badge>
+                        );
+                      })}
+                      {itemAggregate.time > 0 && (
+                        <span>
+                          <ArcaneIcon name="relogio" size={12} />
+                          {itemAggregate.time < 1 
+                            ? `${Math.round(itemAggregate.time * 60)}s`
+                            : `${itemAggregate.time}min`
+                          }
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {hasChildren && (
-                  <button
-                    onClick={() => onToggleItemExpand?.(item.id)}
-                    aria-expanded={isExpanded}
-                    aria-label={`Subitens de ${item.title}`}
-                    className="text-white/40 hover:text-white/70"
-                  >
-                    {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  </button>
-                )}
+                <div className="flex items-center">
+                  {hasChildren && (
+                    <button
+                      type="button"
+                      className="ds-botao"
+                      data-icone=""
+                      data-tipo="fantasma"
+                      onClick={() => onToggleItemExpand?.(item.id)}
+                      aria-expanded={isExpanded}
+                      aria-label={`Subitens de ${item.title}`}
+                    >
+                      <ArcaneIcon name="chevron" size={16} style={isExpanded ? { transform: 'rotate(180deg)' } : undefined} />
+                    </button>
+                  )}
 
-                <div className="flex items-center gap-1">
                   <button
+                    type="button"
+                    className="ds-botao"
+                    data-icone=""
+                    data-tipo="fantasma"
                     onClick={() => onStartAddItem?.(item.id)}
-                    className="text-white/40 hover:text-white/70"
                     title="Adicionar subitem"
+                    aria-label={`Adicionar subitem em ${item.title}`}
                   >
-                    <PlusCircle className="w-3 h-3" />
+                    <ArcaneIcon name="criar" size={16} />
                   </button>
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
-                        className="text-white/40 hover:text-white/70"
+                        type="button"
+                        className="ds-botao"
+                        data-icone=""
+                        data-tipo="fantasma"
                         title="Mais opções"
+                        aria-label={`Mais opções de ${item.title}`}
                       >
-                        <MoreVertical className="w-3 h-3" />
+                        <ArcaneIcon name="mais" size={16} />
                       </button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuContent align="end" className="ds-menu w-48">
                       <DropdownMenuItem onClick={() => onOpenEditItem?.(task.id, item.id)}>
-                        <Edit2 className="w-3 h-3 mr-2" />
+                        <ArcaneIcon name="editar" size={16} />
                         Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onMoveItemUp?.(item.id)}>
-                        <ArrowUp className="w-3 h-3 mr-2" />
+                        <ArcaneIcon name="seta" size={16} style={{ transform: 'rotate(-90deg)' }} />
                         Mover para cima
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => onMoveItemDown?.(item.id)}>
-                        <ArrowDown className="w-3 h-3 mr-2" />
+                        <ArcaneIcon name="seta" size={16} style={{ transform: 'rotate(90deg)' }} />
                         Mover para baixo
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         onClick={() => onDeleteItem?.(item.id)}
-                        className="text-red-400 focus:text-red-400"
+                        style={{ color: 'var(--ds-perigo)' }}
                       >
-                        <Trash2 className="w-3 h-3 mr-2" />
+                        <ArcaneIcon name="excluir" size={16} />
                         Excluir
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -1682,46 +1728,8 @@ const TaskCard: React.FC<TaskCardProps> = ({
               </div>
 
               {showAddInput && (
-                <div className="flex flex-nowrap items-center gap-2 pl-7 min-w-0">
-                  <Input
-                    value={newItemTitle}
-                    onChange={(e) => setNewItemTitle?.(e.target.value)}
-                    placeholder="Novo subitem..."
-                    className="flex-1 min-w-0 h-8 text-sm bg-white/5 border-white/10"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onSubmitItem?.(item.id);
-                      if (e.key === 'Escape') onCancelAddItem?.();
-                    }}
-                  />
-                  <Input
-                    type="number"
-                    min={1}
-                    value={newItemValue}
-                    onChange={(e) => setNewItemValue?.(Number(e.target.value))}
-                    placeholder="Pts"
-                    aria-label="Valor do item em pontos"
-                    className="w-14 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={newItemMinutes}
-                    onChange={(e) => setNewItemMinutes?.(e.target.value)}
-                    placeholder="Min"
-                    aria-label="Duração prevista em minutos"
-                    className="w-14 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <button
-                    onClick={() => onCancelAddItem?.()}
-                    className="h-8 px-2 text-white/40 hover:text-white/70 hover:bg-white/5 rounded"
-                    title="Cancelar"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                  <Button size="sm" className="h-8 px-2" aria-label="Adicionar subitem" onClick={() => onSubmitItem?.(item.id)}>
-                    <Plus className="w-4 h-4" />
-                  </Button>
+                <div className="pl-7 py-2">
+                  {renderAddRow(item.id, 'subitem')}
                 </div>
               )}
 
@@ -1730,66 +1738,25 @@ const TaskCard: React.FC<TaskCardProps> = ({
                   {renderTaskItems(item.childItems, depth + 1, item.id)}
                 </div>
               )}
-            </div>
+            </React.Fragment>
           );
         })}
 
-        {parentItemId === null && (
-          isAddTargetFor(parentItemId) && (
-            <div className="flex flex-nowrap items-center gap-2 mt-2 min-w-0">
-              <Input
-                value={newItemTitle}
-                onChange={(e) => setNewItemTitle?.(e.target.value)}
-                placeholder="Novo item..."
-                    aria-label="Nome do item"
-                className="flex-1 min-w-0 h-8 text-sm bg-white/5 border-white/10"
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') onSubmitItem?.(null);
-                  if (e.key === 'Escape') onCancelAddItem?.();
-                }}
-              />
-              <Input
-                type="number"
-                min={1}
-                value={newItemValue}
-                onChange={(e) => setNewItemValue?.(Number(e.target.value))}
-                placeholder="Pts"
-                    aria-label="Valor do item em pontos"
-                className="w-14 h-8 text-sm bg-white/5 border-white/10"
-              />
-              <Input
-                type="number"
-                min={0}
-                value={newItemMinutes}
-                onChange={(e) => setNewItemMinutes?.(e.target.value)}
-                placeholder="Min"
-                    aria-label="Duração prevista em minutos"
-                className="w-14 h-8 text-sm bg-white/5 border-white/10"
-              />
-              <button
-                onClick={() => onCancelAddItem?.()}
-                className="h-8 px-2 text-white/40 hover:text-white/70 hover:bg-white/5 rounded"
-                title="Cancelar"
-              >
-                <X className="w-4 h-4" />
-              </button>
-              <Button size="sm" className="h-8 px-2" aria-label="Adicionar item" onClick={() => onSubmitItem?.(null)}>
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-          )
+        {parentItemId === null && isAddTargetFor(parentItemId) && (
+          <div className="mt-2">
+            {renderAddRow(null, 'item')}
+          </div>
         )}
       </div>
     );
   };
 
+  const dueLabel = task.dueDate ? task.dueDate.split('-').reverse().slice(0, 2).join('/') : null;
+  const xpOfCompletion = completed ? task.completionXp?.amount : undefined;
+
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
       draggable={draggable}
       onDragStart={onDragStart}
       onDragOver={(event) => {
@@ -1802,6 +1769,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
       }}
       onDragEnd={onDragEnd}
       className={`ritual-showcase-shell ${isDragOver ? 'is-drag-over' : ''}`}
+      data-drag-over={isDragOver ? 'true' : undefined}
     >
       <RitualShowcase
         title={task.title}
@@ -1811,244 +1779,197 @@ const TaskCard: React.FC<TaskCardProps> = ({
         status={completed ? 'Concluído' : task.isInProgress ? 'Em andamento' : 'Pendente'}
         summary={totalItems > 0 ? `${completedItems} de ${totalItems} itens concluídos` : areaDisplayName}
         actions={<>
-            {!completed && onStart && (
-              <Button
-                size="sm"
-                onClick={onStart}
-                className="h-7 px-2 text-xs bg-mystic-arcane hover:bg-mystic-arcane/80 shrink-0"
-              >
-                <Play className="w-3 h-3 mr-1" />
-                Iniciar
-              </Button>
-            )}
-        {/* Completion button */}
-        {!completed && onComplete && (
-          <button
-            onClick={onComplete}
-            aria-label={`Concluir ${task.title}`}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-mystic-gold/20 
-                      flex items-center justify-center flex-shrink-0 transition-colors"
-          >
-            <Check className="w-4 h-4" /> Concluir
-          </button>
-        )}
-        {completed && (
-          <button
-            onClick={onUncomplete}
-            aria-label={`Desfazer conclusão de ${task.title}`}
-            className="w-8 h-8 rounded-lg bg-mystic-gold/20 hover:bg-mystic-gold/30 
-                      flex items-center justify-center flex-shrink-0 transition-colors"
-            title="Desmarcar"
-          >
-            <X className="w-4 h-4 text-mystic-gold" /> Desfazer conclusão
-          </button>
-        )}
-
+          {!completed && onStart && (
+            <button type="button" className="ds-botao" data-tipo="fantasma" onClick={onStart}>
+              <ArcaneIcon name="iniciar" size={16} />
+              Iniciar
+            </button>
+          )}
+          {!completed && onComplete && (
+            <button
+              type="button"
+              className="ds-botao"
+              data-tipo="primario"
+              onClick={onComplete}
+              aria-label={`Concluir ${task.title}`}
+            >
+              <ArcaneIcon name="concluir" size={16} />
+              Concluir
+            </button>
+          )}
+          {completed && (
+            <button
+              type="button"
+              className="ds-selo"
+              data-element={element.id}
+              aria-pressed="true"
+              onClick={onUncomplete}
+              aria-label={`Desfazer conclusão de ${task.title}`}
+              title="Desfazer conclusão"
+            >
+              <CycleSigil element={element.id} size="card" filled />
+            </button>
+          )}
         </>}
       >
+        <ul className="ds-meta">
+          <li><MarcaElemento elemento={element.id} /></li>
+          {xpOfCompletion != null
+            ? <li>+{xpOfCompletion} XP</li>
+            : <li>+{Math.round(score)} pts</li>}
+          {dueLabel && <li><ArcaneIcon name="relogio" size={12} />Prazo {dueLabel}</li>}
+          {totalItems > 0 && <li>{completedItems} de {totalItems}</li>}
+          {task.plannedTimeMinutes != null && task.plannedTimeMinutes > 0 && (
+            <li><ArcaneIcon name="relogio" size={12} />{formatDuration(task.plannedTimeMinutes)}</li>
+          )}
+        </ul>
+
         <div className="ritual-detail-toolbar">
-            {!completed && (
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => onStartAddItem?.(null)}
-                  className="p-1 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70"
-                  title="Adicionar item"
-                >
-                  <PlusCircle className="w-4 h-4" /> Adicionar item
-                </button>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="p-1 rounded-lg hover:bg-white/10" aria-label={`Opções de ${task.title}`}>
-                      <MoreVertical className="w-4 h-4 text-white/40" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-mystic-purple border-white/10">
-                    <DropdownMenuItem onClick={onMoveUp}>
-                      <ArrowUp className="w-4 h-4 mr-2" />
-                      Mover para cima
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onMoveDown}>
-                      <ArrowDown className="w-4 h-4 mr-2" />
-                      Mover para baixo
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onDuplicate}>
-                      <ListTodo className="w-4 h-4 mr-2" />
-                      Duplicar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onConvertToCycle}>
-                      <PlusCircle className="w-4 h-4 mr-2" />
-                      Transformar em Ciclo
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onOpenEdit}>
-                      <Edit2 className="w-4 h-4 mr-2" />
-                      Editar
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={onDelete} className="text-red-400">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            )}
-        </div>
-          {/* Badges + Start */}
-          <div className="mt-2 flex items-start justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              {/* 🎯 Badge principal com nome da área e pontuação */}
-              {primaryAreaBadgeLabel && (
-                <Badge 
-                  variant="outline"
-                  className="text-[10px]"
-                  style={{ 
-                    backgroundColor: task.areaPrimaryId ? `${(area?.color || element.color)}15` : 'rgba(255,255,255,0.05)', 
-                    borderColor: task.areaPrimaryId ? `${(area?.color || element.color)}40` : 'rgba(255,255,255,0.1)',
-                    color: task.areaPrimaryId ? (area?.color || element.color) : '#ffffff'
-                  }}
-                >
-                  {primaryAreaBadgeLabel}
-                </Badge>
-              )}
-
-              {secondaryAreaBadgeLabel && (
-                <Badge 
-                  variant="outline"
-                  className="text-[10px]"
-                  style={{ 
-                    backgroundColor: `${(secondaryArea?.color || element.color)}12`, 
-                    borderColor: `${(secondaryArea?.color || element.color)}30`,
-                    color: secondaryArea?.color || element.color 
-                  }}
-                >
-                  {secondaryAreaBadgeLabel}
-                </Badge>
-              )}
-
-              {tertiaryAreaBadgeLabel && (
-                <Badge 
-                  variant="outline"
-                  className="text-[10px]"
-                  style={{ 
-                    backgroundColor: `${(tertiaryArea?.color || element.color)}12`, 
-                    borderColor: `${(tertiaryArea?.color || element.color)}30`,
-                    color: tertiaryArea?.color || element.color 
-                  }}
-                >
-                  {tertiaryAreaBadgeLabel}
-                </Badge>
-              )}
-              
-              {/* 🎯 Badges de áreas agregadas dos filhos (formato unificado: +X AreaName) */}
-              {totalItems > 0 && aggregatedAreaList.map(([areaId, data]) => {
-                const aggArea = AREAS.find(a => a.id === areaId);
-                const aggSubarea = data.subareaId ? getAreaById(data.subareaId) : undefined;
-                if (!aggArea) return null;
-                return (
-                  <Badge 
-                    key={areaId}
-                    variant="outline"
-                    className="text-[10px]"
-                    style={{ 
-                      backgroundColor: `${aggArea.color}10`, 
-                      borderColor: `${aggArea.color}50`,
-                      color: aggArea.color 
-                    }}
-                  >
-                    +{Math.round(data.points)} {aggArea.name}
-                    {aggSubarea ? ` | ${aggSubarea.name}` : ''}
-                  </Badge>
-                );
-              })}
-              
-              {task.plannedTimeMinutes != null && task.plannedTimeMinutes > 0 && (
-                <Badge variant="outline" className="bg-white/5 text-white/60 text-[10px]">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {formatDuration(task.plannedTimeMinutes)}
-                </Badge>
-              )}
-            </div>
-
-
-          </div>
-
-          {totalItems === 0 && (
-            <div className="mt-2">
-              {isAddTargetFor(null) && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <Input
-                    value={newItemTitle}
-                    onChange={(e) => setNewItemTitle?.(e.target.value)}
-                    placeholder="Novo item..."
-                    aria-label="Nome do item"
-                    className="flex-1 h-8 text-sm bg-white/5 border-white/10"
-                    autoFocus
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') onSubmitItem?.(null);
-                      if (e.key === 'Escape') onCancelAddItem?.();
-                    }}
-                  />
-                  <Input
-                    type="number"
-                    min={1}
-                    value={newItemValue}
-                    onChange={(e) => setNewItemValue?.(Number(e.target.value))}
-                    placeholder="Pts"
-                    aria-label="Valor do item em pontos"
-                    className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={newItemMinutes}
-                    onChange={(e) => setNewItemMinutes?.(e.target.value)}
-                    placeholder="Min"
-                    aria-label="Duração prevista em minutos"
-                    className="w-20 h-8 text-sm bg-white/5 border-white/10"
-                  />
-                  <Button size="sm" className="h-8 px-2" aria-label="Adicionar item" onClick={() => onSubmitItem?.(null)}>
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Child items summary */}
-          {totalItems > 0 && (
-            <div className="mt-2 flex items-center gap-2">
+          {!completed && (
+            <div className="flex items-center gap-1">
               <button
-                onClick={onToggleExpand}
-                aria-expanded={!!task.isExpanded}
-                className="flex items-center gap-1 text-xs text-white/50 hover:text-white/70"
+                type="button"
+                className="ds-botao"
+                data-tipo="fantasma"
+                onClick={() => onStartAddItem?.(null)}
+                title="Adicionar item"
               >
-                {task.isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                {completedItems}/{totalItems} itens
+                <ArcaneIcon name="criar" size={16} /> Adicionar item
               </button>
-              <div className="flex-1 h-1 bg-black/30 rounded-full overflow-hidden">
-                <div 
-                  className="h-full bg-mystic-arcane rounded-full"
-                  style={{ width: `${totalItems > 0 ? (completedItems / totalItems) * 100 : 0}%` }}
-                />
-              </div>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button type="button" className="ds-botao" data-icone="" data-tipo="fantasma" aria-label={`Opções de ${task.title}`}>
+                    <ArcaneIcon name="mais" size={16} />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="ds-menu">
+                  <DropdownMenuItem onClick={onMoveUp}>
+                    <ArcaneIcon name="seta" size={16} style={{ transform: 'rotate(-90deg)' }} />
+                    Mover para cima
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onMoveDown}>
+                    <ArcaneIcon name="seta" size={16} style={{ transform: 'rotate(90deg)' }} />
+                    Mover para baixo
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onDuplicate}>
+                    <ArcaneIcon name="ritual" size={16} />
+                    Duplicar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onConvertToCycle}>
+                    <ArcaneIcon name="ciclo" size={16} />
+                    Transformar em Ciclo
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onOpenEdit}>
+                    <ArcaneIcon name="editar" size={16} />
+                    Editar
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={onDelete} style={{ color: 'var(--ds-perigo)' }}>
+                    <ArcaneIcon name="excluir" size={16} />
+                    Excluir
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
+        </div>
 
-          {/* Expanded child items */}
-          <AnimatePresence>
-            {task.isExpanded && totalItems > 0 && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="mt-3 space-y-2 overflow-hidden"
+        {/* Badges de área (cores vêm dos dados da área) */}
+        <div className="ds-meta mt-2">
+          {primaryAreaBadgeLabel && (
+            <Badge 
+              variant="outline"
+              style={{ 
+                backgroundColor: task.areaPrimaryId ? `${(area?.color || element.color)}15` : 'rgba(255,255,255,0.05)', 
+                borderColor: task.areaPrimaryId ? `${(area?.color || element.color)}40` : 'rgba(255,255,255,0.1)',
+                color: task.areaPrimaryId ? (area?.color || element.color) : '#ffffff'
+              }}
+            >
+              {primaryAreaBadgeLabel}
+            </Badge>
+          )}
+
+          {secondaryAreaBadgeLabel && (
+            <Badge 
+              variant="outline"
+              style={{ 
+                backgroundColor: `${(secondaryArea?.color || element.color)}12`, 
+                borderColor: `${(secondaryArea?.color || element.color)}30`,
+                color: secondaryArea?.color || element.color 
+              }}
+            >
+              {secondaryAreaBadgeLabel}
+            </Badge>
+          )}
+
+          {tertiaryAreaBadgeLabel && (
+            <Badge 
+              variant="outline"
+              style={{ 
+                backgroundColor: `${(tertiaryArea?.color || element.color)}12`, 
+                borderColor: `${(tertiaryArea?.color || element.color)}30`,
+                color: tertiaryArea?.color || element.color 
+              }}
+            >
+              {tertiaryAreaBadgeLabel}
+            </Badge>
+          )}
+          
+          {/* 🎯 Badges de áreas agregadas dos filhos (formato unificado: +X AreaName) */}
+          {totalItems > 0 && aggregatedAreaList.map(([areaId, data]) => {
+            const aggArea = AREAS.find(a => a.id === areaId);
+            const aggSubarea = data.subareaId ? getAreaById(data.subareaId) : undefined;
+            if (!aggArea) return null;
+            return (
+              <Badge 
+                key={areaId}
+                variant="outline"
+                style={{ 
+                  backgroundColor: `${aggArea.color}10`, 
+                  borderColor: `${aggArea.color}50`,
+                  color: aggArea.color 
+                }}
               >
-                {renderTaskItems(task.childItems)}
-              </motion.div>
-            )}
-          </AnimatePresence>
+                +{Math.round(data.points)} {aggArea.name}
+                {aggSubarea ? ` | ${aggSubarea.name}` : ''}
+              </Badge>
+            );
+          })}
+        </div>
+
+        {totalItems === 0 && isAddTargetFor(null) && (
+          <div className="mt-2">
+            {renderAddRow(null, 'item')}
+          </div>
+        )}
+
+        {/* Resumo dos subitens: fio no acento do elemento */}
+        {totalItems > 0 && (
+          <div className="mt-2 flex items-center gap-2" data-element={element.id}>
+            <button
+              type="button"
+              className="ds-botao"
+              data-tipo="fantasma"
+              onClick={onToggleExpand}
+              aria-expanded={!!task.isExpanded}
+            >
+              <ArcaneIcon name="chevron" size={16} style={task.isExpanded ? { transform: 'rotate(180deg)' } : undefined} />
+              {completedItems}/{totalItems} itens
+            </button>
+            <div className="flex-1">
+              <Medidor valor={completedItems / totalItems} rotulo={`${completedItems} de ${totalItems} itens concluídos`} />
+            </div>
+          </div>
+        )}
+
+        {/* Subitens expandidos */}
+        {task.isExpanded && totalItems > 0 && (
+          <div className="mt-3">
+            {renderTaskItems(task.childItems)}
+          </div>
+        )}
 
       </RitualShowcase>
     </motion.div>
@@ -2063,39 +1984,27 @@ interface EmptyStateProps {
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate, filtered, onClear }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="glass-card p-8 text-center"
-  >
-    <div className="text-4xl mb-3"><ArcaneIcon name={type === 'pending' ? 'ritual' : 'conquista'} /></div>
-    <h3 className="font-mystic text-lg mb-2">
-      {filtered ? 'Nenhum ritual encontrado' : type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
-    </h3>
-    <p className="text-white/50 text-sm mb-4">
-      {filtered ? 'Tente outro nome ou remova o filtro de elemento.' : type === 'pending'
-        ? 'Adicione uma tarefa para dar o próximo passo.'
-        : 'Complete seus rituais para vê-los aqui.'}
-    </p>
-    {filtered && <Button variant="outline" onClick={onClear}>Limpar busca e filtros</Button>}
-    {!filtered && type === 'pending' && onCreate && (
-      <Button onClick={onCreate}>
-        <Plus className="w-4 h-4 mr-2" />
-        Novo ritual
-      </Button>
-    )}
-  </motion.div>
+  <Vazio
+    titulo={filtered ? 'Nenhum ritual encontrado' : type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
+    texto={filtered ? 'Tente outro nome ou remova o filtro de elemento.' : type === 'pending'
+      ? 'Adicione uma tarefa para dar o próximo passo.'
+      : 'Complete seus rituais para vê-los aqui.'}
+    acao={filtered
+      ? <button type="button" className="ds-botao" data-tipo="secundario" onClick={onClear}>Limpar busca e filtros</button>
+      : type === 'pending' && onCreate
+        ? <button type="button" className="ds-botao" data-tipo="secundario" onClick={onCreate}><ArcaneIcon name="criar" size={18} />Novo ritual</button>
+        : undefined}
+  />
 );
 
 /** Explicit selection, independent of optional life-area categorization. */
 function RitualElementChoice({ value, onChange }: { value: ElementId; onChange: (element: ElementId) => void }) {
   return <fieldset className="space-y-2">
-    <legend className="text-sm text-white/70">Elemento do ritual</legend>
+    <legend className="ds-nota">Elemento do ritual</legend>
     <div className="grid grid-cols-4 gap-2">
       {(Object.keys(ELEMENTS) as ElementId[]).map(id => <button key={id} type="button"
-        aria-pressed={value === id} onClick={() => onChange(id)}
-        className="min-h-16 rounded-xl border border-white/15 flex flex-col items-center justify-center gap-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold"
-        style={{ color: `var(--element-${id})`, borderColor: value === id ? `var(--element-${id})` : undefined, background: value === id ? 'rgba(213,182,111,.10)' : undefined }}>
+        className="ds-botao h-auto flex-col gap-1 px-1 py-2" data-element={id} data-tipo={value === id ? 'secundario' : 'fantasma'}
+        aria-pressed={value === id} onClick={() => onChange(id)}>
         <ElementIcon element={id} size={24} /><span>{ELEMENTS[id].name}</span>
       </button>)}
     </div>

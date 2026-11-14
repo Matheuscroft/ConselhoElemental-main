@@ -79,3 +79,21 @@ test('a file is refused for a reason someone can act on', () => {
     assert.match(m.MENSAGEM_RECUSA[motivo], /\S/, `${motivo} needs words`);
   }
 });
+
+test('a photograph is kept for the past and today, never for a future day', () => {
+  const hoje = new Date(2026, 10, 10, 23, 59);
+  assert.equal(m.podeGuardarFoto('2026-11-09', hoje), true);
+  assert.equal(m.podeGuardarFoto('2026-11-10', hoje), true);
+  assert.equal(m.podeGuardarFoto('2026-11-11', hoje), false);
+  assert.equal(m.podeGuardarFoto('2026-12-01', hoje), false);
+  assert.equal(m.podeGuardarFoto('2027-01-01', hoje), false);
+  assert.equal(m.podeGuardarFoto('2025-12-31', hoje), true);
+  assert.equal(m.podeGuardarFoto('lixo', hoje), false);
+});
+
+test('the month turn compares by calendar, not by digits', () => {
+  const fim = new Date(2026, 0, 31);
+  assert.equal(m.podeGuardarFoto('2026-01-31', fim), true);
+  assert.equal(m.podeGuardarFoto('2026-02-01', fim), false);
+  assert.equal(m.podeGuardarFoto('2025-12-31', new Date(2026, 0, 1)), true);
+});

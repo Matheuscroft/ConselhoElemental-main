@@ -1,4 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cinzel+Decorative:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+/* Fonts load from index.html (non-blocking). This fallback takes the same box as Inter, so the swap does not move the layout. */
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  size-adjust: 107.4%;
+  ascent-override: 90.2%;
+  descent-override: 22.48%;
+  line-gap-override: 0%;
+}
 
 @tailwind base;
 @tailwind components;
@@ -16,7 +24,7 @@
     height: 100%;
     background-color: var(--canvas-bg);
     color: var(--fg-primary);
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', 'Inter Fallback', system-ui, sans-serif;
     background: #050508;
     -webkit-font-smoothing: antialiased;
   }
