@@ -141,24 +141,43 @@ vec4 bordaViva(vec2 p, float d) {
   vec3 acc = vec3(0.0);
   float alfa = 0.0;
 
-  // Fire: translucent tongues born on the border, rising, taller at the top, with a
-  // second layer of small quick flames, a white-hot core and a heat glow hugging the card.
+  // Fire: layered flame tongues. A back layer of broad, tall, deep-red flames and a
+  // front layer of narrower, brighter ones; every tongue is pointed, curls with the
+  // air, sways, has its own height and lifetime, and is hollowed by turbulence so the
+  // gaps stay dark. Colour runs from translucent deep red at the tips through orange
+  // and yellow to a thin white-hot core at the base: depth comes from the gradient
+  // and the layers, never from a filled sheet.
   if (uPeso.x > 0.003) {
-    float H = 8.0 + 38.0 * (0.25 + 0.75 * alto * alto);
-    float n1 = fbm3(vec2(p.x * 0.07, p.y * 0.05 - uTime * 1.9));
-    float f1 = clamp((n1 * 1.45 + 0.1 - d / H) * 2.1, 0.0, 1.0);
-    float n2 = fbm2(vec2(p.x * 0.15 + 5.0, p.y * 0.09 - uTime * 2.7));
-    float f2 = clamp((n2 * 1.25 + 0.08 - d / (H * 0.5)) * 2.0, 0.0, 1.0);
-    float f = max(f1, f2 * 0.85) * (0.92 + 0.08 * sin(uTime * 9.0 + p.x * 0.2));
+    float H = 16.0 + 64.0 * (0.2 + 0.8 * alto * alto);
+    float curva = (fbm3(vec2(p.x * 0.04, p.y * 0.035 - uTime * 1.2)) - 0.5) * d * 0.09;
+    float fogoTotal = 0.0;
+    vec3 fogoCor = vec3(0.0);
+    for (int L = 0; L < 2; L++) {
+      float fl = float(L);
+      float contagem = L == 0 ? 17.0 : 31.0;
+      float sp = tr * contagem + fl * 0.37;
+      float idf = floor(sp);
+      float sway = 0.3 * sin(uTime * (1.7 + fl * 0.6) + idf * 4.3 + fl) + 0.12 * sin(uTime * 5.1 + idf * 1.7);
+      float uf = fract(sp + sway + curva * (1.0 - 0.4 * fl));
+      float tri = 1.0 - abs(2.0 * uf - 1.0);
+      float vida = 0.7 + 0.3 * sin(uTime * (2.2 + hash(vec2(idf, 2.1 + fl)) * 2.6) + idf * 6.1);
+      float altura = (L == 0 ? 1.0 : 0.62) * H * (0.4 + 0.75 * pow(hash(vec2(idf, 7.7 + fl)), 1.4)) * vida;
+      float forma = 1.0 - d / max(altura * pow(max(tri, 0.001), 0.62), 0.001);
+      float turb = fbm3(vec2(p.x * 0.08 + idf * 1.3, p.y * 0.065 - uTime * (1.9 + fl * 0.5)));
+      float lingua = clamp(forma * 1.35 + (turb - 0.5) * 0.85, 0.0, 1.0);
+      vec3 cl = L == 0
+        ? mix(vec3(0.42, 0.03, 0.02), vec3(0.95, 0.25, 0.04), smoothstep(0.1, 0.7, lingua))
+        : mix(vec3(0.7, 0.08, 0.03), uColour, smoothstep(0.1, 0.45, lingua));
+      cl = mix(cl, vec3(1.0, 0.78, 0.28), smoothstep(0.5, 0.82, lingua) * fl);
+      cl = mix(cl, vec3(1.0, 0.96, 0.86), smoothstep(0.88, 1.0, lingua) * fl * (1.0 - d / (H * 0.45)));
+      float aL = pow(lingua, L == 0 ? 1.4 : 1.6) * (L == 0 ? 0.6 : 0.95);
+      fogoCor += cl * aL;
+      fogoTotal += aL;
+    }
     float m = smoothstep(0.0, 0.2, uDraw * 1.25 - alto);
-    vec3 c = mix(vec3(0.5, 0.05, 0.02), uColour, smoothstep(0.1, 0.45, f));
-    c = mix(c, vec3(1.0, 0.82, 0.35), smoothstep(0.45, 0.8, f));
-    c = mix(c, vec3(1.0, 0.97, 0.86), smoothstep(0.8, 1.0, f));
-    // Soft, translucent edges: the tongue fades into the air instead of ending as a solid block.
-    float a = pow(f, 1.35) * m * 0.9;
-    float calor = exp(-d / 16.0) * 0.2 * m;
-    acc += uPeso.x * (c * a + vec3(1.0, 0.45, 0.12) * calor);
-    alfa += uPeso.x * (a + calor);
+    float calor = exp(-d / 22.0) * 0.16 * m;
+    acc += uPeso.x * (fogoCor * m + vec3(1.0, 0.4, 0.1) * calor);
+    alfa += uPeso.x * (fogoTotal * m + calor);
   }
 
   // Water: a ribbon running the perimeter with caustic highlights, and wave crests
