@@ -112,8 +112,18 @@ test('auth aliases open the isolated access workspace; welcome is read-only and 
  assert.deepEqual(await run('?progresso=inicio'),['loading','welcome']);
  assert.deepEqual(await run('?progresso=restaurar',null,false,false,null,false,false,'saved','/auth'),['loading','workspace']);
  assert.deepEqual(await run('?progresso=conta',null,false,false,null,false,false,null,'/boas-vindas'),['loading','account']);
- assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','welcome']);
  assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','existing progress'),['loading','redirect:/auth']);
  assert.deepEqual(await run('', 'pending-restore',false,false,null,false,false,'saved','/'),['loading','exclusive','workspace']);
  for(const path of ['/auth','/entrar','/cadastro'])assert.deepEqual(await run('?code=synthetic',null,false,false,null,false,false,null,path),['loading','scrubbed','account']);
+});
+
+test('fresh root without local data or access opens the welcome; data or access keep the old path; storage errors stay protected',async()=>{
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/'),['loading','welcome']);
+ assert.deepEqual(await run('',null,true,false,null,false,false,null,'/'),['loading','startup-failed']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','existing progress'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,'saved','/'),['loading','exclusive','resume']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/','saved'),['loading','exclusive','resume']);
+ assert.deepEqual(await run('',null,false,false,null,false,false,null,'/santuario'),['loading','redirect:/auth']);
+ assert.deepEqual(await run('',null,false,false,null,true,false,null,'/'),['loading','storage-unavailable']);
 });
