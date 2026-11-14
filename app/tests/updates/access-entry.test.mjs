@@ -20,10 +20,12 @@ test('first-run welcome requires absence of both original projections, never dec
  assert.equal(accessEntry('/auth',''),'account');assert.equal(accessEntry('/cadastro',''),'account');assert.equal(accessEntry('/boas-vindas',''),'welcome');assert.equal(accessEntry('/rituais',''),null);
 });
 
-test('welcome offers real entry, import and guest destinations with no invented rewards or compulsory carousel',()=>{
+test('welcome offers only the two real destinations (start, existing account) with no invented rewards or compulsory carousel',()=>{
  const {EntryWelcome}=loadComponent('src/components/entry/EntryWelcome.tsx');
  const html=renderToStaticMarkup(React.createElement(EntryWelcome));
- for(const href of ['/auth?modo=cadastro','/auth','/santuario','/?progresso=restaurar','/onboarding'])assert.ok(html.includes(`href="${href}"`),href);
+ const hrefs=[...html.matchAll(/href="([^"]*)"/g)].map(m=>m[1]).filter(h=>!h.startsWith('#'));
+ assert.deepEqual(hrefs.filter(h=>h!=='/?progresso=inicio'),['/auth?modo=cadastro','/auth']);
+ assert.match(html,/>Começar</);assert.match(html,/>Já tenho conta</);assert.doesNotMatch(html,/Experimentar sem conta|trazer meu progresso|Conhecer os quatro/);
  assert.match(html,/Seu cotidiano/);assert.doesNotMatch(html,/aria-roledescription="carousel"|\+[0-9]+ XP/);
  assert.equal((html.match(/<h1 /g)||[]).length,1);
 });
