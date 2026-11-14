@@ -20,9 +20,6 @@
 }
 .restore-workspace button svg { flex-shrink: 0; }
 .restore-workspace .restore-workspace-secondary { margin-top: .75rem; color: #eceae3; background: transparent; border-color: #596779; }
-.restore-workspace .account-access-modes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; margin-bottom: 1rem; }
-.restore-workspace .account-access-modes .restore-workspace-secondary { margin-top: 0; }
-.restore-workspace .account-access-modes [aria-pressed="true"] { color: #d5b66f; border-color: #d5b66f; background: #d5b66f18; }
 .restore-workspace button:disabled { opacity: .55; cursor: default; }
 .restore-workspace :is(button, a, summary, input):focus-visible { outline: 2px solid #eceae3; outline-offset: 4px; }
 .restore-workspace .restore-workspace-error { color: #ffb5ac; border-left: 2px solid currentColor; padding-left: .8rem; }

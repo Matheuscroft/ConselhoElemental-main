@@ -34,7 +34,7 @@ export function accountAuthMessage(error: unknown, action: AccountAuthAction, fa
   if (action === 'resume' && accountSessionEnded(error)) return out(SESSION_EXPIRED, code ?? 'session_ended');
   if (action === 'login') {
     // GoTrue checks the password first, so email_not_confirmed is only returned for the right password.
-    if (code === 'email_not_confirmed') return out('Confirme seu e-mail para entrar. Se não recebeu o link, use "Reenviar confirmação" em "Não recebeu o e-mail de confirmação?".');
+    if (code === 'email_not_confirmed') return out('Confirme seu e-mail para entrar. Se não recebeu o link, toque em "Reenviar confirmação" logo abaixo.');
     if (code === 'invalid_credentials') return out('E-mail ou senha incorretos.');
   }
   if (action === 'signup' || action === 'resend') {

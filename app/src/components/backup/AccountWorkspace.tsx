@@ -70,9 +70,12 @@ function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
     empty: tasks + habits + xp + sessions + otherActivity === 0, activeEmpty: activeTasks + activeHabits + activeXp === 0 };
 }
 
+const signedInNotice=(address?:string|null)=>address&&address.trim()?`Você entrou como ${address.trim()}.`:'Você entrou na sua conta.';
 const GoogleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.45a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.57-5.17 3.57-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.27a12 12 0 0 0 0 10.76l4-3.1z"/><path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.27 6.62l4 3.1C6.22 6.88 8.87 4.77 12 4.77z"/></svg>;
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
-  const [accessMode,setAccessMode]=useState<AccountAccessMode>(new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro' ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
+  const startsSignup=new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro';
+  const [accessMode,setAccessMode]=useState<AccountAccessMode>(startsSignup ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
+  const [emailOpen,setEmailOpen]=useState(startsSignup),[signupSent,setSignupSent]=useState(false),[authSource,setAuthSource]=useState<'google'|'email'>('google');
   const [authFeedback,setAuthFeedback]=useState(notice==='oauth'?'Conferindo o retorno do provedor…':notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
   const setAuthError=(reason:string,code:string|null=null)=>{setAuthErrorText(reason);setAuthCode(code);};
   const [receiveMode,setReceiveMode]=useState(false);
@@ -94,7 +97,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [emptyJourneyConsent,setEmptyJourneyConsent]=useState(false);
   const [ready,setReady]=useState(false);
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
-  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
+  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),emailField=useRef<HTMLInputElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
   /** Single decision point for the saved access: this device (localStorage) or this tab (sessionStorage). */
   const savedAccess=(remember?:boolean)=>accountAccessStorage(remember,window);
   const pair=()=>JSON.stringify([window.localStorage.getItem(STORE_KEYS.core),window.localStorage.getItem(STORE_KEYS.fitness)]);
@@ -149,7 +152,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         const resolutionRaw=window.localStorage.getItem(ACCOUNT_RESOLUTION_KEY);if(resolutionRaw)ids.push((await inspectAccountResolution(resolutionRaw,window.location.origin)).userId);
         if(ids.some(id=>id!==resumed.userId)){resumed.owned.dispose();throw new Error('O acesso salvo pertence a outra conta. Entre na conta vinculada a esta tentativa.');}
         session.current=resumed.owned;identity.current=resumed.userId;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(resumed.email??'');setUserId(resumed.userId);setPassword('');
-        setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
+        setAuthFeedback(signedInNotice(resumed.email));
       }catch(reason){if(ref.current===token)setAuthError(reason instanceof Error?reason.message:'Entre novamente para validar o acesso.');}
     })()
       .finally(()=>{if(ref.current===token)setBusy(false);});
@@ -198,6 +201,8 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     generation.current++;clearAccess();setAccessMode(mode);setShowPassword(false);setShowConfirmation(false);setError('');setMessage('');
     window.history?.replaceState(null, '', mode === 'signup' ? '/auth?modo=cadastro' : '/auth');
   }
+  function switchMode(mode:AccountAccessMode){changeAccess(mode);setEmailOpen(true);}
+  function toggleEmail(){const next=!emailOpen;setEmailOpen(next);if(next)setTimeout(()=>emailField.current?.focus(),0);}
   function closeAccess() {
     if(!ready||busy||job.current!==null)return;
     generation.current++;try{clearAccess(true);setAuthFeedback('Acesso encerrado nesta aba. O progresso local e as tentativas continuam preservados.');}catch(reason){setAuthError(reason instanceof Error?reason.message:'Não foi possível encerrar este acesso.');}
@@ -228,26 +233,28 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function authenticate(kind:AccountAccessMode){
     if(!ACCOUNT_ACCESS_RELEASED||!ready||userId||!validAccountAccess(kind,email,password,confirmation))return;
     const input={mode:kind,email,password,confirmation,origin:window.location.origin},keep=keepConnected;
+    setAuthSource('email');
     void run(async token=>{
       clearAccess();
       const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
       const opened=createAccountReviewSession({url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY});session.current=opened;
       try {
         const result=await accessAccount(opened.client,input,()=>isCurrent(token)&&session.current===opened);
-        if(result.kind==='confirmation'){opened.dispose();session.current=null;setAccessMode('login');window.history?.replaceState(null, '', '/auth');setAuthFeedback(result.message);return;}
+        if(result.kind==='confirmation'){opened.dispose();session.current=null;setSignupSent(true);setAccessMode('login');window.history?.replaceState(null, '', '/auth');setAuthFeedback(result.message);return;}
         const id=result.userId;
         if((pending&&pending.intent.userId!==id)||(binding&&binding.userId!==id)||(resolution&&resolution.journal.userId!==id))throw new Error('Entre na mesma conta usada nesta tentativa para conferir seu recibo.');
         const {rememberAuthenticatedAccountAccess}=await import('@/lib/backup/account-live-access');
         await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:savedAccess(keep)});
         if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
         identity.current=id;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setUserId(id);setPassword('');setConfirmation('');
-        setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
+        setAuthFeedback(signedInNotice(input.email));
       }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
     },true);
   }
   /** Social sign-in leaves for the provider; only the explicit return below creates an access. */
   function startOAuth(provider:AccountOAuthProvider){
     if(!ACCOUNT_ACCESS_RELEASED||!ready||userId)return;
+    setAuthSource('google');
     void run(async token=>{
       clearAccess();
       const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
@@ -275,12 +282,13 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:savedAccess(keep)});
       if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
       identity.current=id;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(result.email??'');setUserId(id);setPassword('');setConfirmation('');
-      setAuthFeedback('Conta conectada nesta aba. Você já pode voltar ao app; a sincronização continua pausada até escolher qual jornada usar.');
+      setAuthFeedback(signedInNotice(result.email));
     }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
   }
   function resend() {
     if(!ACCOUNT_ACCESS_RELEASED||!ready||userId||!validAccountEmail(email))return;
     const address=email;
+    setAuthSource('email');
     void run(async token=>{
       clearAccess();
       const {createAccountReviewSession}=await import('@/lib/backup/account-session');if(!isCurrent(token))return;
@@ -426,22 +434,36 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const localJourney = summarizeLocalJourney(baseline?.snapshot);
   const localXPLabel = localJourney.xp.toLocaleString('pt-BR',{maximumFractionDigits:3});
   const activeXPLabel = localJourney.activeXp.toLocaleString('pt-BR',{maximumFractionDigits:3});
+  const showResend=signupSent||authCode==='email_not_confirmed';
+  const authErrorBlock=authError?<div id="entry-auth-error" role="alert" className="restore-workspace-error"><p>{authError}</p>{authCode&&<p className="account-error-code">Código para suporte: {authCode}</p>}</div>:null;
   return <div className="entry-shell">
     <a className="entry-skip" href="#account-workspace-title">Ir para o acesso da conta</a>
-    <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/santuario"><ArrowLeft size={16} aria-hidden="true" />Voltar ao app</a></div>
+    <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/santuario" hidden={!userId}><ArrowLeft size={16} aria-hidden="true" />Voltar ao app</a></div>
     <div className="entry-layout">
     <EntryArtwork />
     <main className="restore-workspace account-workspace entry-main" aria-labelledby="account-workspace-title">
     {(pending || resolution) && <a className="restore-workspace-back entry-context" href="/?progresso=conta" onClick={event=>{event.preventDefault();window.location.reload();}}><ArrowLeft size={18} aria-hidden="true" />Recarregar conferência</a>}
     <header><h1 id="account-workspace-title" ref={heading} tabIndex={-1}>{userId ? 'Minha conta' : accessMode === 'signup' ? 'Comece sua jornada' : 'Sua jornada continua'}</h1></header>
-    <p>{userId ? 'Escolha como continuar com suas atividades, conquistas e XP.' : accessMode === 'signup' ? 'Crie seu acesso para guardar atividades, conquistas e XP em uma conta pessoal.' : 'Entre para reencontrar suas atividades, conquistas e XP.'}</p>
+    <p>{userId ? 'Escolha como continuar com suas atividades, conquistas e XP.' : accessMode === 'signup' ? 'Crie sua conta para ver seu progresso em qualquer aparelho.' : 'Entre para ver seu progresso em qualquer aparelho.'}</p>
     {!ACCOUNT_ACCESS_RELEASED&&<p className="account-workspace-release" role="status">O acesso à conta ainda não está liberado nesta versão.</p>}
     {!ACCOUNT_TRANSFER_WRITES_RELEASED&&<section aria-labelledby="account-mobile"><h2 id="account-mobile">Seu progresso no celular</h2><p>Você já pode importar sua cópia completa neste aparelho, incluindo atividades, histórico e XP. Cadastro e acesso à conta são separados: envio e sincronização ainda não liberados.</p><a className="restore-workspace-back" href="/?progresso=restaurar">Importar minha cópia neste aparelho</a><p>Para validar sua conta, crie o acesso abaixo, confirme o e-mail e entre novamente. Entrar não envia nem substitui sua jornada.</p></section>}
-    <section className="entry-access-card" aria-labelledby="account-access">
-      <h2 id="account-access">{userId ? 'Acesso confirmado' : 'Acesso à conta'}</h2>
-      <div className="account-access-modes" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={accessMode==='login'} disabled={!ready||busy||!!userId} onClick={()=>changeAccess('login')}>Já tenho conta</button><button type="button" aria-pressed={accessMode==='signup'} disabled={!ready||busy||!!userId} onClick={()=>changeAccess('signup')}>Criar conta</button></div>
-      <div hidden={!!userId}><form aria-busy={busy} onSubmit={event=>{event.preventDefault();authenticate(accessMode);}}>
-        <label htmlFor="entry-email">E-mail<input id="entry-email" enterKeyHint="next" type="email" name="account-email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" required value={email} aria-describedby={authError ? 'entry-auth-error' : undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onChange={event=>setEmail(event.target.value)}/></label>
+    <section className="entry-access-card ds-pane" aria-labelledby={userId ? 'account-access' : undefined} aria-label={userId ? undefined : 'Acesso à conta'}>
+      {userId&&<h2 id="account-access">Acesso confirmado</h2>}
+      {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}
+      <div className="account-entry" hidden={!!userId}>
+        <div className="account-oauth" role="group" aria-label="Entrar com Google">
+          <button type="button" className="restore-workspace-secondary account-oauth-button" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('google')}><GoogleIcon/>{ACCOUNT_OAUTH_LABELS.google}</button>
+        </div>
+        {authSource!=='email'&&authErrorBlock}
+        <div className="account-keep">
+          <label className="restore-workspace-consent account-keep-connected"><input type="checkbox" name="keep-connected" checked={keepConnected} disabled={!ready||busy||!!userId} onChange={event=>setKeepConnected(event.target.checked)}/>Manter conectado neste aparelho</label>
+          <small className="account-keep-connected-note">Desmarque se o aparelho não for seu.</small>
+        </div>
+        <p className="account-oauth-divider"><span>ou</span></p>
+        <button type="button" className="restore-workspace-secondary account-email-toggle" aria-expanded={emailOpen} aria-controls="account-email-panel" disabled={busy||!!userId} onClick={toggleEmail}>Entrar com e-mail</button>
+        <div id="account-email-panel" className="account-reveal" data-open={emailOpen}><div className="account-reveal-inner"><div>
+          <form aria-busy={busy} onSubmit={event=>{event.preventDefault();authenticate(accessMode);}}>
+        <label htmlFor="entry-email">E-mail<input id="entry-email" ref={emailField} enterKeyHint="next" type="email" name="account-email" inputMode="email" autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="voce@exemplo.com" required value={email} aria-describedby={authError ? 'entry-auth-error' : undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onChange={event=>setEmail(event.target.value)}/></label>
         <div><label htmlFor="entry-password">Senha</label><div className="entry-password"><input id="entry-password" enterKeyHint={accessMode==='signup'?'next':'go'} autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showPassword ? 'text' : 'password'} name="account-password" autoComplete={accessMode==='signup'?'new-password':'current-password'} required minLength={accessMode==='signup'?8:undefined} value={password} aria-describedby={accessMode==='signup'?'entry-password-help':undefined} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onChange={event=>setPassword(event.target.value)}/><button type="button" aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'} disabled={busy} onClick={()=>setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
         {accessMode==='signup'&&<>
           <div><label htmlFor="entry-confirmation">Confirme a senha</label><div className="entry-password"><input id="entry-confirmation" enterKeyHint="done" autoCapitalize="none" autoCorrect="off" spellCheck={false} type={showConfirmation ? 'text' : 'password'} name="account-password-confirmation" autoComplete="new-password" required minLength={8} value={confirmation} disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy} onChange={event=>setConfirmation(event.target.value)}/><button type="button" aria-label={showConfirmation ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'} disabled={busy} onClick={()=>setShowConfirmation(!showConfirmation)}>{showConfirmation ? <EyeOff size={20} aria-hidden="true" /> : <Eye size={20} aria-hidden="true" />}</button></div></div>
@@ -450,18 +472,14 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         {accessMode==='login'&&<a className="restore-workspace-back entry-recovery-link" href="/?progresso=recuperar">Esqueci minha senha</a>}
         <button type="submit" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountAccess(accessMode,email,password,confirmation)}>{busy&&<LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />}{!ready ? 'Preparando acesso…' : busy ? 'Aguarde…' : accessMode==='signup'?'Criar minha conta':'Entrar'}</button>
       </form>
-      <div className="account-oauth" role="group" aria-label="Entrar com outro serviço">
-        <p className="account-oauth-divider"><span>ou</span></p>
-        <button type="button" className="restore-workspace-secondary account-oauth-button" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId} onClick={()=>startOAuth('google')}><GoogleIcon/>{ACCOUNT_OAUTH_LABELS.google}</button>
+          {showResend&&<div className="account-resend"><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Confira também a caixa de spam.</small></div>}
+          {authSource==='email'&&authErrorBlock}
+        </div></div></div>
+        {accessMode==='login'?<p className="account-switch">Não tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('signup')}>Criar conta com e-mail</button></p>:<p className="account-switch">Já tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('login')}>Entrar</button></p>}
       </div>
-      <label className="restore-workspace-consent account-keep-connected"><input type="checkbox" name="keep-connected" checked={keepConnected} disabled={!ready||busy||!!userId} onChange={event=>setKeepConnected(event.target.checked)}/>Manter conectado neste aparelho</label>
-      <small className="account-keep-connected-note">Use só em aparelhos seus. Você pode sair a qualquer momento.</small>
-      <details className="entry-confirmation"><summary>Não recebeu o e-mail de confirmação?</summary><button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_ACCESS_RELEASED||!ready||busy||!!userId||!validAccountEmail(email)} onClick={resend}>Reenviar confirmação de e-mail</button><small>Preencha seu e-mail acima e confira também a caixa de spam.</small></details></div>
       {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
-      {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}{authError&&<p id="entry-auth-error" role="alert" className="restore-workspace-error">{authError}{authCode&&<small className="entry-auth-code" style={{display:'block',opacity:.7,fontSize:'.75em',marginTop:4}}>código: {authCode}</small>}</p>}
     </section>
-    {!userId && <p className="entry-local-note"><ShieldCheck size={18} aria-hidden="true" /><span>{baseline?.snapshot ? 'O progresso deste aparelho continua protegido. Depois de entrar, use o botão principal para salvá-lo na conta.' : 'Entre para receber sua jornada salva ou começar uma nova conta sincronizada.'}</span></p>}
-    {ready&&!blocked&&baseline?.snapshot&&<section className="account-journey" aria-labelledby="account-health-title">
+    {ready&&!blocked&&baseline?.snapshot&&<section className="account-journey" aria-labelledby="account-health-title" hidden={!userId}>
       <div className="account-journey-heading"><ShieldCheck size={28} aria-hidden="true" /><h2 id="account-health-title">Dados deste aparelho conferidos</h2></div>
       <p>XP, atividades, vínculos, histórico e Treinos passaram pela verificação estrutural. Nenhum problema que impeça a sincronização foi encontrado.</p>
       <small>Essa conferência valida a integridade do arquivo deste aparelho; ao conectar, o app ainda confere separadamente o estado salvo na conta.</small>
@@ -494,7 +512,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         {localJourney.empty&&<div className="account-journey-online"><h3>Jornada local sem atividade registrada</h3><p>Este arquivo possui estrutura válida, mas não contém atividades, histórico, XP ou Treinos. Se você esperava progresso neste aparelho, não envie esta versão: escolha os dados já salvos na conta ou volte ao aparelho e ao endereço onde os dados foram criados.</p><label className="restore-workspace-consent"><input type="checkbox" checked={emptyJourneyConsent} disabled={busy} onChange={event=>setEmptyJourneyConsent(event.target.checked)}/>Conferi os totais e quero usar esta jornada vazia somente se a conta também estiver vazia.</label></div>}
       </>}
       {userId && <>
-        <p id="account-connect-consent">Feche outras abas do app. Ao conectar, você autoriza salvar todos os perfis deste aparelho e suas próximas alterações nesta conta. O acesso pode ser retomado nesta aba por até 12 horas. Sua senha não é guardada.</p>
+        <p id="account-connect-consent">Feche as outras abas do app. Ao tocar, o progresso deste aparelho e o que você fizer depois ficam salvos na sua conta.</p>
         <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked || !onStart} aria-describedby="account-connect-consent" onClick={() => connectJourney()}><CloudUpload size={20} aria-hidden="true" />{binding ? 'Continuar sincronização' : 'Sincronizar este aparelho'}</button>
         <button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked} onClick={compareVersions}><CloudDownload size={20} aria-hidden="true" />Usar dados já salvos na conta</button>
         {legacyAccount&&<div className="account-journey-online">
@@ -504,7 +522,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
             <p>Os saldos não serão somados nem mesclados. O XP e o histórico ativos serão exatamente os desta jornada local.</p>
             <label className="restore-workspace-consent"><input type="checkbox" checked={legacyConsent} disabled={busy} onChange={event=>setLegacyConsent(event.target.checked)}/>Quero preservar os registros anteriores e usar os dados deste aparelho como minha jornada atual.</label>
             <button type="button" disabled={busy||!legacyConsent||(localJourney.empty&&!emptyJourneyConsent)} onClick={()=>connectJourney(false,true)}>Preservar registros e sincronizar</button>
-          </>:<p>Este aparelho está vazio e não pode substituir os registros anteriores. Fábio deve abrir a conta no aparelho onde estão os dados dele ou importar primeiro uma cópia completa e conferida.</p>}
+          </>:<p>Este aparelho ainda não tem progresso. Abra o app no aparelho onde você usava e salve o progresso na conta.</p>}
         </div>}
         {versions && <div className="account-journey-online"><h3>Jornada salva na conta</h3><p>{versions.remoteSummary.tasks} rituais · {versions.remoteSummary.habits} ciclos · {versions.remoteSummary.sessions} sessões de treino</p><p id="account-receive-consent">Ao usar esta jornada, o progresso deste aparelho será substituído pela versão da conta. O XP será o dessa versão, sem somar novamente.</p><button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked || !onStart} aria-describedby="account-receive-consent" onClick={() => connectJourney(true)}>Usar a jornada salva na conta</button></div>}
       </>}
@@ -566,6 +584,6 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     </details>
     <p role="status" aria-live="polite">{busy?'Conferindo. Aguarde antes de fechar esta página.':message}</p>{error&&<p role="alert" className="restore-workspace-error">{error}</p>}
   </main></div>
-    <footer className="entry-footer">Você escolhe quando conectar seu progresso.</footer>
+    <footer className="entry-footer"><a href="/privacidade.html">Privacidade</a></footer>
   </div>;
 }

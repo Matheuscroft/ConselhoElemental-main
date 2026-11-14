@@ -71,7 +71,7 @@ async function prepared(f){await flush();f.render();f.file();await flush();f.ren
 async function signed(f){f.submit();await flush();assert.ok(f.sessions.length);f.sessions.at(-1).resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();}
 
 test('distributed release cannot construct Auth or send even if disabled handlers are invoked directly; local copy tools remain usable',async()=>{
- const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
+ const f=fixture({released:false});await prepared(f);f.submit();f.click('Criar conta com e-mail');f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');await flush();f.render();assert.equal(f.constructions,0);assert.equal(f.requests.length,0);assert.match(f.content(),/ainda não liberados/);
  f.click('Baixar cópia antes do envio');await flush();f.render();assert.equal(f.downloads,1);assert.equal(f.constructions,0);f.unmount();
  // Closed-release behavior is injected above, independently of the published beta.
 
@@ -139,22 +139,35 @@ test('an unbound device authenticates without adopting data and hands only an ex
 });
 
 test('signup needs matching confirmation and discards an autoconfirm session without sending local progress',async()=>{
- const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
+ const f=fixture();await flush();f.render();const before=[...f.memory.entries()];f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','different password',1);f.submit();await flush();assert.equal(f.constructions,0);assert.match(f.content(),/não coincidem/);
  f.fill('password','synthetic password',1);f.submit();f.submit();await flush();assert.equal(f.constructions,1);assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');assert.equal(f.sessions[0].args.options.emailRedirectTo,'https://conselho-elemental-main.vercel.app/?progresso=conta');
  f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.match(f.content(),/Se este e-mail precisar/);assert.doesNotMatch(f.content(),/Conta validada nesta conferência/);assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);assert.deepEqual([...f.memory.entries()],before);assert.equal(f.disposals,1);assert.equal(f.nodes().filter(n=>n.type==='input'&&n.props.type==='password').length,1);f.unmount();
 });
 
-test('resending confirmation is explicit, needs no password and cannot be duplicated while pending',async()=>{
- const f=fixture();await flush();f.render();f.fill('email','synthetic@example.invalid');f.click('Reenviar confirmação de e-mail');f.click('Reenviar confirmação de e-mail');await flush();assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'resend');assert.equal(f.sessions[0].args.type,'signup');assert.equal('password' in f.sessions[0].args,false);
- f.sessions[0].resolve({data:{},error:null});await flush();f.render();assert.match(f.content(),/Se houver confirmação pendente/);assert.equal(f.requests.length,0);assert.equal(f.disposals,1);f.unmount();
+test('resending confirmation only appears after the signup notice, needs no password and cannot be duplicated while pending',async()=>{
+ const f=fixture();await flush();f.render();f.fill('email','synthetic@example.invalid');assert.equal(f.nodes().some(n=>n.type==='button'&&text(n.props.children)==='Reenviar confirmação de e-mail'),false);assert.doesNotMatch(f.content(),/Não recebeu o e-mail de confirmação/);
+ f.click('Criar conta com e-mail');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.sessions[0].resolve({data:{session:null,user:{id:uid}},error:null});await flush();f.render();
+ f.click('Reenviar confirmação de e-mail');f.click('Reenviar confirmação de e-mail');await flush();assert.equal(f.sessions.length,2);assert.equal(f.sessions[1].kind,'resend');assert.equal(f.sessions[1].args.type,'signup');assert.equal('password' in f.sessions[1].args,false);
+ f.sessions[1].resolve({data:{},error:null});await flush();f.render();assert.match(f.content(),/Se houver confirmação pendente/);assert.equal(f.requests.length,0);assert.equal(f.disposals,2);f.unmount();
+});
+
+test('the entry shows Google first, the e-mail form opens on demand, and no name or tab promise leaks',async()=>{
+ const f=fixture();await flush();f.render();const c=f.content();
+ assert.ok(c.indexOf('Continuar com Google')<c.indexOf('Manter conectado neste aparelho')&&c.indexOf('Manter conectado neste aparelho')<c.indexOf('Entrar com e-mail'));
+ assert.match(c,/Não tem conta\? Criar conta com e-mail/);assert.doesNotMatch(c,/Acesso à conta|Já tenho conta|Fábio|nesta aba/);
+ const panel=()=>f.nodes().find(n=>n.props?.id==='account-email-panel');assert.equal(panel().props['data-open'],false);
+ f.click('Entrar com e-mail');assert.equal(panel().props['data-open'],true);
+ assert.ok(f.nodes().some(n=>n.type==='a'&&n.props.href==='/privacidade.html'));
+ assert.equal(f.nodes().find(n=>n.type==='a'&&n.props.href==='/santuario'&&String(n.props.className).includes('entry-top-link')).props.hidden,true);
+ f.unmount();
 });
 
 test('mode switches clear typed credentials and changing a verified access preserves pending data but removes authority to send',async()=>{
- const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Já tenho conta');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);const before=[...f.memory.entries()];f.click('Sair desta conta');assert.doesNotMatch(f.content(),/Conta confirmada/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture({pending:true,bound:true});await flush();f.render();f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.click('Criar conta com e-mail');assert.equal(f.nodes().find(n=>n.type==='input'&&n.props.type==='password').props.value,'');f.click('Entrar');f.fill('password','synthetic password');await signed(f);assert.match(f.content(),/Conta confirmada/);const before=[...f.memory.entries()];f.click('Sair desta conta');assert.doesNotMatch(f.content(),/Conta confirmada/);assert.deepEqual([...f.memory.entries()],before);f.click('Conferir recibo sem reenviar');assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('late signup response after local context changes never restores access or shows a success result',async()=>{
- const f=fixture();await flush();f.render();f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
+ const f=fixture();await flush();f.render();f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();f.emit('conselho-elemental-storage');f.sessions[0].resolve({data:{session:{},user:{id:uid}},error:null});await flush();f.render();assert.doesNotMatch(f.content(),/Se este e-mail precisar|Conta validada nesta conferência/);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('confirmation return is only an informational notice and never constructs Auth or grants transfer authority',async()=>{
@@ -179,7 +192,7 @@ test('a failed choice mounts recovery controls, never resends on receipt check, 
 
 test('keeping the access is a single login choice, on by default; the later handoff no longer asks again',async()=>{
  const f=fixture({bound:true,handoff:true});await prepared(f);
- assert.match(f.content(),/Manter conectado neste aparelho/);assert.match(f.content(),/Use só em aparelhos seus\. Você pode sair a qualquer momento\./);
+ assert.match(f.content(),/Manter conectado neste aparelho/);assert.match(f.content(),/Desmarque se o aparelho não for seu\./);
  const keep=()=>f.nodes().find(n=>n.type==='input'&&n.props.name==='keep-connected');assert.equal(keep().props.checked,true);
  assert.doesNotMatch(f.content(),/Retomar o acesso após recarregar|até 12 horas/);
  await signed(f);f.toggle(0);f.toggle(1);f.toggle(2);f.click('Sincronizar enquanto uso o app');await flush();assert.equal(f.handoffs.length,1);assert.equal(f.handoffs[0].remember,true);f.unmount();f.handoffs[0].dispose();
@@ -235,7 +248,7 @@ test('new account start stays closed in product and storage changes revoke its c
 
 test('access-only release permits signup and verified login without progress RPCs, writes, handoff or loss of XP projections',async()=>{
  const f=fixture({released:false,accessReleased:true,handoff:true});await flush();f.render();const before=[...f.memory.entries()];
- f.click('Criar conta');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
+ f.click('Criar conta com e-mail');f.fill('email','synthetic@example.invalid');f.fill('password','synthetic password');f.fill('password','synthetic password',1);f.submit();await flush();
  assert.equal(f.sessions.length,1);assert.equal(f.sessions[0].kind,'signup');f.sessions[0].resolve({data:{session:null,user:{id:uid}},error:null});await flush();f.render();
  assert.equal(f.disposals,1);assert.equal(f.requests.length,0);assert.deepEqual([...f.memory.entries()],before);
  f.fill('password','synthetic password');await signed(f);f.toggle(0);f.toggle(1);f.click('Enviar cópia conferida');f.click('Quero receber progresso de uma conta');await flush();f.render();
@@ -267,7 +280,7 @@ test('password visibility is explicit, keeps credentials only in the form, and m
  let input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');
  f.nodes().find(n=>n.type==='button'&&n.props['aria-label']==='Mostrar senha').props.onClick();f.render();
  input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'text');assert.equal(input.props.value,'synthetic private value');assert.equal(f.constructions,0);
- f.click('Criar conta');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
+ f.click('Criar conta com e-mail');input=f.nodes().find(n=>n.type==='input'&&n.props.name==='account-password');assert.equal(input.props.type,'password');assert.equal(input.props.value,'');assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('connection summary includes every local profile while identifying an empty active profile',async()=>{
@@ -299,7 +312,7 @@ test('the Google button sits under the e-mail form and goes straight to the prov
  assert.deepEqual(f.navigations,['https://synthetic.invalid/auth/v1/authorize?provider=google']);assert.equal(f.requests.length,0);f.unmount();
  const g=fixture();await flush();g.render();g.click('Continuar com Google');await flush();
  g.sessions.at(-1).resolve({data:{url:null},error:{code:'provider_disabled',status:400,message:'Unsupported provider: secret'}});await flush();g.render();
- assert.match(g.content(),/ainda não está disponível/);assert.match(g.content(),/código: provider_disabled/);assert.doesNotMatch(g.content(),/secret/);assert.deepEqual(g.navigations,[]);g.unmount();
+ assert.match(g.content(),/ainda não está disponível/);assert.match(g.content(),/Código para suporte: provider_disabled/);assert.doesNotMatch(g.content(),/secret/);assert.deepEqual(g.navigations,[]);g.unmount();
 });
 
 test('closed release keeps social buttons inert and builds no client',async()=>{
@@ -311,7 +324,7 @@ test('provider failure return shows a safe message with a discreet code and buil
  globalThis.sessionStorage={getItem:()=>String(Date.now()),setItem(){},removeItem(){}};
  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&error=access_denied&error_code=access_denied&error_description=secret',()=>{});}finally{delete globalThis.sessionStorage;}
  const f=fixture({notice:'oauth'});await until(()=>{f.render();return /cancelado ou negado/.test(f.content());});
- assert.match(f.content(),/cancelado ou negado/);assert.match(f.content(),/código: access_denied/);assert.doesNotMatch(f.content(),/secret/);assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
+ assert.match(f.content(),/cancelado ou negado/);assert.match(f.content(),/Código para suporte: access_denied/);assert.doesNotMatch(f.content(),/secret/);assert.equal(f.constructions,0);assert.equal(f.requests.length,0);f.unmount();
 });
 
 test('provider code return becomes the same authenticated access as an e-mail login, without adoption, transfer or sync',async()=>{
@@ -319,8 +332,8 @@ test('provider code return becomes the same authenticated access as an e-mail lo
  try{returnModule.captureAccountReturn('https://fixture.test/?progresso=conta&code=synthetic-code-0001',()=>{});}finally{delete globalThis.sessionStorage;}
  const f=fixture({notice:'oauth'});await until(()=>f.sessions.some(s=>s.kind==='exchange'));
  const exchange=f.sessions.find(s=>s.kind==='exchange');assert.ok(exchange);assert.equal(exchange.args,'synthetic-code-0001');
- exchange.resolve({data:{session:{user:{id:uid}}},error:null});await until(()=>{f.render();return /Conta conectada nesta aba/.test(f.content());});
- assert.match(f.content(),/Conta conectada nesta aba/);assert.match(f.content(),/Continuar no app/);
+ exchange.resolve({data:{session:{user:{id:uid}}},error:null});await until(()=>{f.render();return /Você entrou na sua conta/.test(f.content());});
+ assert.match(f.content(),/Você entrou na sua conta\./);assert.match(f.content(),/Continuar no app/);
  assert.equal(f.requests.length,0);assert.deepEqual(f.navigations,[]);assert.ok([...f.memory.keys()].every(k=>!/(code|token|password)/i.test(k)));
  f.unmount();
 });
