@@ -1,0 +1,73 @@
+/* Rosa dos Quatro: bússola de conjuração. Só transform e opacity animam. */
+.rosa { position: relative; flex: 0 0 auto; width: 120px; height: 120px; }
+.rosa[data-compacta="true"] { width: 72px; height: 72px; }
+.rosa-corpo { position: relative; width: 120px; height: 120px; transform-origin: 0 0; transition: transform var(--ds-duration-settle) var(--ds-ease); }
+.rosa[data-compacta="true"] .rosa-corpo { transform: scale(.6); }
+.rosa-svg { position: relative; display: block; overflow: visible; }
+
+/* Quatro camadas radiais empilhadas atrás; só a opacidade troca com o ativo. */
+.rosa-auras { position: absolute; inset: -24px; pointer-events: none; }
+.rosa-aura {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 34%, transparent) 0%, transparent 66%);
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.rosa-aura[data-ligada="true"] { opacity: 1; }
+
+.rosa-anel { stroke: rgb(var(--el-muted) / .45); }
+
+.rosa-triangulo { transition: opacity var(--ds-duration-reveal) var(--ds-ease-exit); }
+.rosa-triangulo polygon { fill: none; stroke: var(--elem-acento); transition: fill var(--ds-duration-feedback) var(--ds-ease); }
+.rosa-triangulo line { stroke: var(--elem-acento); }
+.rosa-triangulo[data-ativo="true"] polygon { fill: color-mix(in srgb, var(--elem-acento) 32%, transparent); }
+.rosa-triangulo[data-apagado="true"] { opacity: .25; }
+
+.rosa-entrada {
+  transform-box: fill-box; transform-origin: center;
+  animation: rosa-acender var(--ds-duration-reveal) var(--ds-ease-conjure) calc(var(--i) * var(--ds-stagger)) both;
+}
+@keyframes rosa-acender { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: scale(1); } }
+
+/* A ultrapassagem do ease de conjuração é a agulha assentando. */
+.rosa-agulha {
+  fill: rgb(var(--el-gold));
+  transform-origin: 60px 60px;
+  transform: rotate(var(--rosa-angulo, 0deg));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.rosa-nucleo {
+  fill: rgb(var(--el-gold));
+  transform-box: fill-box; transform-origin: center;
+  animation: rosa-pulso var(--ds-duration-settle) var(--ds-ease-conjure) both;
+}
+@keyframes rosa-pulso { 0% { transform: scale(1); } 40% { transform: scale(1.45); } 100% { transform: scale(1); } }
+
+/* Botões invisíveis de 44x44 sobre o centro de cada triângulo. */
+.rosa-botoes { position: absolute; inset: 0; }
+.rosa-botao {
+  position: absolute; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: 50%;
+  background: transparent; color: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.rosa-botao[data-element="fogo"] { left: 38px; top: 5px; }
+.rosa-botao[data-element="ar"] { left: 71px; top: 38px; }
+.rosa-botao[data-element="agua"] { left: 38px; top: 71px; }
+.rosa-botao[data-element="terra"] { left: 5px; top: 38px; }
+.rosa-botao:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 0; }
+
+/* Movimento reduzido: tudo aparece de uma vez e a agulha já está no lugar. */
+@media (prefers-reduced-motion: reduce) {
+  .rosa-corpo { transition: none; }
+  .rosa-aura { transition: none; }
+  .rosa-triangulo { transition: none; }
+  .rosa-triangulo polygon { transition: none; }
+  .rosa-entrada { animation: none; }
+  .rosa-agulha { transition: none; }
+  .rosa-nucleo { animation: none; }
+}
+.rosa[data-reduzido="true"] .rosa-corpo,
+.rosa[data-reduzido="true"] .rosa-aura,
+.rosa[data-reduzido="true"] .rosa-triangulo,
+.rosa[data-reduzido="true"] .rosa-triangulo polygon,
+.rosa[data-reduzido="true"] .rosa-agulha { transition: none; }
+.rosa[data-reduzido="true"] .rosa-entrada,
+.rosa[data-reduzido="true"] .rosa-nucleo { animation: none; }

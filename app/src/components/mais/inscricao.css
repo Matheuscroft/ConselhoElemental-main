@@ -1,0 +1,114 @@
+/*
+ * Inscricoes da folha "Todas as páginas" (frente H3). Linha de rota, cabecalho
+ * de elemento, subportais do Temporal. Sem @layer; estados por atributo.
+ * Movimento: transform e opacity, exceto o recuo, que colapsa a grade
+ * (1fr para 0fr). Tudo pelos tokens --ds-duration-* e --ds-ease-*.
+ * Depende de elemental-blocos.css (ds-linha, --elem-*, --ds-nucleo).
+ */
+
+/* ---------- Inscricao: cabecalho ---------- */
+.ins { min-width: 0; }
+.ins + .ins { margin-top: var(--ds-ritmo-secao); }
+.ins-cabeca { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; column-gap: 12px; align-items: center; padding-inline: 16px 0; margin-bottom: 4px; min-width: 0; }
+.ins-emblema { grid-column: 1; grid-row: 1 / span 2; width: 20px; height: 20px; color: var(--elem-acento); transition: opacity var(--ds-duration-reveal) var(--ds-ease); }
+.ins-verbo { grid-column: 2; grid-row: 1; margin: 0; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.3; color: rgb(var(--el-text)); }
+.ins-linha-texto { grid-column: 2; grid-row: 2; margin: 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
+.ins-contagem { grid-column: 3; grid-row: 1 / span 2; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ins[data-vazia] .ins-emblema { opacity: .3; }
+.ins-nenhuma { margin: 0; padding: 12px 16px; font-size: var(--ds-text-small); line-height: 1.4; color: rgb(var(--el-muted)); }
+.ins-lista { margin: 0; padding: 0; list-style: none; min-width: 0; }
+.ins-item { min-width: 0; }
+.ins-item[data-inicio] .ins-linha { border-top: 0; }
+
+/* ---------- Recuo e retorno: a linha colapsa pela grade ---------- */
+.ins-rota { display: grid; grid-template-rows: 1fr; min-width: 0; transition: grid-template-rows var(--ds-duration-reveal) var(--ds-ease), opacity var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease); }
+.ins-rota[data-adormecida], .ins-rota[data-latente] { grid-template-rows: 0fr; opacity: 0; transform: translateY(-4px); transition: grid-template-rows var(--ds-duration-reveal) var(--ds-ease-exit), opacity var(--ds-duration-reveal) var(--ds-ease-exit), transform var(--ds-duration-reveal) var(--ds-ease-exit); }
+.ins-corte { position: relative; min-height: 0; min-width: 0; overflow: hidden; }
+
+/* ---------- Linha ---------- */
+.ins-rota > .ins-corte > a.ds-linha.ins-linha { position: relative; margin-inline: 0; padding-inline: 16px 8px; border-radius: var(--ds-raio-controle); text-decoration: none; transition: background-color var(--ds-duration-feedback) var(--ds-ease); }
+.ins-rota > .ins-corte > a.ds-linha.ins-linha:focus-visible { outline-offset: -2px; }
+.ins-item .ins-linha { border-top: 1px solid rgb(var(--el-muted) / .12); }
+.ins-linha > .ins-sigilo { color: var(--elem-acento); }
+.ins-texto { display: grid; gap: 2px; min-width: 0; }
+.ins-nome { font-family: var(--ds-font-body); font-weight: 500; font-size: var(--ds-text-body); line-height: 1.35; color: rgb(var(--el-text)); overflow-wrap: anywhere; }
+.ins-descricao { font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ins-fim { display: inline-flex; align-items: center; gap: 8px; }
+.ins-chevron { width: 16px; height: 16px; color: rgb(var(--el-muted)); transform: rotate(-90deg); }
+.ins-aqui { font-size: var(--ds-text-micro); font-weight: 600; line-height: 1.4; color: rgb(var(--el-gold)); white-space: nowrap; }
+.ins-enter { display: none; padding: 2px 6px; border: 1px solid rgb(var(--el-gold) / .5); border-radius: 12px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-gold)); }
+@media (hover: hover) and (pointer: fine) {
+  .ins-enter { display: inline-block; }
+}
+.ins-rota[data-acesa] > .ins-corte > a.ds-linha.ins-linha { background: color-mix(in srgb, var(--elem-tinta) 55%, transparent); }
+
+/* Triangulo ouro na calha esquerda: pagina atual e primeira resposta. */
+.ins-linha::before { content: none; position: absolute; left: 3px; top: 50%; width: 10px; height: 10px; margin-top: -5px; background: rgb(var(--el-gold)); clip-path: polygon(0 0, 100% 50%, 0 100%); pointer-events: none; }
+.ins-linha[aria-current="page"]::before, .ins-rota[data-primeira] .ins-linha::before { content: ''; }
+
+/* ---------- Assinatura do elemento: base, escondida ---------- */
+.ins-linha::after { content: ''; position: absolute; pointer-events: none; opacity: 0; }
+.ins-rota[data-element="fogo"] .ins-linha::after { inset: 0 0 auto 0; height: 4px; transform-origin: 50% 100%; background: linear-gradient(90deg, transparent, var(--elem-acento), var(--ds-nucleo), var(--elem-acento), transparent) bottom left / 100% 1px no-repeat; }
+.ins-rota[data-element="agua"] .ins-linha::after {
+  inset: auto -12px 0 -12px; height: 6px; background: var(--elem-acento);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 6V3Q6 0 12 3T24 3V6Z' fill='black'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 6V3Q6 0 12 3T24 3V6Z' fill='black'/%3E%3C/svg%3E");
+  -webkit-mask-size: 24px 6px; mask-size: 24px 6px; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x; -webkit-mask-position: left bottom; mask-position: left bottom;
+}
+.ins-rota[data-element="agua"] .ins-corte::after { content: ''; position: absolute; left: var(--x, 50%); top: var(--y, 50%); width: 40px; height: 40px; margin: -20px 0 0 -20px; box-sizing: border-box; border: 1.5px solid var(--elem-acento); border-radius: 50%; pointer-events: none; opacity: 0; }
+.ins-rota[data-element="ar"] .ins-linha::after { inset: 0; transform-origin: 100% 0; background: radial-gradient(circle at 100% 0, transparent 0 26px, var(--elem-acento) 26px 27px, transparent 27px 33px, var(--elem-acento) 33px 34px, transparent 34px) top right / 36px 36px no-repeat; }
+.ins-rota[data-element="ar"] .ins-sigilo path[stroke-width="1"] { transform-box: fill-box; transform-origin: center; }
+.ins-rota[data-element="terra"] .ins-linha::after { left: 16px; right: 16px; bottom: 0; height: 1px; transform-origin: 50% 50%; transform: scaleX(0); background: linear-gradient(90deg, var(--elem-acento), var(--aura-fogo), var(--elem-acento)); }
+
+/* ---------- Assinatura: uma vez, ao toque ou ao acender ---------- */
+.ins-rota[data-element="fogo"][data-tocado] .ins-linha::after, .ins-rota[data-element="fogo"][data-acesa] .ins-linha::after { animation: ds-ins-lanca var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="fogo"][data-tocado] .ins-sigilo { animation: ds-ins-sobe var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="agua"][data-tocado] .ins-linha::after, .ins-rota[data-element="agua"][data-acesa] .ins-linha::after { animation: ds-ins-corre var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="agua"][data-tocado] .ins-corte::after { animation: ds-ins-anel var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="ar"][data-tocado] .ins-linha::after, .ins-rota[data-element="ar"][data-acesa] .ins-linha::after { animation: ds-ins-gira var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.ins-rota[data-element="ar"][data-tocado] .ins-sigilo path[stroke-width="1"], .ins-rota[data-element="ar"][data-acesa] .ins-sigilo path[stroke-width="1"] { animation: ds-ins-ornamento var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.ins-rota[data-element="terra"][data-tocado] .ins-linha::after, .ins-rota[data-element="terra"][data-acesa] .ins-linha::after { animation: ds-ins-veio var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="terra"][data-tocado] .ins-linha { animation: ds-ins-prensa var(--ds-duration-settle) var(--ds-ease) both; }
+.ins-rota[data-element="terra"][data-tocado] .ins-sigilo { animation: ds-ins-assenta var(--ds-duration-settle) var(--ds-ease) both; }
+@keyframes ds-ins-lanca { 0% { opacity: 0; transform: translateY(3px) scaleY(.2); } 35% { opacity: 1; } 100% { opacity: 0; transform: translateY(0) scaleY(1); } }
+@keyframes ds-ins-sobe { 0% { transform: translateY(0); } 40% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+@keyframes ds-ins-corre { 0% { opacity: 0; transform: translateX(-12px); } 35% { opacity: .7; } 100% { opacity: 0; transform: translateX(12px); } }
+@keyframes ds-ins-anel { from { opacity: .5; transform: scale(.2); } to { opacity: 0; transform: scale(1.6); } }
+@keyframes ds-ins-gira { from { opacity: .9; transform: rotate(-90deg); } to { opacity: 0; transform: rotate(0deg); } }
+@keyframes ds-ins-ornamento { from { transform: rotate(-90deg); } to { transform: rotate(0deg); } }
+@keyframes ds-ins-veio { 0% { opacity: .8; transform: scaleX(0); } 60% { opacity: .8; transform: scaleX(1); } 100% { opacity: 0; transform: scaleX(1); } }
+@keyframes ds-ins-prensa { 0% { transform: scale(1); } 30% { transform: scale(.98); } 100% { transform: scale(1); } }
+@keyframes ds-ins-assenta { 0% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
+
+/* ---------- Subportais do Temporal ---------- */
+.ins-subs { display: flex; flex-wrap: wrap; gap: 0 4px; padding: 0 0 4px 56px; min-width: 0; }
+.ins-sub { display: grid; grid-template-columns: 1fr; min-width: 0; transition: grid-template-columns var(--ds-duration-reveal) var(--ds-ease), opacity var(--ds-duration-reveal) var(--ds-ease); }
+.ins-sub[data-adormecida] { grid-template-columns: 0fr; opacity: 0; transition: grid-template-columns var(--ds-duration-reveal) var(--ds-ease-exit), opacity var(--ds-duration-reveal) var(--ds-ease-exit); }
+.ins-sub-corte { min-width: 0; overflow: hidden; }
+.ins-sub-link { display: inline-flex; align-items: center; min-height: 44px; padding-inline: 12px; border-radius: var(--ds-raio-controle); font-size: var(--ds-text-small); font-weight: 500; line-height: 1.2; color: var(--elem-acento); text-decoration: none; }
+.ins-sub-link[aria-current="page"] { color: rgb(var(--el-gold)); }
+.ins-sub[data-acesa] .ins-sub-link { background: color-mix(in srgb, var(--elem-tinta) 55%, transparent); }
+.ins-sub-link:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: -2px; }
+@media (hover: hover) {
+  .ins-rota > .ins-corte > a.ds-linha.ins-linha:hover { background: rgb(var(--el-muted) / .06); }
+  .ins-sub-link:hover { background: rgb(var(--el-muted) / .06); }
+}
+
+/* ---------- Movimento reduzido: o mesmo fim, sem o caminho ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ins-emblema { transition: none; }
+  .ins-rota { transition: none; }
+  .ins-rota[data-adormecida], .ins-rota[data-latente] { transition: none; }
+  .ins-rota > .ins-corte > a.ds-linha.ins-linha { transition: none; }
+  .ins-sub { transition: none; }
+  .ins-sub[data-adormecida] { transition: none; }
+  .ins-rota[data-element="fogo"][data-tocado] .ins-linha::after, .ins-rota[data-element="fogo"][data-acesa] .ins-linha::after { animation: none; }
+  .ins-rota[data-element="fogo"][data-tocado] .ins-sigilo { animation: none; }
+  .ins-rota[data-element="agua"][data-tocado] .ins-linha::after, .ins-rota[data-element="agua"][data-acesa] .ins-linha::after { animation: none; }
+  .ins-rota[data-element="agua"][data-tocado] .ins-corte::after { animation: none; }
+  .ins-rota[data-element="ar"][data-tocado] .ins-linha::after, .ins-rota[data-element="ar"][data-acesa] .ins-linha::after { animation: none; }
+  .ins-rota[data-element="ar"][data-tocado] .ins-sigilo path[stroke-width="1"], .ins-rota[data-element="ar"][data-acesa] .ins-sigilo path[stroke-width="1"] { animation: none; }
+  .ins-rota[data-element="terra"][data-tocado] .ins-linha::after, .ins-rota[data-element="terra"][data-acesa] .ins-linha::after { animation: none; }
+  .ins-rota[data-element="terra"][data-tocado] .ins-linha { animation: none; }
+  .ins-rota[data-element="terra"][data-tocado] .ins-sigilo { animation: none; }
+}

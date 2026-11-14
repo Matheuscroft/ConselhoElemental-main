@@ -1,0 +1,129 @@
+/*
+ * Hub da folha "Todas as páginas" (frente H4): a linha da rosa, a busca, os
+ * atalhos, "Há pouco" e o rodapé. Fundo opaco, sem vidro, sem canvas.
+ * Movimento só por tokens (--ds-duration-*, --ds-ease*, --ds-stagger).
+ * Depende de elemental-blocos.css (ds-campo, ds-grupo, ds-nota, ds-elo, --elem-*)
+ * e de rosa-elemental.css / inscricao.css.
+ */
+.hub { display: flex; flex-direction: column; height: 100%; min-height: 0; min-width: 0; background: rgb(var(--el-surface)); color: rgb(var(--el-text)); }
+
+/* ---------- Alça: o gesto de descer mora aqui e na linha da rosa ---------- */
+.hub-alca { flex: 0 0 20px; display: grid; place-items: center; touch-action: none; cursor: grab; }
+.hub-alca > span { width: 40px; height: 4px; border-radius: 12px; background: rgb(var(--el-muted) / .4); }
+
+/* ---------- Linha da rosa (fixa) ---------- */
+.hub-rosa-linha {
+  flex: 0 0 auto; display: grid; grid-template-columns: 120px minmax(0, 1fr) 44px;
+  grid-template-areas: "rosa titulos fechar"; align-items: center; column-gap: 12px;
+  height: 132px; padding-inline: 16px; min-width: 0; touch-action: none;
+  transition: height var(--ds-duration-settle) var(--ds-ease);
+}
+.hub[data-buscando] .hub-rosa-linha { height: 84px; grid-template-columns: 72px minmax(0, 1fr) 44px; }
+.hub-rosa { grid-area: rosa; align-self: center; min-width: 0; }
+.hub-titulos { grid-area: titulos; display: grid; gap: 6px; min-width: 0; }
+.hub-titulo { margin: 0; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-title); line-height: 1.25; color: rgb(var(--el-text)); }
+.hub-titulo:focus { outline: none; }
+.hub-titulo:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 4px; border-radius: 12px; }
+.hub-leitor { display: grid; grid-template-columns: 16px minmax(0, 1fr); column-gap: 8px; align-items: center; min-width: 0; }
+.hub-leitor-sigilo { grid-column: 1; grid-row: 1; width: 16px; height: 16px; color: var(--elem-acento); }
+.hub-leitor-verbo { grid-column: 2; grid-row: 1; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.3; color: var(--elem-acento); }
+.hub-leitor-linha, .hub-leitor-conta { grid-column: 2; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); overflow-wrap: anywhere; }
+.hub-leitor-conta { font-variant-numeric: tabular-nums; }
+.hub[data-buscando] .hub-leitor-linha { color: rgb(var(--el-text)); }
+
+.hub-fechar {
+  grid-area: fechar; align-self: start; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: none; color: rgb(var(--el-muted)); cursor: pointer;
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.hub-fechar:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: -2px; }
+@media (hover: hover) {
+  .hub-fechar:hover { background: rgb(var(--el-muted) / .1); }
+}
+
+/* ---------- Busca ---------- */
+.hub-busca { flex: 0 0 auto; margin-inline: 16px; }
+.ds-campo.hub-busca input { padding-right: 48px; }
+.ds-campo.hub-busca input::-webkit-search-cancel-button, .ds-campo.hub-busca input::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+.hub-limpar {
+  position: absolute; right: 2px; bottom: 2px; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: none; color: rgb(var(--el-muted)); cursor: pointer;
+}
+.hub-limpar:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: -2px; }
+.hub-status { flex: 0 0 auto; min-height: 20px; margin: 0; padding: 4px 16px 0; max-width: none; }
+
+/* ---------- Corpo rolável ---------- */
+.hub-corpo { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 8px 16px calc(24px + env(safe-area-inset-bottom)); }
+
+/* Entrada: um único momento, sem animar linha por linha. */
+.hub-portal, .hub-inscricoes .ins-cabeca { animation: hub-sobe var(--ds-duration-reveal) var(--ds-ease) calc(var(--i, 0) * var(--ds-stagger)) both; }
+.hub-inscricoes .ins:nth-child(1) .ins-cabeca { --i: 0; }
+.hub-inscricoes .ins:nth-child(2) .ins-cabeca { --i: 1; }
+.hub-inscricoes .ins:nth-child(3) .ins-cabeca { --i: 2; }
+.hub-inscricoes .ins:nth-child(4) .ins-cabeca { --i: 3; }
+@keyframes hub-sobe { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---------- Portais ---------- */
+.hub-portais { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: var(--ds-ritmo-secao); }
+.hub-portal {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: 4px; height: 72px; padding: 6px 4px; min-width: 0;
+  box-sizing: border-box; overflow: hidden; text-decoration: none; text-align: center; color: var(--elem-acento);
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 30%, transparent); border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 120% 140% at 0 0, var(--elem-tinta), transparent 60%), rgb(var(--el-surface));
+}
+.hub-portal:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
+.hub-portal[aria-current="page"] { border-color: rgb(var(--el-gold) / .6); }
+.hub-portal-sigilo { width: 24px; height: 24px; }
+.hub-portal-rotulo { font-size: var(--ds-text-micro); line-height: 1.2; color: rgb(var(--el-text)); overflow-wrap: anywhere; }
+
+/* Assinatura ao toque: só transform; cada elemento move o sigilo a seu modo. */
+.hub-portal[data-tocado] { animation: hub-portal-toque var(--ds-duration-settle) var(--ds-ease) both; }
+.hub-portal[data-element="fogo"][data-tocado] .hub-portal-sigilo { animation: hub-sigilo-sobe var(--ds-duration-settle) var(--ds-ease) both; }
+.hub-portal[data-element="agua"][data-tocado] .hub-portal-sigilo { animation: hub-sigilo-corre var(--ds-duration-settle) var(--ds-ease) both; }
+.hub-portal[data-element="ar"][data-tocado] .hub-portal-sigilo { animation: hub-sigilo-gira var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.hub-portal[data-element="terra"][data-tocado] .hub-portal-sigilo { animation: hub-sigilo-assenta var(--ds-duration-settle) var(--ds-ease) both; }
+@keyframes hub-portal-toque { 0% { transform: scale(1); } 30% { transform: scale(.97); } 100% { transform: scale(1); } }
+@keyframes hub-sigilo-sobe { 0% { transform: translateY(0); } 40% { transform: translateY(-2px); } 100% { transform: translateY(0); } }
+@keyframes hub-sigilo-corre { 0% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
+@keyframes hub-sigilo-gira { from { transform: rotate(-90deg); } to { transform: rotate(0deg); } }
+@keyframes hub-sigilo-assenta { 0% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
+
+/* ---------- Há pouco ---------- */
+.hub-pouco { margin-bottom: var(--ds-ritmo-secao); }
+.hub-rotulo { margin: 0 0 4px; padding-inline: 4px; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
+.hub-pouco ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.hub-pouco-link {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; max-width: 100%; padding-inline: 12px; box-sizing: border-box;
+  border: 1px solid rgb(var(--el-muted) / .18); border-radius: var(--ds-raio-controle);
+  font-size: var(--ds-text-small); line-height: 1.2; color: rgb(var(--el-text)); text-decoration: none;
+}
+.hub-pouco-link > svg { flex: 0 0 18px; width: 18px; height: 18px; color: var(--elem-acento); }
+.hub-pouco-link > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hub-pouco-link:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
+
+/* ---------- Sem resposta ---------- */
+.hub-vazio { margin-bottom: var(--ds-ritmo-secao); overflow-wrap: anywhere; }
+
+/* ---------- Rodapé ---------- */
+.hub-rodape { margin-top: var(--ds-ritmo-secao); }
+.hub-rodape .ds-grupo { margin-top: 0; }
+.hub-dica { display: none; margin-top: 8px; }
+.hub-dica kbd { display: inline-block; padding: 1px 6px; border: 1px solid var(--ds-fio); border-radius: 12px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-text)); }
+@media (hover: hover) and (pointer: fine) {
+  .hub-dica { display: block; }
+}
+
+/* ---------- Movimento reduzido: o mesmo fim, sem o caminho ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .hub-rosa-linha { transition: none; }
+  .hub-fechar { transition: none; }
+  .hub-portal, .hub-inscricoes .ins-cabeca { animation: none; }
+  .hub-portal[data-tocado] { animation: none; }
+  .hub-portal[data-element="fogo"][data-tocado] .hub-portal-sigilo { animation: none; }
+  .hub-portal[data-element="agua"][data-tocado] .hub-portal-sigilo { animation: none; }
+  .hub-portal[data-element="ar"][data-tocado] .hub-portal-sigilo { animation: none; }
+  .hub-portal[data-element="terra"][data-tocado] .hub-portal-sigilo { animation: none; }
+}
+
+/* The hub carries its own close button; hide the sheet component's default one. */
+.all-routes-sheet > button { display: none; }

@@ -100,10 +100,6 @@ input:focus, textarea:focus { box-shadow: 0 0 0 2px rgb(var(--el-gold) / .4); }
   .expanded-element-content button { clear: both; }
 }
 @media (prefers-reduced-motion: reduce) { .expanded-element { transition: none; } }
-.elemental-route-search { display: flex; align-items: center; gap: 10px; padding: 0 14px; border: 1px solid rgb(var(--el-muted) / .25); border-radius: 10px; background: rgb(var(--el-surface)); color: rgb(var(--el-muted)); }
-.elemental-route-search input { min-width: 0; width: 100%; min-height: 48px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); }
-.elemental-route-search:focus-within { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; }
-.elemental-route-search input:focus { box-shadow: none; }
 
 /* Discovery uses stable disclosures and real destinations, with no hover-only actions. */
 .elemental-atlas { display: grid; gap: 14px; margin-bottom: 28px; }
@@ -153,18 +149,3 @@ input:focus, textarea:focus { box-shadow: 0 0 0 2px rgb(var(--el-gold) / .4); }
 .elemental-nav-group[data-revealed="true"] .elemental-reveal-panel { transition: none; }
 
 /* Compact mobile discovery; presentation scoped to the global route sheet. */
-.all-routes-sheet .elemental-nav-group .elemental-nav-trigger { padding:12px; gap:10px; min-height:68px; }
-.all-routes-sheet .elemental-nav-seal { width:36px; height:40px; border-radius:12px; }
-.all-routes-sheet .elemental-nav-seal svg { width:24px; height:24px; }
-.all-routes-sheet .elemental-nav-group-title strong { font-size: var(--ds-text-body); }
-.all-routes-sheet .elemental-nav-group-title small { font-family:Inter,system-ui,sans-serif; font-weight:400; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.all-routes-sheet .elemental-route-search input { font-size: var(--ds-text-body); }
-.all-routes-sheet > button { min-height:44px; min-width:44px; top:8px; right:8px; }
-
-.mobile-quick-actions { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; margin-bottom: 16px; }
-.mobile-quick-actions button { min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border: 1px solid #d5b66f40; border-radius: 14px; color: #d5b66f; background: #d5b66f0b; font-size: var(--ds-text-micro); }
-.mobile-quick-actions button:focus-visible { outline: 2px solid #d5b66f; outline-offset: 3px; }
-.route-page-label { display: grid; gap: 3px; }
-.route-page-label strong { font-weight: 500; }
-.route-page-label small { color: #aeb9c7; font-weight: 400; font-size: var(--ds-text-micro); line-height: 1.45; }
-@media(max-width:767px) { .all-routes-sheet input[type="search"] { font-size: var(--ds-text-body); } }

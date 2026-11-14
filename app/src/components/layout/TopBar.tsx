@@ -99,6 +99,19 @@ export const TopBar: React.FC<TopBarProps> = ({
     return titles[path] || 'Conselho Elemental';
   };
 
+  // Ctrl or Cmd + K opens (and closes) the "Todas as páginas" hub from any screen. It lives here, in one place,
+  // so two sheets never open at once.
+  React.useEffect(() => {
+    const aoTeclar = (evento: KeyboardEvent) => {
+      if ((evento.ctrlKey || evento.metaKey) && !evento.altKey && !evento.shiftKey && evento.key.toLowerCase() === 'k') {
+        evento.preventDefault();
+        setRoutesOpen(aberto => !aberto);
+      }
+    };
+    window.addEventListener('keydown', aoTeclar);
+    return () => window.removeEventListener('keydown', aoTeclar);
+  }, []);
+
   React.useEffect(() => {
     if (!isAccountModalOpen) return;
 
