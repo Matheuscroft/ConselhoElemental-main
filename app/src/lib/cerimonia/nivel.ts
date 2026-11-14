@@ -1,4 +1,5 @@
 import { LevelingCalculatorService } from '../../services/leveling-calculator.ts';
+import { DURATION, STAGGER } from '../motion/motion.ts';
 import type { Premio } from './cerimonia.ts';
 
 /**
@@ -70,3 +71,43 @@ export const adicionarPedido = (fila: readonly PedidoDeNivel[], pedido: PedidoDe
 export const concluirPedido = (fila: readonly PedidoDeNivel[]): PedidoDeNivel[] => fila.slice(1);
 
 export const pedidoAtual = (fila: readonly PedidoDeNivel[]): PedidoDeNivel | null => fila[0] ?? null;
+
+/**
+ * The three scenes of the ceremony, in milliseconds, all derived from the
+ * motion beats. Impact (the panel and the title), the four element cards, then
+ * the number. The CSS counts the same multiples of `--ds-duration-conjure`.
+ */
+export const CENA = {
+  impacto: Math.round(DURATION.conjure * 2.2),
+  cartoes: Math.round(DURATION.conjure * 3),
+  numero: Math.round(DURATION.conjure * 3.6),
+} as const;
+
+/** Where inside scene 2 the first card jumps, and the gap between cards (two stagger steps). */
+export const CARTAO_INICIO = DURATION.settle;
+export const CARTAO_PASSO = STAGGER * 2;
+/** Where inside scene 3 the seal lights up and the number starts to count. */
+export const ACENDE_EM = DURATION.conjure;
+
+export const duracaoDaCerimonia = (): number => CENA.impacto + CENA.cartoes + CENA.numero;
+
+export type ElementoDoCartao = 'fogo' | 'agua' | 'ar' | 'terra';
+export const ELEMENTOS_DOS_CARTOES: readonly ElementoDoCartao[] = ['fogo', 'agua', 'ar', 'terra'];
+
+interface XpPorElemento {
+  readonly xp_fire?: number;
+  readonly xp_water?: number;
+  readonly xp_air?: number;
+  readonly xp_earth?: number;
+}
+
+/** Mastery level of each element, from the same calculator the sanctuary and the HUD read. */
+export function niveisDosElementos(user: XpPorElemento | null | undefined): Record<ElementoDoCartao, number> {
+  const nivelDe = (xp: number | undefined) => LevelingCalculatorService.calculate(xp ?? 0).level;
+  return {
+    fogo: nivelDe(user?.xp_fire),
+    agua: nivelDe(user?.xp_water),
+    ar: nivelDe(user?.xp_air),
+    terra: nivelDe(user?.xp_earth),
+  };
+}
