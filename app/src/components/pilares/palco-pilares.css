@@ -1,0 +1,111 @@
+/*
+ * The four pillars as pills on a linear rail. The focused pill is lit from
+ * inside and the living frame (one canvas) is pinned to the middle of the
+ * stage. The floor reflection is CSS only: no second canvas, no blur.
+ */
+.palco-pilares { --palco-altura: 360px; --palco-largura: 132px; --palco-alto: 220px; --palco-topo: 44px; }
+
+.palco-cena { position: relative; block-size: var(--palco-altura); overflow: hidden; border-radius: 20px; }
+
+/* Four stacked tints; the focused one is opaque, the others cross-fade out. */
+.palco-camadas { position: absolute; inset: 0; pointer-events: none; }
+.palco-camada {
+  position: absolute; inset: 0; opacity: 0;
+  background:
+    radial-gradient(ellipse 52% 28px at 50% calc(var(--palco-topo) + var(--palco-alto) + 12px), color-mix(in srgb, var(--pilar-aura) 22%, transparent), transparent),
+    radial-gradient(ellipse 80% 60% at 50% 40%, color-mix(in srgb, var(--pilar-aura) 14%, transparent), transparent),
+    linear-gradient(to bottom, color-mix(in srgb, var(--pilar-tinta) 70%, transparent), transparent);
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.palco-camada[data-ativo='true'] { opacity: 1; }
+
+.palco-trilho {
+  position: relative; z-index: 1;
+  display: flex; gap: 16px; block-size: 100%;
+  padding-block: var(--palco-topo) 0;
+  padding-inline: calc(50% - 66px);
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.palco-trilho::-webkit-scrollbar { display: none; }
+
+.palco-pilula {
+  appearance: none; font: inherit; cursor: pointer; text-align: center;
+  position: relative; flex: 0 0 var(--palco-largura); box-sizing: border-box;
+  inline-size: var(--palco-largura); block-size: var(--palco-alto);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 16px 12px; border-radius: 999px;
+  scroll-snap-align: center;
+  color: rgb(var(--el-muted)); opacity: .78;
+  background: linear-gradient(to top, var(--pilar-tinta), transparent), var(--ds-surface-raised);
+  border: var(--ds-edge);
+  transform: scale(.86);
+  transition:
+    transform var(--ds-duration-settle) var(--ds-ease),
+    opacity var(--ds-duration-feedback) var(--ds-ease),
+    border-color var(--ds-duration-feedback) var(--ds-ease),
+    box-shadow var(--ds-duration-feedback) var(--ds-ease);
+}
+.palco-pilula[data-foco='true'] {
+  opacity: 1; transform: scale(1); color: rgb(var(--el-text));
+  border-color: color-mix(in srgb, var(--pilar-acento) 60%, transparent);
+  box-shadow: var(--ds-rim), var(--ds-lift), 0 0 36px color-mix(in srgb, var(--pilar-aura) 24%, transparent);
+}
+.palco-pilula:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
+
+/* The lit face fades in over the resting one. */
+.palco-pilula::before, .palco-eco::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; opacity: 0;
+  background: radial-gradient(ellipse at 50% 32%, color-mix(in srgb, var(--pilar-aura) 55%, var(--pilar-tinta)), var(--pilar-tinta));
+  transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.palco-pilula[data-foco='true']::before, .palco-eco[data-foco='true']::before { opacity: 1; }
+.palco-pilula > :not(.palco-eco) { position: relative; z-index: 1; }
+
+.palco-numero { font-size: var(--ds-text-micro); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
+.palco-nome { font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-title); font-weight: 500; line-height: 1.2; }
+.palco-pontos { font-size: var(--ds-text-micro); letter-spacing: .12em; text-transform: uppercase; line-height: 1.4; text-wrap: balance; }
+
+/* Floor echo: the same face, flipped and faded. */
+.palco-eco {
+  position: absolute; inset-inline: 0; inset-block-start: calc(100% + 12px); block-size: 100%;
+  border-radius: 999px; pointer-events: none; opacity: .28; z-index: 0;
+  background: linear-gradient(to top, var(--pilar-tinta), transparent), var(--ds-surface-raised);
+  border: var(--ds-edge); box-sizing: border-box;
+  transform: scaleY(-1);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 55%);
+  mask-image: linear-gradient(to bottom, #000, transparent 55%);
+}
+
+/* The one living canvas, pinned to the middle pill. Scoped; moldura-feitico.css is untouched. */
+.palco-pilares .palco-cena .reel-feitico {
+  inset-block-start: calc(var(--palco-topo) + var(--palco-alto) / 2);
+  inset-inline-start: 50%;
+  inline-size: calc(var(--palco-largura) + var(--moldura-margem) * 2);
+  block-size: calc(var(--palco-alto) + var(--moldura-margem) * 2);
+}
+
+.palco-leitura { margin-block-start: 16px; min-block-size: 232px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; animation: palco-leitura-entra var(--ds-duration-reveal) var(--ds-ease) both; }
+.palco-leitura-nome { font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-title); font-weight: 500; color: var(--pilar-acento); }
+.palco-leitura-texto { font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); }
+.palco-leitura-dados { font-size: var(--ds-text-small); }
+.palco-leitura-dados strong { font-weight: 500; font-variant-numeric: tabular-nums; }
+.palco-leitura-areas { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.palco-explorar {
+  margin-block-start: auto; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-block-size: 44px; padding-inline: 20px; border-radius: 999px;
+  font-size: var(--ds-text-small); color: rgb(var(--el-text));
+  border: 1px solid color-mix(in srgb, var(--pilar-acento) 60%, transparent);
+  background: color-mix(in srgb, var(--pilar-tinta) 60%, transparent);
+}
+.palco-explorar:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
+
+@keyframes palco-leitura-entra { from { opacity: 0; } to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .palco-pilula, .palco-pilula::before, .palco-eco::before, .palco-camada { transition: none; }
+  .palco-leitura { animation: none; }
+}

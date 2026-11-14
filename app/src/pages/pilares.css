@@ -19,7 +19,7 @@
 .pillars-balance-note { margin-top: 16px; max-width: 75ch; line-height: 1.6; }
 .pillars-explore { padding-top: 28px; }
 .pillars-explore > p { color: #aab4c4; margin-top: 6px; font-size: var(--ds-text-micro); }
-.pillars-explore .expanded-elements { margin-top: 18px; }
+.pillars-explore { margin-bottom: 20px; }
 .pillars-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 0; border-block: 1px solid #aab4c424; margin-top: 28px; }
 .pillars-footer strong { display: block; font-weight: 500; font-size: var(--ds-text-small); }
 .pillars-footer small { display: block; color: #aab4c4; margin-top: 6px; font-size: var(--ds-text-micro); }
@@ -29,10 +29,6 @@
   .pillars-manage { margin-top: 12px; }
   .pillars-balance-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
   .pillars-footer { align-items: flex-start; flex-direction: column; gap: 14px; }
-}
-
-@media (min-width: 1101px) {
-  .elemental-pillars .expanded-element[data-open="false"] .expanded-element-trigger { flex-direction: column; padding-inline: 8px; }
 }
 
 /* R22: discovery first on phones, statistics as a secondary disclosure. */

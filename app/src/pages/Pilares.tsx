@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
-import { ExpandedElements } from '@/components/elemental/ExpandedElements';
+import { PalcoPilares, type PilarPalco } from '@/components/pilares/PalcoPilares';
 import { ELEMENT_ORDER } from '@/components/elemental/navigation';
 import { useAppStore } from '@/stores/appStore';
 import { AREAS, ELEMENTS } from '@/constants';
@@ -16,23 +16,24 @@ export const Pilares = () => {
   const areas = [...AREAS, ...customAreas];
   const total = scores.reduce((sum, score) => sum + score.score, 0);
   const activeCount = areas.filter((area) => onboarding.selectedAreas.includes(area.id)).length;
+  const itens: PilarPalco[] = ELEMENT_ORDER.map((id) => {
+    const score = scores.find((entry) => entry.elementId === id);
+    const elementAreas = areas.filter((area) => area.elementId === id);
+    const ativas = elementAreas.filter((area) => onboarding.selectedAreas.includes(area.id)).length;
+    return { id, nome: ELEMENTS[id].name, descricao: ELEMENTS[id].description, pontos: score?.score ?? 0, porcentagem: score?.percentage ?? 0, areas: elementAreas.length, ativas };
+  });
   const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
   return <AppLayout>
     <div className="elemental-pillars">
       <Link className="pillars-back" to="/santuario"><ArrowLeft size={16} />Voltar ao Santuário</Link>
       <header className="pillars-heading">
-        <div><p className="pillars-eyebrow"><ArcaneIcon name="pilares" size={24} />Seus quatro caminhos</p><h1>Pilares Elementais</h1><p>Seus elementos, suas áreas de vida. Abra um caminho para continuar.</p></div>
+        <div><p className="pillars-eyebrow"><ArcaneIcon name="pilares" size={24} />Seus quatro caminhos</p><h1>Pilares Elementais</h1><p>Seus elementos, suas áreas de vida.</p></div>
         <Link className="pillars-manage" to="/dominios">Gerenciar áreas <ArrowRight size={16} /></Link>
       </header>
       <section className="pillars-explore" aria-labelledby="pillars-explore-title">
-        <h3 id="pillars-explore-title">Explore um elemento</h3><p>Abra um cartão para conhecer o elemento e acessar suas áreas.</p>
-        <ExpandedElements elements={ELEMENT_ORDER.map((id) => {
-          const element = ELEMENTS[id];
-          const elementAreas = areas.filter((area) => area.elementId === id);
-          const active = elementAreas.filter((area) => onboarding.selectedAreas.includes(area.id)).length;
-          return { id, name: element.name, description: element.description, scoreLabel: `${elementAreas.length} áreas para explorar · ${active} ativas` };
-        })} />
+        <h3 id="pillars-explore-title" className="sr-only">Explore um elemento</h3>
+        <PalcoPilares itens={itens} />
       </section>
       <details className="pillars-balance"><summary><span>Seu equilíbrio elemental<small>{format(total)} pontos registrados</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div className="pillars-balance-content">
         <div className="pillars-balance-heading"><h3 id="pillars-balance-title">Seu equilíbrio elemental</h3><p>{format(total)} pontos registrados <span aria-hidden="true">·</span> {activeCount} áreas ativas</p></div>
