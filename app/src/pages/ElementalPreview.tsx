@@ -211,10 +211,11 @@ function SanctuaryComposition() {
       <div className="ep-identity">
         <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
         <p className="ep-level-line">Nível {level.level}</p>
+        <p className="ep-level-remaining">faltam {format(Math.max(0, level.xpToNextLevel - (level.xpTotal - level.xpAtLevelStart)))} XP para o nível {level.level + 1}</p>
       </div>
     </section>
     <section className="ep-next ds-pane" aria-labelledby="ep-next-heading">
-      <div className="ep-next-heading"><div><p className="ep-kicker">Da intenção à prática</p><h2 id="ep-next-heading">Seu próximo passo</h2></div><Link className="ep-button ep-primary" to="/invocar"><Plus size={18} />Criar ritual</Link></div>
+      <div className="ep-next-heading"><div><h2 id="ep-next-heading">Seu próximo passo</h2></div><Link className="ep-button ep-primary" to="/invocar"><Plus size={18} />Criar ritual</Link></div>
       <SanctuaryRituals key={currentAccountId ?? "local"} />
     </section>
     <QuestNextSteps />

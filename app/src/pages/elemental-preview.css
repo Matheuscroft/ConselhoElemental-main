@@ -37,6 +37,7 @@
 .ep-identity h1 { font-size: var(--ds-fluid-display); line-height: 1.2; overflow-wrap: anywhere; }
 .ep-level-line { color: var(--ep-muted); font-size: var(--ds-text-small); margin-top: 4px !important; }
 .ep-sanctuary ~ * { position: relative; z-index: 1; }
+.ep-level-remaining { color: var(--ep-muted); font-size: var(--ds-text-small); margin-top: 2px !important; }
 .ep-kicker { color: var(--ep-gold); font-size: var(--ds-text-micro); margin-bottom: 14px !important; }
 .ep-intro { color: var(--ep-muted); max-width: 35ch; font-size: var(--ds-text-body); line-height: 1.7; margin-top: 18px !important; }
 .ep-character-section { min-width: 0; text-align: center; }
