@@ -71,6 +71,7 @@ precision highp float;
 varying vec2 vUv;
 uniform vec2 uSize;
 uniform vec2 uHalf;
+uniform float uRaio;
 uniform float uMargem;
 uniform float uTime;
 uniform float uReveal;
@@ -194,7 +195,7 @@ vec4 bordaViva(vec2 p, float d) {
 
 void main() {
   vec2 p = (vUv - 0.5) * uSize;
-  float d = sdCaixa(p, uHalf, ${RAIO_CARTAO.toFixed(1)});
+  float d = sdCaixa(p, uHalf, uRaio);
   float fora = smoothstep(0.0, 1.5, d);
   float queda = 1.0 - clamp(d / uMargem, 0.0, 1.0);
   float respira = 0.85 + 0.15 * sin(uTime * 1.1);
@@ -274,6 +275,7 @@ void main() {
 const FRAGMENT_PONTOS = `
 precision highp float;
 uniform vec2 uHalf;
+uniform float uRaio;
 uniform vec3 uColour;
 uniform vec4 uPeso;
 varying vec2 vPos;
@@ -284,7 +286,7 @@ ${FUNCAO_CAIXA}
 void main() {
   // Inside the outline is the card's face: the canvas never covers it.
   vec2 pc = vec2(vPos.x, vPos.y);
-  if (sdCaixa(pc, uHalf, ${RAIO_CARTAO.toFixed(1)}) < 1.0) discard;
+  if (sdCaixa(pc, uHalf, uRaio) < 1.0) discard;
   float r = length(gl_PointCoord - 0.5);
   float disco = smoothstep(0.5, 0.05, r);
   float a = disco * vAlpha * (1.0 - 0.45 * vBack);
@@ -311,10 +313,12 @@ export interface MolduraFeiticoProps {
   readonly conquista: number;
   /** One still frame, no loop, no burst; every level becomes level 1. */
   readonly reduzido: boolean;
+  /** Corner radius of the card outline, in px; defaults to RAIO_CARTAO. */
+  readonly raio?: number;
 }
 
 interface Painel {
-  sync: (quem: 'cor' | 'visao' | 'conquista' | 'densidade') => void;
+  sync: (quem: 'cor' | 'visao' | 'conquista' | 'densidade' | 'raio') => void;
 }
 
 const suave = (k: number) => 1 - (1 - k) ** 3;
@@ -327,16 +331,17 @@ export default function MolduraFeitico({
   ativo,
   conquista,
   reduzido,
+  raio = RAIO_CARTAO,
 }: MolduraFeiticoProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const painelRef = useRef<Painel | null>(null);
   // Reduced motion turns every level into level 1, still.
   const nivelAtivo = nivelEfetivo(nivel, reduzido);
-  const propsRef = useRef({ elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista });
+  const propsRef = useRef({ elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio });
 
   // Declared first: the effects below read the latest props through this ref.
   useEffect(() => {
-    propsRef.current = { elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista };
+    propsRef.current = { elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio };
   });
 
   useEffect(() => {
@@ -384,6 +389,7 @@ export default function MolduraFeitico({
     const uniforms = {
       uSize: { value: [196, 245] },
       uHalf: { value: [74, 98.5] },
+      uRaio: { value: propsRef.current.raio },
       uMargem: { value: margemDoNivel(1) },
       uTime: { value: 0 },
       uReveal: { value: reduzido ? 1 : 0 },
@@ -553,6 +559,11 @@ export default function MolduraFeitico({
       const p = propsRef.current;
       const agora = performance.now();
 
+      if (quem === 'raio') {
+        uniforms.uRaio.value = p.raio;
+        draw();
+      }
+
       if (quem === 'cor') {
         quadroMs = 1000 / FPS_POR_NIVEL[p.nivel];
         paramPara = parametrosDaMoldura(p.elemento, p.nivel);
@@ -585,6 +596,8 @@ export default function MolduraFeitico({
           };
           corDe.copy(uniforms.uColour.value);
           corInicio = agora;
+          // The week's leader changed: the new element arrives with the conquest burst.
+          if (Math.abs(corDe.r - corPara.r) + Math.abs(corDe.g - corPara.g) + Math.abs(corDe.b - corPara.b) > 0.05) explosaoInicio = agora;
         }
         corJaDefinida = true;
       }
@@ -669,6 +682,7 @@ export default function MolduraFeitico({
   useEffect(() => { painelRef.current?.sync('densidade'); }, [completo, nivelAtivo, reduzido]);
   useEffect(() => { painelRef.current?.sync('visao'); }, [rolando, ativo, reduzido]);
   useEffect(() => { painelRef.current?.sync('conquista'); }, [conquista, reduzido]);
+  useEffect(() => { painelRef.current?.sync('raio'); }, [raio]);
 
   return (
     <div
