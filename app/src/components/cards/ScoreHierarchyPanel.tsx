@@ -1,8 +1,6 @@
 import { ElementScoreExplorer } from '@/components/elemental/ElementScoreExplorer';
-import { ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useMemo, useState } from 'react';
-import { motion } from 'framer-motion';
-import { ChevronRight, Sparkles } from 'lucide-react';
 import type { Area, ElementId, Habit, Task } from '@/types';
 import { AREAS, ELEMENTS, calculateTaskScore } from '@/constants';
 
@@ -253,15 +251,14 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
     return <ElementScoreExplorer scores={elementScores} areas={mergedAreas} areaScores={areaScoresById} subareaScores={subareaScoresById} selectedElement={selectedElement} selectedAreaId={selectedAreaId} onSelectElement={handleSelectElement} onSelectArea={id => setSelectedAreaId(current => current === id ? null : id)} />;
   }
 
+  const fio = (value: number): React.CSSProperties => ({ '--medidor-valor': Math.min(Math.max(value, 0), 1) } as React.CSSProperties);
+
   return (
     <div className={`mb-4 space-y-3 ${presentation === 'showcase' ? 'score-elemental-showcase' : ''}`}>
-      <div className="glass-card p-3">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs uppercase tracking-wider text-white/50">Pontuacao por elemento</p>
-          <div className="flex items-center gap-1 text-mystic-gold text-xs">
-            <Sparkles className="w-3 h-3" />
-            <span>Total {elementScores.reduce((acc, item) => acc + item.score, 0)} pts</span>
-          </div>
+      <section>
+        <div className="ds-secao" data-nivel="2">
+          <h3>Pontuacao por elemento</h3>
+          <small className="ds-contagem">Total {elementScores.reduce((acc, item) => acc + item.score, 0)} pts</small>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -272,40 +269,27 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
             return (
               <button
                 key={item.elementId}
+                type="button"
                 aria-pressed={isActive}
                 data-element={item.elementId}
                 onClick={() => handleSelectElement(item.elementId)}
-                className={`relative aspect-square rounded-xl border p-3 transition-colors ${
-                  isActive
-                    ? 'border-white/30 bg-white/10'
-                    : 'border-white/10 bg-white/5 hover:bg-white/10'
-                }`}
+                className="ds-runa score-element-card"
               >
                 {presentation === 'showcase' && <img className="score-element-art" src={`/sanctuary/elements/${item.elementId}-v1.webp`} alt="" loading="lazy" width={96} height={96} />}
-                <div className="flex h-full flex-col items-center justify-center text-center">
-                  <span className="text-sm"><ElementIcon element={element.id} /> {element.name}</span>
-                  <span className="mt-1 text-2xl font-semibold text-mystic-gold">{item.score}</span>
-                </div>
-
-                <div className="absolute left-2 right-2 bottom-2 h-1.5 rounded-full bg-black/30 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(item.score / maxElementScore) * 100}%` }}
-                    className="h-full rounded-full"
-                    style={{ backgroundColor: element.lightColor }}
-                  />
-                </div>
+                <span className="ds-meta"><span><ElementIcon element={element.id} size={16} /> {element.name}</span></span>
+                <span className="ds-cifra">{item.score}</span>
+                <span className="ds-medidor" data-forma="fio" role="presentation" style={fio(item.score / maxElementScore)} />
               </button>
             );
           })}
         </div>
-      </div>
+      </section>
 
       {selectedElement && (
-        <div className="glass-card p-3">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs uppercase tracking-wider text-white/50">Areas de {ELEMENTS[selectedElement].name}</p>
-            {breadcrumb && <p className="text-xs text-white/50">{breadcrumb}</p>}
+        <section data-element={selectedElement}>
+          <div className="ds-secao" data-nivel="2">
+            <h3>Areas de {ELEMENTS[selectedElement].name}</h3>
+            {breadcrumb && <small className="ds-contagem">{breadcrumb}</small>}
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -316,72 +300,45 @@ export const ScoreHierarchyPanel: React.FC<ScoreHierarchyPanelProps> = ({
               return (
                 <button
                   key={area.id}
+                  type="button"
                   aria-pressed={isActive}
+                  data-element={selectedElement}
                   onClick={() => setSelectedAreaId((current) => (current === area.id ? null : area.id))}
-                  className={`relative rounded-xl border p-2.5 transition-colors ${
-                    isActive
-                      ? 'border-white/30'
-                      : 'border-white/10 hover:border-white/20'
-                  }`}
-                  style={{ backgroundColor: `${area.color}${isActive ? '33' : '1A'}` }}
+                  className="ds-runa score-area-card"
                 >
-                  <div className="flex min-h-[72px] flex-col items-center justify-center text-center">
-                    <span className="text-xs font-medium leading-tight">{area.name}</span>
-                    <span className="mt-1 text-lg font-semibold text-mystic-gold">{score}</span>
-                  </div>
-
-                  <div className="absolute left-2 right-2 bottom-2 flex items-center gap-1">
-                    <div className="h-1.5 flex-1 rounded-full bg-black/30 overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(score / maxAreaScore) * 100}%` }}
-                        className="h-full rounded-full"
-                        style={{ backgroundColor: area.color }}
-                      />
-                    </div>
-                    {area.mergedSubareas.length > 0 && <ChevronRight className="w-3.5 h-3.5 text-white/60" />}
-                  </div>
+                  <span className="ds-runa-titulo">{area.name}</span>
+                  <span className="ds-cifra">{score}</span>
+                  <span className="ds-medidor" data-forma="fio" role="presentation" style={fio(score / maxAreaScore)} />
+                  {area.mergedSubareas.length > 0 && <ArcaneIcon name="chevron" size={16} className="ds-runa-chevron" />}
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {selectedArea && selectedArea.mergedSubareas.length > 0 && (
-        <div className="glass-card p-3">
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs uppercase tracking-wider text-white/50">Subareas de {selectedArea.name}</p>
-            <p className="text-xs text-white/50">{selectedArea.mergedSubareas.length} itens</p>
+        <section data-element={selectedElement ?? undefined}>
+          <div className="ds-secao" data-nivel="2">
+            <h3>Subareas de {selectedArea.name}</h3>
+            <small className="ds-contagem">{selectedArea.mergedSubareas.length} itens</small>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div>
             {selectedArea.mergedSubareas.map((subarea) => {
               const score = subareaScoresById.get(subarea.id) || 0;
               return (
-                <div
-                  key={subarea.id}
-                  className="relative rounded-xl border border-white/10 p-2.5"
-                  style={{ backgroundColor: `${selectedArea.color}1A` }}
-                >
-                  <div className="flex min-h-[68px] flex-col items-center justify-center text-center">
-                    <span className="text-xs font-medium leading-tight">{subarea.name}</span>
-                    <span className="mt-1 text-lg font-semibold text-mystic-gold">{score}</span>
+                <div key={subarea.id} className="ds-linha" data-densa>
+                  <div className="min-w-0">
+                    <p>{subarea.name}</p>
+                    <span className="ds-medidor" data-forma="fio" role="presentation" style={fio(score / maxSubareaScore)} />
                   </div>
-
-                  <div className="absolute left-2 right-2 bottom-2 h-1.5 rounded-full bg-black/30 overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(score / maxSubareaScore) * 100}%` }}
-                      className="h-full rounded-full"
-                      style={{ backgroundColor: selectedArea.color }}
-                    />
-                  </div>
+                  <span className="ds-linha-valor">{score}</span>
                 </div>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
     </div>
   );

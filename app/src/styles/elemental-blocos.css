@@ -353,3 +353,8 @@
   .ds-selo::before, .ds-botao, .ds-runa-chevron, .ds-grupo > summary > svg, .ds-medidor[data-forma="fio"]::after, .ds-medidor[data-forma="anel"] .ds-medidor-arco { transition: none; }
   .ds-botao:active:not(:disabled) { transform: none; }
 }
+
+/* The older Tabs component paints its own active background and shadow; the text tabs carry only the underline. */
+.ds-abas [role="tab"][data-state="active"],
+.ds-abas [role="tab"][data-state="inactive"],
+.ds-abas [role="tab"] { background: transparent; box-shadow: none; border-radius: 0; }
