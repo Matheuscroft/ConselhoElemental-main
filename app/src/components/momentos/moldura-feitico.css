@@ -30,7 +30,7 @@
   z-index: 5;
 }
 
-.reel-feitico[data-visivel='true'][data-modo='3d'] {
+.reel-feitico[data-visivel='true'][data-modo='3d'][data-pronto='true'] {
   opacity: 1;
   transition-duration: var(--ds-duration-reveal);
 }

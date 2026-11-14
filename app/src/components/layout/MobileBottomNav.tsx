@@ -23,16 +23,16 @@ export const MobileBottomNav: React.FC = () => {
             const selected = active(pathname);
             return (
               <button key={path} type="button" onClick={() => navigate(path)} aria-current={selected ? 'page' : undefined}
-                className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${selected ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
+                className={`flex h-full flex-col items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${selected ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
                 <RouteIcon routeId={path.slice(1)} size={22} />
-                <span>{label}</span>
+                <span className="text-xs">{label}</span>
               </button>
             );
           })}
           <button type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-current={moreActive ? 'page' : undefined}
-            className={`flex h-full flex-col items-center justify-center gap-1 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${moreActive ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
+            className={`flex h-full flex-col items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${moreActive ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
             <ArcaneIcon name="explorar" size={22} />
-            <span>Mais</span>
+            <span className="text-xs">Mais</span>
           </button>
         </div>
       </nav>

@@ -456,6 +456,8 @@ export default function MolduraFeitico({
       if (disposed || lost) return;
       uniforms.uTime.value = tempo;
       renderer.render(scene, camera);
+      // The canvas only fades in once a frame exists: before it, the browser may show it opaque black.
+      if (host.dataset.pronto !== 'true') host.dataset.pronto = 'true';
     };
 
     const limitar = (valor: number) => Math.min(1, Math.max(0, valor));
@@ -637,6 +639,7 @@ export default function MolduraFeitico({
     observer.observe(canvas);
     naTela.observe(canvas);
 
+    host.dataset.pronto = 'false';
     host.dataset.modo = '3d';
     medir();
     sync('cor');

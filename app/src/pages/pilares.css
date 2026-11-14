@@ -15,7 +15,7 @@
 .pillars-balance-legend li { display: grid; grid-template-columns: 1fr auto; gap: 4px; font-size: var(--ds-text-micro); }
 .pillars-balance-legend li > span { color: var(--pillar-accent); }
 .pillars-balance-legend strong { font-weight: 500; font-variant-numeric: tabular-nums; }
-.pillars-balance-legend small { grid-column: 1 / -1; color: #aab4c4; }
+.pillars-balance-legend small { grid-column: 1 / -1; color: #aab4c4; font-size: var(--ds-text-micro); }
 .pillars-balance-note { margin-top: 16px; max-width: 75ch; line-height: 1.6; }
 .pillars-explore { padding-top: 28px; }
 .pillars-explore > p { color: #aab4c4; margin-top: 6px; font-size: var(--ds-text-micro); }

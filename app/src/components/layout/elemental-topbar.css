@@ -1,6 +1,6 @@
 .elemental-topbar { position: sticky; top: 0; z-index: 40; padding-top: env(safe-area-inset-top); background: #080b12f2; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid rgb(var(--el-gold) / .16); }
 .elemental-topbar-inner { display: flex; align-items: center; gap: 18px; min-height: 76px; max-width: 1104px; margin: auto; padding: 12px 32px; }
-.elemental-topbar-brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; color: rgb(var(--el-text)); font: 400 11px/1.25 Cinzel, Georgia, serif; }
+.elemental-topbar-brand { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; min-height: 44px; color: rgb(var(--el-text)); font: 400 var(--ds-text-micro)/1.25 Cinzel, Georgia, serif; }
 .elemental-topbar-brand > svg { color: rgb(var(--el-gold)); }
 .elemental-topbar-brand strong { display: block; font-size: var(--ds-text-body); font-weight: 500; }
 .elemental-topbar-location { border-left: 1px solid rgb(var(--el-gold) / .2); padding-left: 18px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

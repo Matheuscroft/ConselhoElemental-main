@@ -23,7 +23,7 @@
 .ep-preview-bar { min-height: 40px; padding: 8px 5%; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #d5b66f0c; border-bottom: 1px solid var(--ep-line); font-size: var(--ds-text-micro); color: var(--ep-muted); }
 .ep-preview-bar a, .ep-footer a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ep-gold); }
 .ep-header { position: sticky; top: 0; z-index: 40; background: var(--ds-surface-float); -webkit-backdrop-filter: blur(var(--ds-blur-soft)); backdrop-filter: blur(var(--ds-blur-soft)); max-width: 1248px; margin: auto; min-height: 104px; padding: max(20px, env(safe-area-inset-top)) 40px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.ep-brand { display: inline-flex; align-items: center; gap: 14px; font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-small); line-height: 1.2; }
+.ep-brand { display: inline-flex; align-items: center; min-height: 44px; gap: 14px; font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-small); line-height: 1.2; }
 .ep-brand strong { font-weight: 500; font-size: var(--ds-text-lead); }
 .ep-brand-symbol { color: var(--ep-gold); font-size: 44px; }
 .ep-header nav { display: flex; align-items: center; gap: 28px; font-size: var(--ds-text-micro); color: var(--ep-muted); }
