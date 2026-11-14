@@ -292,22 +292,30 @@ function brasa(sr: number, n: number, v: Voz): Float32Array {
 
 /* ---------------- water ---------------- */
 
+/**
+ * A water drop: the pitch RISES fast and lands on the note (that rising "bloop" is what
+ * the ear reads as water; a falling pitch reads as a laser). A soft resonance keeps
+ * ringing on the landing note, and a tiny filtered click opens it.
+ */
 function gota(sr: number, n: number, v: Voz): Float32Array {
   const f1 = freqSegura(v.freq, sr);
-  const f0 = freqSegura(f1 * 2.5, sr);
-  const tauP = 0.018;
-  const decA = Math.exp(-1 / ((v.dur / 5) * sr));
-  const decR = Math.exp(-1 / ((v.dur / 4) * sr));
+  const f0 = freqSegura(f1 * 0.55, sr);
+  const tauP = 0.022;
+  const decA = Math.exp(-1 / ((v.dur / 4) * sr));
+  const decR = Math.exp(-1 / ((v.dur / 3) * sr));
   const wr = (DOIS_PI * f1) / sr;
   let ph = 0;
   let pr = 0;
   let a = 1;
-  let r = 0.3;
+  let r = 0;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i += 1) {
-    const f = f1 + (f0 - f1) * Math.exp(-i / (tauP * sr));
+    const sobe = 1 - Math.exp(-i / (tauP * sr));
+    const f = f0 + (f1 - f0) * sobe;
     ph += (DOIS_PI * f) / sr;
-    out[i] = (Math.sin(ph) * a + 0.2 * Math.sin(2 * ph) * a * a + Math.sin(pr) * r) * Math.min(1, i / (0.001 * sr));
+    r = Math.min(0.45, r + (i < tauP * 3 * sr ? 0.45 / (tauP * 3 * sr) : 0));
+    const ataque = Math.min(1, i / (0.0012 * sr));
+    out[i] = (Math.sin(ph) * a + 0.12 * Math.sin(2 * ph) * a * a + Math.sin(pr) * r * (i > tauP * sr ? 1 : 0.3)) * ataque;
     pr += wr;
     a *= decA;
     r *= decR;
@@ -315,6 +323,7 @@ function gota(sr: number, n: number, v: Voz): Float32Array {
   return out;
 }
 
+/** A small bubble: a short, quiet rise that lands on the note. */
 function bolha(sr: number, n: number, v: Voz): Float32Array {
   const f = freqSegura(v.freq, sr);
   const dec = Math.exp(-1 / ((v.dur / 4) * sr));
@@ -322,7 +331,7 @@ function bolha(sr: number, n: number, v: Voz): Float32Array {
   let a = 1;
   const out = new Float32Array(n);
   for (let i = 0; i < n; i += 1) {
-    ph += (DOIS_PI * f * (1 + 0.9 * (1 - Math.exp(-i / (0.025 * sr))))) / sr;
+    ph += (DOIS_PI * f * (0.7 + 0.3 * (1 - Math.exp(-i / (0.014 * sr))))) / sr;
     out[i] = Math.sin(ph) * a * Math.min(1, i / (0.002 * sr));
     a *= dec;
   }

@@ -175,20 +175,16 @@ export function conclusao(elemento: ElementoSom, intensidade = 0.5): Partitura {
       b.add('sino', freqGrau(g0 + 8), 0.11, 0.55, 0.4, { brilho, pan: -0.25 });
     }
   } else if (elemento === 'agua') {
-    // "Cascata": two harp notes rising like drops in a pool, a bubble and a crystal glint over a soft wash
-    b.add('harpa', t, 0, 0.5, 0.8, { brilho, pan: -0.1 });
-    b.add('harpa', freqGrau(g0 + 2), 0.08, 0.5, 0.62, { brilho, pan: 0.2 });
-    b.add('bolha', freqGrau(g0 + 4), 0.11, 0.13, 0.3, { brilho, pan: -0.3 });
-    b.add('cristal', tonica(elemento, 2), 0.13, 0.5, 0.3, { brilho, pan: 0.3 });
-    if (d >= 1) {
-      b.add('harpa', freqGrau(g0 + 4), 0.16, 0.5, 0.52, { brilho, pan: -0.25 });
-      b.add('sopro', 420, 0, 0.5, 0.22, { freq2: 1400, brilho: brilho * 0.4, pan: 0.1 });
-    }
+    // A real water drop (the pitch rises and lands on A) with a crystal on the same A, like the other
+    // elements: one signature sound plus one bell on the tonic. Everything lands on A or its octaves.
+    b.add('gota', t1, 0, 0.34, 0.95, { brilho });
+    b.add('cristal', t1, 0.05, 0.55, 0.55, { brilho, pan: 0.15 });
+    if (d >= 1) b.add('bolha', t, 0.13, 0.16, 0.38, { brilho, pan: -0.3 });
     if (d >= 2) {
-      b.add('harpa', freqGrau(g0 + 7), 0.22, 0.46, 0.45, { brilho, pan: 0.3 });
-      b.add('bolha', freqGrau(g0 + 9), 0.26, 0.12, 0.28, { brilho, pan: -0.15 });
+      b.add('cristal', tonica(elemento, 2), 0.15, 0.45, 0.3, { brilho, pan: 0.35 });
+      b.add('gota', t, 0.22, 0.28, 0.45, { brilho, pan: -0.2 });
     }
-    return partitura('conclusao', chave, b.vozes, 0.5, 0.3);
+    return partitura('conclusao', chave, b.vozes, 0.5, 0.26);
   } else if (elemento === 'ar') {
     // ascending breath + wind-chime bells
     b.add('sopro', 500, 0, 0.46, 0.9, { freq2: 3200, brilho });
