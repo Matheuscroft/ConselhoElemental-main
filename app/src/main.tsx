@@ -8,6 +8,7 @@ import { captureAccountReturn, type AccountReturnNotice } from './lib/backup/acc
 import { needsReminderWorkspace } from './lib/reminders/reminder-entry'
 import './index.css'
 import './styles/elemental-fundacao.css'
+import './styles/elemental-blocos.css'
 import './lib/backup/startup-screen.css'
 import { startProgressSession } from './lib/backup/progress-startup'
 import { showProgressStartup } from './lib/backup/startup-screen'

@@ -122,6 +122,50 @@ export const SIGILOS: Record<string, Sigilo> = {
     ornamento: 'M12 1.5v1.5 M12 21v1.5 M1.5 12H3 M21 12h1.5',
   },
 
+  // Acoes de uso diario (um acento no maximo)
+  excluir: {
+    traco: 'M4.5 6.5h15 M9.5 6.5V4h5v2.5 M6.5 6.5 7.5 20h9l1-13.5 M10 10.5v6 M14 10.5v6',
+    nucleo: 'M6.5 6.5 7.5 20h9l1-13.5Z',
+    ornamento: 'M12 1.8h.01',
+  },
+  relogio: {
+    traco: `${C8} M12 8v4 M12 12l3 2`,
+    nucleo: 'M12 10.3 13.7 12 12 13.7 10.3 12Z',
+    ornamento: 'M12 1.8h.01 M12 22.2h.01',
+  },
+  desfazer: {
+    traco: 'M4 12a8 8 0 1 0 2.4-5.7L4 8.6 M4 4v4.6h4.6',
+    ornamento: 'M20.5 12h.01',
+  },
+  pular: {
+    traco: 'M5 6.5 11.5 12 5 17.5Z M12.5 6.5 19 12 12.5 17.5Z',
+    nucleo: 'M5 6.5 11.5 12 5 17.5Z M12.5 6.5 19 12 12.5 17.5Z',
+    ornamento: 'M21 6.5v11',
+  },
+  baixar: {
+    traco: 'M12 4v7.5 M8.5 11.5 12 15.5 15.5 11.5Z M5 20h14',
+    nucleo: 'M8.5 11.5 12 15.5 15.5 11.5Z',
+    ornamento: 'M3 22h.01 M21 22h.01',
+  },
+  compartilhar: {
+    traco: 'M6.5 9.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 1 0 0-4.4Z M17.5 3.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 1 0 0-4.4Z M17.5 15.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 1 0 0-4.4Z M8.4 10.9 15.6 7.05 M8.4 13.1 15.6 16.95',
+    nucleo: 'M6.5 9.8a2.2 2.2 0 1 0 0 4.4 2.2 2.2 0 1 0 0-4.4Z',
+    ornamento: 'M21.5 12h.01',
+  },
+  lembrete: {
+    traco: 'M6 17.5V11a6 6 0 0 1 12 0v6.5 M4.5 17.5h15 M12 20.8h.01',
+    nucleo: 'M6 17.5V11a6 6 0 0 1 12 0v6.5Z',
+    ornamento: 'M2.5 9v3 M21.5 9v3',
+  },
+  arrastar: { traco: 'M9 6h.01 M15 6h.01 M9 12h.01 M15 12h.01 M9 18h.01 M15 18h.01' },
+  mais: { traco: 'M12 5h.01 M12 12h.01 M12 19h.01' },
+
+  // Glifos de servico: traco simples, sem ornamento nem alquimia (legibilidade antes de beleza)
+  chevron: { traco: 'M7 9.5 12 14.5 17 9.5' },
+  voltar: { traco: 'M19 12H5 M11 6 5 12 11 18' },
+  seta: { traco: 'M5 12h14 M13 6l6 6-6 6' },
+  fechar: { traco: 'M6 6 18 18 M18 6 6 18' },
+
   // Dominios
   // Haltere: 2 anilhas de cada lado, barra no meio.
   treino: {
