@@ -1,3 +1,58 @@
+## FE-W3 — acesso simples à conta e tela inicial — em andamento (13/11/2026)
+
+Origem: Matheus entrou, viu "A conta possui registros anteriores, mas este aparelho não contém uma jornada completa para adotar…", não entendeu e pensou em excluir a conta. Os dados dele estão em outro computador. Fábio pediu uma só tela de login (a bonita), acesso fácil para leigo e melhorias na tela inicial.
+
+Conceito: [CONCEITO-ACESSO-E-INICIO.md](plans/CONCEITO-ACESSO-E-INICIO.md) (Líder de design, Opus). Repasse para Matheus: [REPASSE-ACESSO-SIMPLES.md](plans/REPASSE-ACESSO-SIMPLES.md).
+
+Decisões de Fábio (13/11/2026):
+- D1: ler a conta automaticamente após o login (só leitura).
+- D4: consentimento de um toque quando nada se perde.
+- D5: boas-vindas só com "Começar" e "Já tenho conta".
+- D7: o frontend pode editar os arquivos de conta (só interface e texto), avisando Matheus.
+
+Feito e publicado na main:
+- Lote A: entrada `/auth` e textos errados (`c24b510`).
+- Lote B: boas-vindas (`f877c8e`).
+- Lote C: Santuário com "faltam X XP" (`78a6bd1`).
+
+Evidência, reportada pelo orquestrador e não reexecutada neste registro: cópia limpa com 940/940 testes, tipos e lint limpos. QA visual no Chromium a 390 e 768px: sem estouro, sem texto abaixo de 12px, sem erros de console; contraste do botão dourado 9,4:1.
+
+Em fila, nesta ordem:
+1. Lote 3: passos pós-login P0 a P8, uma pergunta por tela, com leitura automática da conta.
+2. Lote 4: tela "Opções avançadas".
+3. Lote 6: porta `/` abre boas-vindas em aparelho sem dados. Risco nos testes de startup.
+4. Lote 8: apagar `src/pages/Auth.tsx` e `src/stores/authStore.ts`, depois baixar `TETO_VIDRO` de 16 para 15.
+
+Ajustes menores em fila:
+- Link "Pilares" do topo com 38×44 e marca "Conselho Elemental" com 43px de altura (alvo de 44px).
+- Faixa Terra/Fogo/Água/Ar ainda aparece acima do título em `/auth`; o conceito manda tirar.
+- CLS 0,12 e LCP 3,9 s em `/auth` na produção.
+- Rótulos do rodapé e "pontos" abaixo de 12px.
+- Flash preto do canvas da aura no Reel.
+
+Pendente de decisão de Fábio:
+- D2: "Começar do zero (progresso antigo guardado)" no caso legacy (função nova, a validar com Matheus).
+- D3: "usar este aparelho" no P3 exige baixar e reenviar arquivos.
+
+Não verificado: WebKit, iPhone real, login real, retorno do Google no PWA.
+
+## Teste do Matheus em 14/11 — dados no computador — aguardando
+
+Matheus fez o passo a passo e "não mostrou nenhum ciclo". Ele testa de novo amanhã, logado no localhost.
+
+Nota técnica: a conta dele (`24d1ea2b`) tem no banco 5 tarefas, 34 hábitos e 2 sequências legadas. No localhost, o login só funciona com `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no `.env.local` dele, e por e-mail e senha (o retorno do Google vai sempre para o endereço de produção). O progresso é por endereço: localhost, `-testes` e produção são locais diferentes. Alternativa: exportar a cópia no Grimório e importar em `/?progresso=restaurar`.
+
+## Backlog mantido — sem execução nesta data (13/11/2026)
+
+- Pilares com Element Cards: espera decisão de Fábio sobre a referência; vídeos do Scrolltide já analisados.
+- Spiral Slider em Momentos.
+- Migrações do banco do Matheus: histórico divergiu depois do conserto manual da função `adopt_legacy_account`.
+- Teste de `tests/backup` instável sob carga: espera subida para 6s.
+- Skills pendentes de instalação por Fábio: `gsap-skills`, `anatomy`, `blender-director`.
+- Análise com chrome-devtools em `plans/ANALISE-DEVTOOLS-2026-11-13.md`: LCP/INP de `/santuario` e `/ciclos` em produção e GPU de iPhone continuam pendentes.
+- Decisão sobre a dependência `gsap`.
+- Atalho de login de QA continua só local.
+
 ## FE-W2 — Pilares com Element Cards, Ciclos com Reel Slider, aura refinada — em revisão parcial (10/11/2026)
 
 Pedido de Fábio em 09/11/2026. Fonte: três gravações de tela (09/11, 16:00 a 16:08), a serem reenviadas se não abrirem, mais [thread no X](https://x.com/dr_cintas/status/2119555538144911525/photo/1), o [README do site do reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/site/README.md) e a [skill reanimate](https://github.com/NiazMorshed2007/reanimate/blob/main/skills/reanimate/SKILL.md), que serve para aprender e copiar movimento de UI por engenharia reversa.
@@ -8,13 +63,13 @@ Estado atual: execução iniciada em 09/11/2026. Itens 3, 4 e 5 estão em revis�
 2. **Pilares elementais:** refazer. As animações atuais não ficaram como desejado. Efeito de Element Cards; pesquisar o material acima e comparar layouts antes de escolher. Status: aguarda a referência de Fábio; sem execução.
 3. **Ciclos (Reel Slider):** Reel para rolar entre os dias e acompanhar o que foi feito em cada dia, com a data e o que a tela já tem. Status: em revisão. Publicado em `ac22965` (B1+B2), com `1f18e2d`, `6dc0a71` e `22cb609` no mesmo front.
 4. **Flow Tunnel:** remover (não funciona bem). Status: em revisão. Publicado em `61fdf81` (B0).
-5. **Momentos (calendário e Reel):** integrar ao calendário e ao Reel. Status: em revisão. Foto do dia no `DayDetailsDialog` e pontas da janela de 9 dias em `47f5277` (item C), **só local, ainda não publicado**.
+5. **Momentos (calendário e Reel):** integrar ao calendário e ao Reel. Status: em revisão. Foto do dia no `DayDetailsDialog` e pontas da janela de 9 dias em `47f5277` (item C), **publicado** (conferido em `origin/main` em 13/11/2026).
 
 Trabalho de Ciclos fora dos cinco itens, da mesma frente: botões reais de Lua e Estação (`1f18e2d`), céu vivo e moldura de mago (`6dc0a71`), VFX elemental em três níveis (`22cb609`). Rótulos e commits, em [CONTINUIDADE.md](CONTINUIDADE.md).
 
 Restrições: pontuação, XP e stores não mudam sem aprovação de Fábio; mesmas regras do design system (movimento, superfície, tipografia) e do time em [EQUIPE-FRONTEND-CLAUDE.md](EQUIPE-FRONTEND-CLAUDE.md). Líder de design em Opus para o conceito, sob aviso. Não verificado: WebKit, aparelho real, desempenho no iPhone com WebGL, seletor de arquivo real.
 
-Próximo: publicar `47f5277` na main (decisão do orquestrador, após `git fetch` e merge); referência de Fábio para o item 2; WebKit e aparelho real se Fábio quiser aceite.
+Próximo: `47f5277` já está em `origin/main` (conferido em 13/11/2026); referência de Fábio para o item 2; WebKit e aparelho real se Fábio quiser aceite.
 
 ## FE-W1 — onda 1 de migração de telas ao design system — publicada; ressalvas abertas
 

@@ -1,3 +1,11 @@
+## Retomada em 13/11/2026
+
+Ponto de retomada: FE-W3, em [FILA-ENTREGAS.md](FILA-ENTREGAS.md). Checkout `main`, HEAD publicado `78a6bd1` (igual a `origin/main`, conferido por git nesta data). Alterações não commitadas que já existiam e não foram tocadas: `app/src/App.tsx`, `app/vite.config.ts`, `app/src/main.qa.tsx`, `app/src/lib/dev/`, `app/tests/dev/` e planos em `app/docs/plans/` (atalho de QA, só local).
+
+Orquestração: passa a uma sessão nova em Sonnet médio. Ela chama os subagentes de `.claude/agents`: implementador-tela, qa-visual, verificador e versionamento. O líder de design roda em Opus só para decisão visual nova. Também existe `movimento.md` na mesma pasta. A sessão antiga "Time de frontend" (Opus alto) foi aposentada por custo.
+
+Este lote é só documental: nenhum código, teste ou versão foi alterado, e nada foi commitado nem publicado.
+
 ## FE-W2 — Ciclos com Reel como calendário, céu, moldura, VFX e foto do dia — em revisão (10/11/2026)
 
 Estado: **em revisão**. Só o orquestrador marca aceita. Fila: [FILA-ENTREGAS.md](FILA-ENTREGAS.md), entrada FE-W2. Este registro é só documental: não alterou código, testes, versão, manifests nem commit. Itens A (Pilares) e D (aura) não estão aceitos (ver Em aberto).
@@ -12,7 +20,7 @@ Commits da frente (conferidos com `git show --stat` e `git branch -r --contains`
 - `1f18e2d`: Lua e Estação viram botões reais; 2 arquivos. **Publicado.**
 - `6dc0a71`: céu vivo para Lua e Estação (Lua com shader e borda pela fase; Estação com partículas e vidro `.ceu-peitoril`) e moldura de mago no cartão aberto, com cor pelo elemento dominante do dia. Em `tests/design/superficie.test.mjs`, `TETO_VIDRO` foi de 15 para 16, aprovado por Fábio. 20 arquivos. **Publicado.**
 - `22cb609`: VFX elemental em três níveis, pela maestria do elemento do dia. Nível 1, Faísca (maestria abaixo de 10): moldura com o verbo de cada elemento. Nível 2, Fluxo (10 a 24): a borda vira o próprio elemento. Nível 3, Domínio (25 ou mais): borda premium dupla com filigrana, 60fps e dobra de tela cheia. Movimento reduzido fica sempre no nível 1, parado. `?vfx=1|2|3` força um nível e só existe em DEV. Conceito em `docs/plans/CONCEITO-VFX-ELEMENTAL.md`. Também traz o céu mais vivo (Lua escura com limbo, luz da Terra e estrelas; estações com horizonte, paralaxe, raios e eventos raros). 16 arquivos, 1928 inserções, 85 remoções. **Publicado.**
-- `47f5277`, **C e pontas da janela**: foto do dia no topo do `DayDetailsDialog` (`components/momentos/MomentoDoDia.tsx`, `momento-do-dia.css`, `lib/momentos/momento.ts`), com as mesmas ações do Reel, a linha "Fica só neste aparelho." e sem foto em dia futuro, no diálogo e no Reel. As pontas da janela de 9 dias ficaram destravadas: setas e teclado abrem o dia seguinte e recentram. 7 arquivos, 197 inserções, 13 remoções. **Não publicado (só local).**
+- `47f5277`, **C e pontas da janela**: foto do dia no topo do `DayDetailsDialog` (`components/momentos/MomentoDoDia.tsx`, `momento-do-dia.css`, `lib/momentos/momento.ts`), com as mesmas ações do Reel, a linha "Fica só neste aparelho." e sem foto em dia futuro, no diálogo e no Reel. As pontas da janela de 9 dias ficaram destravadas: setas e teclado abrem o dia seguinte e recentram. 7 arquivos, 197 inserções, 13 remoções. **Publicado** (conferido em `origin/main` em 13/11/2026; a nota antiga "só local" ficou superada).
 
 Pendência anterior fechada: as pontas da janela de 9 dias, que estavam inertes, foram resolvidas em `47f5277`. A decisão de produto que estava aberta foi tomada pelo orquestrador e não está em nenhum documento de regra.
 
@@ -34,7 +42,7 @@ Em aberto:
 
 Versão do produto: este registro não altera versão. Eventual incremento do lote fica para decisão do orquestrador no encerramento.
 
-Próximo passo: (1) orquestrador decide publicar `47f5277` na main, depois de `git fetch` e merge (instrução permanente de Fábio: publicar na main); (2) Verificador roda `verify:release` e build sobre o conjunto final, depois que todos os escritores terminarem; (3) Fábio envia a referência de A; (4) WebKit e aparelho real, se Fábio quiser esse aceite; (5) decisão sobre os limiares de maestria, se Fábio quiser mudá-los.
+Próximo passo: (1) `47f5277` já está em `origin/main` (conferido em 13/11/2026), nada a publicar deste item; (2) Verificador roda `verify:release` e build sobre o conjunto final, depois que todos os escritores terminarem; (3) Fábio envia a referência de A; (4) WebKit e aparelho real, se Fábio quiser esse aceite; (5) decisão sobre os limiares de maestria, se Fábio quiser mudá-los.
 
 Limites deste registro: não consultei a fonte de domínio em `docs-conselho-master`, porque o lote é documental e não faz afirmação de regra de produto. Nenhum número de pontuação, XP ou store foi alterado.
 
@@ -97,7 +105,7 @@ Estado de retomada: main com CI verde e `verify:release` incluindo `tsc -b`. O d
 - Sistema de movimento e migração das telas: [SISTEMA-DE-MOVIMENTO](plans/SISTEMA-DE-MOVIMENTO.md).
 - Cor e tipografia: [FUNDACAO-COR-E-TIPOGRAFIA](plans/FUNDACAO-COR-E-TIPOGRAFIA.md).
 - Camada de vidro, cartões de elemento e cartão de projeto: [REDESIGN-SUPERFICIE-E-ELEMENTOS](plans/REDESIGN-SUPERFICIE-E-ELEMENTOS.md).
-- Fotos por dia, reel e túnel nos Ciclos: [MOMENTOS-E-REEL](plans/MOMENTOS-E-REEL.md).
+- Fotos por dia e reel nos Ciclos: [MOMENTOS-E-REEL](plans/MOMENTOS-E-REEL.md). O túnel foi removido em `61fdf81` (B0) e não existe mais.
 - Cerimônia de subida de nível: [CERIMONIA-DE-CONCLUSAO](plans/CERIMONIA-DE-CONCLUSAO.md).
 - HUD permanente e a fórmula única de HP: [HUD-PERMANENTE](plans/HUD-PERMANENTE.md).
 - Aura por signo: [AURA-ELEMENTAL-POR-SIGNO](plans/AURA-ELEMENTAL-POR-SIGNO.md).
