@@ -175,14 +175,20 @@ export function conclusao(elemento: ElementoSom, intensidade = 0.5): Partitura {
       b.add('sino', freqGrau(g0 + 8), 0.11, 0.55, 0.4, { brilho, pan: -0.25 });
     }
   } else if (elemento === 'agua') {
-    // drop + crystal, then bubbles and a crystal glint
-    b.add('gota', t1, 0, 0.24, 0.9, { brilho });
-    b.add('cristal', t1, 0.06, 0.55, 0.6, { brilho, pan: 0.15 });
-    if (d >= 1) b.add('bolha', freqGrau(g0 + 7), 0.14, 0.13, 0.5, { brilho, pan: -0.3 });
-    if (d >= 2) {
-      b.add('cristal', tonica(elemento, 2), 0.16, 0.45, 0.35, { brilho, pan: 0.35 });
-      b.add('gota', freqGrau(g0 + 7), 0.25, 0.22, 0.55, { brilho, pan: -0.15 });
+    // "Cascata": two harp notes rising like drops in a pool, a bubble and a crystal glint over a soft wash
+    b.add('harpa', t, 0, 0.5, 0.8, { brilho, pan: -0.1 });
+    b.add('harpa', freqGrau(g0 + 2), 0.08, 0.5, 0.62, { brilho, pan: 0.2 });
+    b.add('bolha', freqGrau(g0 + 4), 0.11, 0.13, 0.3, { brilho, pan: -0.3 });
+    b.add('cristal', tonica(elemento, 2), 0.13, 0.5, 0.3, { brilho, pan: 0.3 });
+    if (d >= 1) {
+      b.add('harpa', freqGrau(g0 + 4), 0.16, 0.5, 0.52, { brilho, pan: -0.25 });
+      b.add('sopro', 420, 0, 0.5, 0.22, { freq2: 1400, brilho: brilho * 0.4, pan: 0.1 });
     }
+    if (d >= 2) {
+      b.add('harpa', freqGrau(g0 + 7), 0.22, 0.46, 0.45, { brilho, pan: 0.3 });
+      b.add('bolha', freqGrau(g0 + 9), 0.26, 0.12, 0.28, { brilho, pan: -0.15 });
+    }
+    return partitura('conclusao', chave, b.vozes, 0.5, 0.3);
   } else if (elemento === 'ar') {
     // ascending breath + wind-chime bells
     b.add('sopro', 500, 0, 0.46, 0.9, { freq2: 3200, brilho });
