@@ -1,10 +1,23 @@
 ## Retomada em 13/11/2026
 
-Ponto de retomada: FE-W3, em [FILA-ENTREGAS.md](FILA-ENTREGAS.md). Checkout `main`, HEAD publicado `78a6bd1` (igual a `origin/main`, conferido por git nesta data). Alterações não commitadas que já existiam e não foram tocadas: `app/src/App.tsx`, `app/vite.config.ts`, `app/src/main.qa.tsx`, `app/src/lib/dev/`, `app/tests/dev/` e planos em `app/docs/plans/` (atalho de QA, só local).
+Ponto de retomada: FE-W3, em [FILA-ENTREGAS.md](FILA-ENTREGAS.md), agora "publicado; acabamento em fila". Checkout `main`, HEAD publicado `619534d` (igual a `origin/main`, conferido por `git fetch` e `git log` nesta data). Publicados nesta data, em ordem: `b6f89ae` (Lote 3), `594c447` (documentação), `3915b6a` (Lote 6), `c954e38` (Lote 4) e `619534d` (Lote 8). CI e Vercel verdes foram reportados pelo orquestrador; não conferidos aqui.
+
+Só local, não commitado e não tocado por este registro:
+- `app/src/App.tsx` e `app/vite.config.ts` (modificados): atalho de login de QA.
+- `app/src/main.qa.tsx`, `app/src/lib/dev/` e `app/tests/dev/` (não versionados): atalho de QA.
+- `app/docs/plans/ANALISE-DEVTOOLS-2026-11-13.md`, `INSTALACAO-SKILLS.md`, `PLANO-REMASTER.md` e `RETOMADA-ORQUESTRADOR.md` (não versionados).
+- `app/.env.local` (ignorado pelo git): onde fica o flag do atalho de QA. Não inspecionado nesta data.
+
+Pendências de código, fora de qualquer commit:
+- Ajustes menores de FILA-ENTREGAS (alvos de toque, CLS/LCP de `/auth`, rótulos abaixo de 12px, flash da aura, limpeza do `post-restore-barrier`).
+- `src/pages/Invocar.tsx`, `supabaseCloudSync.ts`, `supabaseImport.ts` e `googleCalendarIntegration.ts` ainda usam `isSupabaseAuthEnabled` de `lib/supabase`.
+- `TopBar.tsx`: os botões do Google Agenda ficam sempre desabilitados (igual ao anterior). Decisão de Fábio se o bloco "Google Agenda (beta)" sai.
+
+Tetos após o Lote 8, conferidos por leitura: `TETO_VIDRO = 15` em `tests/design/superficie.test.mjs`; `TETO_TAMANHOS = 11` em `tests/design/fundacao.test.mjs`. Os arquivos `src/pages/Auth.tsx` e `src/stores/authStore.ts` não existem mais no checkout.
 
 Orquestração: passa a uma sessão nova em Sonnet médio. Ela chama os subagentes de `.claude/agents`: implementador-tela, qa-visual, verificador e versionamento. O líder de design roda em Opus só para decisão visual nova. Também existe `movimento.md` na mesma pasta. A sessão antiga "Time de frontend" (Opus alto) foi aposentada por custo.
 
-Este lote é só documental: nenhum código, teste ou versão foi alterado, e nada foi commitado nem publicado.
+Este lote é só documental: nenhum código, teste ou versão foi alterado, e nada foi commitado nem publicado. Versão do produto não foi alterada por este lote (não conferida nos manifests nesta data). Evidência de testes (947/947, 951/951 e 943/943, build ok) é reportada pelo orquestrador e não foi reexecutada aqui. Aceite dos Lotes 3, 4, 6 e 8 pendente do orquestrador.
 
 ## FE-W2 — Ciclos com Reel como calendário, céu, moldura, VFX e foto do dia — em revisão (10/11/2026)
 

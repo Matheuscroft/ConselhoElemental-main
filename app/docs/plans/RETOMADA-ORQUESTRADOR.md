@@ -1,0 +1,39 @@
+# Retomada do orquestrador de frontend (13/11/2026)
+
+Documento de passagem para uma sessão NOVA, em **Sonnet 5.5, esforço médio**, que assume a orquestração. A sessão anterior (muito longa, e a antiga "Time de frontend" em Opus alto) foi aposentada por custo. Fábio é o dono do produto (frontend/UX); Matheus cuida de backend, conta e documentação e também empurra na `main`.
+
+## Leia primeiro
+1. `CLAUDE.md` → `AGENTS.md` → `app/AGENTS.md`. Regra do projeto: pontuação/XP/Prana exigem aprovação explícita de Fábio; `supabase/`, backup e auth são zona do Matheus (só interface e texto com aviso e repasse).
+2. `app/docs/EQUIPE-FRONTEND-CLAUDE.md` (equipe, formato do aviso, regras de escrita) e `app/docs/CONTINUIDADE.md` (topo) e `app/docs/FILA-ENTREGAS.md` (topo: FE-W3).
+3. Painel visual do estado: https://claude.ai/artifact/W3ksN1BuQVN4E6XcmAs7YQ (republique o MESMO arquivo, `.../scratchpad/painel/index.html` da sessão antiga, ou crie outro; é uma página simples, sem dados ao vivo).
+
+## Como a equipe funciona (e o que já deu errado)
+- Você orquestra; chama subagentes de `.claude/agents` pela ferramenta Agent: `implementador-tela` (Sonnet médio, até 3 em paralelo, arquivos exclusivos, SEM navegador), `qa-visual` (Sonnet médio, com navegador, só reporta), `verificador` e `versionamento` (Haiku baixo), `lider-design` (Opus alto, SÓ para decisão visual nova, um briefing por vez, antes avise o usuário). Anuncie cada passo: `▶ papel · modelo · esforço · tarefa · arquivos`.
+- Modelos: os aliases `opus`/`sonnet`/`haiku` do harness estão quebrados (`IAROUTER` em `~/.claude/settings.json`); só funcionam as definições de agente com ID completo. Uma sessão filha herda no máximo o seu esforço (pedir "alto" a partir de "médio" vira "médio" em silêncio). Não use a sessão antiga em Opus alto.
+- O WebSearch pode falhar com o mesmo erro `IAROUTER`; use curl/WebFetch/navegador para ler páginas.
+- Só você commita e publica. Commite por caminho (nunca `git add -A`), em inglês, com `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- Verifique SEMPRE numa cópia limpa do commit: `git worktree add -q --detach /tmp/clean-check HEAD`, `ln -s .../app/node_modules node_modules`, `npm run verify:release` (inclui tipos, lint, testes e build). Confira que o commit existe (`git log`) ANTES de verificar: já aconteceu de o `git add` falhar e a verificação rodar sobre o commit antigo. Depois `git fetch`, `git push origin <sha>:main`, CI filtrado pelo SHA (`gh run list`, `gh run view`), status da Vercel (`gh api repos/Matheuscroft/ConselhoElemental-main/commits/<sha>/status`) e prova no site por conteúdo: ache uma frase nova nos chunks JS referenciados por `index-*.js` de https://conselho-elemental-main.vercel.app (o `app-version.json` não muda: é 0.1.145 e subir versão exige migração do Matheus antes).
+- Testes de `tests/backup/account-workspace-ui` esperam por tempo (`until`); sob carga podem falhar uma vez: reexecute o arquivo isolado antes de concluir que há defeito.
+- No macOS use `sed -i ''`.
+- **Atalho de login de QA (só local, NUNCA vai a commit):** `app/src/App.tsx` e `app/vite.config.ts` modificados, mais `app/src/lib/dev/`, `app/src/main.qa.tsx`, `app/tests/dev/` (untracked) e `app/.env.local` com `VITE_QA_BYPASS_AUTH=true`. Se uma tarefa precisar editar `App.tsx`, guarde com `git stash push -- app/src/App.tsx app/vite.config.ts`, trabalhe, commite, e devolva com `git stash pop` (haverá conflito se o trecho tocar `ProtectedRoute`: resolva mantendo só o `if (qaBypassAuth()) return <Outlet />;`). Login real local: servidor `app-real` (`.claude/launch.json`, porta livre, usa `app/.env.real.local`).
+- O navegador do app (`mcp__Claude_Browser__*`) está logado no painel do Supabase (projeto `myvxvgeyseoyugskqlqr`): só LEIA; nunca digite senha, segredo ou chave; não crie conta. A instalação de skills, `npx`, `claude mcp add` e mudanças de configuração de segurança do Supabase são do usuário (ele roda os comandos; você dá o comando e confere depois). `chrome-devtools` MCP (v1.13.0, perfil isolado, sem estatísticas) está instalado: use-o em sessões novas para medir desempenho (emulate CPU 4×, Slow 4G, movimento reduzido, traces, heap).
+
+## Estado (publicado, `main` em `619534d`, CI e Vercel verdes, 943 testes na cópia limpa)
+No ar: Santuário com anel de XP e aura sem platô; Ciclos com Reel como calendário, Lua e Estação vivas, moldura de mago em três níveis, foto do dia no Temporal; Flow Tunnel removido; conta com mensagens de erro claras, login Google, login persistente (90 dias sem uso, `localStorage`, caixa ligada por padrão); entrada `/auth` simples; passos pós-login em uma pergunta por tela (conceito em `app/docs/plans/CONCEITO-ACESSO-E-INICIO.md`); tela 'Opções avançadas'; boas-vindas só com 'Começar' e 'Já tenho conta'; '/' em aparelho sem dados abre Despertar → três perguntas → boas-vindas; login antigo (`Auth.tsx`, `authStore.ts`) apagado; `TETO_VIDRO` 15, `TETO_TAMANHOS` 11.
+Só local (nunca commitar): o atalho de login de QA; `app/docs/plans/INSTALACAO-SKILLS.md`, `PLANO-REMASTER.md` e `ANALISE-DEVTOOLS-2026-11-13.md` (documentos de trabalho de Fábio; decida com ele se vão ao repositório).
+
+## Fila (ordem sugerida; confirme com Fábio antes de começar)
+1. **Acabamento do login e da tela inicial (pequeno, um lote):** alvos de 44px (link 'Pilares' 38×44 e marca 43px no cabeçalho, `components/layout` é reservado ao orquestrador); CLS 0,12 e LCP 3,9 s em `/auth` (reservar o espaço do shell antes de montar); rótulos do rodapé e 'pontos' ≥ 12px; flash preto do canvas da aura no Reel; limpeza de `tests/backup/post-restore-barrier.test.mjs` (linha 23 chama um `useAuthStore` inerte do fixture `load-auth-sync.mjs`).
+2. **Pilares com Element Cards** (referência: vídeo do Scrolltide em `~/Pictures/PRINT/scrolltide/`, 'Gravação…16.23.46.mov'; cartões de vidro em pílula, o elemento vivo atrás do cartão em foco, chão refletido; fidelidade de movimento, arte e código NOSSOS, os componentes do Scrolltide são produto pago). Conceito de design já existe em `app/docs/plans/CONCEITO-FE-W2.md` item A (grade 2×2) e precisa ser revisto à luz do vídeo: o Líder de design (Opus) faz o briefing, com aviso.
+3. **Spiral Slider em Momentos** (vídeo 'Gravação…16.22.18.mov'; painéis numa hélice).
+4. **Medir no iPhone real** (LCP/INP de `/santuario` e `/ciclos`, custo dos efeitos WebGL em GPU fraca): o Chrome emulado NÃO prova GPU. Pedir a Fábio para testar e mandar capturas.
+5. Personagem novo e intro nova (precisam de arte): skills `threejs-*`, `blender-*`, `reanimate`, `3dviz-pro-max` já instaladas; `gsap-skills`, `anatomy`, `blender-director` ainda não (Fábio instala).
+
+## Decisões abertas de Fábio
+D2 'Começar do zero, progresso antigo guardado' para conta `legacy` (função nova, com Matheus); D3 'usar este aparelho' no passo de escolher exige baixar e reenviar arquivos; a ordem Despertar vs boas-vindas no primeiro acesso; aceitar a dependência `gsap`; se o bloco 'Google Agenda (beta)' do `TopBar` (botões sempre desabilitados) sai; apagar uma página de painel vazia criada por engano (https://claude.ai/artifact/EahmTLk4ZEZ6eB2Az2RLNJ).
+
+## Pendências do Matheus
+Teste em 14/11 no localhost (precisa de `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY` no `.env.local` dele; por e-mail e senha, o retorno do Google vai sempre para a produção; o progresso é por endereço: se os dados estão em `localhost`, abrir exatamente esse endereço e porta); histórico de migrações do banco divergiu depois do conserto manual da função `progress_private.adopt_legacy_account` (typo `hashtextended`); SMTP próprio no Supabase (hoje o limite é 2 e-mails/hora); repasses em `app/docs/plans/REPASSE-AUTH-*.md` e `REPASSE-ACESSO-SIMPLES.md`.
+
+## Não verificado até hoje
+WebKit/Safari, iPhone real, PWA, login real em produção, retorno do Google no PWA, telas pós-login e 'Opções avançadas' numa conta real, GPU fraca.

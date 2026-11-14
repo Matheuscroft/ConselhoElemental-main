@@ -1,4 +1,4 @@
-## FE-W3 — acesso simples à conta e tela inicial — em andamento (13/11/2026)
+## FE-W3 — acesso simples à conta e tela inicial — publicado; acabamento em fila (13/11/2026)
 
 Origem: Matheus entrou, viu "A conta possui registros anteriores, mas este aparelho não contém uma jornada completa para adotar…", não entendeu e pensou em excluir a conta. Os dados dele estão em outro computador. Fábio pediu uma só tela de login (a bonita), acesso fácil para leigo e melhorias na tela inicial.
 
@@ -14,27 +14,28 @@ Feito e publicado na main:
 - Lote A: entrada `/auth` e textos errados (`c24b510`).
 - Lote B: boas-vindas (`f877c8e`).
 - Lote C: Santuário com "faltam X XP" (`78a6bd1`).
+- Lote 3: uma pergunta por tela depois do login, incluindo o caso conta `legacy` + aparelho sem a jornada ("Seu progresso está em outro aparelho"). Publicado em `b6f89ae`; documentação em `594c447`. Verificação: 947/947 testes.
+- Lote 6: `/` abre as boas-vindas num aparelho sem dados locais e sem acesso, depois do Despertar e das três perguntas; quem tem dados ou acesso segue o caminho antigo. Publicado em `3915b6a`.
+- Lote 4: tela separada "Opções avançadas", faixa dos quatro elementos fora do login, textos sem jargão. Publicado em `c954e38`. Verificação completa: 951/951.
+- Lote 8: apagados `src/pages/Auth.tsx` e `src/stores/authStore.ts` (código legado que não rodava em produção); `ProtectedRoute` com a mesma decisão de antes; 8 de 9 testes de `auth-bootstrap-audit` removidos por testarem só o código apagado; `TETO_VIDRO` de 16 para 15. Publicado em `619534d`. Verificação completa na cópia limpa: 943/943; build ok.
 
 Evidência, reportada pelo orquestrador e não reexecutada neste registro: cópia limpa com 940/940 testes, tipos e lint limpos. QA visual no Chromium a 390 e 768px: sem estouro, sem texto abaixo de 12px, sem erros de console; contraste do botão dourado 9,4:1.
 
-Em fila, nesta ordem:
-1. Lote 3: passos pós-login P0 a P8, uma pergunta por tela, com leitura automática da conta.
-2. Lote 4: tela "Opções avançadas".
-3. Lote 6: porta `/` abre boas-vindas em aparelho sem dados. Risco nos testes de startup.
-4. Lote 8: apagar `src/pages/Auth.tsx` e `src/stores/authStore.ts`, depois baixar `TETO_VIDRO` de 16 para 15.
+Evidência de QA, reportada pelo orquestrador (Chromium, 390 e 768px, Lotes 4 e 6): sem estouro horizontal, sem texto abaixo de 12px, sem erro de console. Não reexecutada neste registro.
 
-Ajustes menores em fila:
-- Link "Pilares" do topo com 38×44 e marca "Conselho Elemental" com 43px de altura (alvo de 44px).
-- Faixa Terra/Fogo/Água/Ar ainda aparece acima do título em `/auth`; o conceito manda tirar.
+Ajustes menores, ainda em fila:
+- Alvos de toque: link "Pilares" do topo com 38×44 e marca "Conselho Elemental" com 43px de altura (alvo de 44px).
 - CLS 0,12 e LCP 3,9 s em `/auth` na produção.
 - Rótulos do rodapé e "pontos" abaixo de 12px.
 - Flash preto do canvas da aura no Reel.
+- Limpeza de `tests/backup/post-restore-barrier.test.mjs`, linha 23: chama um `useAuthStore` inerte do fixture `load-auth-sync.mjs`.
 
-Pendente de decisão de Fábio:
+Decisões pendentes de Fábio:
 - D2: "Começar do zero (progresso antigo guardado)" no caso legacy (função nova, a validar com Matheus).
 - D3: "usar este aparelho" no P3 exige baixar e reenviar arquivos.
+- Pergunta aberta sobre a ordem: hoje o primeiro acesso em `/` é Despertar → três perguntas → boas-vindas (desenho do M11). Fábio pode preferir as boas-vindas antes do Despertar.
 
-Não verificado: WebKit, iPhone real, login real, retorno do Google no PWA.
+Não verificado: WebKit, iPhone real, login real, retorno do Google no PWA; "Opções avançadas" e as telas pós-login (exigem conta); foco por teclado; movimento reduzido real; Safari.
 
 ## Teste do Matheus em 14/11 — dados no computador — aguardando
 
