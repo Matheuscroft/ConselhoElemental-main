@@ -1,12 +1,10 @@
 import { QuestNextSteps } from '@/components/quests/QuestNextSteps';
-import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { TopBar } from '@/components/layout/TopBar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
-import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Menu, Plus, RotateCw, Search } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Plus, RotateCw, Search } from 'lucide-react';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { ACENTO } from '@/lib/design/palette';
 import { useAppStore } from '@/stores/appStore';
@@ -16,7 +14,6 @@ import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanct
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
 import './elemental-preview.css';
-import { HudRecursos } from '@/components/layout/HudRecursos';
 import { AnelXp } from '@/components/sanctuary/AnelXp';
 
 /** The aura costs a shader and three.js, so it arrives after the page does. */
@@ -266,7 +263,6 @@ function ElementComposition({ id }: { id: ElementId }) {
 }
 
 export default function ElementalPreview() {
-  const [routesOpen, setRoutesOpen] = useState(false);
   const timerRunning = useAppStore((state) => state.timer.isRunning);
   const tickTimer = useAppStore((state) => state.tickTimer);
   useEffect(() => {
@@ -298,11 +294,10 @@ export default function ElementalPreview() {
   if (redirect) return <Navigate to={redirect} replace />;
   return <div className="elemental-preview ep-page">
     <a className="ep-skip" href="#ep-main">Ir para o conteúdo</a>
-    <header className="ep-header"><Link to={HOME} className="ep-brand"><span className="ep-brand-symbol" aria-hidden="true"><ArcaneIcon name="santuario" /></span><span>Conselho<br /><strong>Elemental</strong></span></Link><nav aria-label="Navegação principal"><Link to={HOME} aria-current={!requested ? 'page' : undefined}>Santuário</Link><Link to="/pilares">Pilares</Link><button type="button" className="ep-app-menu" aria-label="Explorar todas as páginas" onClick={() => setRoutesOpen(true)} aria-expanded={routesOpen} aria-haspopup="dialog"><Menu size={18} aria-hidden="true" /><span>Explorar</span></button><TopBar accountOnly /></nav><HudRecursos /></header>
+    <TopBar lugar="santuario" />
     <main id="ep-main" ref={mainRef} tabIndex={-1} className="ep-main" aria-label={id ? `Elemento ${ELEMENTS[id].name}` : requested ? 'Elemento não encontrado' : 'Santuário'}>
       {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /><Link className="ep-back" to={HOME}><ArrowLeft size={17} />Voltar ao Santuário</Link></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
     </main>
-    <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} />
     <MobileBottomNav />
     <footer className="ep-footer"><span>Uma jornada. Quatro elementos.</span><Link to="/mapa">Explorar sua jornada <ArrowRight size={14} /></Link></footer>
   </div>;

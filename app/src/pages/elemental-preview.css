@@ -22,13 +22,6 @@
 .ep-main:focus { outline: none; }
 .ep-preview-bar { min-height: 40px; padding: 8px 5%; display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #d5b66f0c; border-bottom: 1px solid var(--ep-line); font-size: var(--ds-text-micro); color: var(--ep-muted); }
 .ep-preview-bar a, .ep-footer a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--ep-gold); }
-.ep-header { position: sticky; top: 0; z-index: 40; background: var(--ds-surface-float); -webkit-backdrop-filter: blur(var(--ds-blur-soft)); backdrop-filter: blur(var(--ds-blur-soft)); max-width: 1248px; margin: auto; min-height: 104px; padding: max(20px, env(safe-area-inset-top)) 40px 20px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
-.ep-brand { display: inline-flex; align-items: center; min-height: 44px; gap: 14px; font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-small); line-height: 1.2; }
-.ep-brand strong { font-weight: 500; font-size: var(--ds-text-lead); }
-.ep-brand-symbol { color: var(--ep-gold); font-size: 44px; }
-.ep-header nav { display: flex; align-items: center; gap: 28px; font-size: var(--ds-text-micro); color: var(--ep-muted); }
-.ep-header nav a { min-height: 44px; display: inline-flex; align-items: center; gap: 8px; }
-.ep-header nav a[aria-current] { color: var(--ep-gold); border-bottom: 1px solid var(--ep-gold); }
 .ep-main { max-width: 1168px; margin: auto; padding: 0 40px; }
 .ep-sanctuary { display: flex; flex-direction: column; align-items: center; max-width: 520px; margin: 0 auto; padding: 8px 0 28px; }
 .ep-sanctuary .ep-character-navigation { width: 100%; }
@@ -156,7 +149,6 @@
 .ep-not-found .ep-element-directory { max-width: 540px; margin-bottom: 32px; }
 @media (max-width: 900px) {
   .ep-element-directory a { font-size: var(--ds-text-micro); gap: 4px; }
-  .ep-header { padding-inline: 24px; }
   .ep-main { padding-inline: 24px; }
   .ep-orbit { height: 380px; --orbit-radius-x: min(39%, calc(50% - 58px)); }
   .ep-portal { width: 80px; min-height: 102px; }
@@ -167,11 +159,6 @@
 @media (max-width: 600px) {
   .ep-character-navigation { width: 100%; }
   .ep-preview-bar { font-size: var(--ds-text-micro); padding: 6px 18px; }
-  .ep-header { min-height: 86px; padding: 14px 20px; }
-  .ep-brand { font-size: var(--ds-text-micro); gap: 8px; }
-  .ep-brand strong { font-size: var(--ds-text-small); }
-  .ep-brand-symbol { font-size: var(--ds-text-hero); }
-  .ep-header nav { font-size: var(--ds-text-micro); gap: 15px; }
   .ep-main { padding: 0 20px; }
   .ep-character-section { width: 100%; }
   .ep-orbit { height: 380px; --orbit-radius-x: min(40%, calc(50% - 58px)); --orbit-radius-y: 17%; }
@@ -204,9 +191,6 @@
   .elemental-preview, .elemental-preview *, .elemental-preview *::before, .elemental-preview *::after, .ep-equipment-overlay { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
-.ep-app-menu { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; min-width: 44px; color: var(--ep-gold); }
-@media (max-width: 400px) { .ep-app-menu span { display: none; } }
-
 /* Canonical Sanctuary: compact chrome, stable actions and existing account dialog. */
 .ep-ritual-row { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--ep-line); }
 .ep-pending .ep-ritual-row a { flex: 1; min-width: 0; border: 0; }
@@ -218,13 +202,6 @@
 .ep-active-session [role="timer"] { color: var(--ep-gold); font-variant-numeric: tabular-nums; }
 .ep-session-message { color: var(--ep-gold); font-size: var(--ds-text-micro); margin-top: 12px !important; }
 .ep-session-message:empty { display: none; }
-@media (max-width: 600px) {
-  .ep-header { min-height: 72px; padding: max(10px, env(safe-area-inset-top)) 20px 10px; gap: 12px; }
-  .ep-header nav { gap: 12px; }
-  .ep-header nav > a:first-child { display: none; }
-  .ep-header .ep-brand { gap: 8px; }
-  .ep-header .ep-app-menu span { display: none; }
-}
 
 /* Keep the native search control legible and its focus visible on touch screens. */
 .ep-search { min-width: 0; }
@@ -232,12 +209,8 @@
 .ep-search:focus-within { outline: 2px solid var(--ep-gold); outline-offset: 3px; }
 .ep-element-hero > div:first-child { min-width: 0; overflow-wrap: anywhere; }
 .ep-element-switcher a { min-width: 0; touch-action: manipulation; }
-.ep-areas h2 { scroll-margin-top: calc(6rem + env(safe-area-inset-top)); }
+.ep-areas h2 { scroll-margin-top: calc(7rem + env(safe-area-inset-top)); }
 @media (max-width: 640px) {
   .ep-main { padding-left: max(20px, env(safe-area-inset-left)); padding-right: max(20px, env(safe-area-inset-right)); }
 }
 
-/* The Sanctuary builds its own header, so the resource line has to be put
-   there too: it is the one screen the shared top bar never reaches. */
-.ep-header { flex-wrap: wrap; }
-.ep-header .hud-recursos { flex: 1 0 100%; padding-inline: 0; padding-block-end: 0; }

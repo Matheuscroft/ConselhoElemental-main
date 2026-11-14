@@ -36,6 +36,7 @@ interface TopBarProps {
   title?: string;
   showBackButton?: boolean;
   rightAction?: React.ReactNode;
+  lugar?: 'santuario' | 'interna';
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -43,6 +44,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   accountOnly = false,
   showBackButton = false,
   rightAction,
+  lugar = 'interna',
 }) => {
   const sync = React.useContext(AccountConnectionContext);
   const navigate = useNavigate();
@@ -138,7 +140,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   return (
     <>
       {accountOnly ? <button type="button" className="elemental-account-button" onClick={() => setIsAccountModalOpen(true)} aria-label="Abrir conta" aria-haspopup="dialog" aria-expanded={isAccountModalOpen}><AccountSeal /></button> : <>
-        <ElementalTopBar title={getPageTitle()} onBack={showBackButton ? () => navigate(-1) : undefined} onExplore={() => setRoutesOpen(true)} exploreOpen={routesOpen}>
+        <ElementalTopBar lugar={lugar} title={getPageTitle()} onBack={showBackButton ? () => navigate(-1) : undefined} onExplore={() => setRoutesOpen(true)} exploreOpen={routesOpen}>
           {rightAction || <button type="button" className="elemental-account-button" onClick={() => setIsAccountModalOpen(true)} aria-label="Abrir conta" aria-haspopup="dialog" aria-expanded={isAccountModalOpen}><AccountSeal /></button>}
         </ElementalTopBar>
         <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} />

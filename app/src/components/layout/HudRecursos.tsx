@@ -1,76 +1,170 @@
-import { Flame, Heart, Sparkles, Zap } from 'lucide-react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useLocation } from 'react-router-dom';
+import { ArcaneIcon, type ArcaneIconName } from '@/components/elemental/ArcaneIcon';
 import { Contagem } from '@/components/motion/Contagem';
 import { Conjurar } from '@/components/motion/Conjurar';
-import { hpDoDia } from '@/lib/recursos/vitalidade';
+import { ACENTO } from '@/lib/design/palette';
+import { HP_BASE, HP_MAXIMO, hpDoDia } from '@/lib/recursos/vitalidade';
 import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
 
+type RecursoId = 'ofensiva' | 'vida' | 'stamina' | 'prana';
+type Estado = 'base' | 'cheio' | 'normal' | 'baixo' | 'esgotado' | 'ativo' | 'repouso';
+
+interface Conta {
+  readonly id: RecursoId;
+  readonly nome: string;
+  readonly valor: number;
+  readonly estado: Estado;
+  /** Arc of the gauge ring, 0..100. Streak has no ring. */
+  readonly medida: number | null;
+  readonly cor: string;
+  readonly dica: string;
+}
+
+const SIGILO_DA_CONTA: Record<RecursoId, ArcaneIconName> = {
+  ofensiva: 'ofensiva', vida: 'vida', stamina: 'stamina', prana: 'prana',
+};
+const LIMITE_BAIXO = 20;
+const ROLAGEM_PARA_FECHAR = 24;
+
+const limitar = (valor: number) => Math.max(0, Math.min(100, valor));
+
+/** Reads the same rules the HUD always used; it only decides how they look. */
+function estadoDeReserva(valor: number): Estado {
+  if (valor <= 0) return 'esgotado';
+  if (valor < LIMITE_BAIXO) return 'baixo';
+  return 'normal';
+}
+
 /**
- * The resources, kept on screen wherever you are.
+ * The resources, kept on screen wherever you are: the "Fio do Nivel".
  *
- * They used to live only on the Sanctuary, which meant that everywhere else
- * in the app they simply did not exist — and a resource you cannot see while
- * you spend it is not a resource, it is a number on another page.
- *
- * Every figure counts to its new value rather than swapping, so a change
- * made on one screen is visible from whichever screen you are on.
+ * Closed, it is one 44px thread (level seal, XP line, four gauge rings) with
+ * no numbers to read. A touch opens a tray inside the header with the exact
+ * figures. It closes on a second touch, Esc, a press outside, a route change
+ * or scrolling away.
  */
 export function HudRecursos() {
   const { getLevelProgress, getStreak, getCompletedHabitsToday } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
+  const { pathname } = useLocation();
+  const [aberto, setAberto] = useState(false);
+  const [rota, setRota] = useState(pathname);
+  const raiz = useRef<HTMLDivElement>(null);
+
+  // A new route always starts closed; adjusted during render, not in an effect.
+  if (rota !== pathname) {
+    setRota(pathname);
+    setAberto(false);
+  }
+
+  useEffect(() => {
+    if (!aberto) return;
+    const origem = window.scrollY;
+    const fecharComEsc = (evento: KeyboardEvent) => { if (evento.key === 'Escape') setAberto(false); };
+    // Listens only; it never prevents the press, so Explorar and the account
+    // button receive their own click.
+    const fecharFora = (evento: PointerEvent) => {
+      if (raiz.current && evento.target instanceof Node && !raiz.current.contains(evento.target)) setAberto(false);
+    };
+    const fecharAoRolar = () => { if (Math.abs(window.scrollY - origem) > ROLAGEM_PARA_FECHAR) setAberto(false); };
+    document.addEventListener('keydown', fecharComEsc);
+    document.addEventListener('pointerdown', fecharFora);
+    window.addEventListener('scroll', fecharAoRolar, { passive: true });
+    return () => {
+      document.removeEventListener('keydown', fecharComEsc);
+      document.removeEventListener('pointerdown', fecharFora);
+      window.removeEventListener('scroll', fecharAoRolar);
+    };
+  }, [aberto]);
 
   const nivel = getLevelProgress();
   const recursos = getResourceSnapshot();
   const ofensiva = getStreak();
   const hp = hpDoDia({ habitosHoje: getCompletedHabitsToday(), ofensiva });
+  const stamina = Math.round(recursos.currentStamina);
+  const prana = Math.round(recursos.currentPrana);
   const xpNoNivel = nivel.xpTotal - nivel.xpAtLevelStart;
+  const faltam = Math.max(0, nivel.xpToNextLevel - xpNoNivel);
   const porcento = Math.max(0, Math.min(100, Math.round(nivel.progressFraction * 100)));
 
+  const contas: readonly Conta[] = [
+    { id: 'ofensiva', nome: 'Ofensiva', valor: ofensiva, estado: ofensiva > 0 ? 'ativo' : 'repouso', medida: null, cor: ACENTO.fogo, dica: ofensiva === 1 ? 'dia seguido' : 'dias seguidos' },
+    { id: 'vida', nome: 'Vida', valor: hp, estado: hp >= HP_MAXIMO ? 'cheio' : hp > HP_BASE ? 'normal' : 'base', medida: limitar(hp), cor: ACENTO.terra, dica: '+5 por ciclo hoje' },
+    { id: 'stamina', nome: 'Stamina', valor: stamina, estado: stamina >= 100 ? 'cheio' : estadoDeReserva(stamina), medida: limitar(stamina), cor: ACENTO.agua, dica: '+8 por ritual hoje; treinos gastam' },
+    { id: 'prana', nome: 'Prana', valor: prana, estado: estadoDeReserva(prana), medida: limitar(prana), cor: ACENTO.ar, dica: 'cresce com sua pontuação; treinos gastam' },
+  ];
+
+  const nomeAcessivel = `Nível ${nivel.level}, ${xpNoNivel} de ${nivel.xpToNextLevel} XP. Ofensiva ${ofensiva} ${ofensiva === 1 ? 'dia' : 'dias'}, vida ${hp} de 100, stamina ${stamina} de 100, prana ${prana} de 100. ${aberto ? 'Ocultar' : 'Mostrar'} detalhes`;
+
   return (
-    <div className="hud-recursos" role="group" aria-label="Seus recursos">
-      {/* The level is the one figure allowed to pop: it is the earned one. */}
-      <Conjurar marca={nivel.level} className="hud-nivel">
-        <span className="hud-selo" aria-hidden="true">{nivel.level}</span>
-      </Conjurar>
+    <div className="hud-recursos" ref={raiz}>
+      <button
+        type="button"
+        className="hud-fio"
+        aria-expanded={aberto}
+        aria-controls="hud-bandeja"
+        aria-label={nomeAcessivel}
+        onClick={() => setAberto((atual) => !atual)}
+      >
+        {/* The level is the one figure allowed to pop: it is the earned one. */}
+        <Conjurar marca={nivel.level} className="hud-nivel">
+          <span className="hud-selo" aria-hidden="true">{nivel.level}</span>
+        </Conjurar>
+        <span className="hud-trilho" aria-hidden="true"><span style={{ inlineSize: `${porcento}%` }} /></span>
+        <span className="hud-contas" aria-hidden="true">
+          {contas.map((conta) => (
+            <span
+              key={conta.id}
+              className="hud-conta"
+              data-recurso={conta.id}
+              data-estado={conta.estado}
+              style={{ '--hud-cor': conta.cor } as CSSProperties}
+            >
+              {conta.medida !== null && (
+                <svg className="hud-anel" viewBox="0 0 24 24" fill="none" strokeWidth="1.5" strokeLinecap="round" focusable="false">
+                  <circle className="hud-anel-trilho" cx="12" cy="12" r="10.5" />
+                  <circle className="hud-anel-arco" cx="12" cy="12" r="10.5" pathLength={100} strokeDasharray={`${conta.medida} 100`} transform="rotate(-90 12 12)" />
+                </svg>
+              )}
+              <ArcaneIcon name={SIGILO_DA_CONTA[conta.id]} size={14} ativo={conta.estado === 'ativo' || conta.estado === 'cheio' || conta.estado === 'normal'} />
+            </span>
+          ))}
+        </span>
+      </button>
 
-      <div className="hud-xp">
-        <div
-          className="hud-xp-trilho"
-          role="progressbar"
-          aria-label="Progresso para o próximo nível"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={porcento}
-        >
-          <span style={{ inlineSize: `${porcento}%` }} />
+      <div id="hud-bandeja" className="hud-bandeja ds-pane" data-aberto={aberto}>
+        <div className="hud-bandeja-miolo">
+          <div className="hud-bandeja-conteudo">
+            <p className="hud-bandeja-nivel">
+              Nível <Contagem valor={nivel.level} beat="settle" />, faltam <Contagem valor={faltam} beat="settle" /> XP
+            </p>
+            <div
+              className="hud-bandeja-barra"
+              role="progressbar"
+              aria-label="Progresso para o próximo nível"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={porcento}
+            >
+              <span style={{ inlineSize: `${porcento}%` }} />
+            </div>
+            <dl className="hud-grade">
+              {contas.map((conta) => (
+                <div key={conta.id} className="hud-item" data-recurso={conta.id} data-estado={conta.estado} style={{ '--hud-cor': conta.cor } as CSSProperties}>
+                  <dt><ArcaneIcon name={SIGILO_DA_CONTA[conta.id]} size={20} />{conta.nome}</dt>
+                  <dd>
+                    <Contagem valor={conta.valor} beat="settle" />
+                    {conta.medida !== null ? '/100' : ''}
+                    <small>{conta.dica}</small>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
-        <small>
-          <Contagem valor={xpNoNivel} beat="settle" /> / {nivel.xpToNextLevel} XP
-        </small>
       </div>
-
-      <ul className="hud-marcas">
-        <li title="Ofensiva">
-          <Flame size={14} aria-hidden="true" />
-          <Contagem valor={ofensiva} beat="settle" />
-          <span className="sr-only">dias de ofensiva</span>
-        </li>
-        <li title="HP">
-          <Heart size={14} aria-hidden="true" />
-          <Contagem valor={hp} beat="settle" />
-          <span className="sr-only">de vida</span>
-        </li>
-        <li title="Stamina">
-          <Zap size={14} aria-hidden="true" />
-          <Contagem valor={Math.round(recursos.currentStamina)} beat="settle" />
-          <span className="sr-only">de stamina</span>
-        </li>
-        <li title="Prana">
-          <Sparkles size={14} aria-hidden="true" />
-          <Contagem valor={Math.round(recursos.currentPrana)} beat="settle" />
-          <span className="sr-only">de prana</span>
-        </li>
-      </ul>
     </div>
   );
 }
