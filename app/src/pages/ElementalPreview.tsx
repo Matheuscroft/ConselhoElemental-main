@@ -4,12 +4,13 @@ import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
 import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Plus, RotateCw, Search } from 'lucide-react';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { Vazio } from '@/components/elemental/blocos';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { ACENTO } from '@/lib/design/palette';
 import { useAppStore } from '@/stores/appStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
-import { ELEMENT_ORDER as ORDER, SANCTUARY_HOME as HOME, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
+import { ELEMENT_ORDER as ORDER, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
 import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
@@ -167,7 +168,7 @@ function ElementalOrbit({ fracao }: { fracao: number }) {
 function ElementDirectory() {
   return <nav className="ep-element-directory" aria-label="Acesso direto aos quatro elementos">
     {ORDER.map((id) => <Link id={`ep-entry-${id}`} key={id} to={elementHref(id)} style={{ '--element-accent': ACCENTS[id] } as CSSProperties}>
-      <ElementSigil id={id} /><span>{ELEMENTS[id].name}</span><ArrowRight size={14} aria-hidden="true" />
+      <ElementSigil id={id} /><span>{ELEMENTS[id].name}</span>
     </Link>)}
   </nav>;
 }
@@ -211,13 +212,13 @@ function SanctuaryComposition() {
         <p className="ep-level-remaining">faltam {format(Math.max(0, level.xpToNextLevel - (level.xpTotal - level.xpAtLevelStart)))} XP para o nível {level.level + 1}</p>
       </div>
     </section>
-    <section className="ep-next ds-pane" aria-labelledby="ep-next-heading">
-      <div className="ep-next-heading"><div><h2 id="ep-next-heading">Seu próximo passo</h2></div><Link className="ep-button ep-primary" to="/invocar"><Plus size={18} />Criar ritual</Link></div>
+    <section className="ep-next ds-altar" aria-labelledby="ep-next-heading">
+      <div className="ds-secao ep-next-heading"><h2 id="ep-next-heading">Seu próximo passo</h2><Link className="ds-botao" data-tipo="secundario" to="/invocar"><ArcaneIcon name="criar" size={18} />Criar ritual</Link></div>
       <SanctuaryRituals key={currentAccountId ?? "local"} />
     </section>
     <QuestNextSteps />
-    <Link className="ep-cycle-card" to="/ciclos"><RotateCw size={22} strokeWidth={1.25} aria-hidden="true" /><div><h3>O poder da constância</h3><p>Encontre seus hábitos e sequências em Ciclos.</p></div><ArrowRight size={20} aria-hidden="true" /></Link>
-    <Link className="ep-all-paths" to="/mapa">Todos os caminhos<ArrowRight size={16} aria-hidden="true" /></Link>
+    <Link className="ds-linha ep-cycle" to="/ciclos"><ArcaneIcon className="ds-linha-sigilo" name="ciclo" size={28} /><div><h3>O poder da constância</h3><p className="ds-nota">Encontre seus hábitos e sequências em Ciclos.</p></div><ArcaneIcon className="ds-linha-chevron" name="seta" size={16} /></Link>
+    <Link className="ds-elo ep-all-paths" to="/mapa"><ArcaneIcon name="mapa" size={16} />Todos os caminhos</Link>
   </>;
 }
 
@@ -234,30 +235,38 @@ function ElementComposition({ id }: { id: ElementId }) {
   const scores = getAreaScores();
   const elementScore = getElementScores().find((entry) => entry.elementId === id);
   const points = elementScore?.score ?? 0;
-  return <div className="ep-element-page" style={{ '--element-accent': ACCENTS[id] } as CSSProperties}>
-    <Link to={HOME} state={{ focusElement: id }} className="ep-back"><ArrowLeft size={17} />Voltar ao Santuário</Link>
-    <section className="ep-element-hero" aria-labelledby="ep-title">
-      <div><p className="ep-kicker">{element.domain}</p><h1 id="ep-title">{element.name}</h1><p className="ep-intro">{element.description}.</p><div className="ep-element-facts"><span><strong>{format(points)}</strong> pontos registrados</span><span><strong>{areas.length}</strong> áreas para explorar</span><span><strong>{format(elementScore?.percentage ?? 0)}%</strong> dos pontos totais</span></div></div>
-      <div className="ep-large-magic"><ElementMagic id={id} /></div>
+  return <div className="ep-element-page" data-element={id}>
+    <section className="ds-cabecalho ep-element-hero" aria-labelledby="ep-title">
+      <h1 id="ep-title">{element.name}</h1>
+      <p>{element.description}.</p>
+      <ul className="ds-cifras ep-element-facts">
+        <li className="ds-cifra">{format(points)}<small>pontos registrados</small></li>
+        <li className="ds-cifra">{areas.length}<small>áreas para explorar</small></li>
+        <li className="ds-cifra">{format(elementScore?.percentage ?? 0)}%<small>dos pontos totais</small></li>
+      </ul>
     </section>
-    <nav className="ep-element-switcher" aria-label="Trocar elemento">{ORDER.map((item) => <Link key={item} to={elementHref(item)} aria-current={item === id ? 'page' : undefined} style={{ '--element-accent': ACCENTS[item] } as CSSProperties}><ElementSigil id={item} /><span>{ELEMENTS[item].name}</span></Link>)}</nav>
+    <nav className="ds-abas ep-element-switcher" data-element={id} aria-label="Trocar elemento">{ORDER.map((item) => <Link key={item} to={elementHref(item)} aria-current={item === id ? 'page' : undefined}><ElementSigil id={item} /><span>{ELEMENTS[item].name}</span></Link>)}</nav>
     <section className="ep-areas" aria-labelledby="ep-areas-title">
-      <div className="ep-area-toolbar"><div><h2 id="ep-areas-title">Suas áreas de vida</h2><p>Abra uma área para ver seus caminhos.</p></div><label className="ep-search"><Search size={18} aria-hidden="true" /><span className="sr-only">Buscar áreas de {element.name}</span><input type="search" name="elemental-area-search" autoComplete="off" spellCheck={false} placeholder="Buscar uma área…" value={query} onChange={(event) => updateFilters({ query: event.target.value })} /></label></div>
-      <div className="ep-area-filters" role="group" aria-label="Filtrar áreas de vida">
+      <div className="ds-secao ep-area-toolbar"><h2 id="ep-areas-title">Suas áreas de vida</h2></div>
+      <p className="ds-nota ep-area-hint">Abra uma área para ver seus caminhos.</p>
+      <label className="ds-campo ep-search" data-tipo="busca"><span className="sr-only">Buscar áreas de {element.name}</span><ArcaneIcon name="buscar" size={18} /><input type="search" name="elemental-area-search" autoComplete="off" spellCheck={false} placeholder="Buscar uma área…" value={query} onChange={(event) => updateFilters({ query: event.target.value })} /></label>
+      <div className="ds-abas ep-area-filters" data-tom="filtro" role="group" aria-label="Filtrar áreas de vida">
         <button type="button" aria-pressed={!activeOnly} onClick={() => updateFilters({ activeOnly: false })}>Todas as áreas <span>{areas.length}</span></button>
         <button type="button" aria-pressed={activeOnly} onClick={() => updateFilters({ activeOnly: true })}>Minhas áreas ativas <span>{activeCount}</span></button>
       </div>
-      <p className="ep-count" role="status">{filtered.length} de {areas.length} áreas{activeOnly ? ' · filtro de áreas ativas' : ''}</p>
+      <p className="ds-nota ep-count" role="status">{filtered.length} de {areas.length} áreas{activeOnly ? ', só as áreas ativas' : ''}</p>
       <div className="ep-area-grid">{filtered.map((area) => {
         const score = scores.find((entry) => entry.areaId === area.id);
         const active = selectedAreas.includes(area.id);
-        return <details className="ep-area-card" key={area.id}>
-          <summary><span className="ep-area-mark"><ElementSigil id={id} /></span><span className="ep-area-name">{area.name}<small>{active ? 'Área ativa' : 'Disponível para explorar'}</small></span><Plus size={19} className="ep-expand-icon" aria-hidden="true" /></summary>
-          <div className="ep-area-content"><p>{area.description || `Uma área da sua jornada em ${element.name}.`}</p><span className="ep-area-score">{format(score?.score ?? 0)} pontos registrados · {score?.taskCount ?? 0} rituais</span><Link className="ep-button" to={area.id === 'area-saude' ? '/treinos' : `/dominios/${encodeURIComponent(area.id)}`}>{area.id === 'area-saude' ? 'Abrir treinos' : 'Explorar área'}<ArrowRight size={16} /></Link>{area.id === 'area-saude' && <Link className="ep-area-secondary" to={`/dominios/${encodeURIComponent(area.id)}`}>Ver subáreas de exercício físico<ArrowRight size={14} /></Link>}</div>
+        const saude = area.id === 'area-saude';
+        return <details className="ds-runa ep-area-card" data-forma="vitrine" data-element={id} key={area.id}>
+          <summary className="ds-runa-cabeca"><span className="ds-runa-arte ep-area-mark"><ElementSigil id={id} /></span><span className="ds-runa-titulo ep-area-name">{area.name}<small className="ds-meta">{active ? 'Área ativa' : 'Disponível para explorar'}</small></span><ArcaneIcon className="ds-runa-chevron" name="chevron" size={16} /></summary>
+          <div className="ds-runa-conteudo ep-area-content"><p className="ds-nota">{area.description || `Uma área da sua jornada em ${element.name}.`}</p><div className="ds-meta"><span>{format(score?.score ?? 0)} pontos registrados</span><span>{score?.taskCount ?? 0} rituais</span></div>
+            <div className="ds-runa-pe">{saude ? <Link className="ds-botao" data-tipo="fantasma" to={`/dominios/${encodeURIComponent(area.id)}`}>Ver subáreas de exercício físico</Link> : <span />}<Link className="ds-botao" data-tipo="secundario" to={saude ? '/treinos' : `/dominios/${encodeURIComponent(area.id)}`}>{saude ? 'Abrir treinos' : 'Explorar área'}</Link></div></div>
         </details>;
       })}</div>
-      {filtered.length === 0 && <div className="ep-empty"><p>{query.trim() ? `Nenhuma área encontrada para “${query}”${activeOnly ? ' entre as áreas ativas' : ''}.` : 'Você ainda não ativou áreas deste elemento.'}</p><button type="button" className="ep-button" onClick={() => updateFilters({ query: '', activeOnly: false })}>Mostrar todas as áreas</button></div>}
-      <Link to="/dominios" className="ep-manage">Gerenciar áreas ativas e personalizadas <ArrowRight size={16} /></Link>
+      {filtered.length === 0 && <Vazio compacto titulo={query.trim() ? 'Nenhuma área encontrada' : 'Nenhuma área ativa'} texto={query.trim() ? `Nada para “${query}”${activeOnly ? ' entre as áreas ativas' : ''}.` : 'Você ainda não ativou áreas deste elemento.'} acao={<button type="button" onClick={() => updateFilters({ query: '', activeOnly: false })}>Mostrar todas as áreas</button>} />}
+      <Link to="/dominios" className="ds-elo ep-manage">Gerenciar áreas ativas e personalizadas</Link>
     </section>
   </div>;
 }
@@ -296,9 +305,9 @@ export default function ElementalPreview() {
     <a className="ep-skip" href="#ep-main">Ir para o conteúdo</a>
     <TopBar lugar="santuario" />
     <main id="ep-main" ref={mainRef} tabIndex={-1} className="ep-main" aria-label={id ? `Elemento ${ELEMENTS[id].name}` : requested ? 'Elemento não encontrado' : 'Santuário'}>
-      {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /><Link className="ep-back" to={HOME}><ArrowLeft size={17} />Voltar ao Santuário</Link></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
+      {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
     </main>
     <MobileBottomNav />
-    <footer className="ep-footer"><span>Uma jornada. Quatro elementos.</span><Link to="/mapa">Explorar sua jornada <ArrowRight size={14} /></Link></footer>
+    <footer className="ep-footer"><span>Uma jornada. Quatro elementos.</span><Link className="ds-elo" to="/mapa">Explorar sua jornada</Link></footer>
   </div>;
 }

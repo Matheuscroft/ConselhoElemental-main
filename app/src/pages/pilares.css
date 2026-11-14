@@ -1,51 +1,31 @@
-.elemental-pillars { container-type: inline-size; color: #f2efe7; padding-bottom: 16px; }
-.elemental-pillars :is(a, button):focus-visible { outline: 2px solid #d5b66f; outline-offset: 4px; }
-.pillars-back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: #aab4c4; font-size: var(--ds-text-micro); }
-.pillars-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 0 28px; }
-.pillars-eyebrow { color: #d5b66f; font-size: var(--ds-text-micro); margin-bottom: 8px; }
-.pillars-heading h2 { font: 500 clamp(25px, 3vw, 36px)/1.2 Cinzel, Georgia, serif; }
-.pillars-heading h2 + p { max-width: 52ch; margin-top: 12px; color: #aab4c4; font-size: var(--ds-text-small); line-height: 1.7; }
-.pillars-manage { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; flex-shrink: 0; color: #d5b66f; font-size: var(--ds-text-micro); }
-.pillars-balance { border-block: 1px solid #aab4c424; padding: 24px 0; }
-.pillars-balance-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
-.pillars-balance h3, .pillars-explore h3 { font-size: var(--ds-text-body); font-weight: 500; }
-.pillars-balance-heading p, .pillars-balance-note { font-size: var(--ds-text-micro); color: #aab4c4; }
-.pillars-balance-track { display: flex; height: 6px; background: #202b3a; border-radius: 6px; overflow: hidden; margin: 20px 0 16px; }
-.pillars-balance-legend { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; list-style: none; }
-.pillars-balance-legend li { display: grid; grid-template-columns: 1fr auto; gap: 4px; font-size: var(--ds-text-micro); }
-.pillars-balance-legend li > span { color: var(--pillar-accent); }
-.pillars-balance-legend strong { font-weight: 500; font-variant-numeric: tabular-nums; }
-.pillars-balance-legend small { grid-column: 1 / -1; color: #aab4c4; font-size: var(--ds-text-micro); }
-.pillars-balance-note { margin-top: 16px; max-width: 75ch; line-height: 1.6; }
-.pillars-explore { padding-top: 28px; }
-.pillars-explore > p { color: #aab4c4; margin-top: 6px; font-size: var(--ds-text-micro); }
-.pillars-explore { margin-bottom: 20px; }
-.pillars-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 22px 0; border-block: 1px solid #aab4c424; margin-top: 28px; }
+/* Pilares (1B): cabecalho, equilibrio e rodape em blocos ds-*. O palco fica em components/pilares. */
+.elemental-pillars { container-type: inline-size; color: rgb(var(--el-text)); padding-bottom: 16px; }
+.elemental-pillars :is(a, button):focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 4px; }
+.pillars-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 12px; }
+.pillars-manage { flex-shrink: 0; }
+.pillars-explore { margin-bottom: var(--ds-ritmo-cabeca); }
+.pillars-explore h3 { font-size: var(--ds-text-body); font-weight: 500; }
+
+/* Equilibrio elemental: ds-grupo recolhido por padrao. */
+.pillars-balance > summary > span { flex: 1 1 auto; }
+.ds-grupo.pillars-balance > summary > small { margin-left: 0; }
+.ds-grupo.pillars-balance[open] > summary > svg { transform: rotate(180deg); }
+.pillars-balance-resumo { margin: 0 0 var(--ds-ritmo-cabeca); }
+.pillars-balance-track { display: flex; gap: 2px; margin-bottom: var(--ds-ritmo-cabeca); }
+.pillars-balance-segment { display: block; flex-basis: 0; flex-shrink: 1; min-width: 0; }
+.pillars-balance-segment:empty { display: none; }
+.pillars-balance-legend { padding: 0; margin: 0 0 var(--ds-ritmo-cabeca); list-style: none; }
+.pillars-balance-legend .ds-linha-valor { display: inline-flex; align-items: baseline; gap: 8px; font-size: var(--ds-text-small); }
+.pillars-balance-legend .ds-linha-valor strong { font-weight: 500; }
+.pillars-balance-legend .ds-linha-valor small { color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: var(--ds-text-micro); }
+
+/* Rodape: ds-linha com sigilo, texto e botao secundario. */
+.pillars-footer { margin-top: var(--ds-ritmo-secao); padding-block: 16px; border-top: 1px solid var(--ds-fio); }
+.pillars-footer > span { min-width: 0; }
 .pillars-footer strong { display: block; font-weight: 500; font-size: var(--ds-text-small); }
-.pillars-footer small { display: block; color: #aab4c4; margin-top: 6px; font-size: var(--ds-text-micro); }
-.pillars-footer > span:last-child { display: inline-flex; align-items: center; gap: 10px; font-size: var(--ds-text-micro); color: #d5b66f; flex-shrink: 0; }
+.pillars-footer small { display: block; color: rgb(var(--el-muted)); margin-top: 4px; font-size: var(--ds-text-micro); }
 @media (max-width: 600px) {
-  .pillars-heading { display: block; padding: 12px 0 20px; }
-  .pillars-manage { margin-top: 12px; }
-  .pillars-balance-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; }
-  .pillars-footer { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .pillars-heading { flex-wrap: wrap; gap: 0 16px; }
+  .pillars-footer { grid-template-columns: 28px minmax(0, 1fr); }
+  .pillars-footer > .ds-botao { grid-column: 1 / -1; }
 }
-
-/* R22: discovery first on phones, statistics as a secondary disclosure. */
-.pillars-heading h1 { font: 500 clamp(25px, 5vw, 36px)/1.2 Cinzel, Georgia, serif; }
-.pillars-heading h1 + p { max-width: 52ch; margin-top: 12px; color: #aab4c4; font-size: var(--ds-text-small); line-height: 1.7; }
-.pillars-eyebrow { display: flex; align-items: center; gap: 10px; }
-.pillars-explore { padding-top: 0; }
-.pillars-balance { padding: 0; border-radius: 16px; background: #141b2780; border: 1px solid #aab4c424; }
-.pillars-balance > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 16px; justify-content: space-between; min-height: 80px; padding: 16px; }
-.pillars-balance > summary::-webkit-details-marker { display: none; }
-.pillars-balance > summary span { font-size: var(--ds-text-body); }
-.pillars-balance > summary small { display: block; color: #aab4c4; font-size: var(--ds-text-micro); margin-top: 5px; }
-.pillars-balance > summary svg { flex-shrink: 0; }
-.pillars-balance[open] > summary svg { transform: rotate(180deg); }
-.pillars-balance > summary:focus-visible { outline: 2px solid #d5b66f; outline-offset: -4px; border-radius: 16px; }
-.pillars-balance-content { padding: 0 16px 16px; }
-.pillars-footer { border: 1px solid #d5b66f40; border-radius: 20px; padding: 20px; background: linear-gradient(120deg, #d5b66f0a, #141b2780); }
-
-.pillars-balance > summary svg { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
-@media (prefers-reduced-motion: reduce) { .pillars-balance > summary svg { transition: none; } }
