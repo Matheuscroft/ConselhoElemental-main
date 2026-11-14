@@ -242,3 +242,7 @@
   @keyframes noticia-fade { from { opacity: 0; } to { opacity: 1; } }
   @keyframes noticia-fade-sai { from { opacity: 1; } to { opacity: 0; } }
 }
+
+@supports (transition-timing-function: linear(0, 1)) {
+  .noticias { --ds-ease-conjure: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.077 22.1%, 1.121 24.7%, 1.149 27.4%, 1.158 30.1%, 1.134 36.3%, 1.077 41.5%, 1.036 46.5%, 1.012 51.4%, 0.996 57.4%, 0.99 63.7%, 1 100%); }
+}
