@@ -80,7 +80,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const startsSignup=new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro';
   const [accessMode,setAccessMode]=useState<AccountAccessMode>(startsSignup ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
   const [emailOpen,setEmailOpen]=useState(startsSignup),[signupSent,setSignupSent]=useState(false),[authSource,setAuthSource]=useState<'google'|'email'>('google');
-  const [authFeedback,setAuthFeedback]=useState(notice==='oauth'?'Conferindo o retorno do provedor…':notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
+  const [authFeedback,setAuthFeedback]=useState(notice==='oauth'?'Conferindo seu acesso…':notice==='returned'?'O link foi aberto e suas credenciais foram removidas do endereço. Entre para validar o acesso.':notice==='invalid'?'O link não pôde ser confirmado aqui. Entre ou solicite outra confirmação.':''),[authError,setAuthErrorText]=useState(''),[authCode,setAuthCode]=useState<string|null>(null);
   const setAuthError=(reason:string,code:string|null=null)=>{setAuthErrorText(reason);setAuthCode(code);};
   const [receiveMode,setReceiveMode]=useState(false);
   const [resolution,setResolution]=useState<{raw:string;journal:Readonly<AccountResolution>}|null>(null);
@@ -103,7 +103,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
   const [remote,setRemote]=useState<RemoteLook|null>(null),[stillLegacy,setStillLegacy]=useState(false);
   const [choice,setChoice]=useState<'account'|'device'|null>(null),[replaceConsent,setReplaceConsent]=useState(false),[advancedOpen,setAdvancedOpen]=useState(false);
-  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),emailField=useRef<HTMLInputElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null),advancedRef=useRef<HTMLDetailsElement>(null);
+  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),emailField=useRef<HTMLInputElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null),advancedLink=useRef<HTMLButtonElement>(null);
   /** Single decision point for the saved access: this device (localStorage) or this tab (sessionStorage). */
   const savedAccess=(remember?:boolean)=>accountAccessStorage(remember,window);
   const pair=()=>JSON.stringify([window.localStorage.getItem(STORE_KEYS.core),window.localStorage.getItem(STORE_KEYS.fitness)]);
@@ -201,7 +201,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
     if(forget)forgetSavedAccess();
     const opened=session.current;session.current=null;identity.current=null;
-    if(forget&&opened)signOutLocal(opened);else opened?.dispose();setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');setRemote(null);setStillLegacy(false);setChoice(null);setReplaceConsent(false);
+    if(forget&&opened)signOutLocal(opened);else opened?.dispose();setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');setRemote(null);setStillLegacy(false);setChoice(null);setReplaceConsent(false);setAdvancedOpen(false);
   }
   function changeAccess(mode:AccountAccessMode) {
     if(!ready||busy||job.current!==null||userId)return;
@@ -234,7 +234,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       await applyStoredProgressRepair({origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,otherTabsClosed:repairConsent,isCurrent:()=>isCurrent(token)&&pair()===captured},plan);
       if(!isCurrent(token))return;
       await refresh(token);
-      if(isCurrent(token))setMessage('Dados antigos corrigidos e conferidos. A atividade foi preservada como item independente; agora você pode sincronizar este aparelho.');
+      if(isCurrent(token))setMessage('Dados antigos corrigidos e conferidos. A atividade foi preservada como item independente; agora você pode salvar este aparelho na conta.');
     });
   }
   function authenticate(kind:AccountAccessMode){
@@ -249,7 +249,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         const result=await accessAccount(opened.client,input,()=>isCurrent(token)&&session.current===opened);
         if(result.kind==='confirmation'){opened.dispose();session.current=null;setSignupSent(true);setAccessMode('login');window.history?.replaceState(null, '', '/auth');setAuthFeedback(result.message);return;}
         const id=result.userId;
-        if((pending&&pending.intent.userId!==id)||(binding&&binding.userId!==id)||(resolution&&resolution.journal.userId!==id))throw new Error('Entre na mesma conta usada nesta tentativa para conferir seu recibo.');
+        if((pending&&pending.intent.userId!==id)||(binding&&binding.userId!==id)||(resolution&&resolution.journal.userId!==id))throw new Error('Entre na mesma conta usada nesta tentativa para continuar.');
         const {rememberAuthenticatedAccountAccess}=await import('@/lib/backup/account-live-access');
         await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:savedAccess(keep)});
         if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
@@ -285,7 +285,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       const bindingRaw=window.localStorage.getItem(ACCOUNT_BINDING_KEY);if(bindingRaw)ids.push((await inspectAccountBinding(bindingRaw,window.location.origin)).userId);
       const pendingRaw=window.localStorage.getItem(ACCOUNT_INTENT_KEY);if(pendingRaw)ids.push((await inspectAccountIntent(pendingRaw,window.location.origin)).userId);
       const resolutionRaw=window.localStorage.getItem(ACCOUNT_RESOLUTION_KEY);if(resolutionRaw)ids.push((await inspectAccountResolution(resolutionRaw,window.location.origin)).userId);
-      if(ids.some(other=>other!==id))throw new Error('Entre na mesma conta usada nesta tentativa para conferir seu recibo.');
+      if(ids.some(other=>other!==id))throw new Error('Entre na mesma conta usada nesta tentativa para continuar.');
       const {rememberAuthenticatedAccountAccess}=await import('@/lib/backup/account-live-access');
       await rememberAuthenticatedAccountAccess(opened,{userId:id,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:savedAccess(keep)});
       if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
@@ -335,10 +335,10 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       const current=()=>isCurrent(token)&&session.current===opened&&identity.current===id&&window.localStorage.getItem(ACCOUNT_INTENT_KEY)===attempt.raw;
       const recoveryContext={origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,otherTabsClosed:true,isCurrent:current};
       const selectedTransport=createSupabaseAccountTransport(opened.client,{expectedUserId:id,currentUserId:()=>identity.current,isCurrent:current});
-      setMessage('Conferindo o recibo e concluindo a conexão protegida…');
+      setMessage('Verificando se a conta recebeu tudo e concluindo a conexão…');
       const reviewed=await reviewAccountTransfer(recoveryContext,{raw:attempt.raw,retryConfirmed:true},selectedTransport);
       if(!reviewed.receipt)throw new Error('O servidor ainda não confirmou o envio. Preserve este navegador e tente novamente quando a conexão estiver estável.');
-      if(reviewed.localChanged)throw new Error('O progresso mudou depois desta tentativa. Abra “Cópias, versões e recuperação” para preservar as duas versões antes de continuar.');
+      if(reviewed.localChanged)throw new Error('O progresso mudou depois desta tentativa. Abra “Opções avançadas” para guardar as duas versões antes de continuar.');
       await finishAccountTransferLocally(recoveryContext,{raw:attempt.raw,localUseConfirmed:true,bindAccountConfirmed:true},selectedTransport);
       if(!current()&&window.localStorage.getItem(ACCOUNT_INTENT_KEY)!==null)throw new Error('A conexão mudou. Reabra a conta antes de continuar.');
       const bindingRaw=window.localStorage.getItem(ACCOUNT_BINDING_KEY);
@@ -487,7 +487,10 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const panel = (resolution || versions) ? <AccountResolutionPanel key={resolution?'recover':'choose'} versions={versions??undefined} resolution={resolution?.journal} busy={busy} released={ACCOUNT_TRANSFER_WRITES_RELEASED&&!blocked&&tabs&&!!userId} onChoose={chooseVersion} onRecover={recoverResolution} onKeepLocal={keepResolutionLocal}/> : null;
   const panelInStep = (step === 'metade' && !!resolution) || (step === 'escolher' && choice === 'device');
   const beginFresh = () => { if (!baseline?.snapshot) startNewJourney(true); else connectJourney(false, false, true); };
-  function openAdvanced(){setAdvancedOpen(true);setTimeout(()=>advancedRef.current?.scrollIntoView?.({block:'start'}),0);}
+  /** The advanced options are their own screen: focus goes to its title on open and back to the footer link on return. */
+  function openAdvanced(){setAdvancedOpen(true);setTimeout(()=>heading.current?.focus(),0);}
+  function closeAdvanced(){setAdvancedOpen(false);setTimeout(()=>advancedLink.current?.focus(),0);}
+  const showAdvanced = advancedOpen && !!userId && !blocked;
 
   // One small view per step; each returns its title, its lead sentence and its body.
   const stepProcurando = () => ({ title: 'Procurando seu progresso…', lead: signedInNotice(email), body: remoteKind === 'error' ? <>
@@ -615,17 +618,18 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const views: Record<Exclude<Step, 'entrada'>, () => { title: string; lead: string; body: ReactNode }> = { procurando: stepProcurando, ajuste: stepAjuste, metade: stepMetade, ligado: stepLigado, salvar: stepSalvar, novo: stepNovo, trazer: stepTrazer, escolher: stepEscolher, 'antigo-sem': stepAntigoSem, 'antigo-com': stepAntigoCom };
   const view = step === 'entrada' ? null : views[step]();
   const signedView = userId ? view : null;
+  const advancedTitle = 'Opções avançadas', advancedLead = 'Para guardar arquivos de cópia ou resolver um problema. Você não precisa disto no dia a dia.';
   const entryTitle = accessMode === 'signup' ? 'Comece sua jornada' : 'Sua jornada continua';
   const entryLead = accessMode === 'signup' ? 'Crie sua conta para ver seu progresso em qualquer aparelho.' : 'Entre para ver seu progresso em qualquer aparelho.';
   return <div className="entry-shell">
     <a className="entry-skip" href="#account-workspace-title">Ir para o acesso da conta</a>
     <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/santuario" hidden={!userId}><ArrowLeft size={16} aria-hidden="true" />Voltar ao app</a></div>
     <div className="entry-layout">
-    <EntryArtwork />
+    <EntryArtwork elements={false} />
     <main className="restore-workspace account-workspace entry-main" aria-labelledby="account-workspace-title">
-    {(pending || resolution) && <a className="restore-workspace-back entry-context" href="/?progresso=conta" onClick={event=>{event.preventDefault();window.location.reload();}}><ArrowLeft size={18} aria-hidden="true" />Recarregar conferência</a>}
-    <header><h1 id="account-workspace-title" ref={heading} tabIndex={-1}>{signedView ? signedView.title : entryTitle}</h1></header>
-    <p>{signedView ? signedView.lead : entryLead}</p>
+    {(pending || resolution) && <a className="restore-workspace-back entry-context" href="/?progresso=conta" onClick={event=>{event.preventDefault();window.location.reload();}}><ArrowLeft size={18} aria-hidden="true" />Recarregar</a>}
+    <header><h1 id="account-workspace-title" ref={heading} tabIndex={-1}>{showAdvanced ? advancedTitle : signedView ? signedView.title : entryTitle}</h1></header>
+    <p>{showAdvanced ? advancedLead : signedView ? signedView.lead : entryLead}</p>
     {!ACCOUNT_ACCESS_RELEASED&&<p className="account-workspace-release" role="status">O acesso à conta ainda não está liberado nesta versão.</p>}
     {!ACCOUNT_TRANSFER_WRITES_RELEASED&&<section aria-labelledby="account-mobile"><h2 id="account-mobile">Seu progresso no celular</h2><p>Você já pode importar sua cópia completa neste aparelho, incluindo atividades, histórico e XP. Cadastro e acesso à conta são separados: envio e sincronização ainda não liberados.</p><a className="restore-workspace-back" href="/?progresso=restaurar">Importar minha cópia neste aparelho</a><p>Para validar sua conta, crie o acesso abaixo, confirme o e-mail e entre novamente. Entrar não envia nem substitui sua jornada.</p></section>}
     <section className="entry-access-card ds-pane" aria-label="Acesso à conta" hidden={!!userId}>
@@ -658,15 +662,16 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         {accessMode==='login'?<p className="account-switch">Não tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('signup')}>Criar conta com e-mail</button></p>:<p className="account-switch">Já tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('login')}>Entrar</button></p>}
       </div>
     </section>
-    {view && <section key={step} className="account-step ds-pane" data-step={step} aria-labelledby={userId ? undefined : 'account-step-title'} aria-label={userId ? view.title : undefined}>
+    {view && <section key={step} className="account-step ds-pane" data-step={step} hidden={showAdvanced} aria-labelledby={userId ? undefined : 'account-step-title'} aria-label={userId ? view.title : undefined}>
       {!userId && <h2 id="account-step-title">{view.title}</h2>}
       {view.body}
       {userId && <div className="account-step-footer">
-        <button type="button" className="account-link-button" hidden={blocked} onClick={openAdvanced}>Opções avançadas</button>
+        <button type="button" ref={advancedLink} className="account-link-button" hidden={blocked} onClick={openAdvanced}>Opções avançadas</button>
         <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>closeAccess()}>Sair desta conta</button>
       </div>}
     </section>}
-    <details id="account-advanced" ref={advancedRef} className="account-advanced" open={advancedOpen} onToggle={event=>setAdvancedOpen(event.currentTarget.open)} hidden={blocked}><summary>Cópias, versões e recuperação</summary>
+    <section id="account-advanced" className="account-advanced account-step ds-pane" aria-label={advancedTitle} hidden={!showAdvanced}>
+    <button type="button" className="restore-workspace-secondary" onClick={closeAdvanced}>Voltar</button>
     <div hidden={!ACCOUNT_TRANSFER_WRITES_RELEASED&&!pending&&!resolution}>
     {ready&&baseline&&!baseline.snapshot&&!pending&&!binding&&!resolution&&<section aria-labelledby="account-new"><h2 id="account-new">Sua primeira jornada</h2>
       <p>Este aparelho ainda não tem progresso. Se você já usa o app em outro dispositivo, receba a jornada salva. Para começar do zero, vamos conferir se sua conta também está vazia.</p>
@@ -718,7 +723,10 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||busy||blocked||!onStart||!copy||!userId||!tabs||!allProfiles||!liveConsent} onClick={startLive}>Sincronizar enquanto uso o app</button>
     </section>}
     </div>
-    </details>
+    {failure()}
+    <p className="account-step-status" role="status" aria-live="polite">{busy ? (message || 'Aguarde, não feche esta página…') : message}</p>
+    {authCode&&<p className="account-error-code">Código para suporte: {authCode}</p>}
+    </section>
     {!view && <><p role="status" aria-live="polite">{busy?'Aguarde, não feche esta página…':message}</p>{error&&<p role="alert" className="restore-workspace-error">{error}</p>}</>}
   </main></div>
     <footer className="entry-footer"><a href="/privacidade.html">Privacidade</a></footer>

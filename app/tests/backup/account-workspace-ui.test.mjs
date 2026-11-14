@@ -412,7 +412,45 @@ test('P5: legacy account and device with data keeps its box and hands the legacy
 test('P6: a bound device opens the app; the footer of every post-login step has advanced options and sign-out',async()=>{
  const f=fixture({bound:true,handoff:true});await loginAs(f);
  assert.match(f.content(),/Este aparelho já está ligado à sua conta/);f.click('Abrir o app');await flush();assert.equal(f.requests[0].name,'connectCurrentAccountProgress');
- const details=()=>f.nodes().find(n=>n.type==='details'&&n.props.id==='account-advanced');assert.equal(details().props.open,false);
- f.click('Opções avançadas');assert.equal(details().props.open,true);assert.equal(f.timers.length>0,true);
+ const screen=()=>f.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced'),step=()=>f.nodes().find(n=>n.type==='section'&&n.props['data-step']);
+ assert.equal(screen().props.hidden,true);assert.equal(step().props.hidden,false);
+ f.click('Opções avançadas');assert.equal(screen().props.hidden,false);assert.equal(step().props.hidden,true);assert.equal(f.timers.length>0,true);
  assert.ok(buttons(f).includes('Sair desta conta'));f.unmount();
+});
+
+test('Opções avançadas is its own screen: it shows the technical content, keeps it in the tree while closed, and Voltar returns to the step',async()=>{
+ const f=fixture({handoff:true});await loginAs(f);
+ const screen=()=>f.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced'),step=()=>f.nodes().find(n=>n.type==='section'&&n.props['data-step']),h1=()=>text(f.nodes().find(n=>n.type==='h1'));
+ assert.equal(screen().props.hidden,true);assert.equal(h1(),'Salvar seu progresso na conta');
+ // closed: the technical content is still rendered (hidden), the file input and the form are always in the tree
+ assert.ok(buttons(f).includes('Baixar cópia antes do envio'));assert.ok(f.nodes().some(n=>n.type==='input'&&n.props.type==='file'));assert.ok(f.nodes().some(n=>n.type==='form'));
+ const before=f.timers.length;f.click('Opções avançadas');
+ assert.equal(screen().props.hidden,false);assert.equal(step().props.hidden,true);assert.equal(h1(),'Opções avançadas');
+ assert.match(f.content(),/Para guardar arquivos de cópia ou resolver um problema\. Você não precisa disto no dia a dia\./);
+ assert.equal(f.timers.length,before+1);// focus moves to the title
+ assert.ok(flatten(screen()).some(n=>n.type==='button'&&text(n.props.children)==='Baixar cópia antes do envio'));assert.ok(flatten(screen()).some(n=>n.type==='input'&&n.props.type==='file'));
+ assert.ok(flatten(screen()).some(n=>n.type==='button'&&text(n.props.children)==='Voltar'));
+ assert.equal(f.nodes().filter(n=>n.type==='h1').length,1);
+ f.click('Voltar');assert.equal(screen().props.hidden,true);assert.equal(step().props.hidden,false);assert.equal(h1(),'Salvar seu progresso na conta');assert.equal(f.timers.length,before+2);// focus returns to the link
+ assert.equal(f.requests.length,0);assert.equal(f.handoffs.length,0);f.unmount();
+});
+
+test('Opções avançadas keeps one resolution panel and closes when the account is left; the account screen drops the four-elements strip',async()=>{
+ const f=fixture({bound:true});await prepared(f);await signed(f);
+ f.click('Opções avançadas');f.click('Comparar versão local e online');f.requests[0].resolve({localArchive:'local',remoteArchive:'remote',pendingArchive:null,localSummary:{tasks:2,habits:1,sessions:0},remoteSummary:{tasks:1,habits:0,sessions:0}});await flush();f.render();
+ assert.match(f.content(),/2 \/ 1/);assert.ok(f.panel());
+ const artwork=f.nodes().find(n=>typeof n.type==='function'&&n.type.name==='EntryArtwork');assert.ok(artwork);assert.equal(artwork.props.elements,false);
+ f.click('Voltar');f.click('Opções avançadas');f.click('Voltar');
+ f.unmount();
+ const g=fixture({handoff:true});await loginAs(g);g.click('Opções avançadas');
+ const screen=()=>g.nodes().find(n=>n.type==='section'&&n.props.id==='account-advanced');assert.equal(screen().props.hidden,false);
+ g.click('Sair desta conta');await flush();g.render();assert.equal(screen().props.hidden,true);g.unmount();
+});
+
+test('static: the strip is a prop of the artwork (welcome keeps it), and the advanced screen replaces the old details',()=>{
+ const visuals=readFileSync('src/components/entry/EntryVisuals.tsx','utf8'),account=readFileSync('src/components/backup/AccountWorkspace.tsx','utf8'),css=readFileSync('src/components/backup/account-journey.css','utf8');
+ assert.match(visuals,/elements: showElements = true/);assert.match(visuals,/\{showElements && <dl className="entry-elements">/);
+ assert.match(account,/<EntryArtwork elements=\{false\} \/>/);assert.doesNotMatch(readFileSync('src/components/entry/EntryWelcome.tsx','utf8'),/elements=\{false\}/);
+ assert.doesNotMatch(account,/<details id="account-advanced"|Cópias, versões e recuperação<\/summary>/);
+ assert.doesNotMatch(css,/backdrop-filter|font-size:\s*\d/);
 });

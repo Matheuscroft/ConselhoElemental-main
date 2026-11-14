@@ -6,8 +6,7 @@
 .account-journey-ledger dd { display: inline-flex; align-items: center; gap: .5rem; color: #dfc17b; font-weight: 600; }
 .account-journey-online { margin-top: 1rem; padding: 1rem; border: 1px solid #6b9f90; border-radius: .8rem; background: #a9dec908; }
 .account-journey small { display: block; margin-top: 1rem; }
-.account-advanced { margin-top: 1.5rem; border-top: 1px solid #303b49; }
-.account-advanced > summary { color: #adb8c8; }
+.account-advanced { margin-top: 22px; }
 .account-workspace [hidden] { display: none !important; }
 
 /* Entry (E0): Google first, e-mail opens below, links instead of mode tabs. */
