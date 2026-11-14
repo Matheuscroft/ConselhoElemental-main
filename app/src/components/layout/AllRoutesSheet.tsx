@@ -3,6 +3,7 @@ import { RouteIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, Search } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { PreferenciasDeSom } from '@/components/feedback/PreferenciasDeSom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { APP_ROUTES, type RouteGroup } from '@/lib/app-routes';
 import { cn } from '@/lib/utils';
@@ -110,6 +111,7 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
               </div>
             </NavigationGroup>
           ))}
+          {!search && <PreferenciasDeSom />}
         </div>
       </SheetContent>
     </Sheet>

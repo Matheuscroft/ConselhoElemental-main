@@ -46,6 +46,18 @@
 
 .reel-feitico[data-modo='simples'] { display: none; }
 
+/* The ascension overflow: the canvas opens wider for its duration, so the reach is not clipped. */
+.reel-feitico[data-transbordo='true'] { --moldura-margem: 44px; }
+.reel-feitico[data-nivel='2'][data-transbordo='true'],
+.reel-feitico[data-nivel='3'][data-transbordo='true'] { --moldura-margem: 60px; }
+
+/*
+ * Reduced motion: no overflow and no leap, only a still, brief glow on the
+ * frame while the new level and colour are applied (set by the Reel for a
+ * fixed time). No transition: it appears and goes.
+ */
+.reel-palco[data-realce='true'] .reel-feitico { filter: brightness(1.7) saturate(1.3); }
+
 /*
  * The leap of level 3: a canvas as big as the window, in a portal on the body.
  * It sits above the page (main is 10) and the topbar (40), and below the

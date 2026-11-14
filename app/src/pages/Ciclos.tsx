@@ -2,6 +2,17 @@ import { cycleDateNavigation, isCycleDateSelection } from '@/components/cycles/c
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ReelMomentos } from '@/components/momentos/ReelMomentos';
 import { chaveDoDia } from '@/lib/momentos/momento';
+import {
+  ESPERA_ROLAGEM_MAX_MS,
+  FilaDeAscensoes,
+  intervaloEntreCerimonias,
+  planoDaCerimonia,
+  precisaRolarAteOReel,
+  reelAssentou,
+  type AscensaoDoReel,
+} from '@/lib/momentos/ascensao';
+import { assinarAscensoes, emitirAscensao } from '@/lib/progresso/canal';
+import type { AscensaoNova } from '@/lib/progresso/eventos';
 import { nivelDeVfx, nivelForcado } from '@/lib/momentos/nivel-vfx';
 import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
 import { beatUnless, stagger } from '@/lib/motion/motion';
@@ -14,7 +25,6 @@ import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycle
 import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
 import { CycleXpRecovery } from '@/components/cycles/CycleXpRecovery';
 import { advanceDailyView } from '@/lib/cycles/daily-view';
-import { CycleCompletionFeedback } from '@/components/cycles/CycleCompletionFeedback';
 import { CycleDailyCounter } from '@/components/cycles/CycleDailyCounter';
 import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-semantics';
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
@@ -1316,6 +1326,87 @@ export const Ciclos: React.FC = () => {
     return Math.max(0, timer.elapsedSeconds - executionTaskStartCycleSeconds);
   }, [showExecutionMode, executionTaskStartCycleSeconds, timer.elapsedSeconds]);
 
+  // The ascension ceremony: one at a time. The page first brings the Reel into
+  // view (the person may be scrolled far down), waits for it to arrive, and only
+  // then hands the ascension to the Reel, so the animation is seen happening.
+  const reelBlocoRef = useRef<HTMLDivElement>(null);
+  const reducedMotionRef = useRef(reducedMotion);
+  const [ascensaoDoReel, setAscensaoDoReel] = useState<AscensaoDoReel | null>(null);
+  useEffect(() => { reducedMotionRef.current = reducedMotion; });
+  useEffect(() => {
+    const fila = new FilaDeAscensoes<AscensaoNova>();
+    const timers = new Set<number>();
+    let frame = 0;
+    let vivo = true;
+    let tocando = false;
+    let emPreparo: AscensaoNova | null = null;
+    let contador = 0;
+
+    const depois = (ms: number, fn: () => void) => {
+      const id = window.setTimeout(() => { timers.delete(id); fn(); }, ms);
+      timers.add(id);
+    };
+
+    const tocar = (proxima: AscensaoNova) => {
+      const reduzido = reducedMotionRef.current;
+      const plano = planoDaCerimonia(proxima.nivel, reduzido);
+      const comecar = () => {
+        if (!vivo) return;
+        emPreparo = null;
+        contador += 1;
+        setAscensaoDoReel({ n: contador, elemento: proxima.elemento, nivel: proxima.nivel });
+        depois(intervaloEntreCerimonias(proxima.nivel, reduzido), () => { tocando = false; seguir(); });
+      };
+      const rolarEEsperar = (bloco: HTMLElement) => {
+        const caixa = bloco.getBoundingClientRect();
+        if (!precisaRolarAteOReel(caixa.top, caixa.bottom, window.innerHeight)) { comecar(); return; }
+        bloco.scrollIntoView({ block: 'center', behavior: plano.rolagem });
+        const inicio = performance.now();
+        let ultimo = Number.NaN;
+        let parado = 0;
+        const medir = () => {
+          frame = 0;
+          if (!vivo) return;
+          const r = bloco.getBoundingClientRect();
+          const centro = r.top + r.height / 2;
+          parado = Math.abs(centro - ultimo) < 0.5 ? parado + 1 : 0;
+          ultimo = centro;
+          if (reelAssentou(centro, window.innerHeight, parado) || performance.now() - inicio > ESPERA_ROLAGEM_MAX_MS) { comecar(); return; }
+          frame = requestAnimationFrame(medir);
+        };
+        frame = requestAnimationFrame(medir);
+      };
+      // The Reel may still be loading: wait for its block to exist.
+      const esperarOReel = () => {
+        if (!vivo) return;
+        const bloco = reelBlocoRef.current;
+        if (bloco && bloco.getBoundingClientRect().height > 0) rolarEEsperar(bloco);
+        else depois(200, esperarOReel);
+      };
+      emPreparo = proxima;
+      esperarOReel();
+    };
+
+    function seguir() {
+      if (!vivo || tocando) return;
+      const proxima = fila.proxima();
+      if (!proxima) return;
+      tocando = true;
+      tocar(proxima);
+    }
+
+    const cancelar = assinarAscensoes((ascensao) => { fila.empurrar(ascensao); seguir(); });
+    return () => {
+      vivo = false;
+      cancelar();
+      timers.forEach((id) => window.clearTimeout(id));
+      if (frame) cancelAnimationFrame(frame);
+      // Whatever has not been shown yet is kept for the next time Ciclos opens.
+      if (emPreparo) emitirAscensao(emPreparo);
+      fila.esvaziar().forEach((resto) => emitirAscensao(resto));
+    };
+  }, []);
+
   useEffect(() => {
     if (!showExecutionMode || executionActionableChildren.length === 0) return;
 
@@ -1704,7 +1795,9 @@ export const Ciclos: React.FC = () => {
         <CycleCalendarNavigation selectedDate={selectedDate} onPrevious={goToPreviousDay} onNext={goToNextDay} onToday={goToToday}
           onSelect={date => selectCalendarDate(date)} />
 
+        <div ref={reelBlocoRef}>
         <ReelMomentos
+          ascensao={ascensaoDoReel}
           dias={diasDoReel}
           selecionado={dayShortcuts.findIndex((offset) => {
             const date = new Date(visibleDaysCenterDate);
@@ -1722,6 +1815,7 @@ export const Ciclos: React.FC = () => {
             selectCalendarDate(date);
           }}
         />
+        </div>
 
         {/* Moon Phase & Season */}
         <div className="cycle-sky-links mb-4">
@@ -2989,8 +3083,6 @@ export const Ciclos: React.FC = () => {
           )}
         </DialogContent>
       </Dialog>
-
-      <CycleCompletionFeedback key={`${destinyAccountId}:${selectedDate.toDateString()}`} date={selectedDate} />
 
       {/* Quick Create Cycle Modal */}
       <Dialog open={showQuickCreateCycle} onOpenChange={setShowQuickCreateCycle}>

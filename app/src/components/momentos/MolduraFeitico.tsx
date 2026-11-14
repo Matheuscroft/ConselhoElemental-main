@@ -25,6 +25,11 @@ import {
   particulasDoNivel,
   type ParametrosMoldura,
 } from '@/lib/momentos/moldura';
+import {
+  DURACAO_TRANSBORDO_MS,
+  envelopeTransbordo,
+  type NivelDeAscensao,
+} from '@/lib/momentos/ascensao';
 import { AURA } from '@/lib/design/palette';
 import { DURATION } from '@/lib/motion/motion';
 import './moldura-feitico.css';
@@ -50,6 +55,8 @@ import './moldura-feitico.css';
 /** The card's own corner radius, in CSS px (reel-momentos.css). */
 const RAIO_CARTAO = 22;
 const TEMPO_ESTATICO = 2.4;
+/** The room the canvas adds on each side while an element overflows, in CSS px. */
+const MARGEM_EXTRA_TRANSBORDO = 20;
 
 const FUNCAO_CAIXA = `
 float sdCaixa(vec2 p, vec2 metade, float raio) {
@@ -78,6 +85,7 @@ uniform float uReveal;
 uniform float uDraw;
 uniform float uExp;
 uniform float uVivo;
+uniform float uTransb;
 uniform vec4 uPeso;
 uniform vec3 uColour;
 ${FUNCAO_CAIXA}
@@ -204,13 +212,13 @@ void main() {
   float ang = atan(p.y, p.x);
   float reflexo = pow(max(0.0, cos(ang - uTime * 0.6981)), 10.0);
   brilho += reflexo * fora * (1.0 - smoothstep(0.0, 10.0, d)) * 0.5;
-  brilho *= uReveal * (1.0 + uExp * 0.9);
+  brilho *= uReveal * (1.0 + uExp * 0.9 + uTransb * 1.1);
 
   vec3 soma = uColour * brilho;
   float total = brilho;
   if (uVivo > 0.001) {
     vec4 vivo = bordaViva(p, d);
-    float k = uVivo * fora * uReveal * (1.0 + uExp * 0.9) * (1.0 - smoothstep(uMargem - 8.0, uMargem, d));
+    float k = uVivo * (1.0 + uTransb * 0.5) * fora * uReveal * (1.0 + uExp * 0.9 + uTransb * 1.1) * (1.0 - smoothstep(uMargem - 8.0, uMargem, d));
     soma += vivo.rgb * k;
     total += vivo.a * k;
   }
@@ -229,6 +237,7 @@ uniform float uPx;
 uniform float uFlicker;
 uniform float uReveal;
 uniform float uExp;
+uniform float uTransb;
 uniform float uCount;
 uniform float uDpr;
 uniform vec4 uVerbo;
@@ -247,6 +256,7 @@ void main() {
   float fase = fract(aSeed.x * 3.7 + aSeed.y + uTime * uCiclo);
   float off = mix(uAfast.x, uAfast.y, vida)
     + sin(uExp * 3.14159) * 26.0 * aSeed.z
+    + uTransb * (14.0 + 16.0 * aSeed.z)
     + uVerbo.z * sin(th * 3.0 + uTime * 2.0 + aSeed.z * 6.2831853);
   vec2 c = vec2(cos(th), sin(th));
   // A squarish superellipse, so the orbit hugs the card instead of cutting its corners.
@@ -266,8 +276,8 @@ void main() {
   float borda = sin(3.14159 * vida);
   float arco = uCiclo > 0.0 ? pow(max(sin(3.14159 * fase), 0.0), 0.6) : 1.0;
   float ativa = aIdx < uCount ? 1.0 : 0.0;
-  vAlpha = tw * borda * arco * (0.55 + 0.45 * (z * 0.5 + 0.5)) * ativa * uReveal * (1.0 + uExp * 0.6);
-  gl_PointSize = uPx * uDpr * (0.75 + 0.5 * aSeed.w) * (1.0 + 0.3 * z) * (1.0 + 0.8 * sin(uExp * 3.14159));
+  vAlpha = tw * borda * arco * (0.55 + 0.45 * (z * 0.5 + 0.5)) * ativa * uReveal * (1.0 + uExp * 0.6 + uTransb * 0.7);
+  gl_PointSize = uPx * uDpr * (0.75 + 0.5 * aSeed.w) * (1.0 + 0.3 * z) * (1.0 + 0.8 * sin(uExp * 3.14159) + uTransb * 0.7);
   gl_Position = vec4(pos.x / (uSize.x * 0.5), -pos.y / (uSize.y * 0.5), 0.0, 1.0);
 }
 `;
@@ -313,15 +323,21 @@ export interface MolduraFeiticoProps {
   readonly conquista: number;
   /** One still frame, no loop, no burst; every level becomes level 1. */
   readonly reduzido: boolean;
+  /**
+   * The ascension ceremony: `n` grows with each one (0 is none) and starts the
+   * overflow of the element, which rises, holds and settles back on its own.
+   */
+  readonly transbordo?: { readonly n: number; readonly nivel: NivelDeAscensao };
   /** Corner radius of the card outline, in px; defaults to RAIO_CARTAO. */
   readonly raio?: number;
 }
 
 interface Painel {
-  sync: (quem: 'cor' | 'visao' | 'conquista' | 'densidade' | 'raio') => void;
+  sync: (quem: 'cor' | 'visao' | 'conquista' | 'densidade' | 'raio' | 'transbordo') => void;
 }
 
 const suave = (k: number) => 1 - (1 - k) ** 3;
+const SEM_TRANSBORDO = { n: 0, nivel: 3 } as const;
 
 export default function MolduraFeitico({
   elemento,
@@ -331,17 +347,18 @@ export default function MolduraFeitico({
   ativo,
   conquista,
   reduzido,
+  transbordo = SEM_TRANSBORDO,
   raio = RAIO_CARTAO,
 }: MolduraFeiticoProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const painelRef = useRef<Painel | null>(null);
   // Reduced motion turns every level into level 1, still.
   const nivelAtivo = nivelEfetivo(nivel, reduzido);
-  const propsRef = useRef({ elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio });
+  const propsRef = useRef({ elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio, transbordo });
 
   // Declared first: the effects below read the latest props through this ref.
   useEffect(() => {
-    propsRef.current = { elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio };
+    propsRef.current = { elemento, nivel: nivelAtivo, completo, rolando, ativo, conquista, raio, transbordo };
   });
 
   useEffect(() => {
@@ -375,6 +392,9 @@ export default function MolduraFeitico({
     let revelarInicio = -1;
     let desenharInicio = -1;
     let explosaoInicio = -1;
+    let transbInicio = -1;
+    let transbNivel: NivelDeAscensao = 3;
+    let contagemBase = 64;
     let paradaTimer = 0;
     let corJaDefinida = false;
     const corDe = new Color();
@@ -395,6 +415,7 @@ export default function MolduraFeitico({
       uReveal: { value: reduzido ? 1 : 0 },
       uDraw: { value: 1 },
       uExp: { value: 0 },
+      uTransb: { value: 0 },
       uColour: { value: new Color('#d6b66f') },
       uSpeed: { value: 0.05 },
       uAfast: { value: [4, 18] },
@@ -512,6 +533,20 @@ export default function MolduraFeitico({
           uniforms.uExp.value = 0;
         }
       }
+      if (transbInicio >= 0) {
+        // The overflow: the element rises fast, holds, and settles back to normal.
+        const ms = agora - transbInicio;
+        const v = envelopeTransbordo(ms, transbNivel);
+        uniforms.uTransb.value = v;
+        uniforms.uCount.value = contagemBase + (PARTICULAS_MAX - contagemBase) * v;
+        if (ms >= DURACAO_TRANSBORDO_MS[transbNivel]) {
+          transbInicio = -1;
+          uniforms.uTransb.value = 0;
+          uniforms.uCount.value = contagemBase;
+          delete host.dataset.transbordo;
+          medir();
+        }
+      }
     };
 
     const laco = (agora: number) => {
@@ -547,7 +582,8 @@ export default function MolduraFeitico({
       const largura = canvas.clientWidth;
       const altura = canvas.clientHeight;
       if (!largura || !altura || disposed) return;
-      const margem = margemDoNivel(nivelDoHost());
+      // While the element overflows the canvas opens wider, so the reach is never clipped.
+      const margem = margemDoNivel(nivelDoHost()) + (host.dataset.transbordo === 'true' ? MARGEM_EXTRA_TRANSBORDO : 0);
       renderer.setSize(largura, altura, false);
       uniforms.uSize.value = [largura, altura];
       uniforms.uHalf.value = [largura / 2 - margem, altura / 2 - margem];
@@ -603,12 +639,21 @@ export default function MolduraFeitico({
       }
 
       if (quem === 'densidade') {
-        uniforms.uCount.value = particulasDoNivel(p.nivel, p.completo);
+        contagemBase = particulasDoNivel(p.nivel, p.completo);
+        if (transbInicio < 0) uniforms.uCount.value = contagemBase;
         medir();
       }
 
       if (quem === 'conquista' && p.conquista > 0 && !reduzido && mostrando) {
         explosaoInicio = agora;
+      }
+
+      if (quem === 'transbordo' && p.transbordo.n > 0 && !reduzido && mostrando) {
+        transbNivel = p.transbordo.nivel;
+        transbInicio = agora;
+        host.dataset.transbordo = 'true';
+        medir();
+        tocar();
       }
 
       if (quem === 'visao') {
@@ -683,6 +728,7 @@ export default function MolduraFeitico({
   useEffect(() => { painelRef.current?.sync('visao'); }, [rolando, ativo, reduzido]);
   useEffect(() => { painelRef.current?.sync('conquista'); }, [conquista, reduzido]);
   useEffect(() => { painelRef.current?.sync('raio'); }, [raio]);
+  useEffect(() => { painelRef.current?.sync('transbordo'); }, [transbordo.n, reduzido]);
 
   return (
     <div

@@ -22,12 +22,17 @@ import {
   particulasDaDobra,
   type TipoDeDobra,
 } from '@/lib/momentos/moldura';
+import {
+  DURACAO_DOBRA_ASCENSAO_S,
+  PARTICULAS_DOBRA_ASCENSAO,
+  type NivelDeAscensao,
+} from '@/lib/momentos/ascensao';
 import { AURA } from '@/lib/design/palette';
 import { DURATION } from '@/lib/motion/motion';
 import './moldura-feitico.css';
 
 /**
- * Level 3 only: particles that leave the card and cross the page.
+ * Level 3 (and the ascension to level 2): particles that leave the card and cross the page.
  *
  * One WebGL canvas, in a portal on document.body, as big as the window,
  * `pointer-events: none` and under the dialogs. It draws only during a leap
@@ -50,6 +55,8 @@ uniform float uForca;
 uniform float uAmp;
 uniform float uTodos;
 uniform float uEl;
+uniform float uDur;
+uniform float uDestaque;
 uniform float uPx;
 uniform float uDpr;
 uniform vec4 uSalt;
@@ -66,7 +73,6 @@ varying float vStretch;
 varying float vEl;
 varying float vSpin;
 
-const float DOBRA = ${DOBRA_S.toFixed(2)};
 const float ATRASO = ${ATRASO_MAXIMO_S.toFixed(2)};
 const float G_AGUA = 620.0;
 const float G_TERRA = 1500.0;
@@ -145,7 +151,7 @@ void main() {
 
   float inicio = sd.w * ATRASO;
   float u = max(uT - inicio, 0.0);
-  float fase = clamp(u / (DOBRA - ATRASO), 0.0, 1.0);
+  float fase = clamp(u / (uDur - ATRASO), 0.0, 1.0);
   float saiu = uT > inicio ? 1.0 : 0.0;
   float saida = el > 2.5 ? smoothstep(0.8, 1.0, fase) : smoothstep(0.6, 1.0, fase);
   float env = smoothstep(0.0, 0.06, fase) * (1.0 - saida);
@@ -171,9 +177,11 @@ void main() {
     cor = mix(uCorTerra, vec3(1.0, 0.78, 0.35), 0.45);
   }
   vCor = cor;
-  vAlpha = env * saiu * uAmp * (0.6 + 0.4 * sd.z);
+  // In an ascension of level 3 all four rise and the one that ascended stands out.
+  float realce = uDestaque < -0.5 ? 1.0 : (abs(el - uDestaque) < 0.5 ? 1.0 : 0.0);
+  vAlpha = env * saiu * uAmp * (0.6 + 0.4 * sd.z) * (0.5 + 0.5 * realce);
 
-  float tamanho = uPx * uDpr * (0.8 + 0.6 * sd.z) * (1.0 - 0.35 * fase) * (el > 2.5 ? 2.3 : vStretch);
+  float tamanho = uPx * uDpr * (0.8 + 0.6 * sd.z) * (1.0 - 0.35 * fase) * (el > 2.5 ? 2.3 : vStretch) * (0.85 + 0.45 * realce);
   gl_PointSize = tamanho;
 
   vec2 tela = uCentro + rel;
@@ -208,10 +216,16 @@ void main() {
 }
 `;
 
+/** The three leaps of before, and the ascension (level 2 light, level 3 grand). */
+export type TipoDeDobraOuAscensao = TipoDeDobra | 'ascensao';
+
 export interface DisparoDeDobra {
   /** Grows with each leap; 0 is none. */
   readonly n: number;
-  readonly tipo: TipoDeDobra;
+  readonly tipo: TipoDeDobraOuAscensao;
+  /** Only for 'ascensao': the element that rose and the level it reached. */
+  readonly elemento?: ElementoDoDia;
+  readonly nivel?: NivelDeAscensao;
 }
 
 export interface DobraTelaCheiaProps {
@@ -223,7 +237,7 @@ export interface DobraTelaCheiaProps {
 }
 
 interface Painel {
-  iniciar: (tipo: TipoDeDobra) => void;
+  iniciar: (disparo: DisparoDeDobra) => void;
 }
 
 export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: DobraTelaCheiaProps) {
@@ -259,7 +273,9 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
     let ativa = false;
     let frame = 0;
     let inicio = 0;
-    let tipoAtual: TipoDeDobra = 'troca';
+    let tipoAtual: TipoDeDobraOuAscensao = 'troca';
+    let duracaoAtual = DOBRA_S;
+    let alcanceExtra = 1;
     let largura = 0;
     let altura = 0;
     let dprAtual = 0;
@@ -273,6 +289,8 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
       uAmp: { value: 1 },
       uTodos: { value: 0 },
       uEl: { value: 0 },
+      uDur: { value: DOBRA_S },
+      uDestaque: { value: -1 },
       uPx: { value: 3.8 },
       uDpr: { value: 1 },
       uSalt: { value: [0, 0, 0, 0] },
@@ -286,7 +304,7 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
     const camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
     // The same seeds every time; each leap adds its own salt on the GPU.
-    const total = PARTICULAS_DOBRA_CONQUISTA;
+    const total = Math.max(PARTICULAS_DOBRA_CONQUISTA, PARTICULAS_DOBRA_ASCENSAO[3]);
     const sementes = new Float32Array(total * 4);
     const indices = new Float32Array(total);
     let estado = 20261110;
@@ -337,24 +355,31 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
 
     const laco = (agora: number) => {
       const t = Math.max(0, (agora - inicio) / 1000);
-      if (t >= DOBRA_S || document.hidden || disposed || lost) {
+      if (t >= duracaoAtual || document.hidden || disposed || lost) {
         encerrar();
         return;
       }
       frame = requestAnimationFrame(laco);
       // The conquest opens in a conjure and passes its reach; a day change opens in a reveal and does not.
-      const abre = tipoAtual === 'conquista' ? DURATION.conjure : DURATION.reveal;
-      uniforms.uForca.value = alcanceDaDobra(tipoAtual, Math.min(1, (t * 1000) / abre));
+      // An ascension opens like a conquest at level 3 (it passes its reach) and like a day change at level 2.
+      const base: TipoDeDobra = tipoAtual === 'ascensao' ? (uniforms.uTodos.value > 0.5 ? 'conquista' : 'troca') : tipoAtual;
+      const abre = base === 'conquista' ? DURATION.conjure : DURATION.reveal;
+      uniforms.uForca.value = alcanceDaDobra(base, Math.min(1, (t * 1000) / abre)) * alcanceExtra;
       uniforms.uT.value = t;
       renderer.render(scene, camera);
     };
 
-    const iniciar: Painel['iniciar'] = (tipo) => {
+    const iniciar: Painel['iniciar'] = (disparo) => {
       if (disposed || lost || document.hidden) return;
-      // A leap in course finishes; only the conquest interrupts it.
-      if (ativa && tipo !== 'conquista') return;
-      const { elemento: atual, medirOrigem: medir } = propsRef.current;
-      const todos = tipo === 'conquista';
+      const { tipo } = disparo;
+      // A leap in course finishes; only the conquest and the ascension interrupt it.
+      if (ativa && tipo !== 'conquista' && tipo !== 'ascensao') return;
+      const { elemento: doCartao, medirOrigem: medir } = propsRef.current;
+      const ascensao = tipo === 'ascensao';
+      const nivelAsc: NivelDeAscensao = disparo.nivel === 2 ? 2 : 3;
+      // The ascension is about the element that rose, not the one the card wears.
+      const atual = ascensao ? disparo.elemento ?? doCartao : doCartao;
+      const todos = tipo === 'conquista' || (ascensao && nivelAsc === 3);
       if (!todos && !atual) return;
       const rect = medir();
       if (!rect || rect.width < 8 || rect.height < 8) return;
@@ -369,10 +394,14 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
       uniforms.uEl.value = atual ? INDICE_DO_ELEMENTO[atual] : 0;
       uniforms.uTodos.value = todos ? 1 : 0;
       uniforms.uAmp.value = todos ? 1 : 0.9;
+      uniforms.uDestaque.value = ascensao && todos && atual ? INDICE_DO_ELEMENTO[atual] : -1;
+      duracaoAtual = ascensao ? DURACAO_DOBRA_ASCENSAO_S[nivelAsc] : DOBRA_S;
+      uniforms.uDur.value = duracaoAtual;
+      alcanceExtra = ascensao && nivelAsc === 3 ? 1.35 : 1;
       uniforms.uSalt.value = [Math.random(), Math.random(), Math.random(), Math.random()];
       uniforms.uT.value = 0;
-      uniforms.uForca.value = alcanceDaDobra(tipo, 0);
-      geo.setDrawRange(0, particulasDaDobra(tipo));
+      uniforms.uForca.value = alcanceDaDobra(ascensao ? (todos ? 'conquista' : 'troca') : tipo, 0) * alcanceExtra;
+      geo.setDrawRange(0, ascensao ? PARTICULAS_DOBRA_ASCENSAO[nivelAsc] : particulasDaDobra(tipo));
 
       tipoAtual = tipo;
       inicio = performance.now();
@@ -408,10 +437,14 @@ export default function DobraTelaCheia({ elemento, disparo, medirOrigem }: Dobra
     };
   }, []);
 
-  const { n, tipo } = disparo;
+  const { n } = disparo;
+  const disparoRef = useRef(disparo);
   useEffect(() => {
-    if (n > 0) painelRef.current?.iniciar(tipo);
-  }, [n, tipo]);
+    disparoRef.current = disparo;
+  });
+  useEffect(() => {
+    if (n > 0) painelRef.current?.iniciar(disparoRef.current);
+  }, [n]);
 
   return createPortal(
     <div ref={hostRef} className="reel-dobra" data-ativa="false" aria-hidden="true" />,

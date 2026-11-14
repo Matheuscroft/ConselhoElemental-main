@@ -36,6 +36,7 @@ import {
 } from '@/pages';
 import './App.css';
 import { ScrollToTop } from '@/components/layout/ScrollToTop';
+import { ProvedorDeProgresso } from '@/components/feedback/ProvedorDeProgresso';
 import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
 import type { AccountSyncView } from '@/lib/backup/account-live-sync';
 
@@ -74,6 +75,7 @@ function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
+      <ProvedorDeProgresso />
       <ActiveTimerBar />
       <AppUpdateNotice />
       <RestoredLocalNotice />

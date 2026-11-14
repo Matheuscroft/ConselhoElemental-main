@@ -12,6 +12,13 @@ import {
 import { AURA, TINTA } from '@/lib/design/palette';
 import { DURATION } from '@/lib/motion/motion';
 import { corDaMoldura, diaConquistado, nivelEfetivo, type EstadoDoDia } from '@/lib/momentos/moldura';
+import {
+  duracaoDaCerimonia,
+  elementoDaMoldura,
+  nivelDaMoldura,
+  planoDaCerimonia,
+  type AscensaoDoReel,
+} from '@/lib/momentos/ascensao';
 import { distanciaDoCentro, indiceAtivo, posicaoReel } from '@/lib/momentos/reel';
 import type { ElementoDoDia } from '@/lib/momentos/elemento-do-dia';
 import type { NivelVfx } from '@/lib/momentos/nivel-vfx';
@@ -70,11 +77,17 @@ const rotulo = (item: DiaDoReel, comFoto: boolean) => {
  * a gesture of the person and only once the rail settles: a scroll the
  * component started itself never selects.
  */
-export function ReelMomentos({ dias, selecionado, aoEscolher }: {
+export function ReelMomentos({ dias, selecionado, aoEscolher, ascensao }: {
   dias: DiaDoReel[];
   /** Index of the open day in `dias`, or -1 when it is outside the window. */
   selecionado: number;
   aoEscolher: (indice: number) => void;
+  /**
+   * An element rose to level 2 or 3: the frame plays the ceremony (the element
+   * overflows, the screen fills with its particles) and goes back on its own.
+   * `n` grows with each one; the page decides when the Reel is in view.
+   */
+  ascensao?: AscensaoDoReel | null;
 }) {
   const reduced = useMotionPreference();
   const trilhoRef = useRef<HTMLUListElement>(null);
@@ -89,6 +102,9 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   const [dobra, setDobra] = useState<DisparoDeDobra>({ n: 0, tipo: 'troca' });
   const [dobraMontada, setDobraMontada] = useState(false);
   const dobraPendenteRef = useRef(true);
+  const [cerimonia, setCerimonia] = useState<AscensaoDoReel | null>(null);
+  const cerimoniaTocadaRef = useRef(0);
+  const cerimoniaTimersRef = useRef<number[]>([]);
   const nivelRef = useRef<NivelVfx>(1);
   const anteriorRef = useRef<EstadoDoDia | null>(null);
   const selecionadoRef = useRef(selecionado);
@@ -220,10 +236,12 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
   const abertoTotal = abertoDia?.total ?? 0;
   // Reduced motion turns every level into level 1: no live edge, no leap.
   const nivelAberto = nivelEfetivo(abertoDia?.nivel ?? 1, reduced);
+  const temAberto = abertoDia !== undefined;
 
   // The leap canvas is mounted the first time a level 3 day opens, and stays
   // until the Reel goes or motion is reduced: no context churn between days.
-  if (nivelAberto === 3 && !dobraMontada) setDobraMontada(true);
+  // An ascension to level 2 also needs it, for its lighter leap.
+  if ((nivelAberto === 3 || (cerimonia !== null && !reduced)) && !dobraMontada) setDobraMontada(true);
 
   useEffect(() => {
     nivelRef.current = nivelAberto;
@@ -274,6 +292,32 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
     return () => { window.clearTimeout(atraso); window.clearTimeout(limpar); };
   }, [abertoChave, abertoFeitos, abertoTotal]);
 
+  // The ascension ceremony. It waits for an open card and a rail at rest (the
+  // frame is hidden while it moves), plays once per `n`, and ends by itself: the
+  // frame then returns to the week's leader at the card's own level.
+  const ascensaoN = ascensao?.n ?? 0;
+  useEffect(() => () => {
+    cerimoniaTimersRef.current.forEach((t) => window.clearTimeout(t));
+    cerimoniaTimersRef.current = [];
+    cerimoniaTocadaRef.current = 0;
+  }, []);
+  useEffect(() => {
+    if (!ascensao || ascensao.n <= cerimoniaTocadaRef.current || !temAberto || rolando) return;
+    cerimoniaTocadaRef.current = ascensao.n;
+    const plano = planoDaCerimonia(ascensao.nivel, reduced);
+    // The timers outlive this effect on purpose: a rail that moves mid-ceremony must not strand it.
+    cerimoniaTimersRef.current.push(
+      window.setTimeout(() => {
+        setCerimonia(ascensao);
+        if (plano.dobra) {
+          setDobra((d) => ({ n: d.n + 1, tipo: 'ascensao', elemento: ascensao.elemento, nivel: ascensao.nivel }));
+        }
+      }, 0),
+      window.setTimeout(() => setCerimonia(null), duracaoDaCerimonia(ascensao.nivel, reduced)),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed by the ascension's n, not by its object
+  }, [ascensaoN, temAberto, rolando, reduced]);
+
   const anotarGesto = useCallback(() => { gestoRef.current = true; }, []);
 
   const mover = useCallback((passo: number) => {
@@ -313,7 +357,7 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
 
   return (
     <div className="reel-momentos" data-reduzido={reduced}>
-      <div className="reel-palco" data-rolando={rolando}>
+      <div className="reel-palco" data-rolando={rolando} data-realce={cerimonia !== null && reduced}>
         <ul
           className="reel-trilho"
           ref={trilhoRef}
@@ -381,8 +425,9 @@ export function ReelMomentos({ dias, selecionado, aoEscolher }: {
         {aberto ? (
           <Suspense fallback={null}>
             <MolduraFeitico
-              elemento={aberto.elemento}
-              nivel={aberto.nivel}
+              elemento={elementoDaMoldura(aberto.elemento, cerimonia)}
+              nivel={nivelDaMoldura(aberto.nivel, cerimonia)}
+              transbordo={cerimonia ? { n: cerimonia.n, nivel: cerimonia.nivel } : undefined}
               completo={aberto.total > 0 && aberto.feitos >= aberto.total}
               rolando={rolando}
               ativo
