@@ -38,8 +38,8 @@ export const PARTICULAS_COMPLETO_POR_NIVEL: Readonly<Record<NivelVfx, number>> =
 export const FPS_POR_NIVEL: Readonly<Record<NivelVfx, number>> = { 1: 30, 2: 30, 3: 60 };
 
 /** How much stronger each level makes the verb, and how far the orbit opens. */
-export const FORCA_POR_NIVEL: Readonly<Record<NivelVfx, number>> = { 1: 1, 2: 1.6, 3: 2 };
-export const ALCANCE_POR_NIVEL: Readonly<Record<NivelVfx, number>> = { 1: 1, 2: 1.4, 3: 1.55 };
+export const FORCA_POR_NIVEL: Readonly<Record<NivelVfx, number>> = { 1: 1.3, 2: 1.8, 3: 2.2 };
+export const ALCANCE_POR_NIVEL: Readonly<Record<NivelVfx, number>> = { 1: 1.15, 2: 1.45, 3: 1.6 };
 
 /** Reduced motion turns every level into level 1, drawn once. */
 export const nivelEfetivo = (nivel: NivelVfx, reduzido: boolean): NivelVfx => (reduzido ? 1 : nivel);

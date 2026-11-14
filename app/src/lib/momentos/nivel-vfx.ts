@@ -2,10 +2,10 @@ export type NivelVfx = 1 | 2 | 3;
 
 /**
  * The element's mastery level at which the frame of the open day evolves:
- * from 10 it is level 2 (Fluxo), from 25 level 3 (Domínio). Below, and on a
+ * from 4 it is level 2 (Fluxo), from 8 level 3 (Domínio). Below, and on a
  * day with no leading element, it stays level 1 (Faísca).
  */
-export const LIMIARES: readonly [number, number] = [10, 25];
+export const LIMIARES: readonly [number, number] = [4, 8];
 
 export function nivelDeVfx(maestria: number | null | undefined): NivelVfx {
   if (!maestria || !Number.isFinite(maestria)) return 1;

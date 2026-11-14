@@ -96,11 +96,11 @@ test('os parâmetros: o nível sobe a força do verbo e o alcance, e liga a bord
   assert.equal(neutro.arrastoLinear, 0);
 });
 
-test('o nível 1 mantém a órbita de hoje: velocidade, afastamento e tamanho do elemento', () => {
+test('o nível 1 mantém a velocidade e o tamanho de hoje e ganha o alcance do nível', () => {
   const um = parametrosDaMoldura('agua', 1);
   assert.equal(um.velocidade, 0.04);
-  assert.equal(um.afastamentoMin, 6);
-  assert.equal(um.afastamentoMax, 24);
+  assert.equal(um.afastamentoMin, 6 * ALCANCE_POR_NIVEL[1]);
+  assert.equal(um.afastamentoMax, 24 * ALCANCE_POR_NIVEL[1]);
   assert.equal(um.tamanho, 4.2);
 });
 
