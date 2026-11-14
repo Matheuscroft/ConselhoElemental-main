@@ -15,8 +15,17 @@ Matheus entrou na conta e viu "A conta possui registros anteriores, mas este apa
 ## Boas-vindas e Santuário (commits separados)
 Só "Começar" (`/auth?modo=cadastro`) e "Já tenho conta" (`/auth`); título em Cinzel; entrada na batida `settle`. No Santuário, a linha "faltam X XP para o nível N+1" (cálculo `xpToNextLevel - (xpTotal - xpAtLevelStart)`; `level.xpToNextLevel` é o tamanho do nível, não o que falta).
 
-## O que vem depois (ainda NÃO feito)
-Passos pós-login em uma pergunta por tela (conta vazia / com dados / aparelho com dados / os dois / conta `legacy`), com leitura só de consulta logo após o login (`lookAtAccount`), e "Opções avançadas". O caso do Matheus (conta legacy + aparelho vazio) vira a tela "Seu progresso está em outro aparelho", com os passos numerados. "Começar do zero (progresso antigo guardado)" **não existe** no código; precisaria de função nova e talvez servidor: decisão com você.
+## Lote 3 (este commit): uma pergunta por tela depois do login
+- `AccountWorkspace.tsx`: estado `remote` e função `lookAtAccount`, **só leitura** (`resolutionTransport(token).readProgress(id)` e, se for snapshot, `reviewAccountVersions`); roda após login por e-mail, retorno do Google, acesso retomado e mudança de storage; nunca chama `connectJourney`. O passo é derivado no render (`entrada | procurando | ajuste | metade | ligado | salvar | novo | trazer | escolher | antigo-sem | antigo-com`), cada um numa função `stepX()` interna (o harness de teste não expande componentes nem hooks).
+- Consentimento de um toque (D4): `connectJourney` ganhou o argumento `emptyByTap` e `startNewJourney` ganhou `byTap`, que equivalem a `tabs`/`newJourneyConsent`/`emptyJourneyConsent` **só nos casos em que nada se perde** (conta vazia, aparelho vazio). Funções de `lib/backup` não mudaram. Onde algo é trocado (P3, P5, P7, P8) as caixas continuam.
+- Caso do Matheus (conta `legacy` + aparelho sem a jornada): tela "Seu progresso está em outro aparelho" com 4 passos, "Já fiz isso, procurar de novo" (repete a sondagem, nunca escreve), "Usar só neste aparelho por enquanto" e "Tenho um arquivo de cópia" (`/?progresso=restaurar`).
+- Números: do aparelho com `summarizeLocalJourney` (função local, ganhou o campo `available`); da conta com `summarizeLocalJourney(JSON.parse(versions.remoteArchive))`, porque `remoteSummary` não tem XP e seus rituais/ciclos são só do perfil ativo. A data "Última atividade" do aparelho foi omitida (não há campo confiável).
+- `AccountResolutionPanel.tsx`: só texto dos botões (P3b e P7).
+- Sumiram a seção "Dados deste aparelho conferidos", o bloco "Conta confirmada / Continuar no app" e a mensagem "Acesso encerrado nesta aba" (saída: "Você saiu desta conta. O progresso deste aparelho continua guardado.").
+- Testes: fixture com `remoteKind` (`empty | legacy | snapshot | fail`); casos novos P0 com falha, P1, P2, P3, P4 (sem escrita), P5, P6. 421/421 em `tests/backup`.
+
+## O que ainda NÃO foi feito
+Tela "Opções avançadas" separada (hoje "Opções avançadas" só abre o `details` "Cópias, versões e recuperação"); porta "/" abrindo as boas-vindas em aparelho sem dados; apagar `Auth.tsx` e `authStore.ts`. "Começar do zero (progresso antigo guardado)" **não existe** no código e precisaria de função nova e talvez servidor: decisão com você.
 
 ## O que conferir
 - Lógica de conta intacta: `git diff` de `lib/backup/` mostra só a mensagem de `account-auth-messages.ts`.

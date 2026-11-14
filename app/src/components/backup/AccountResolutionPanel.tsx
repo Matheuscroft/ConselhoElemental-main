@@ -31,29 +31,29 @@ export function AccountResolutionPanel({ versions, resolution, busy, released, o
     onChoose(direction,{local:versions.localArchive===null?null:copies.local,online:copies.online,pending:versions.pendingArchive===null?null:copies.pending});
   }
   return <section aria-labelledby="account-resolution-title">
-    <h2 id="account-resolution-title">{resolution?'Retomar escolha protegida':'Escolha qual versão usar'}</h2>
-    {resolution?<p>Sua escolha foi guardada: {resolution.direction==='online'?'receber o arquivo online':'usar a versão local'}. Confira o recibo e conclua essa mesma escolha. O app continua pausado até a conclusão.</p>:<>
-      <p>Primeiro guarde as cópias acima e selecione os arquivos salvos. A escolha substitui uma versão completa, incluindo todos os perfis, histórico e XP. Não soma nem mescla recompensas.</p>
+    <h2 id="account-resolution-title">{resolution?'Terminar a escolha que ficou pela metade':'Escolha qual progresso usar'}</h2>
+    {resolution?<p>Sua escolha foi guardada: {resolution.direction==='online'?'trazer o progresso da conta para este aparelho':'usar o progresso deste aparelho'}. Confira o recibo e termine essa mesma escolha. O app fica pausado até terminar.</p>:<>
+      <p>Baixe as cópias e escolha cada arquivo baixado. A escolha troca um progresso completo por outro, com todos os perfis, histórico e XP. O XP não é somado.</p>
       {versions&&(['local','online','pending'] as const).map(part=>{
         const expected=part==='local'?versions.localArchive:part==='online'?versions.remoteArchive:versions.pendingArchive;
         if(expected===null)return null;
-        return <label key={part} className="restore-workspace-file">Conferir cópia salva: {part==='local'?'deste navegador':part==='online'?'online':'tentativa pendente'}
+        return <label key={part} className="restore-workspace-file">Escolha o arquivo baixado: {part==='local'?'deste aparelho':part==='online'?'da conta':'da tentativa pendente'}
           <input type="file" name={`backup-${part}`} accept="application/json,.json" disabled={busy} onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(file)void checkFile(part,file,expected);}}/>
         </label>;
       })}
     </>}
     <label className="restore-workspace-consent"><input type="checkbox" checked={scope} disabled={busy} onChange={event=>setScope(event.target.checked)}/>Confirmo o arquivo completo de todos os perfis, atividades e Treinos.</label>
-    <label className="restore-workspace-consent"><input type="checkbox" checked={replace} disabled={busy} onChange={event=>setReplace(event.target.checked)}/>Entendo a substituição e confirmo {resolution?'concluir a escolha já guardada':'usar a versão indicada no botão, preservando as cópias anteriores'}.</label>
+    <label className="restore-workspace-consent"><input type="checkbox" checked={replace} disabled={busy} onChange={event=>setReplace(event.target.checked)}/>Entendo que um progresso será trocado pelo outro e {resolution?'quero terminar a escolha já guardada':'que as cópias anteriores ficam guardadas'}.</label>
     {resolution?<>
-      <button type="button" disabled={!enabled} onClick={()=>{if(enabled)onRecover(false);}}>Conferir recibo e concluir escolha</button>
-      <label className="restore-workspace-consent"><input type="checkbox" checked={retry} disabled={busy} onChange={event=>setRetry(event.target.checked)}/>Se não houver recibo, autorizo repetir somente a mesma escolha guardada, com a mesma operação.</label>
-      <p>Se a versão online já mudou e a aplicação local ainda não começou, você pode manter este navegador como está e reavaliar. O arquivo online pode já refletir a escolha anterior; nada será apagado no servidor por essa ação.</p>
-      <button type="button" className="restore-workspace-secondary" disabled={!enabled} onClick={()=>{if(enabled)onKeepLocal();}}>Manter progresso local e reavaliar</button>
-      <button type="button" className="restore-workspace-secondary" disabled={!enabled||!retry} onClick={()=>{if(enabled&&retry)onRecover(true);}}>Repetir escolha protegida</button>
+      <button type="button" disabled={!enabled} onClick={()=>{if(enabled)onRecover(false);}}>Verificar e terminar a escolha</button>
+      <label className="restore-workspace-consent"><input type="checkbox" checked={retry} disabled={busy} onChange={event=>setRetry(event.target.checked)}/>Se não houver recibo, autorizo repetir somente a mesma escolha guardada.</label>
+      <p>Se a conta já mudou e este aparelho ainda não começou a mudar, você pode manter este aparelho como está e avaliar de novo. Nada é apagado na conta por essa ação.</p>
+      <button type="button" className="restore-workspace-secondary" disabled={!enabled} onClick={()=>{if(enabled)onKeepLocal();}}>Manter este aparelho e avaliar de novo</button>
+      <button type="button" className="restore-workspace-secondary" disabled={!enabled||!retry} onClick={()=>{if(enabled&&retry)onRecover(true);}}>Repetir a escolha guardada</button>
     </>:<>
-      <button type="button" disabled={!enabled||!ready||versions?.localArchive===null} onClick={()=>choose('local')}>Usar versão local na conta</button>
-      <p>Usar a versão local substitui o arquivo online conferido. Receber a versão online substitui os dados deste navegador. Outra mudança no servidor impede a operação.</p>
-      <button type="button" disabled={!enabled||!ready} onClick={()=>choose('online')}>Receber versão online neste dispositivo</button>
+      <button type="button" disabled={!enabled||!ready||versions?.localArchive===null} onClick={()=>choose('local')}>Usar o progresso deste aparelho</button>
+      <p>Usar o progresso deste aparelho troca o da conta. Trazer o da conta troca o deste aparelho. Se algo mudar na conta nesse meio tempo, nada é feito.</p>
+      <button type="button" disabled={!enabled||!ready} onClick={()=>choose('online')}>Trazer o progresso da conta para este aparelho</button>
     </>}
     <p role="status" aria-live="polite">{message}</p>
   </section>;

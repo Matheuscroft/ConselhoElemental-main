@@ -1,6 +1,5 @@
 import { EntryArtwork, EntryBrand } from '@/components/entry/EntryVisuals';
 import { connectCurrentAccountProgress, receiveReviewedAccountProgress, resumeAccountConnection } from '@/lib/backup/connect-account-progress';
-import { CloudUpload, CloudDownload, UserRoundCheck, Sparkles } from 'lucide-react';
 import './account-journey.css';
 import { ACCOUNT_RESOLUTION_KEY } from '@/lib/backup/account-resolution-key';
 import { accountErrorCode } from '@/lib/backup/account-auth-messages';
@@ -13,8 +12,8 @@ import { reviewAccountVersions } from '@/lib/backup/account-conflict';
 import { reviewAccountBinding } from '@/lib/backup/account-binding';
 import type { LiveAccountSession } from '@/lib/backup/account-live-sync';
 import { ACCOUNT_BINDING_KEY, inspectAccountBinding, type AccountBinding } from '@/lib/backup/account-binding';
-import { useEffect, useRef, useState } from 'react';
-import { ArrowLeft, Download, ShieldCheck, Eye, EyeOff, LoaderCircle, MailCheck } from 'lucide-react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { ArrowLeft, Download, Eye, EyeOff, LoaderCircle, MailCheck } from 'lucide-react';
 import { createWorkspaceSafetyCopy, readWorkspaceBaseline, type WorkspaceBaseline } from '@/lib/backup/workspace-preview';
 import { verifyPreviousSafetyCopy } from '@/lib/backup/restore-confirmation';
 import { MAX_BACKUP_BYTES, STORE_KEYS, type ProgressSnapshot } from '@/lib/backup/progress-backup';
@@ -43,7 +42,7 @@ const storedXp = (value: unknown) => {
   }, 0);
 };
 function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
-  const unavailable = { profiles: 0, tasks: 0, habits: 0, xp: 0, sessions: 0, activeName: 'Resumo indisponível', activeTasks: 0, activeHabits: 0, activeXp: 0, empty: false, activeEmpty: false };
+  const unavailable = { profiles: 0, tasks: 0, habits: 0, xp: 0, sessions: 0, activeName: 'Resumo indisponível', activeTasks: 0, activeHabits: 0, activeXp: 0, empty: false, activeEmpty: false, available: false };
   if (!snapshot || !storedRecord(snapshot.stores) || !storedRecord(snapshot.stores.core) || !storedRecord(snapshot.stores.fitness)
     || !storedRecord(snapshot.stores.core.state) || !storedRecord(snapshot.stores.fitness.state)) return unavailable;
   const core = snapshot.stores.core.state, fitness = snapshot.stores.fitness.state;
@@ -67,9 +66,14 @@ function summarizeLocalJourney(snapshot: ProgressSnapshot | null | undefined) {
   const active = profiles.get(activeId) ?? core;
   const activeTasks = storedListCount(active.tasks), activeHabits = storedListCount(active.habits), activeXp = storedXp(active.user);
   return { profiles: profiles.size, tasks, habits, xp, sessions, activeName: names.get(activeId) ?? (activeId === 'local' ? 'Progresso sem perfil' : 'Perfil ativo'), activeTasks, activeHabits, activeXp,
-    empty: tasks + habits + xp + sessions + otherActivity === 0, activeEmpty: activeTasks + activeHabits + activeXp === 0 };
+    empty: tasks + habits + xp + sessions + otherActivity === 0, activeEmpty: activeTasks + activeHabits + activeXp === 0, available: true };
 }
 
+type RemoteLook = { kind: 'looking' | 'empty' | 'legacy' | 'snapshot' | 'error' };
+type Step = 'entrada' | 'procurando' | 'ajuste' | 'metade' | 'ligado' | 'salvar' | 'novo' | 'trazer' | 'escolher' | 'antigo-sem' | 'antigo-com';
+const plural=(count:number,one:string,many:string)=>`${count.toLocaleString('pt-BR')} ${count===1?one:many}`;
+const totalsLine=(summary:{xp:number;tasks:number;habits:number}|null)=>summary?`${summary.xp.toLocaleString('pt-BR',{maximumFractionDigits:3})} XP, ${plural(summary.tasks,'ritual','rituais')} e ${plural(summary.habits,'ciclo','ciclos')}`:'';
+const dayLabel=(value:unknown)=>{const time=typeof value==='string'?Date.parse(value):NaN;return Number.isFinite(time)?new Date(time).toLocaleDateString('pt-BR'):'';};
 const signedInNotice=(address?:string|null)=>address&&address.trim()?`Você entrou como ${address.trim()}.`:'Você entrou na sua conta.';
 const GoogleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.45a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.57-5.17 3.57-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.27a12 12 0 0 0 0 10.76l4-3.1z"/><path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.27 6.62l4 3.1C6.22 6.88 8.87 4.77 12 4.77z"/></svg>;
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
@@ -92,12 +96,14 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const [blocked,setBlocked]=useState(false),[repairable,setRepairable]=useState(false);
   const [blockKind,setBlockKind]=useState<'connection'|'progress'|'restore'|null>(null),[progressIssues,setProgressIssues]=useState<ProgressIssue[]>([]);
   const [progressRepair,setProgressRepair]=useState<StoredProgressRepairSummary|null>(null),[progressRepairError,setProgressRepairError]=useState(''),[repairConsent,setRepairConsent]=useState(false);
-  const [legacyAccount,setLegacyAccount]=useState(false),[legacyConsent,setLegacyConsent]=useState(false);
+  const [,setLegacyAccount]=useState(false),[legacyConsent,setLegacyConsent]=useState(false);
   const [pendingRetryConsent,setPendingRetryConsent]=useState(false);
   const [emptyJourneyConsent,setEmptyJourneyConsent]=useState(false);
   const [ready,setReady]=useState(false);
   const [newJourneyConsent,setNewJourneyConsent]=useState(false);
-  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),emailField=useRef<HTMLInputElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null);
+  const [remote,setRemote]=useState<RemoteLook|null>(null),[stillLegacy,setStillLegacy]=useState(false);
+  const [choice,setChoice]=useState<'account'|'device'|null>(null),[replaceConsent,setReplaceConsent]=useState(false),[advancedOpen,setAdvancedOpen]=useState(false);
+  const oauthReturn=useRef<AccountOAuthReturn|null|undefined>(undefined),generation=useRef(0),job=useRef<number|null>(null),alive=useRef(true),session=useRef<Session|null>(null),identity=useRef<string|null>(null),accessRaw=useRef<string|null>(null),file=useRef<HTMLInputElement>(null),heading=useRef<HTMLHeadingElement>(null),emailField=useRef<HTMLInputElement>(null),repairPlan=useRef<StoredProgressRepairPlan|null>(null),advancedRef=useRef<HTMLDetailsElement>(null);
   /** Single decision point for the saved access: this device (localStorage) or this tab (sessionStorage). */
   const savedAccess=(remember?:boolean)=>accountAccessStorage(remember,window);
   const pair=()=>JSON.stringify([window.localStorage.getItem(STORE_KEYS.core),window.localStorage.getItem(STORE_KEYS.fitness)]);
@@ -153,13 +159,14 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         if(ids.some(id=>id!==resumed.userId)){resumed.owned.dispose();throw new Error('O acesso salvo pertence a outra conta. Entre na conta vinculada a esta tentativa.');}
         session.current=resumed.owned;identity.current=resumed.userId;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(resumed.email??'');setUserId(resumed.userId);setPassword('');
         setAuthFeedback(signedInNotice(resumed.email));
+        await lookAtAccount(token);
       }catch(reason){if(ref.current===token)setAuthError(reason instanceof Error?reason.message:'Entre novamente para validar o acesso.');}
     })()
       .finally(()=>{if(ref.current===token)setBusy(false);});
     const changed=(event:StorageEvent)=>{
       if(event.key!==null&&![STORE_KEYS.core,STORE_KEYS.fitness,ACCOUNT_INTENT_KEY,ACCOUNT_BINDING_KEY,ACCOUNT_RESOLUTION_KEY,RESTORE_JOURNAL_KEY,STORED_PROGRESS_REPAIR_KEY,LOCAL_PROGRESS_MODE_KEY].includes(event.key))return;
-      const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setPendingRetryConsent(false);setEmptyJourneyConsent(false);setVersions(null);setMessage('O progresso mudou. Refaça a conferência.');
-      void refresh(next).catch(reason=>{if(ref.current===next)markBlocked(reason);});
+      const next=++ref.current;job.current=null;setReady(false);setBusy(false);setCopy(null);setReceipt(null);setTabs(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setLiveConsent(false);setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setPendingRetryConsent(false);setEmptyJourneyConsent(false);setVersions(null);setRemote(null);setStillLegacy(false);setChoice(null);setReplaceConsent(false);setMessage('O progresso mudou. Vamos olhar de novo.');
+      void refresh(next).then(()=>{if(isCurrent(next)&&identity.current&&session.current)return lookAtAccount(next);}).catch(reason=>{if(ref.current===next)markBlocked(reason);});
     };
     window.addEventListener('storage',changed);
     return()=>{ref.current++;alive.current=false;session.current?.dispose();session.current=null;identity.current=null;window.removeEventListener('storage',changed);};
@@ -194,7 +201,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     setNewJourneyConsent(false);setLegacyAccount(false);setLegacyConsent(false);setEmptyJourneyConsent(false);
     if(forget)forgetSavedAccess();
     const opened=session.current;session.current=null;identity.current=null;
-    if(forget&&opened)signOutLocal(opened);else opened?.dispose();setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');
+    if(forget&&opened)signOutLocal(opened);else opened?.dispose();setUserId(null);setPassword('');setConfirmation('');setVersions(null);setReceipt(null);setTabs(false);setLiveConsent(false);setAllProfiles(false);setLocalUse(false);setRetry(false);setKeepNewer(false);setSaveBinding(false);setPendingRetryConsent(false);setAuthFeedback('');setAuthError('');setRemote(null);setStillLegacy(false);setChoice(null);setReplaceConsent(false);
   }
   function changeAccess(mode:AccountAccessMode) {
     if(!ready||busy||job.current!==null||userId)return;
@@ -205,7 +212,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   function toggleEmail(){const next=!emailOpen;setEmailOpen(next);if(next)setTimeout(()=>emailField.current?.focus(),0);}
   function closeAccess() {
     if(!ready||busy||job.current!==null)return;
-    generation.current++;try{clearAccess(true);setAuthFeedback('Acesso encerrado nesta aba. O progresso local e as tentativas continuam preservados.');}catch(reason){setAuthError(reason instanceof Error?reason.message:'Não foi possível encerrar este acesso.');}
+    generation.current++;try{clearAccess(true);setAuthFeedback('Você saiu desta conta. O progresso deste aparelho continua guardado.');}catch(reason){setAuthError(reason instanceof Error?reason.message:'Não foi possível encerrar este acesso.');}
   }
   function resetLocalConnection() {
     if(!ready||busy||!repairable)return;
@@ -216,7 +223,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       if([ACCOUNT_BINDING_KEY,ACCOUNT_INTENT_KEY,ACCOUNT_RESOLUTION_KEY,LOCAL_PROGRESS_MODE_KEY].some(key=>window.localStorage.getItem(key)!==null)||savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY)!==null)throw new Error('O navegador não confirmou a reinicialização. Seu progresso não foi alterado.');
       setBinding(null);setPending(null);setResolution(null);setVersions(null);setReceipt(null);setBlocked(false);setRepairable(false);setBlockKind(null);setProgressIssues([]);
       await refresh(token);
-      if(isCurrent(token))setMessage('Conexão reiniciada. Entre e use o botão principal para salvar a jornada deste aparelho na conta.');
+      if(isCurrent(token))setMessage('Conexão reiniciada. Agora é só continuar.');
     });
   }
   function repairStoredProgress() {
@@ -248,6 +255,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
         identity.current=id;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setUserId(id);setPassword('');setConfirmation('');
         setAuthFeedback(signedInNotice(input.email));
+        await lookAtAccount(token);
       }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
     },true);
   }
@@ -283,6 +291,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       if(!isCurrent(token)||session.current!==opened)throw new Error('O acesso mudou. Entre novamente.');
       identity.current=id;accessRaw.current=savedAccess().getItem(ACCOUNT_TAB_ACCESS_KEY);setEmail(result.email??'');setUserId(id);setPassword('');setConfirmation('');
       setAuthFeedback(signedInNotice(result.email));
+      await lookAtAccount(token);
     }catch(reason){opened.dispose();if(session.current===opened)session.current=null;throw reason;}
   }
   function resend() {
@@ -297,8 +306,9 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       finally{opened.dispose();if(session.current===opened)session.current=null;}
     },true);
   }
-  function startNewJourney() {
-    if(!ACCOUNT_TRANSFER_WRITES_RELEASED||!ready||blocked||!onStart||!userId||!newJourneyConsent||!tabs||!baseline||baseline.snapshot||pending||binding||resolution)return;
+  /** `byTap`: the main button of the "all set" step is the consent (nothing exists on either side to lose). */
+  function startNewJourney(byTap=false) {
+    if(!ACCOUNT_TRANSFER_WRITES_RELEASED||!ready||blocked||!onStart||!userId||!(newJourneyConsent||byTap)||!(tabs||byTap)||!baseline||baseline.snapshot||pending||binding||resolution)return;
     const opened=session.current,id=identity.current;
     if(!opened||!id)return;
     void run(async token=>{
@@ -306,7 +316,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       const transport=createSupabaseAccountTransport(opened.client,{expectedUserId:id,currentUserId:()=>identity.current,isCurrent:current});
       const {startNewAccountProgress}=await import('@/lib/backup/new-account-progress');
       if(!current())return;
-      const result=await startNewAccountProgress({origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,isCurrent:current,otherTabsClosed:tabs,startConfirmed:newJourneyConsent,userId:id},transport);
+      const result=await startNewAccountProgress({origin:window.location.origin,storage:()=>window.localStorage,locks:navigator.locks,isCurrent:current,otherTabsClosed:tabs||byTap,startConfirmed:newJourneyConsent||byTap,userId:id},transport);
       if(!current())throw new Error('Confira o acesso antes de abrir sua jornada.');
       const {prepareLiveAccountAccess}=await import('@/lib/backup/account-live-access');
       const handoff=await prepareLiveAccountAccess(opened,{userId:id,bindingRaw:result.bindingRaw,origin:window.location.origin,project:import.meta.env.VITE_SUPABASE_URL,storage:savedAccess(),remember:true});
@@ -370,6 +380,27 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     const active=session.current,id=identity.current;
     return createSupabaseAccountTransport(active.client,{expectedUserId:id,currentUserId:()=>identity.current,isCurrent:()=>isCurrent(token)&&session.current===active});
   }
+  /** Read-only look at the account right after sign-in: never writes, never adopts, never connects. */
+  async function lookAtAccount(token:number,again=false){
+    const opened=session.current,id=identity.current;
+    if(!opened||!id)return;
+    const current=()=>isCurrent(token)&&session.current===opened&&identity.current===id;
+    setRemote({kind:'looking'});setVersions(null);setStillLegacy(false);setMessage('');
+    try{
+      const selected=resolutionTransport(token);
+      const found=await selected.readProgress(id);
+      if(!current())return;
+      const kind=found&&typeof found==='object'&&'kind' in found?found.kind:null;
+      if(kind==='snapshot'){
+        const reviewed=await reviewAccountVersions({origin:window.location.origin,expectedUserId:id,storage:window.localStorage,isCurrent:current,transport:selected});
+        if(!current())return;
+        setVersions(reviewed);setRemote({kind:'snapshot'});
+      }else if(kind==='legacy'){setRemote({kind:'legacy'});setStillLegacy(again);}
+      else if(kind==='empty')setRemote({kind:'empty'});
+      else throw new Error('Resposta inesperada da conta.');
+    }catch{if(current())setRemote({kind:'error'});}
+  }
+  function lookAgain(again=false){void run(async token=>{await lookAtAccount(token,again);});}
   function chooseVersion(direction:'local'|'online',copies:{local:string|null;online:string;pending:string|null}){
     if(!ACCOUNT_TRANSFER_WRITES_RELEASED||!versions||!tabs||!userId||resolution||blocked)return;
     void run(async token=>{
@@ -386,14 +417,14 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     if(!ACCOUNT_TRANSFER_WRITES_RELEASED||!resolution||!tabs||!userId||blocked)return;
     void run(async token=>{await keepLocalAfterResolution(resolutionContext(token),{raw:resolution.raw,localUseConfirmed:true},resolutionTransport(token));if(isCurrent(token))window.location.assign('/?progresso=conta');});
   }
-  function connectJourney(receive = false, adoptLegacy = false) {
+  function connectJourney(receive = false, adoptLegacy = false, emptyByTap = false) {
     if (!ACCOUNT_TRANSFER_WRITES_RELEASED || !ready || busy || blocked || !onStart || !userId || resolution || (receive && (!versions || pending))) return;
     const opened = session.current, id = identity.current;
     if (!opened || !id) return;
     void run(async token => {
       const current = () => isCurrent(token) && session.current === opened && identity.current === id;
       const context = { origin: window.location.origin, storage: () => window.localStorage, locks: navigator.locks, otherTabsClosed: true, isCurrent: current };
-      setMessage(receive ? 'Recebendo a jornada escolhida…' : 'Conectando sua jornada…');
+      setMessage(receive ? 'Trazendo seu progresso para este aparelho…' : 'Salvando na conta…');
       const selectedTransport = resolutionTransport(token);
       let result: { bindingRaw: string };
       if (pending) result = await resumeAccountConnection(context, { raw: pending.raw, confirmed: true }, selectedTransport);
@@ -402,22 +433,22 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         const remote = await selectedTransport.readProgress(id);
         if (remote && typeof remote === 'object' && 'kind' in remote && remote.kind === 'legacy') {
           if (!adoptLegacy) {
-            if (current()) { setLegacyAccount(true); setLegacyConsent(false); setMessage(baseline?.snapshot?'A conta possui registros do formato anterior. Confira a preservação abaixo antes de usar esta jornada local.':'A conta possui registros anteriores, mas este aparelho não contém uma jornada completa para adotar. Use o aparelho original ou importe uma cópia conferida.'); }
+            if (current()) { setLegacyAccount(true); setLegacyConsent(false); setMessage('A conta tem registros de uma versão antiga do app. Confira o aviso antes de continuar.'); }
             return;
           }
-          if (!baseline?.snapshot) throw new Error('Este aparelho não contém uma jornada completa. Abra a conta no aparelho original ou importe uma cópia antes de continuar.');
-          if (!legacyConsent) throw new Error('Confirme a preservação dos registros anteriores e o uso desta jornada local.');
+          if (!baseline?.snapshot) throw new Error('Este aparelho não tem progresso para salvar. Abra o app no aparelho onde você usava antes.');
+          if (!legacyConsent) throw new Error('Marque a caixa para confirmar que os registros antigos ficam guardados.');
           result = await connectCurrentAccountProgress(context, { userId: id, confirmed: true, legacyReplacementConfirmed: true }, selectedTransport);
         } else if (remote && typeof remote === 'object' && 'kind' in remote && remote.kind === 'snapshot') {
           const reviewed = await reviewAccountVersions({origin:window.location.origin,expectedUserId:id,storage:window.localStorage,isCurrent:current,transport:selectedTransport});
           if (baseline?.snapshot) {
-            if (current()) { setVersions(reviewed); setMessage('Há progresso neste aparelho e na conta. Confira os totais e escolha qual versão continuar usando.'); }
+            if (current()) { setVersions(reviewed); setMessage('Há progresso neste aparelho e na conta. Escolha qual usar.'); }
             return;
           }
           result = await receiveReviewedAccountProgress(context, { review: reviewed, confirmed: true }, selectedTransport);
         } else {
-          if (localJourney.empty && !emptyJourneyConsent) {
-            if (current()) setMessage('A conta ainda não possui uma jornada salva. Confira o aviso de jornada local vazia antes de autorizar o primeiro envio.');
+          if (localJourney.empty && !emptyJourneyConsent && !emptyByTap) {
+            if (current()) setMessage('A conta ainda não tem progresso salvo. Marque a caixa para continuar com este aparelho vazio.');
             return;
           }
           result = await connectCurrentAccountProgress(context, { userId: id, confirmed: true }, selectedTransport);
@@ -432,10 +463,160 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     });
   }
   const localJourney = summarizeLocalJourney(baseline?.snapshot);
-  const localXPLabel = localJourney.xp.toLocaleString('pt-BR',{maximumFractionDigits:3});
-  const activeXPLabel = localJourney.activeXp.toLocaleString('pt-BR',{maximumFractionDigits:3});
+  const hasLocal = !!baseline?.snapshot && !localJourney.empty;
+  const remoteJourney = (() => { if (!versions) return null; try { const found = summarizeLocalJourney(JSON.parse(versions.remoteArchive) as ProgressSnapshot); return found.available ? found : null; } catch { return null; } })();
   const showResend=signupSent||authCode==='email_not_confirmed';
   const authErrorBlock=authError?<div id="entry-auth-error" role="alert" className="restore-workspace-error"><p>{authError}</p>{authCode&&<p className="account-error-code">Código para suporte: {authCode}</p>}</div>:null;
+  // Which question to ask: derived on every render from what is known, never stored.
+  const remoteKind = remote?.kind === 'snapshot' && !versions ? 'error' : remote?.kind ?? 'looking';
+  const step: Step = ready && blocked ? 'ajuste' : !ready || !userId ? 'entrada' : (pending || resolution) ? 'metade' : binding ? 'ligado'
+    : remoteKind === 'looking' || remoteKind === 'error' ? 'procurando'
+    : remoteKind === 'empty' ? (hasLocal ? 'salvar' : 'novo')
+    : remoteKind === 'snapshot' ? (hasLocal ? 'escolher' : 'trazer')
+    : (hasLocal ? 'antigo-com' : 'antigo-sem');
+  const cannotAct = !ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked || !onStart;
+  const spinner = busy ? <LoaderCircle className="entry-spinner" size={18} aria-hidden="true" /> : null;
+  const statusLine = <p className="account-step-status" role="status" aria-live="polite">{busy ? (message || 'Aguarde, não feche esta página…') : message}</p>;
+  const failure = (friendly?: string) => error ? <div role="alert" className="restore-workspace-error account-step-error"><p>{friendly ?? error}</p>{friendly && <p className="account-error-code">Detalhe para suporte: {error}</p>}</div> : null;
+  const feedback = (friendly?: string) => <>{failure(friendly)}{statusLine}</>;
+  const localOnlyLink = <a className="account-text-link" href="/santuario">Usar só neste aparelho por enquanto</a>;
+  const profileNote = !localJourney.empty && localJourney.activeEmpty ? <small className="account-step-note">O perfil ativo está vazio, mas há progresso em outros perfis deste aparelho. Tudo é salvo junto.</small> : null;
+  const savedOn = dayLabel(versions?.remoteSummary.createdAt);
+  const remoteSaved = `${savedOn ? `Salvo em ${savedOn}` : 'Salvo na conta'}${remoteJourney ? `: ${totalsLine(remoteJourney)}` : ''}.`;
+  const closedTabs = <label className="restore-workspace-consent"><input type="checkbox" checked={tabs} disabled={busy} onChange={event=>setTabs(event.target.checked)}/>Fechei as outras abas e janelas deste app.</label>;
+  const panel = (resolution || versions) ? <AccountResolutionPanel key={resolution?'recover':'choose'} versions={versions??undefined} resolution={resolution?.journal} busy={busy} released={ACCOUNT_TRANSFER_WRITES_RELEASED&&!blocked&&tabs&&!!userId} onChoose={chooseVersion} onRecover={recoverResolution} onKeepLocal={keepResolutionLocal}/> : null;
+  const panelInStep = (step === 'metade' && !!resolution) || (step === 'escolher' && choice === 'device');
+  const beginFresh = () => { if (!baseline?.snapshot) startNewJourney(true); else connectJourney(false, false, true); };
+  function openAdvanced(){setAdvancedOpen(true);setTimeout(()=>advancedRef.current?.scrollIntoView?.({block:'start'}),0);}
+
+  // One small view per step; each returns its title, its lead sentence and its body.
+  const stepProcurando = () => ({ title: 'Procurando seu progresso…', lead: signedInNotice(email), body: remoteKind === 'error' ? <>
+    <div role="alert" className="restore-workspace-error account-step-error"><p>Não deu para olhar sua conta agora. Nada foi alterado.</p></div>
+    <button type="button" disabled={!ready||busy} onClick={()=>lookAgain()}>Tentar de novo</button>
+    {localOnlyLink}
+  </> : <p className="account-step-wait"><LoaderCircle className="entry-spinner" size={18} aria-hidden="true" />Aguarde um instante.</p> });
+  const stepSalvar = () => ({ title: 'Salvar seu progresso na conta', lead: `Encontramos seu progresso neste aparelho: ${totalsLine(localJourney)}. Salve na conta para usar em outros aparelhos.`, body: <>
+    {profileNote}
+    <p id="account-step-consent" className="account-step-consent">Ao tocar, o progresso deste aparelho e o que você fizer depois ficam salvos na sua conta.</p>
+    <button type="button" aria-describedby="account-step-consent" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}{error ? 'Tentar de novo' : 'Salvar meu progresso na conta'}</button>
+    {feedback('Não deu para salvar agora. Seu progresso continua neste aparelho.')}
+    {localOnlyLink}
+  </> });
+  const stepNovo = () => ({ title: 'Tudo pronto', lead: 'Sua conta é nova. Comece agora e o que você fizer fica salvo nela.', body: <>
+    <p id="account-step-consent" className="account-step-consent">Ao tocar, sua jornada começa e o que você fizer depois fica salvo na sua conta.</p>
+    <button type="button" aria-describedby="account-step-consent" disabled={cannotAct} onClick={beginFresh}>{spinner}{error ? 'Tentar de novo' : 'Começar minha jornada'}</button>
+    {feedback('Não deu para começar agora. Seu progresso continua guardado.')}
+  </> });
+  const stepTrazer = () => ({ title: 'Seu progresso está na conta', lead: remoteSaved, body: <>
+    <p className="account-step-who">{signedInNotice(email)} Não é essa conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>closeAccess()}>Sair e entrar com outra</button></p>
+    <p id="account-step-consent" className="account-step-consent">Este aparelho ainda não tem atividades, então nada se perde. O XP não é somado de novo.</p>
+    <button type="button" aria-describedby="account-step-consent" disabled={cannotAct} onClick={()=>connectJourney(true)}>{spinner}{error ? 'Tentar de novo' : 'Trazer meu progresso para este aparelho'}</button>
+    {feedback('Não deu para trazer agora. Seu progresso continua guardado na conta.')}
+  </> });
+  const choiceCard = (value: 'account' | 'device', label: string, when: string, summary: { xp: number; tasks: number; habits: number } | null) => <label key={value} className="account-choice-card" data-selected={choice === value}>
+    <input type="radio" name="account-choice" value={value} checked={choice === value} disabled={busy} onChange={()=>{setChoice(value);setReplaceConsent(false);}}/>
+    <strong>{label}</strong>{when && <span>{when}</span>}
+    {summary && <><span className="account-choice-xp">{summary.xp.toLocaleString('pt-BR',{maximumFractionDigits:3})} XP</span><span>{plural(summary.tasks,'ritual','rituais')} · {plural(summary.habits,'ciclo','ciclos')}</span></>}
+  </label>;
+  const stepEscolher = () => ({ title: 'Qual progresso você quer usar?', lead: 'Há progresso na conta e neste aparelho. Eles não se juntam: escolha um.', body: <>
+    <div role="radiogroup" aria-label="Qual progresso usar" className="account-choice">
+      {choiceCard('account', 'Na conta', savedOn ? `Salvo em ${savedOn}` : '', remoteJourney)}
+      {choiceCard('device', 'Neste aparelho', '', localJourney)}
+    </div>
+    {profileNote}
+    {choice === 'account' && <>
+      <label className="restore-workspace-consent"><input type="checkbox" checked={replaceConsent} disabled={busy} onChange={event=>setReplaceConsent(event.target.checked)}/>Entendo: o progresso deste aparelho será trocado pelo da conta.</label>
+      <button type="button" disabled={cannotAct||!replaceConsent} onClick={()=>connectJourney(true)}>{spinner}{error ? 'Tentar de novo' : 'Usar o progresso da conta'}</button>
+      <button type="button" className="account-link-button" disabled={busy||!versions?.localArchive} onClick={()=>{if(versions?.localArchive)download(versions.localArchive,'conselho-copia-deste-aparelho');}}>Guardar uma cópia deste aparelho antes</button>
+    </>}
+    {choice === 'device' && <>
+      <ol className="account-numbered">
+        <li>Baixe a cópia da conta e a cópia deste aparelho.
+          <span className="account-numbered-actions">
+            <button type="button" className="restore-workspace-secondary" disabled={busy||!versions} onClick={()=>{if(versions)download(versions.remoteArchive,'conselho-versao-da-conta');}}>Baixar cópia da conta</button>
+            <button type="button" className="restore-workspace-secondary" disabled={busy||!versions?.localArchive} onClick={()=>{if(versions?.localArchive)download(versions.localArchive,'conselho-versao-deste-aparelho');}}>Baixar cópia deste aparelho</button>
+          </span>
+        </li>
+        <li>Escolha cada arquivo baixado, no campo certo abaixo.</li>
+        <li>Marque as caixas e toque em “Usar o progresso deste aparelho”. O progresso da conta será trocado pelo deste aparelho.</li>
+      </ol>
+      {closedTabs}
+      {panelInStep && panel}
+    </>}
+    {feedback('Não deu para continuar agora. Seu progresso continua guardado.')}
+  </> });
+  const stepAntigoSem = () => ({ title: 'Seu progresso está em outro aparelho', lead: 'Sua conta tem progresso de uma versão antiga do app. Ele está guardado; nada foi apagado. Para trazê-lo, use o aparelho onde você usava o app.', body: <>
+    <div className="account-where">
+      <h3>No aparelho onde você usava:</h3>
+      <ol className="account-numbered">
+        <li>Abra o app no mesmo navegador e no mesmo endereço de antes.</li>
+        <li>Entre com {email.trim() || 'esta mesma conta'}.</li>
+        <li>Toque em “Salvar meu progresso na conta”.</li>
+        <li>Volte aqui e toque no botão abaixo.</li>
+      </ol>
+    </div>
+    <button type="button" disabled={!ready||busy} onClick={()=>lookAgain(true)}>{spinner}Já fiz isso, procurar de novo</button>
+    {stillLegacy && <p role="status" className="account-step-note">Ainda não encontramos. Confira se entrou com a mesma conta no outro aparelho.</p>}
+    {feedback()}
+    <a className="account-outline-link" href="/santuario">Usar só neste aparelho por enquanto</a>
+    <small className="account-step-note">O que você fizer aqui fica só neste aparelho. Depois, você escolhe qual progresso usar.</small>
+    <a className="account-text-link" href="/?progresso=restaurar">Tenho um arquivo de cópia</a>
+  </> });
+  const stepAntigoCom = () => ({ title: 'Atualizar sua conta com este aparelho', lead: `Sua conta tem registros de uma versão antiga do app. Este aparelho tem seu progresso atual: ${totalsLine(localJourney)}. Os registros antigos ficam guardados à parte, sem apagar, e a conta passa a usar o progresso deste aparelho. Os números não se somam.`, body: <>
+    {profileNote}
+    <label className="restore-workspace-consent"><input type="checkbox" checked={legacyConsent} disabled={busy} onChange={event=>setLegacyConsent(event.target.checked)}/>Entendo: a conta passa a usar o progresso deste aparelho e os registros antigos ficam guardados.</label>
+    <button type="button" disabled={cannotAct||!legacyConsent} onClick={()=>connectJourney(false,true)}>{spinner}{error ? 'Tentar de novo' : 'Salvar meu progresso na conta'}</button>
+    {feedback('Não deu para salvar agora. Seu progresso continua neste aparelho.')}
+    <a className="account-text-link" href="/santuario">Agora não</a>
+  </> });
+  const stepLigado = () => ({ title: 'Este aparelho já está ligado à sua conta', lead: 'Seu progresso já está ligado à sua conta. Toque abaixo para continuar.', body: <>
+    <button type="button" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}Abrir o app</button>
+    {feedback('Não deu para abrir agora. Seu progresso continua guardado.')}
+  </> });
+  const stepMetade = () => resolution ? { title: 'Terminar o que ficou pela metade', lead: 'Uma escolha de progresso foi interrompida. Seu progresso está protegido.', body: <>
+    {closedTabs}
+    {panelInStep && panel}
+    {feedback('Não deu para terminar agora. Seu progresso continua protegido.')}
+  </> } : { title: 'Terminar o que ficou pela metade', lead: 'Uma gravação na conta foi interrompida. Seu progresso está protegido.', body: <>
+    <button type="button" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}Verificar e terminar</button>
+    {failure('Não deu para terminar agora. Seu progresso continua protegido.')}
+    {error && <>
+      <label className="restore-workspace-consent"><input type="checkbox" checked={pendingRetryConsent} disabled={busy} onChange={event=>setPendingRetryConsent(event.target.checked)}/>Fechei as outras abas e autorizo gravar de novo exatamente esta tentativa, se a conta confirmar que ela não chegou.</label>
+      <button type="button" className="restore-workspace-secondary" disabled={cannotAct||!pendingRetryConsent} onClick={completePendingJourney}>Gravar de novo</button>
+    </>}
+    {statusLine}
+  </> };
+  const stepAjuste = () => ({ title: blockKind === 'progress' ? 'Alguns dados deste aparelho precisam de ajuste' : blockKind === 'restore' ? 'Uma importação ficou pela metade' : 'Reconectar este aparelho', lead: 'Nada do seu progresso é apagado.', body: blockKind === 'progress' ? <>
+    {progressRepair ? <>
+      <p>{progressRepair.xpFields} {progressRepair.xpFields===1?'campo antigo de XP será completado':'campos antigos de XP serão completados'}, sem mudar os saldos válidos.</p>
+      {progressRepair.legacyExperienceMoved&&<p>A experiência do formato antigo fica no elemento Terra, como o app já fazia.</p>}
+      {progressRepair.orphanActions.map(action=><p key={action.path}>“{action.title}” será mantida como {action.kind} independente, com o mesmo ID, estado e histórico.</p>)}
+      <p>Antes de mexer, o app guarda uma cópia exata e só conclui se tudo passar na conferência.</p>
+      <label className="restore-workspace-consent"><input type="checkbox" checked={repairConsent} disabled={busy} onChange={event=>setRepairConsent(event.target.checked)}/>Fechei as outras abas e janelas deste app.</label>
+      <button type="button" disabled={busy||!repairConsent} onClick={repairStoredProgress}>Ajustar e continuar</button>
+    </> : <p className="restore-workspace-error">{progressRepairError || 'Estes campos precisam de revisão manual. Nada foi alterado.'}</p>}
+    <details className="account-support"><summary>Detalhes para suporte</summary>
+      {error && <p>{error}</p>}
+      <ul>{progressIssues.slice(0,6).map((issue,index)=><li key={`${issue.path}-${index}`}><code>{issue.path}</code>: {issue.message}</li>)}</ul>
+      {progressIssues.length>6&&<small>Há mais {progressIssues.length-6} ocorrências do mesmo tipo.</small>}
+    </details>
+    {statusLine}
+  </> : blockKind === 'restore' ? <>
+    <p>Uma importação ficou pela metade neste navegador. Termine-a antes de continuar.</p>
+    {failure()}
+    <a className="account-outline-link" href="/?progresso=restaurar">Terminar importação</a>
+    {statusLine}
+  </> : <>
+    <p>Isto remove só os vínculos antigos deste aparelho. Atividades, XP e treinos não são apagados.</p>
+    {failure()}
+    <button type="button" disabled={busy||!repairable} onClick={resetLocalConnection}>Reconectar este aparelho</button>
+    {statusLine}
+  </> });
+  const views: Record<Exclude<Step, 'entrada'>, () => { title: string; lead: string; body: ReactNode }> = { procurando: stepProcurando, ajuste: stepAjuste, metade: stepMetade, ligado: stepLigado, salvar: stepSalvar, novo: stepNovo, trazer: stepTrazer, escolher: stepEscolher, 'antigo-sem': stepAntigoSem, 'antigo-com': stepAntigoCom };
+  const view = step === 'entrada' ? null : views[step]();
+  const signedView = userId ? view : null;
+  const entryTitle = accessMode === 'signup' ? 'Comece sua jornada' : 'Sua jornada continua';
+  const entryLead = accessMode === 'signup' ? 'Crie sua conta para ver seu progresso em qualquer aparelho.' : 'Entre para ver seu progresso em qualquer aparelho.';
   return <div className="entry-shell">
     <a className="entry-skip" href="#account-workspace-title">Ir para o acesso da conta</a>
     <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/santuario" hidden={!userId}><ArrowLeft size={16} aria-hidden="true" />Voltar ao app</a></div>
@@ -443,12 +624,11 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     <EntryArtwork />
     <main className="restore-workspace account-workspace entry-main" aria-labelledby="account-workspace-title">
     {(pending || resolution) && <a className="restore-workspace-back entry-context" href="/?progresso=conta" onClick={event=>{event.preventDefault();window.location.reload();}}><ArrowLeft size={18} aria-hidden="true" />Recarregar conferência</a>}
-    <header><h1 id="account-workspace-title" ref={heading} tabIndex={-1}>{userId ? 'Minha conta' : accessMode === 'signup' ? 'Comece sua jornada' : 'Sua jornada continua'}</h1></header>
-    <p>{userId ? 'Escolha como continuar com suas atividades, conquistas e XP.' : accessMode === 'signup' ? 'Crie sua conta para ver seu progresso em qualquer aparelho.' : 'Entre para ver seu progresso em qualquer aparelho.'}</p>
+    <header><h1 id="account-workspace-title" ref={heading} tabIndex={-1}>{signedView ? signedView.title : entryTitle}</h1></header>
+    <p>{signedView ? signedView.lead : entryLead}</p>
     {!ACCOUNT_ACCESS_RELEASED&&<p className="account-workspace-release" role="status">O acesso à conta ainda não está liberado nesta versão.</p>}
     {!ACCOUNT_TRANSFER_WRITES_RELEASED&&<section aria-labelledby="account-mobile"><h2 id="account-mobile">Seu progresso no celular</h2><p>Você já pode importar sua cópia completa neste aparelho, incluindo atividades, histórico e XP. Cadastro e acesso à conta são separados: envio e sincronização ainda não liberados.</p><a className="restore-workspace-back" href="/?progresso=restaurar">Importar minha cópia neste aparelho</a><p>Para validar sua conta, crie o acesso abaixo, confirme o e-mail e entre novamente. Entrar não envia nem substitui sua jornada.</p></section>}
-    <section className="entry-access-card ds-pane" aria-labelledby={userId ? 'account-access' : undefined} aria-label={userId ? undefined : 'Acesso à conta'}>
-      {userId&&<h2 id="account-access">Acesso confirmado</h2>}
+    <section className="entry-access-card ds-pane" aria-label="Acesso à conta" hidden={!!userId}>
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}
       <div className="account-entry" hidden={!!userId}>
         <div className="account-oauth" role="group" aria-label="Entrar com Google">
@@ -477,65 +657,22 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         </div></div></div>
         {accessMode==='login'?<p className="account-switch">Não tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('signup')}>Criar conta com e-mail</button></p>:<p className="account-switch">Já tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('login')}>Entrar</button></p>}
       </div>
-      {userId&&<><p>Conta confirmada. Você pode usar o app agora e concluir a sincronização quando escolher a jornada correta.</p><a className="restore-workspace-back" href="/santuario">Continuar no app</a><button type="button" className="restore-workspace-secondary" disabled={!ready||busy} onClick={closeAccess}>Sair desta conta</button></>}
     </section>
-    {ready&&!blocked&&baseline?.snapshot&&<section className="account-journey" aria-labelledby="account-health-title" hidden={!userId}>
-      <div className="account-journey-heading"><ShieldCheck size={28} aria-hidden="true" /><h2 id="account-health-title">Dados deste aparelho conferidos</h2></div>
-      <p>XP, atividades, vínculos, histórico e Treinos passaram pela verificação estrutural. Nenhum problema que impeça a sincronização foi encontrado.</p>
-      <small>Essa conferência valida a integridade do arquivo deste aparelho; ao conectar, o app ainda confere separadamente o estado salvo na conta.</small>
+    {view && <section key={step} className="account-step ds-pane" data-step={step} aria-labelledby={userId ? undefined : 'account-step-title'} aria-label={userId ? view.title : undefined}>
+      {!userId && <h2 id="account-step-title">{view.title}</h2>}
+      {view.body}
+      {userId && <div className="account-step-footer">
+        <button type="button" className="account-link-button" hidden={blocked} onClick={openAdvanced}>Opções avançadas</button>
+        <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>closeAccess()}>Sair desta conta</button>
+      </div>}
     </section>}
-    {ready&&blocked&&<section className="account-journey" aria-labelledby="account-repair-title">
-      <div className="account-journey-heading"><ShieldCheck size={28} aria-hidden="true" /><h2 id="account-repair-title">{blockKind==='progress'?'Confira os dados deste aparelho':blockKind==='restore'?'Conclua a recuperação':'Refaça a conexão deste aparelho'}</h2></div>
-      {blockKind==='progress'?<>
-        <p>O app encontrou campos antigos ou incompletos e pausou o envio para não gravar uma cópia defeituosa. Nenhuma atividade foi apagada.</p>
-        <ul>{progressIssues.slice(0,6).map((issue,index)=><li key={`${issue.path}-${index}`}><code>{issue.path}</code>: {issue.message}</li>)}</ul>
-        {progressIssues.length>6&&<small>Há mais {progressIssues.length-6} ocorrências do mesmo diagnóstico.</small>}
-        {progressRepair?<div className="account-journey-online">
-          <h3>Correção segura disponível</h3>
-          <p>{progressRepair.xpFields} {progressRepair.xpFields===1?'campo antigo de XP será completado':'campos antigos de XP serão completados'} sem alterar os saldos válidos.</p>
-          {progressRepair.legacyExperienceMoved&&<p>A experiência do formato antigo será mantida no elemento Terra, conforme a migração já usada pelo app.</p>}
-          {progressRepair.orphanActions.map(action=><p key={action.path}>“{action.title}” será preservada como {action.kind} independente, com o mesmo ID, estado e histórico.</p>)}
-          <p>Antes de gravar, o app mantém uma cópia local exata e só conclui se a nova estrutura passar por toda a conferência.</p>
-          <label className="restore-workspace-consent"><input type="checkbox" checked={repairConsent} disabled={busy} onChange={event=>setRepairConsent(event.target.checked)}/>Fechei as outras abas e janelas deste app.</label>
-          <button type="button" disabled={busy||!repairConsent} onClick={repairStoredProgress}>Corrigir dados e continuar</button>
-        </div>:<p className="restore-workspace-error">{progressRepairError||'Estes campos exigem revisão manual. Nenhum dado foi alterado.'}</p>}
-      </>:<p>{blockKind==='restore'?'Uma operação de importação realmente está pendente neste navegador. Conclua-a antes de sincronizar.':'Esta ação remove somente recibos e vínculos locais antigos. Atividades, XP, treinos e a versão existente na conta não são apagados.'}</p>}
-      {repairable?<button type="button" disabled={busy} onClick={resetLocalConnection}>Reiniciar conexão deste aparelho</button>:blockKind==='restore'?<a className="restore-workspace-back" href="/?progresso=restaurar">Concluir recuperação pendente</a>:null}
-    </section>}
-    {ready && !!userId && !blocked && !pending && !resolution && <section className="account-journey" aria-labelledby="account-journey-title">
-      <div className="account-journey-heading"><UserRoundCheck size={28} aria-hidden="true" /><h2 id="account-journey-title">{userId ? 'Conecte sua jornada' : 'Seu progresso continua aqui'}</h2></div>
-      <p>{userId ? 'Envie o progresso deste aparelho para sua conta e continue de onde parou em outros dispositivos.' : 'Entrar ou criar uma conta não apaga o que você já fez. Depois de entrar, você escolhe qual progresso usar.'}</p>
-      {baseline?.snapshot && <>
-        <dl className="account-journey-ledger" aria-label="Progresso de todos os perfis neste aparelho"><div><dt>Perfis no arquivo</dt><dd>{localJourney.profiles}</dd></div><div><dt>Rituais em todos os perfis</dt><dd>{localJourney.tasks}</dd></div><div><dt>Ciclos em todos os perfis</dt><dd>{localJourney.habits}</dd></div><div><dt>XP em todos os perfis</dt><dd><Sparkles size={16} aria-hidden="true" />{localXPLabel}</dd></div><div><dt>Treinos salvos</dt><dd>{localJourney.sessions}</dd></div></dl>
-        <small>Perfil ativo: {localJourney.activeName} — {localJourney.activeTasks} rituais, {localJourney.activeHabits} ciclos e {activeXPLabel} XP.</small>
-        {!localJourney.empty&&localJourney.activeEmpty&&<p className="account-journey-warning">O perfil ativo está vazio, mas o arquivo contém progresso em outros perfis. A sincronização preserva todos eles.</p>}
-        {localJourney.empty&&<div className="account-journey-online"><h3>Jornada local sem atividade registrada</h3><p>Este arquivo possui estrutura válida, mas não contém atividades, histórico, XP ou Treinos. Se você esperava progresso neste aparelho, não envie esta versão: escolha os dados já salvos na conta ou volte ao aparelho e ao endereço onde os dados foram criados.</p><label className="restore-workspace-consent"><input type="checkbox" checked={emptyJourneyConsent} disabled={busy} onChange={event=>setEmptyJourneyConsent(event.target.checked)}/>Conferi os totais e quero usar esta jornada vazia somente se a conta também estiver vazia.</label></div>}
-      </>}
-      {userId && <>
-        <p id="account-connect-consent">Feche as outras abas do app. Ao tocar, o progresso deste aparelho e o que você fizer depois ficam salvos na sua conta.</p>
-        <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked || !onStart} aria-describedby="account-connect-consent" onClick={() => connectJourney()}><CloudUpload size={20} aria-hidden="true" />{binding ? 'Continuar sincronização' : 'Sincronizar este aparelho'}</button>
-        <button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked} onClick={compareVersions}><CloudDownload size={20} aria-hidden="true" />Usar dados já salvos na conta</button>
-        {legacyAccount&&<div className="account-journey-online">
-          <h3>Registros anteriores encontrados</h3>
-          {baseline?.snapshot?<>
-            <p>A conta ainda usa as tabelas antigas. Ao continuar, o servidor guardará uma cópia privada desses registros e os manterá congelados, sem excluí-los. A jornada corrigida deste aparelho passará a ser a versão atual.</p>
-            <p>Os saldos não serão somados nem mesclados. O XP e o histórico ativos serão exatamente os desta jornada local.</p>
-            <label className="restore-workspace-consent"><input type="checkbox" checked={legacyConsent} disabled={busy} onChange={event=>setLegacyConsent(event.target.checked)}/>Quero preservar os registros anteriores e usar os dados deste aparelho como minha jornada atual.</label>
-            <button type="button" disabled={busy||!legacyConsent||(localJourney.empty&&!emptyJourneyConsent)} onClick={()=>connectJourney(false,true)}>Preservar registros e sincronizar</button>
-          </>:<p>Este aparelho ainda não tem progresso. Abra o app no aparelho onde você usava e salve o progresso na conta.</p>}
-        </div>}
-        {versions && <div className="account-journey-online"><h3>Jornada salva na conta</h3><p>{versions.remoteSummary.tasks} rituais · {versions.remoteSummary.habits} ciclos · {versions.remoteSummary.sessions} sessões de treino</p><p id="account-receive-consent">Ao usar esta jornada, o progresso deste aparelho será substituído pela versão da conta. O XP será o dessa versão, sem somar novamente.</p><button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || busy || blocked || !onStart} aria-describedby="account-receive-consent" onClick={() => connectJourney(true)}>Usar a jornada salva na conta</button></div>}
-      </>}
-      <small>O app salva após suas alterações e confere a conta quando você volta. Sem internet, os registros permanecem no aparelho; um envio não confirmado pede conferência.</small>
-    </section>}
-    {ready && pending && !resolution && <section aria-labelledby="account-pending-title"><h2 id="account-pending-title">Conclua a conexão da sua jornada</h2><p>Há um envio protegido neste aparelho. Primeiro confira o recibo; essa consulta não repete o envio.</p><p id="account-pending-consent">Se ainda não houver recibo, o botão de conclusão reutiliza a mesma operação e o mesmo arquivo. O servidor só grava quando confirma que a tentativa anterior não foi concluída.</p><button type="button" className="restore-workspace-secondary" aria-describedby="account-pending-consent" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || !userId || busy || blocked || !onStart} onClick={() => connectJourney()}>Verificar tentativa sem reenviar</button><label className="restore-workspace-consent"><input type="checkbox" checked={pendingRetryConsent} disabled={busy} onChange={event=>setPendingRetryConsent(event.target.checked)}/>Fechei as outras abas e autorizo concluir exatamente esta tentativa se o servidor confirmar que não há recibo.</label><button type="button" aria-describedby="account-pending-consent" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED || !userId || busy || blocked || !onStart || !pendingRetryConsent} onClick={completePendingJourney}>Concluir envio protegido e conectar</button></section>}
-    <details className="account-advanced" hidden={blocked}><summary>Cópias, versões e recuperação</summary>
+    <details id="account-advanced" ref={advancedRef} className="account-advanced" open={advancedOpen} onToggle={event=>setAdvancedOpen(event.currentTarget.open)} hidden={blocked}><summary>Cópias, versões e recuperação</summary>
     <div hidden={!ACCOUNT_TRANSFER_WRITES_RELEASED&&!pending&&!resolution}>
     {ready&&baseline&&!baseline.snapshot&&!pending&&!binding&&!resolution&&<section aria-labelledby="account-new"><h2 id="account-new">Sua primeira jornada</h2>
       <p>Este aparelho ainda não tem progresso. Se você já usa o app em outro dispositivo, receba a jornada salva. Para começar do zero, vamos conferir se sua conta também está vazia.</p>
       <label className="restore-workspace-consent"><input type="checkbox" checked={tabs} disabled={busy} onChange={event=>setTabs(event.target.checked)}/>Fechei as outras abas e janelas deste app.</label>
       <label className="restore-workspace-consent"><input type="checkbox" checked={newJourneyConsent} disabled={busy} onChange={event=>setNewJourneyConsent(event.target.checked)}/>Quero criar uma jornada vazia nesta conta e salvar minhas próximas alterações enquanto uso o app.</label>
-      <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||!userId||!onStart||busy||blocked||!tabs||!newJourneyConsent} onClick={startNewJourney}>Começar minha jornada</button>
+      <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||!userId||!onStart||busy||blocked||!tabs||!newJourneyConsent} onClick={()=>startNewJourney()}>Começar minha jornada</button>
     </section>}
     {(!baseline||!!baseline.snapshot||pending||resolution)&&<section aria-labelledby="account-local"><h2 id="account-local">Sua cópia local</h2>
       {resolution?<p>Uma escolha aguarda conclusão. As versões anterior e escolhida permanecem protegidas no registro de recuperação.</p>:pending?<><p>Uma tentativa aguarda conferência. O arquivo original continua protegido; consultar o recibo não repete o envio.</p><button type="button" disabled={busy||blocked} onClick={()=>{if(pending)download(pending.intent.archive,'conselho-arquivo-da-tentativa');}}><Download size={20} aria-hidden="true" />Guardar arquivo desta tentativa</button></>:<>
@@ -575,14 +712,14 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         <button type="button" className="restore-workspace-secondary" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||busy||blocked||!tabs||!localUse} onClick={pause}>Pausar conferência e usar o app localmente</button>
       </>:null}
     </section>}
-    {(resolution||versions)&&<AccountResolutionPanel key={resolution?'recover':'choose'} versions={versions??undefined} resolution={resolution?.journal} busy={busy} released={ACCOUNT_TRANSFER_WRITES_RELEASED&&!blocked&&tabs&&!!userId} onChoose={chooseVersion} onRecover={recoverResolution} onKeepLocal={keepResolutionLocal}/>}
+    {!panelInStep&&panel}
     {binding&&!pending&&!resolution&&!versions&&<section aria-labelledby="account-live"><h2 id="account-live">Sincronizar durante o uso</h2><p>Com as outras abas fechadas, o app envia alterações de todos os perfis nesta sessão. Cada envio precisa de recibo; conflitos pausam a sincronização. O acesso fica salvo conforme a opção “Manter conectado neste aparelho” escolhida ao entrar.</p>
       <label className="restore-workspace-consent"><input type="checkbox" checked={liveConsent} disabled={busy} onChange={event=>setLiveConsent(event.target.checked)}/>Autorizo enviar minhas alterações de todos os perfis enquanto uso o app nesta sessão.</label>
       <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||busy||blocked||!onStart||!copy||!userId||!tabs||!allProfiles||!liveConsent} onClick={startLive}>Sincronizar enquanto uso o app</button>
     </section>}
     </div>
     </details>
-    <p role="status" aria-live="polite">{busy?'Conferindo. Aguarde antes de fechar esta página.':message}</p>{error&&<p role="alert" className="restore-workspace-error">{error}</p>}
+    {!view && <><p role="status" aria-live="polite">{busy?'Aguarde, não feche esta página…':message}</p>{error&&<p role="alert" className="restore-workspace-error">{error}</p>}</>}
   </main></div>
     <footer className="entry-footer"><a href="/privacidade.html">Privacidade</a></footer>
   </div>;
