@@ -1,0 +1,242 @@
+/*
+ * The mage's level ceremony. Whole screen, above the header and the notices
+ * (z-index 40 and 45). One thing per beat: the burst, the number, the bar.
+ * No blur: the veil is an opaque wash.
+ */
+.cerimonia-nivel {
+  --ouro: rgb(var(--el-gold));
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  overflow: hidden;
+  padding: 24px max(20px, env(safe-area-inset-left)) max(28px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 40%, rgb(var(--el-gold) / 20%), transparent 70%),
+    rgb(5 7 12 / 97%);
+  outline: none;
+  animation: nivel-abrir var(--ds-duration-reveal) var(--ds-ease) both;
+}
+
+@keyframes nivel-abrir {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* The burst: rays turned slowly, so it is alive without asking to be watched. */
+.cerimonia-nivel__raios {
+  position: absolute;
+  inset: -40%;
+  pointer-events: none;
+  background: repeating-conic-gradient(
+    from 0deg at 50% 42%,
+    rgb(var(--el-gold) / 26%) 0deg 5deg,
+    transparent 5deg 15deg
+  );
+  -webkit-mask-image: radial-gradient(circle at 50% 42%, #000 6%, transparent 55%);
+  mask-image: radial-gradient(circle at 50% 42%, #000 6%, transparent 55%);
+  animation:
+    nivel-explodir var(--ds-duration-conjure) var(--ds-ease-conjure) both,
+    nivel-girar calc(var(--ds-duration-conjure) * 60) linear infinite;
+}
+
+@keyframes nivel-explodir {
+  from { opacity: 0; scale: 0.4; }
+  to { opacity: 1; scale: 1; }
+}
+
+@keyframes nivel-girar {
+  to { rotate: 360deg; }
+}
+
+/* Light rising in the colours of the four elements. */
+.cerimonia-nivel__luzes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cerimonia-nivel__luzes span {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-block-end: -4%;
+  inline-size: var(--d);
+  block-size: var(--d);
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+  opacity: 0;
+  animation: nivel-subir calc(var(--ds-duration-conjure) * 4) var(--ds-ease) both;
+  animation-delay: calc(var(--i) * var(--ds-stagger));
+}
+
+@keyframes nivel-subir {
+  0% { opacity: 0; translate: 0 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; translate: 0 -78vh; }
+}
+
+.cerimonia-nivel__palco {
+  position: relative;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 18px;
+  text-align: center;
+  inline-size: min(100%, 360px);
+}
+
+/* The seal: a gold ring around the number. It arrives on the conjure beat, the
+   one curve that overshoots. */
+.cerimonia-nivel__selo {
+  display: grid;
+  place-items: center;
+  inline-size: 168px;
+  block-size: 168px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgb(12 14 22) 0 62%, transparent 63%),
+    conic-gradient(from 200deg, #f3dc9a, var(--ouro), #8a6a26, var(--ouro), #f3dc9a);
+  box-shadow: 0 0 70px rgb(var(--el-gold) / 45%), inset 0 0 0 4px rgb(5 7 12 / 55%);
+  animation: nivel-selo var(--ds-duration-conjure) var(--ds-ease-conjure) both;
+}
+
+@keyframes nivel-selo {
+  from { opacity: 0; scale: 0.3; }
+  to { opacity: 1; scale: 1; }
+}
+
+.cerimonia-nivel__selo strong {
+  color: var(--ouro);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-fluid-hero, var(--ds-text-hero));
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+/* The number pulses once when it lands; the seal itself is left alone. */
+.cerimonia-nivel__selo[data-pulsa='true'] strong {
+  animation: nivel-pulso var(--ds-duration-settle) var(--ds-ease-conjure) var(--ds-duration-conjure) both;
+}
+
+@keyframes nivel-pulso {
+  50% { scale: 1.12; }
+}
+
+.cerimonia-nivel__chegada {
+  margin: 0;
+  color: rgb(var(--el-muted));
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-lead);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* Text that is not this beat's is out of sight and out of the accessibility tree. */
+.cerimonia-nivel__chegada,
+.cerimonia-nivel__texto,
+.cerimonia-nivel__progresso {
+  transition:
+    opacity var(--ds-duration-reveal) var(--ds-ease),
+    visibility var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.cerimonia-nivel__chegada[data-ativo='false'],
+.cerimonia-nivel__texto[data-ativo='false'],
+.cerimonia-nivel__progresso[data-ativo='false'] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cerimonia-nivel__texto h2 {
+  margin: 0;
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-fluid-display);
+  font-weight: 500;
+  line-height: var(--ds-leading-tight);
+}
+
+.cerimonia-nivel__titulo {
+  margin: 4px 0 0;
+  color: var(--ouro);
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-lead);
+  letter-spacing: 0.08em;
+}
+
+.cerimonia-nivel__progresso {
+  display: grid;
+  gap: 10px;
+  inline-size: 100%;
+}
+
+.cerimonia-nivel__progresso p {
+  margin: 0;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small);
+}
+
+.cerimonia-nivel__barra {
+  inline-size: 100%;
+  block-size: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(var(--el-gold) / 14%);
+  box-shadow: inset 0 0 0 1px rgb(var(--el-gold) / 30%);
+}
+
+.cerimonia-nivel__barra i {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #8a6a26, var(--ouro), #f3dc9a);
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale var(--ds-duration-conjure) var(--ds-ease-conjure);
+}
+
+.cerimonia-nivel__progresso[data-ativo='true'] .cerimonia-nivel__barra i {
+  scale: var(--fracao) 1;
+}
+
+.cerimonia-nivel__continuar {
+  position: relative;
+  min-block-size: 48px;
+  inline-size: min(100%, 320px);
+  border: 1px solid rgb(var(--el-gold) / 70%);
+  border-radius: 999px;
+  background: var(--ouro);
+  color: rgb(var(--el-canvas));
+  font-family: Cinzel, Georgia, serif;
+  font-size: var(--ds-text-body);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: opacity var(--ds-duration-reveal) var(--ds-ease);
+}
+
+.cerimonia-nivel__continuar[data-pronto='false'] {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.cerimonia-nivel__continuar:focus-visible {
+  outline: 2px solid rgb(var(--el-text));
+  outline-offset: 3px;
+}
+
+/* Reduced motion: the final screen at once, only a fade. */
+@media (prefers-reduced-motion: reduce) {
+  .cerimonia-nivel__selo,
+  .cerimonia-nivel__selo[data-pulsa='true'] strong {
+    animation: none;
+  }
+
+  .cerimonia-nivel__barra i {
+    transition: none;
+  }
+}

@@ -57,3 +57,22 @@ test('o canal guarda a ascensão sem ouvinte e a entrega quando a tela assina', 
   parar();
   assert.equal(emitirAscensao(a), false);
 });
+
+test('subir o nível do mago (soma dos quatro XP) é um evento, com título de maestria', () => {
+  const eventos = detectarEventos(estado({ user: usuario({ xp_fire: 99 }) }), estado({ user: usuario({ xp_fire: 60, xp_water: 40 }) }))
+    .filter((e) => e.tipo === 'nivel');
+  assert.deepEqual(eventos.map((e) => ({ ...e })), [{ tipo: 'nivel', de: 1, para: 2, titulo: 'Iniciado' }]);
+});
+
+test('vários níveis de uma vez geram um evento só, com os extremos', () => {
+  const eventos = detectarEventos(estado(), estado({ user: usuario({ xp_air: 5000 }) })).filter((e) => e.tipo === 'nivel');
+  assert.equal(eventos.length, 1);
+  assert.equal(eventos[0].de, 1);
+  assert.ok(eventos[0].para > 3);
+});
+
+test('descer de nível ou ficar no mesmo não é evento', () => {
+  const alto = estado({ user: usuario({ xp_earth: 5000 }) });
+  assert.equal(detectarEventos(alto, estado()).filter((e) => e.tipo === 'nivel').length, 0);
+  assert.equal(detectarEventos(alto, alto).filter((e) => e.tipo === 'nivel').length, 0);
+});

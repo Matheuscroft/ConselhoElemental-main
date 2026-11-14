@@ -47,8 +47,10 @@ interface IconProps { size?: number | string; className?: string; label?: string
 export function ArcaneIcon({ name, size = '1em', className = '', label, style, ativo = false }: IconProps & { name: ArcaneIconName; ativo?: boolean }) {
   const sigilo = SIGILOS[name];
   const traco = sigilo ? sigilo.traco : PATHS[name as keyof typeof PATHS];
-  const stroke = typeof size === 'number' && size <= 16 ? 2 : 1.5;
-  return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={`arcane-icon ${className}`} style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0, ...style }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false"><path d={traco} />{ativo && sigilo?.nucleo ? <path d={sigilo.nucleo} fill="currentColor" /> : null}</svg>;
+  const pequeno = typeof size === 'number' && size <= 16;
+  const stroke = pequeno ? 2 : 1.5;
+  const brilho = ativo ? { filter: 'drop-shadow(0 0 3px currentColor)' } : null;
+  return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={`arcane-icon ${className}`} style={{ display: 'inline-block', verticalAlign: '-0.15em', flexShrink: 0, ...brilho, ...style }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">{!pequeno && sigilo?.ornamento ? <path d={sigilo.ornamento} strokeWidth={1} opacity={0.55} fill="none" /> : null}<path d={traco} />{ativo && sigilo?.nucleo ? <path d={sigilo.nucleo} fill="currentColor" /> : null}</svg>;
 }
 
 export function ElementIcon({ element, tone = 'color', ...props }: IconProps & { element: ElementId; tone?: 'color' | 'outline' }) {

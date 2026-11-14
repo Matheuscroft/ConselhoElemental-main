@@ -72,11 +72,16 @@ test('todo APP_ROUTES tem icone proprio em ROUTE_ICONS e o primeiro path e unico
 
 test('cada traco e unico, usa ate 3 formas e cabe em 0..24', () => {
   const seen = new Map();
-  for (const [name, { traco, nucleo }] of Object.entries(SIGILOS)) {
+  const orns = new Map();
+  for (const [name, { traco, nucleo, ornamento }] of Object.entries(SIGILOS)) {
     assert.ok(!seen.has(traco), `${name} repete ${seen.get(traco)}`);
     seen.set(traco, name);
+    if (ornamento) {
+      assert.ok(!orns.has(ornamento), `${name} repete ornamento de ${orns.get(ornamento)}`);
+      orns.set(ornamento, name);
+    }
     assert.doesNotMatch(traco, /circle/);
-    for (const d of [traco, nucleo].filter(Boolean)) {
+    for (const d of [traco, nucleo, ornamento].filter(Boolean)) {
       for (const [x, y] of pontos(d)) assert.ok(x >= 0 && x <= 24 && y >= 0 && y <= 24, `${name}: ${x},${y}`);
     }
   }
@@ -84,12 +89,34 @@ test('cada traco e unico, usa ate 3 formas e cabe em 0..24', () => {
 
 test('ArcaneIcon: tracos 1.5/2, nucleo so quando ativo, aria-hidden por padrao', () => {
   const html = (props) => renderToStaticMarkup(React.createElement(ArcaneIcon, props));
+  const paths = (props) => (html(props).match(/<path/g) || []).length;
   assert.match(html({ name: 'santuario', size: 24 }), /stroke-width="1.5"/);
   assert.match(html({ name: 'santuario', size: 16 }), /stroke-width="2"/);
-  assert.equal((html({ name: 'santuario' }).match(/<path/g) || []).length, 1);
-  assert.equal((html({ name: 'santuario', ativo: true }).match(/<path/g) || []).length, 2);
+  assert.equal(paths({ name: 'santuario', size: 16 }), 1);
+  assert.equal(paths({ name: 'santuario', size: 16, ativo: true }), 2);
+  assert.equal(paths({ name: 'santuario', size: 24 }), 2);
+  assert.equal(paths({ name: 'santuario', size: 24, ativo: true }), 3);
   assert.match(html({ name: 'santuario' }), /aria-hidden="true"/);
   assert.match(html({ name: 'conta', label: '<x>' }), /aria-label="&lt;x&gt;"/);
+});
+
+test('ornamento: so acima de 16px, antes do traco, 1px e opacidade .55; brilho so ativo', () => {
+  const html = (props) => renderToStaticMarkup(React.createElement(ArcaneIcon, props));
+  const grande = html({ name: 'criar', size: 24 });
+  assert.ok(grande.includes(`d="${SIGILOS.criar.ornamento}"`));
+  assert.ok(grande.indexOf(SIGILOS.criar.ornamento) < grande.indexOf(SIGILOS.criar.traco));
+  assert.match(grande, /stroke-width="1" opacity="0.55" fill="none"/);
+  assert.ok(!html({ name: 'criar', size: 16 }).includes(SIGILOS.criar.ornamento));
+  assert.ok(html({ name: 'criar', size: 17 }).includes(SIGILOS.criar.ornamento));
+  assert.ok(html({ name: 'criar' }).includes(SIGILOS.criar.ornamento));
+  assert.doesNotMatch(grande, /drop-shadow/);
+  assert.match(html({ name: 'criar', size: 24, ativo: true }), /drop-shadow\(0 0 3px currentColor\)/);
+  assert.ok(!html({ name: 'criar', size: 24, ativo: true }).includes('backdrop'));
+});
+
+test('as chaves de SIGILOS continuam as mesmas', () => {
+  assert.equal(Object.keys(SIGILOS).length, 51);
+  for (const k of ['santuario', 'pilares', 'stamina', 'prana', 'criar', 'treino', 'corpo', 'jornada', 'obra', 'meteoro']) assert.ok(SIGILOS[k], k);
 });
 
 test('PATHS legado so pode encolher', () => {

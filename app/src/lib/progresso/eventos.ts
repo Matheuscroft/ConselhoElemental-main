@@ -23,7 +23,16 @@ export interface AscensaoNova {
   readonly maestria: number;
 }
 
-export type EventoDeProgresso = ConclusaoNova | AscensaoNova;
+/** The mage's own level (the sum of the four XP) went up. One event, from the first level to the last. */
+export interface NivelDoMago {
+  readonly tipo: 'nivel';
+  readonly de: number;
+  readonly para: number;
+  /** Mastery title of the new level. */
+  readonly titulo: string;
+}
+
+export type EventoDeProgresso = ConclusaoNova | AscensaoNova | NivelDoMago;
 
 interface HabitoLido {
   readonly id: string;
@@ -110,6 +119,11 @@ export function detectarEventos(antes: EstadoLido, depois: EstadoLido): EventoDe
         maestria: LevelingCalculatorService.calculate(depois.user[CHAVE_XP[elemento]]).level,
       });
     }
+  }
+  const nivelAntes = LevelingCalculatorService.calculateAvatar(antes.user).level;
+  const nivelDepois = LevelingCalculatorService.calculateAvatar(depois.user);
+  if (nivelDepois.level > nivelAntes) {
+    eventos.push({ tipo: 'nivel', de: nivelAntes, para: nivelDepois.level, titulo: nivelDepois.title });
   }
   return eventos;
 }
