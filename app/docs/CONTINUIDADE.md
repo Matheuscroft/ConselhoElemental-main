@@ -1,3 +1,31 @@
+## Passada UAU do Santuário — commitada localmente, não publicada (15/11/2026)
+
+Ponto de retomada: worktree `.claude/worktrees/uau-santuario-cc1098`, branch `claude/uau-santuario-cc1098`, commit `2db5167` sobre `118a048` (igual a `origin/main` nesta data). Aprovada visualmente por Fábio no navegador em 15/11/2026. Não publicada: falta o ok dele para empurrar à `main`. Pesquisa de origem: `PESQUISA-UAU.md` (worktree `intelligent-raman-e0c6bf`, não versionada).
+
+O que mudou, só em `/santuario` (a página do elemento não foi tocada):
+- Entrada coreografada uma vez por abertura do app (luz, mago, portais em sequência, anel de XP que se desenha, nome, altar); ao voltar de outra tela, só um fade curto. Tempos pelos tokens `--ds-duration-*` e `--ds-stagger`.
+- Mago com respiração e paralaxe em camadas por ponteiro/toque; giroscópio só onde o navegador entrega o evento sem pedir permissão (no iPhone não se pede).
+- Luz da cena pelo elemento que lidera a semana (`elementoDaSemana` + `conclusoesDoApp`, só leitura); ouro quando não há líder.
+- Altar "Seu próximo passo" em vidro real (`.ep-next.ep-vidro`), com luz atrás, borda especular e luz interna que seguem o dedo, granulado. Demais cartões em `.ep-painel`, sem desfoque.
+- Anel de XP: desenho na entrada, brilho que percorre só o trecho ganho, ponta de luz e pulso ao mudar.
+- Nível em selo; "Nível" e "faltam X XP" com `Contagem` (conta ao ganhar, não a cada visita).
+- Rótulo dos portais nunca abaixo de 12px; "Criar ritual" vira botão primário quando não há ritual pendente; rodapé do Santuário sem o link duplicado para `/mapa`.
+- `AuraElemental.tsx`: o apagamento na borda do quad passou a ser redondo; em níveis altos os dois apagamentos retos formavam uma coluna.
+
+Arquivos: `src/pages/ElementalPreview.tsx`, `src/pages/elemental-preview.css`, `src/components/sanctuary/AnelXp.tsx`, `anel-xp.css`, `AuraElemental.tsx`, novos `src/components/sanctuary/useCenaViva.ts`, `src/lib/sanctuary/cena-viva.ts` e `tests/sanctuary/cena-viva.test.mjs`, e `tests/design/superficie.test.mjs`.
+
+Teto de vidro: `TETO_VIDRO` de 15 para 13. A contagem real já era 12 (o teto não tinha acompanhado a remoção do login antigo); o altar soma 1. Na tela ficam no máximo três superfícies desfocadas visíveis (barra do topo, navegação inferior, altar), nenhuma sobre outra.
+
+Não tocado: stores, fórmulas de XP/Prana, cronômetro, `components/layout/*`, `MolduraFeitico`, sons, `elemental-blocos.css`, Treinos.
+
+Evidência desta sessão (15/11/2026): cópia limpa do commit `2db5167` (`git worktree add --detach`), `npm run verify:release` com saída 0 (`tsc -b`, 1090/1090 testes, lint limpo) e `npm run build` concluído. Na árvore de trabalho, que inclui o atalho de QA local e os testes dele, o mesmo comando deu 1100/1100. No navegador interno (Chromium), a 390px e 768px: sem estouro horizontal, console sem erros, alvos de toque do Santuário com 44px ou mais, textos com 12px ou mais, três superfícies desfocadas visíveis, entrada vista em sequência com o painel aberto; perfil vazio e perfil com dados de teste. Amostra de quadros no Mac: mediana 16,7 ms parado e rolando (não prova desempenho de celular).
+
+Não verificado: iPhone real, Safari/WebKit, GPU fraca, giroscópio em aparelho, movimento reduzido e transparência reduzida reais (só leitura do CSS), contraste por pixel (estimado AA), CI e Vercel (nada foi publicado).
+
+Só local neste worktree, nunca commitar: `app/src/App.tsx` e `app/vite.config.ts` (modificados), `app/src/lib/dev/`, `app/src/main.qa.tsx`, `app/tests/dev/`, `app/.env.local`, `app/node_modules` (link).
+
+Próximo passo: com o ok de Fábio, publicar `2db5167` e este registro na `main`, conferir CI e Vercel, e ele testar no iPhone real.
+
 ## Retomada em 13/11/2026
 
 Ponto de retomada: FE-W3, em [FILA-ENTREGAS.md](FILA-ENTREGAS.md), agora "publicado; acabamento em fila". Checkout `main`, HEAD publicado `619534d` (igual a `origin/main`, conferido por `git fetch` e `git log` nesta data). Publicados nesta data, em ordem: `b6f89ae` (Lote 3), `594c447` (documentação), `3915b6a` (Lote 6), `c954e38` (Lote 4) e `619534d` (Lote 8). CI e Vercel verdes foram reportados pelo orquestrador; não conferidos aqui.

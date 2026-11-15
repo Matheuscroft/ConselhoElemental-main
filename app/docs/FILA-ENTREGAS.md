@@ -1,3 +1,11 @@
+## FE-UAU-1 — passada UAU do Santuário — commitada localmente, não publicada (15/11/2026)
+
+Pedido de Fábio: UI/UX de alto padrão no Santuário, vidro real, fluidez e uma primeira abertura que impressione. Detalhe, arquivos, evidência e limites em [CONTINUIDADE.md](CONTINUIDADE.md), seção "Passada UAU do Santuário". Estado: commit `2db5167` no worktree `uau-santuario-cc1098`, aprovado visualmente por Fábio no navegador; sem publicação.
+
+Aguardando Fábio: ok para publicar na `main` e teste no iPhone real.
+
+Fora desta passada: refração SVG (só Chrome), View Transitions entre rotas, personagem novo, página do elemento, cabeçalho e navegação inferior. Próximas telas da passada UAU: a definir com Fábio.
+
 ## FE-W3 — acesso simples à conta e tela inicial — publicado; acabamento em fila (13/11/2026)
 
 Origem: Matheus entrou, viu "A conta possui registros anteriores, mas este aparelho não contém uma jornada completa para adotar…", não entendeu e pensou em excluir a conta. Os dados dele estão em outro computador. Fábio pediu uma só tela de login (a bonita), acesso fácil para leigo e melhorias na tela inicial.
