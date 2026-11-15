@@ -39,7 +39,7 @@
 .cycle-reorder-hint { font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); margin: 0 0 14px; }
 .cycle-routine-card { padding: 20px; }
 /* Same look as before the move to the shared rune: 16px corners over the translucent surface. */
-.cycle-routine-card.ds-runa { border-radius: var(--ds-raio-runa); background: rgb(var(--el-surface) / .72); }
+.cycle-routine-card.ds-runa { border-radius: var(--ds-raio-runa); }
 .cycle-routine-card p { overflow-wrap: anywhere; }
 .cycle-routine-card > .absolute { right: 10px; top: -8px; background: rgb(var(--el-raised)); color: rgb(var(--el-gold)); border: 1px solid rgb(var(--el-gold) / .3); }
 .cycle-routine-card [draggable="true"] { touch-action: pan-y; }
