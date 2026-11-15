@@ -1671,7 +1671,7 @@ export const Ciclos: React.FC = () => {
                       else handleQuickCompleteChildHabit(child);
                     }}
                     aria-label={`${childCompleted ? 'Desmarcar' : 'Concluir'} ${child.name}`}
-                    className="cycle-task-checkbox cycle-child-check">
+                    className="ds-selo cycle-task-checkbox cycle-child-check" data-tamanho="filho">
                     <CycleSigil element={childElementId} size="child" filled={childCompleted} />
                     {childCompleted && <Check size={12} aria-hidden="true" />}
                   </button>
@@ -1932,7 +1932,7 @@ export const Ciclos: React.FC = () => {
                         onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
                         onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('sequence', item.sequence.id)}
                         onDragEnd={handleMixedCardDragEnd}
-                        className="cycle-routine-card ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing"
+                        className="cycle-routine-card ds-runa ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-medium">{item.sequence.name}</p>
@@ -1970,7 +1970,7 @@ export const Ciclos: React.FC = () => {
                       onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
                       onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('sequence', item.sequence.id)}
                       onDragEnd={handleMixedCardDragEnd}
-                      className={`cycle-routine-card ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing ${
+                      className={`cycle-routine-card ds-runa ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing ${
                         draggedMixedCard?.type === 'sequence' && draggedMixedCard.id === item.sequence.id
                           ? 'opacity-50 scale-[0.99]'
                           : ''
@@ -1994,7 +1994,7 @@ export const Ciclos: React.FC = () => {
                               <div className="cycle-task-title">
                                 <button type="button" role="checkbox" aria-checked={completed}
                                   aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${sequenceHabit.name}`}
-                                  className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(sequenceHabit); else { handleQuickCompleteHabit(sequenceHabit); marcarSelando(sequenceHabit.id); } }}>
+                                  className="ds-selo cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(sequenceHabit); else { handleQuickCompleteHabit(sequenceHabit); marcarSelando(sequenceHabit.id); } }}>
                                   <CycleSigil element={seqElement.id} size="card" filled={completed} />
                                   {completed && <Check size={16} aria-hidden="true" />}
                                 </button>
@@ -2205,7 +2205,7 @@ export const Ciclos: React.FC = () => {
                     onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
                     onDrop={() => canReorderVisibleCards && !sealedGroup && handleMixedCardDrop('habit', habit.id)}
                     onDragEnd={handleMixedCardDragEnd}
-                    className="cycle-routine-card ds-pane relative p-4 transition-all"
+                    className="cycle-routine-card ds-runa ds-pane relative p-4 transition-all"
                   >
                     <div className="cycle-main-row">
                       <div className="cycle-main-content flex-1 min-w-0">
@@ -2214,7 +2214,7 @@ export const Ciclos: React.FC = () => {
                             <div className="cycle-task-title">
                               <button type="button" role="checkbox" aria-checked={completed}
                                 aria-label={`${completed ? 'Desmarcar' : 'Concluir'} ${habit.name}`}
-                                className="cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(habit); else { handleQuickCompleteHabit(habit); marcarSelando(habit.id); } }}>
+                                className="ds-selo cycle-task-checkbox" onClick={event => { event.stopPropagation(); if (completed) handleQuickUncompleteHabit(habit); else { handleQuickCompleteHabit(habit); marcarSelando(habit.id); } }}>
                                 <CycleSigil element={element.id} size="card" filled={completed} />
                                 {completed && <Check size={16} aria-hidden="true" />}
                               </button>
@@ -2368,7 +2368,7 @@ export const Ciclos: React.FC = () => {
               return <>
                 {pendingVisibleCards.map((card) => renderCard(card, false))}
                 {groupSealed && (
-                  <details className="cycle-sealed-group" open={selosAbertos} onToggle={(event) => setSelosAbertos(event.currentTarget.open)}>
+                  <details className="ds-grupo cycle-sealed-group" open={selosAbertos} onToggle={(event) => setSelosAbertos(event.currentTarget.open)}>
                     <summary>Selados ({sealedVisibleCards.length})</summary>
                     <div className="space-y-3">{sealedVisibleCards.map((card) => renderCard(card, true))}</div>
                   </details>

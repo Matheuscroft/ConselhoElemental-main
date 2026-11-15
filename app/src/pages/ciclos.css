@@ -37,7 +37,9 @@
 .cycle-filter-result { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
 .cycle-filter-result button { display: flex; gap: 6px; align-items: center; color: rgb(var(--el-gold)); }
 .cycle-reorder-hint { font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); margin: 0 0 14px; }
-.cycle-routine-card { background: rgb(var(--el-surface)); border-radius: 18px; padding: 20px; }
+.cycle-routine-card { padding: 20px; }
+/* Same look as before the move to the shared rune: 16px corners over the translucent surface. */
+.cycle-routine-card.ds-runa { border-radius: var(--ds-raio-runa); background: rgb(var(--el-surface) / .72); }
 .cycle-routine-card p { overflow-wrap: anywhere; }
 .cycle-routine-card > .absolute { right: 10px; top: -8px; background: rgb(var(--el-raised)); color: rgb(var(--el-gold)); border: 1px solid rgb(var(--el-gold) / .3); }
 .cycle-routine-card [draggable="true"] { touch-action: pan-y; }
@@ -279,8 +281,6 @@
    The element palette arrives per card as --cyc-acento / --cyc-tinta / --cyc-aura (src/lib/design/palette.ts). */
 #cycles-today-routine { scroll-margin-top: 90px; }
 .cycles-workspace {
-  --cyc-nucleo: rgb(255 246 232);
-  --cyc-magma: #ff8a4d; /* = AURA.fogo */
   --cyc-radius: 16px;
   --cyc-gap: 10px;
   /* Fixed copies of ACENTO (palette.ts) for the seal trail, which has no per-card scope. */
@@ -295,55 +295,17 @@
   --cyc-tinta: transparent;
   --cyc-aura: rgb(var(--el-gold));
   --cycle-accent: var(--cyc-acento);
-  position: relative;
-  border-radius: var(--cyc-radius);
-  border: var(--ds-edge);
-  background: radial-gradient(ellipse 120% 140% at 0 0, var(--cyc-tinta), transparent 60%), var(--ds-surface-raised);
+  /* The ds-runa block reads --elem-*; the card feeds it its own element palette. */
+  --elem-acento: var(--cyc-acento);
+  --elem-tinta: var(--cyc-tinta);
+  --elem-aura: var(--cyc-aura);
+  display: block;
+  padding: 16px;
 }
 .cycles-workspace .cycle-routine-card + .cycle-routine-card { margin-top: var(--cyc-gap); }
-.cycles-workspace .cycle-routine-card[data-completed="true"] {
-  border: var(--ds-edge-lit);
-  background: linear-gradient(rgb(var(--el-gold) / .08), rgb(var(--el-gold) / .08)), var(--ds-surface-raised);
-}
-.cycles-workspace .cycle-routine-card[data-drag-over="true"] { box-shadow: 0 -2px 0 0 rgb(var(--el-gold)), var(--ds-rim, 0 0 transparent); }
 
-/* Edge signature per element: one quiet light thread, not a frame. */
-.cycle-routine-card[data-element]::after { content: ''; position: absolute; pointer-events: none; opacity: .55; border-radius: inherit; }
-.cycle-routine-card[data-element][data-completed="true"]::after { opacity: .3; }
-.cycle-routine-card[data-element="fogo"]::after {
-  inset: 0;
-  background: linear-gradient(90deg, transparent, var(--cyc-acento), var(--cyc-nucleo), var(--cyc-acento), transparent) top left / 100% 1px no-repeat;
-}
-.cycle-routine-card[data-element="agua"]::after {
-  inset: auto 0 0 0; height: 6px; border-radius: 0 0 var(--cyc-radius) var(--cyc-radius);
-  background: var(--cyc-acento);
-  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 6V3Q6 0 12 3T24 3V6Z' fill='black'/%3E%3C/svg%3E");
-  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 6V3Q6 0 12 3T24 3V6Z' fill='black'/%3E%3C/svg%3E");
-  -webkit-mask-size: 24px 6px; mask-size: 24px 6px;
-  -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
-  -webkit-mask-position: left bottom; mask-position: left bottom;
-}
-.cycle-routine-card[data-element="ar"]::after {
-  inset: 0;
-  background: radial-gradient(circle at 100% 0, transparent 0 26px, var(--cyc-acento) 26px 27px, transparent 27px 33px, var(--cyc-acento) 33px 34px, transparent 34px) top right / 36px 36px no-repeat;
-}
-.cycle-routine-card[data-element="terra"]::after {
-  inset: 0;
-  background:
-    linear-gradient(225deg, var(--cyc-acento) 50%, transparent 50%) top 1px right 12px / 14px 14px no-repeat,
-    linear-gradient(90deg, var(--cyc-acento), var(--cyc-magma), var(--cyc-acento)) bottom 0 left 16px / calc(100% - 32px) 1px no-repeat;
-}
-
-/* In progress: two corner marks as on the Reel, and the seal's aura breathing. */
-.cycle-routine-card[data-em-andamento]::before {
-  content: ''; position: absolute; inset: 6px; pointer-events: none;
-  background:
-    linear-gradient(var(--cyc-acento), var(--cyc-acento)) top left / 10px 1.5px no-repeat,
-    linear-gradient(var(--cyc-acento), var(--cyc-acento)) top left / 1.5px 10px no-repeat,
-    linear-gradient(var(--cyc-acento), var(--cyc-acento)) bottom right / 10px 1.5px no-repeat,
-    linear-gradient(var(--cyc-acento), var(--cyc-acento)) bottom right / 1.5px 10px no-repeat;
-}
-.cycle-routine-card[data-em-andamento] .cycle-task-checkbox:not(.cycle-child-check)::after {
+/* In progress: the corner marks come from ds-runa; the seal's aura breathing stays here. */
+.cycle-routine-card[data-em-andamento]:not([data-selando]) .cycle-task-checkbox:not(.cycle-child-check)::after {
   content: ''; position: absolute; inset: 0; margin: auto; width: 40px; height: 40px; border-radius: 50%; pointer-events: none;
   background: radial-gradient(circle, color-mix(in srgb, var(--cyc-aura) 25%, transparent) 35%, transparent 70%);
   animation: cyc-respira calc(var(--ds-duration-conjure) * 3) var(--ds-ease) infinite alternate;
@@ -363,57 +325,10 @@
 .cycle-task-title > p { flex: 1; min-width: 0; margin: 0; padding-top: 2px; font-size: var(--ds-text-body); font-weight: 500; line-height: 1.45; overflow-wrap: anywhere; }
 .cycle-routine-card[data-completed="true"] .cycle-task-title > p { color: rgb(var(--el-muted)); text-decoration: none; }
 
-/* The seal: 44px target, 26px visible disc ringed in the accent; filled when checked. */
-.cycle-task-checkbox { --cyc-disc: 26px; position: relative; display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; min-width: 44px; min-height: 44px; margin: -9px -11px -9px -11px; padding: 0; border: 0; color: var(--cyc-acento, rgb(var(--el-muted))); background: transparent; }
-.cycle-task-checkbox::before { content: ''; position: absolute; inset: 0; margin: auto; width: var(--cyc-disc); height: var(--cyc-disc); box-sizing: border-box; border: 1.5px solid color-mix(in srgb, var(--cyc-acento, rgb(var(--el-muted))) 70%, transparent); border-radius: 50%; background: transparent; transition: background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
-.cycle-task-checkbox[aria-checked="true"] { color: rgb(var(--el-canvas)); }
-.cycle-task-checkbox[aria-checked="true"]::before { border-color: var(--cyc-acento, rgb(var(--el-gold))); background: var(--cyc-acento, rgb(var(--el-gold))); }
-.cycle-task-checkbox > svg { position: relative; z-index: 1; flex: none; }
-.cycle-task-checkbox > svg:not(.cycle-sigil) { width: 16px; height: 16px; }
-.cycle-task-checkbox > .cycle-sigil { width: 14px; height: 14px; opacity: .5; }
-.cycle-task-checkbox[aria-checked="true"] > .cycle-sigil:not(:only-child) { display: none; }
-.cycle-task-checkbox[aria-checked="true"] > .cycle-sigil:only-child { opacity: 1; }
-.cycle-task-checkbox:focus-visible { outline: 3px solid rgb(var(--el-gold) / .45); outline-offset: 2px; }
+/* The seal is ds-selo; only the card-specific offset stays here. */
+.cycle-task-checkbox { margin: -9px -11px; }
 .cycle-sigil { fill: none; stroke: currentColor; }
-.cycle-child-row .cycle-task-checkbox { --cyc-disc: 20px; margin: 0; }
-.cycle-child-row .cycle-task-checkbox > .cycle-sigil { width: 10px; height: 10px; }
-.cycle-child-row .cycle-task-checkbox > svg:not(.cycle-sigil) { width: 12px; height: 12px; }
-
-/* Sealing, once, by element (the card carries data-selando for DURATION.settle). Transform and opacity only. */
-.cycle-routine-card[data-selando] .cycle-task-checkbox:not(.cycle-child-check)::after {
-  content: ''; position: absolute; inset: 0; margin: auto; width: var(--cyc-disc); height: var(--cyc-disc); border-radius: 50%; pointer-events: none;
-  animation-duration: var(--ds-duration-settle); animation-timing-function: var(--ds-ease); animation-fill-mode: both;
-}
-.cycle-routine-card[data-selando][data-element="fogo"] .cycle-task-checkbox:not(.cycle-child-check)::after {
-  background: radial-gradient(circle, var(--cyc-nucleo) 0 30%, var(--cyc-magma) 55%, transparent 72%);
-  animation-name: cyc-ignicao;
-}
-.cycle-routine-card[data-selando][data-element="agua"] .cycle-task-checkbox:not(.cycle-child-check)::after {
-  border: 1.5px solid var(--cyc-acento); box-sizing: border-box; background: transparent;
-  animation-name: cyc-onda;
-}
-.cycle-routine-card[data-selando][data-element="agua"] .cycle-task-checkbox:not(.cycle-child-check)::before {
-  animation: cyc-onda-disco var(--ds-duration-settle) var(--ds-ease) var(--ds-stagger) both;
-}
-.cycle-routine-card[data-selando][data-element="ar"] .cycle-task-checkbox:not(.cycle-child-check) { animation: cyc-rodopio var(--ds-duration-settle) var(--ds-ease) both; }
-.cycle-routine-card[data-selando][data-element="ar"] .cycle-task-checkbox:not(.cycle-child-check)::after {
-  background: conic-gradient(from 0deg, transparent 0 65%, var(--cyc-acento) 100%);
-  -webkit-mask-image: radial-gradient(circle, transparent 11px, black 11.5px, black 13px, transparent 13.5px);
-  mask-image: radial-gradient(circle, transparent 11px, black 11.5px, black 13px, transparent 13.5px);
-  animation-name: cyc-arco;
-}
-.cycle-routine-card[data-selando][data-element="terra"] .cycle-task-checkbox:not(.cycle-child-check) { animation: cyc-queda var(--ds-duration-settle) var(--ds-ease-conjure) both; }
-.cycle-routine-card[data-selando][data-element="terra"] .cycle-task-checkbox:not(.cycle-child-check)::after {
-  background: linear-gradient(135deg, transparent 35%, var(--cyc-nucleo) 50%, transparent 65%);
-  animation-name: cyc-faceta;
-}
-@keyframes cyc-ignicao { 0% { opacity: 0; transform: scale(.4); } 40% { opacity: 1; transform: scale(1.6); } 100% { opacity: 0; transform: scale(1.6); } }
-@keyframes cyc-onda { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(2); } }
-@keyframes cyc-onda-disco { 0% { transform: scale(1); } 40% { transform: scale(1.14); } 100% { transform: scale(1); } }
-@keyframes cyc-rodopio { from { transform: rotate(-90deg); } to { transform: rotate(0deg); } }
-@keyframes cyc-arco { from { opacity: 1; transform: rotate(-90deg); } to { opacity: 0; transform: rotate(270deg); } }
-@keyframes cyc-queda { from { transform: scale(1.15); } to { transform: scale(1); } }
-@keyframes cyc-faceta { 0% { opacity: 0; transform: scale(.6) rotate(0deg); } 50% { opacity: .9; } 100% { opacity: 0; transform: scale(1.2) rotate(20deg); } }
+.cycle-child-row .cycle-task-checkbox { margin: 0; }
 
 /* Metadata line: quiet, one row, the element named in its own accent. */
 .cycles-workspace .cycle-card-metadata { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start; gap: 4px 12px; margin-top: 0; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
@@ -424,13 +339,11 @@
 .cycle-children-disclosure { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 44px; min-width: 36px; min-height: 44px; margin-left: auto; color: rgb(var(--el-muted)); border-radius: 8px; }
 .cycle-children-disclosure:hover { color: rgb(var(--el-text)); background: rgb(var(--el-muted) / .06); }
 @media (hover: hover) {
-  .cycle-task-checkbox:hover::before { border-color: var(--cyc-acento, rgb(var(--el-gold))); }
   .cycle-start-action:hover, .cycle-undo-action:hover { border-color: var(--cyc-acento, rgb(var(--el-gold) / .65)); background: color-mix(in srgb, var(--cyc-acento, rgb(var(--el-gold))) 10%, transparent); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cycle-execution-actions button, .cycle-children-disclosure svg, .cycle-task-checkbox::before { transition: none; }
-  .cycle-routine-card[data-em-andamento] .cycle-task-checkbox:not(.cycle-child-check)::after { animation: none; opacity: 1; transform: none; background: radial-gradient(circle, color-mix(in srgb, var(--cyc-aura) 20%, transparent) 35%, transparent 70%); }
-  .cycle-routine-card[data-selando] .cycle-task-checkbox, .cycle-routine-card[data-selando] .cycle-task-checkbox::before, .cycle-routine-card[data-selando] .cycle-task-checkbox::after { animation: none; }
+  .cycle-execution-actions button, .cycle-children-disclosure svg { transition: none; }
+  .cycle-routine-card[data-em-andamento]:not([data-selando]) .cycle-task-checkbox:not(.cycle-child-check)::after { animation: none; opacity: 1; transform: none; background: radial-gradient(circle, color-mix(in srgb, var(--cyc-aura) 20%, transparent) 35%, transparent 70%); }
 }
 
 /* R26-C: the tree explains each item's role instead of presenting identical boxes. */
@@ -607,10 +520,6 @@
 .cycle-empty > svg { color: rgb(var(--el-muted)); }
 .cycle-empty h3, .cycle-filter-empty h3 { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.5; color: rgb(var(--el-text)); }
 .cycle-empty p { font-size: var(--ds-text-micro); line-height: 1.7; max-width: 46ch; }
-.cycle-sealed-group { margin-top: 32px; border-top: 1px solid rgb(var(--el-muted) / .18); }
-.cycle-sealed-group > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; padding: 8px 0; cursor: pointer; list-style: none; font-family: var(--ds-font-heading); font-size: var(--ds-text-body); color: rgb(var(--el-muted)); }
-.cycle-sealed-group > summary::-webkit-details-marker { display: none; }
-.cycle-sealed-group[open] > summary { color: rgb(var(--el-gold)); margin-bottom: var(--cyc-gap); }
 .cycle-sealed-group .cycle-routine-card { opacity: .85; }
 .cycle-guide { margin: 32px 0 0; }
 .cycles-insights { margin-top: 32px; }
