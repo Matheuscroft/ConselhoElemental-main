@@ -696,6 +696,18 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       <label className="restore-workspace-consent"><input type="checkbox" checked={newJourneyConsent} disabled={busy} onChange={event=>setNewJourneyConsent(event.target.checked)}/>Quero criar uma jornada vazia nesta conta e salvar minhas próximas alterações enquanto uso o app.</label>
       <button type="button" disabled={!ACCOUNT_TRANSFER_WRITES_RELEASED||!userId||!onStart||busy||blocked||!tabs||!newJourneyConsent} onClick={()=>startNewJourney()}>Começar minha jornada</button>
     </section>}
+    {!!userId&&<section aria-labelledby="account-inventory"><h2 id="account-inventory">O que há aqui e na conta</h2>
+      <p>Lista só os nomes, lado a lado. Nada é enviado, trocado ou apagado.</p>
+      <button type="button" className="restore-workspace-secondary" disabled={!ready||busy||blocked} onClick={listAccountData}>Listar nomes sem alterar dados</button>
+      {inventory&&<div>
+        <p>{inventory.kind==='empty'?'Nada encontrado.':`Neste aparelho: ${Math.round(inventory.localXp*100)/100} XP${inventory.onlineXp===null?'.':` · Na conta: ${Math.round(inventory.onlineXp*100)/100} XP.`}`}</p>
+        {inventory.kind==='legacy'&&<p>Tabelas antigas da conta: {inventory.legacyCatalogAreas} áreas e {inventory.legacyCatalogSubareas} subáreas.</p>}
+        {inventory.groups.map(group=><div key={group.label}><h3>{group.label}</h3>
+          <p>Aqui: {group.local.length?group.local.join(', '):'nenhum'}</p>
+          <p>Na conta: {group.online===null?'Não disponível nas tabelas antigas':group.online.length?group.online.join(', '):'nenhum'}</p>
+        </div>)}
+      </div>}
+    </section>}
     {(!baseline||!!baseline.snapshot||pending||resolution)&&<section aria-labelledby="account-local"><h2 id="account-local">Sua cópia local</h2>
       {resolution?<p>Uma escolha aguarda conclusão. As versões anterior e escolhida permanecem protegidas no registro de recuperação.</p>:pending?<><p>Uma tentativa aguarda conferência. O arquivo original continua protegido; consultar o recibo não repete o envio.</p><button type="button" disabled={busy||blocked} onClick={()=>{if(pending)download(pending.intent.archive,'conselho-arquivo-da-tentativa');}}><Download size={20} aria-hidden="true" />Guardar arquivo desta tentativa</button></>:<>
         <p>Todos os perfis, atividades, XP e Treinos entram no arquivo. Guarde a cópia e confira o arquivo salvo antes de enviar.</p>

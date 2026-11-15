@@ -8,6 +8,9 @@ import { LOCAL_PROGRESS_MODE_KEY } from './progress-mode';
 import { RESTORE_JOURNAL_KEY } from './restore-journal';
 import type { LiveAccountSync } from './account-live-sync';
 
+/** Each save sends the whole archive and the server rechecks it, so changes are batched: one save per quiet 20 s, never one per edit. */
+const SAVE_DELAY_MS = 20_000;
+
 /** Loaded only after the exclusive pre-bootstrap handoff has accepted the document. */
 export function attachAccountSync(sync: LiveAccountSync, surface: Window = window) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -15,7 +18,7 @@ export function attachAccountSync(sync: LiveAccountSync, surface: Window = windo
   const clear = () => { if (timer !== undefined) { clearTimeout(timer); timer = undefined; } };
   const schedule = () => {
     if (disposed || ['pending','blocked','stopped'].includes(sync.getSnapshot().status)) return;
-    clear(); timer = setTimeout(() => { timer = undefined; void sync.flush(); },900);
+    clear(); timer = setTimeout(() => { timer = undefined; void sync.flush(); },SAVE_DELAY_MS);
   };
   const uncore = useAppStore.subscribe((next, before) => {
     // Runtime ticks are excluded from the archive: do not debounce/recheck the
@@ -32,7 +35,8 @@ export function attachAccountSync(sync: LiveAccountSync, surface: Window = windo
       clear(); sync.invalidate();
     }
   };
-  const focus = () => { void sync.flush(); };
+  // Coming back to the app is not a reason to hit the server at once: it joins the same quiet window.
+  const focus = () => { schedule(); };
   const visibility = () => { if (surface.document.visibilityState === 'visible') focus(); };
   const pagehide = () => { dispose(); };
   surface.addEventListener('storage',external); surface.addEventListener('focus',focus); surface.addEventListener('online',focus); surface.addEventListener('pagehide',pagehide);
