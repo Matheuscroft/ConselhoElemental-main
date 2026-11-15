@@ -9,15 +9,9 @@ import { AnimatePresence } from 'framer-motion';
 import { CreationStep } from '@/components/motion/CreationStep';
 import { CreationResult } from '@/components/invocation/CreationResult';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, ArrowRight } from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
 import { AREAS, ELEMENTS, EFFORT_LABELS } from '@/constants';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -247,7 +241,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
   return (
     <AppLayout showBackButton title="Invocar">
       <div className="elemental-system invocation">
-      <header className="invocation-heading"><ArcaneIcon name="invocar" size={48} /><div><h1>Invocar</h1><p>Dê forma ao seu próximo passo.</p></div></header>
+      <header className="ds-cabecalho"><h1>Invocar</h1><p>Dê forma ao seu próximo passo.</p></header>
       <InvocationProgress step={step} />
 
       {/* Step 1: Type Selection */}
@@ -256,9 +250,9 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
           <CreationStep key="step1" direction={direction}>
             <InvocationStepTitle description="Escolha o formato que combina com sua intenção.">O que deseja invocar?</InvocationStepTitle>
             <InvocationChoices value={entityType} onChange={setEntityType} />
-            <div className="invocation-actions"><Button onClick={() => setStep(2)} className="elemental-press elemental-action">
-              Continuar com {selectedType.name}<ArrowRight className="w-4 h-4 ml-2" aria-hidden="true" />
-            </Button></div>
+            <div className="ds-folha-pe invocation-pe" data-unico=""><button type="button" onClick={() => setStep(2)} className="ds-botao" data-tipo="primario">
+              Continuar com {selectedType.name}
+            </button></div>
           </CreationStep>
         )}
 
@@ -268,89 +262,83 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
             <InvocationStepTitle focus={false} description={`${selectedType.name}: comece pelo nome e acrescente o que fizer sentido.`}>Dê forma à sua intenção</InvocationStepTitle>
 
             {entityType === 'DRAFT' && (
-              <section aria-labelledby="draft-ai-heading" className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-4">
-                <h4 id="draft-ai-heading" className="font-mystic">Ajuda para escrever</h4>
-                <p className="text-sm text-white/70">Descreva sua ideia para receber um título e uma descrição. Você revisa antes de salvar.</p>
-                <Label htmlFor="draft-ai-message">Sua ideia</Label>
-                <Textarea id="draft-ai-message" name="draftIdea" autoComplete="off" value={aiMessage} maxLength={2000} disabled={aiBusy}
-                  onChange={e => setAiMessage(e.target.value)} placeholder="Ex.: organizar meus materiais de estudo"
-                  className="bg-white/5 border-white/10" />
-                <label className="flex items-start gap-2 text-sm text-white/70">
+              <section aria-labelledby="draft-ai-heading" className="invocation-ai">
+                <div className="ds-secao" data-nivel="2"><h3 id="draft-ai-heading">Ajuda para escrever</h3></div>
+                <p className="ds-nota">Descreva sua ideia para receber um título e uma descrição. Você revisa antes de salvar.</p>
+                <label className="ds-campo" htmlFor="draft-ai-message"><span>Sua ideia</span>
+                <textarea id="draft-ai-message" name="draftIdea" autoComplete="off" value={aiMessage} maxLength={2000} disabled={aiBusy}
+                  onChange={e => setAiMessage(e.target.value)} placeholder="Ex.: organizar meus materiais de estudo" /></label>
+                <label className="invocation-consent">
                   <input type="checkbox" checked={aiConsent} disabled={aiBusy}
-                    onChange={e => setAiConsent(e.target.checked)} className="mt-1 shrink-0 accent-mystic-arcane focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mystic-gold" />
+                    onChange={e => setAiConsent(e.target.checked)} />
                   <span>Autorizo enviar apenas este texto à Cloudflare para gerar a sugestão.</span>
                 </label>
-                {!isSupabaseAuthEnabled && <p className="text-sm text-white/70">A IA precisa de uma conta conectada. Preencha o rascunho abaixo manualmente.</p>}
-                <Button type="button" onClick={requestSuggestion}
+                {!isSupabaseAuthEnabled && <p className="ds-nota">A IA precisa de uma conta conectada. Preencha o rascunho abaixo manualmente.</p>}
+                <button type="button" onClick={requestSuggestion}
                   disabled={aiBusy || !aiConsent || !aiMessage.trim() || !isSupabaseAuthEnabled}
-                  className="w-full bg-mystic-arcane">
+                  className="ds-botao" data-tipo="secundario">
                   {aiBusy ? 'Gerando sugestão…' : 'Sugerir título e descrição'}
-                </Button>
-                {aiBusy && <Button type="button" variant="outline" onClick={cancelSuggestion} className="elemental-action elemental-action-secondary">Cancelar sugestão</Button>}
-                <p role="status" aria-live="polite" className="text-sm text-white/70">{aiStatus}</p>
+                </button>
+                {aiBusy && <button type="button" onClick={cancelSuggestion} className="ds-botao" data-tipo="fantasma">Cancelar sugestão</button>}
+                <p role="status" aria-live="polite" className="ds-nota">{aiStatus}</p>
               </section>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="invocar-title">Nome</Label>
-              <Input
+            <label className="ds-campo" htmlFor="invocar-title">
+              <span>Nome</span>
+              <input
                 id="invocar-title"
                 placeholder="Nome do item..."
                 value={title}
                 disabled={aiBusy}
                 onChange={(e) => setTitle(e.target.value)}
-                className="bg-white/5 border-white/10"
                 autoFocus
               />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="invocar-description">Descrição (opcional)</Label>
-              <Textarea
+            </label>
+
+            <label className="ds-campo" htmlFor="invocar-description">
+              <span>Descrição (opcional)</span>
+              <textarea
                 id="invocar-description"
                 placeholder="Detalhes adicionais..."
                 value={description}
                 disabled={aiBusy}
                 onChange={(e) => setDescription(e.target.value)}
-                className="bg-white/5 border-white/10 min-h-[80px]"
               />
-            </div>
-            
+            </label>
+
             {entityType !== 'DRAFT' && (
               <>
-                <div className="space-y-2">
-                  <Label id="invocar-element-label">Elemento</Label>
-                  <div className="invocation-elements grid grid-cols-4 gap-2" role="group" aria-labelledby="invocar-element-label">
+                <div className="ds-campo">
+                  <span id="invocar-element-label">Elemento</span>
+                  <div className="invocation-elements" role="group" aria-labelledby="invocar-element-label">
                     {(Object.keys(ELEMENTS) as ElementId[]).map((id) => (
-                      <button
-                        key={id}
-                        type="button"
-                        aria-pressed={selectedElement === id}
-                        style={{ '--invocation-element': `var(--element-${id})` } as React.CSSProperties}
-                        onClick={() => {
-                          setSelectedElement(id);
-                          setSelectedArea('none');
-                        }}
-                        className={`p-3 rounded-xl border transition-colors ${
-                          selectedElement === id
-                            ? 'border-mystic-gold bg-mystic-gold/10'
-                            : 'border-white/10 bg-white/5 hover:bg-white/10'
-                        }`}
-                      >
-                        <ElementIcon element={id} size={28} />
-                        <span>{ELEMENTS[id].name}</span>
-                      </button>
+                      <div key={id} className="invocation-element" data-element={id}>
+                        <button
+                          type="button"
+                          className="ds-selo"
+                          aria-pressed={selectedElement === id}
+                          aria-label={ELEMENTS[id].name}
+                          onClick={() => {
+                            setSelectedElement(id);
+                            setSelectedArea('none');
+                          }}
+                        >
+                          <ElementIcon element={id} size={20} tone="outline" />
+                        </button>
+                        <span aria-hidden="true">{ELEMENTS[id].name}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="invocar-area">Área (opcional)</Label>
+
+                <div className="ds-campo">
+                  <span id="invocar-area-label">Área (opcional)</span>
                   <Select value={selectedArea} onValueChange={setSelectedArea}>
-                    <SelectTrigger id="invocar-area" className="bg-white/5 border-white/10">
+                    <SelectTrigger id="invocar-area" aria-labelledby="invocar-area-label" className="ds-campo-controle">
                       <SelectValue placeholder="Selecione uma área" />
                     </SelectTrigger>
-                    <SelectContent className="bg-mystic-purple border-white/10">
+                    <SelectContent className="ds-menu">
                       <SelectItem value="none">Sem categoria</SelectItem>
                       {filteredAreas.map((area) => (
                         <SelectItem key={area.id} value={area.id}>
@@ -363,21 +351,13 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
               </>
             )}
             
-            <div className="invocation-actions">
-              <Button 
-                variant="outline" 
-                onClick={() => setStep(1)}
-                className="elemental-press elemental-action elemental-action-secondary"
-              >
+            <div className="ds-folha-pe invocation-pe">
+              <button type="button" onClick={() => setStep(1)} className="ds-botao" data-tipo="secundario">
                 Voltar
-              </Button>
-              <Button 
-                onClick={() => setStep(3)}
-                disabled={aiBusy || !canProceed()}
-                className="elemental-press elemental-action"
-              >
+              </button>
+              <button type="button" onClick={() => setStep(3)} disabled={aiBusy || !canProceed()} className="ds-botao" data-tipo="primario">
                 Continuar
-              </Button>
+              </button>
             </div>
           </CreationStep>
         )}
@@ -389,30 +369,24 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
             
             {/* Effort Level (for tasks and habits) */}
             {(entityType === 'ACTION' || entityType === 'HABIT') && (
-              <div className="space-y-2">
-                <Label id="invocar-effort-label">Nível de esforço</Label>
-                <div className="flex gap-2" role="group" aria-labelledby="invocar-effort-label">
+              <div className="ds-campo">
+                <span id="invocar-effort-label">Nível de esforço</span>
+                <div className="ds-cifras invocation-effort" role="group" aria-labelledby="invocar-effort-label">
                   {[1, 2, 3, 4, 5].map((level) => (
                     <button
                       key={level}
                       type="button"
+                      className="ds-cifra"
                       aria-pressed={effortLevel === level}
                       aria-label={`Esforço ${level}: ${EFFORT_LABELS[level].label}`}
                       onClick={() => setEffortLevel(level)}
-                      className={`flex-1 p-2 rounded-lg border transition-colors ${
-                        effortLevel === level
-                          ? 'border-mystic-gold bg-mystic-gold/10'
-                          : 'border-white/10 bg-white/5 hover:bg-white/10'
-                      }`}
                     >
-                      <div className="text-lg font-bold">{level}</div>
-                      <div className="text-[10px] text-white/50">
-                        ×{[1, 1.2, 1.5, 2, 2.8][level - 1]}
-                      </div>
+                      {level}
+                      <small>×{[1, 1.2, 1.5, 2, 2.8][level - 1]}</small>
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-white/50">
+                <p className="ds-nota">
                   {EFFORT_LABELS[effortLevel].label}: {EFFORT_LABELS[effortLevel].description}
                 </p>
               </div>
@@ -420,9 +394,9 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
             
             {/* Time */}
             {(entityType === 'ACTION' || entityType === 'HABIT') && (
-              <div className="space-y-2">
-                <Label htmlFor="invocar-time">Tempo estimado</Label>
-                <div className="flex items-center gap-4">
+              <div className="ds-campo" data-sem-controle="">
+                <label htmlFor="invocar-time" className="invocation-label">Tempo estimado</label>
+                <div className="invocation-time">
                   <input
                     id="invocar-time"
                     type="range"
@@ -434,9 +408,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
                     step={5}
                     className="invocation-time-range flex-1"
                   />
-                  <Badge variant="outline" className="min-w-[70px] text-center">
-                    {plannedTime}min
-                  </Badge>
+                  <span className="invocation-time-value">{plannedTime}min</span>
                 </div>
               </div>
             )}
@@ -446,92 +418,86 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
 
             {/* Due date for Quests and Projects */}
             {(entityType === 'ACTION' || entityType === 'QUEST' || entityType === 'PROJECT') && (
-              <div className="space-y-2">
-                <Label htmlFor="invocar-due">{entityType === 'ACTION' ? 'Data planejada (opcional)' : 'Data limite (opcional)'}</Label>
-                <Input
+              <label className="ds-campo" htmlFor="invocar-due">
+                <span>{entityType === 'ACTION' ? 'Data planejada (opcional)' : 'Data limite (opcional)'}</span>
+                <input
                   id="invocar-due"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  className="bg-white/5 border-white/10"
                 />
-              </div>
+              </label>
             )}
             
             {/* Reward for Quests and Projects */}
             {(entityType === 'QUEST' || entityType === 'PROJECT') && (
-              <div className="space-y-2">
-                <Label htmlFor="invocar-reward">Recompensa (opcional)</Label>
-                <Input
+              <label className="ds-campo" htmlFor="invocar-reward">
+                <span>Recompensa (opcional)</span>
+                <input
                   id="invocar-reward"
                   placeholder="Ex: Um dia de descanso..."
                   value={reward}
                   onChange={(e) => setReward(e.target.value)}
-                  className="bg-white/5 border-white/10"
                 />
-              </div>
+              </label>
             )}
             
             {/* Summary */}
-            <section className="invocation-review space-y-2" aria-labelledby="invocation-review-heading">
-              <h3 id="invocation-review-heading">Sua invocação</h3>
-              {entityType !== 'DRAFT' && <><p className="invocation-review-name">{title.trim()}</p>{description.trim() && <p className="text-sm whitespace-pre-wrap">{description.trim()}</p>}</>}
-              <div className="text-sm">
-                <span className="text-white/50">Tipo:</span>{' '}
-                {entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Grande Obra' : 'Rascunho'}
-              </div>
+            <section className="invocation-review" aria-labelledby="invocation-review-heading">
+              <div className="ds-secao" data-nivel="2"><h3 id="invocation-review-heading">Sua invocação</h3></div>
+              {entityType !== 'DRAFT' && <><p className="invocation-review-name">{title.trim()}</p>{description.trim() && <p className="ds-nota whitespace-pre-wrap">{description.trim()}</p>}</>}
+              <dl>
+                <div className="ds-linha" data-densa>
+                  <dt>Tipo</dt>
+                  <dd>{entityType === 'ACTION' ? 'Ritual' : entityType === 'HABIT' ? 'Ciclo' : entityType === 'QUEST' ? 'Jornada' : entityType === 'PROJECT' ? 'Grande Obra' : 'Rascunho'}</dd>
+                </div>
+                {entityType === 'DRAFT' && (
+                  <>
+                    <div className="ds-linha" data-densa>
+                      <dt>Nome</dt>
+                      <dd data-bloco="">{title.trim()}</dd>
+                    </div>
+                    <div className="ds-linha" data-densa>
+                      <dt>Descrição</dt>
+                      <dd data-bloco="">{description.trim() || 'Sem descrição.'}</dd>
+                    </div>
+                  </>
+                )}
+                {entityType !== 'DRAFT' && (
+                  <>
+                    <div className="ds-linha" data-densa>
+                      <dt>Elemento</dt>
+                      <dd><ElementIcon element={selectedElement} size={16} /> {ELEMENTS[selectedElement].name}</dd>
+                    </div>
+                    <div className="ds-linha" data-densa>
+                      <dt>Pontos</dt>
+                      <dd data-ouro="">
+                        {entityType === 'ACTION'
+                          ? `+${(1 * [1, 1.2, 1.5, 2, 2.8][effortLevel - 1]).toFixed(1)}`
+                          : entityType === 'HABIT'
+                            ? `+${effortLevel * 5} por dia`
+                            : 'Agrega + bônus XP'}
+                      </dd>
+                    </div>
+                  </>
+                )}
+              </dl>
               {entityType === 'DRAFT' && (
-                <>
-                  <div className="text-sm break-words">
-                    <span className="text-white/50">Nome:</span>{' '}
-                    {title.trim()}
-                  </div>
-                  <div className="text-sm whitespace-pre-wrap break-words">
-                    <span className="text-white/50">Descrição:</span>{' '}
-                    {description.trim() || 'Sem descrição.'}
-                  </div>
-                  <p className="text-sm text-white/70">
-                    Nada foi salvo. Confirme em Invocar para salvar este rascunho ou volte para editar.
-                  </p>
-                </>
-              )}
-              {entityType !== 'DRAFT' && (
-                <>
-                  <div className="text-sm">
-                    <span className="text-white/50">Elemento:</span>{' '}
-                    <ElementIcon element={selectedElement} /> {ELEMENTS[selectedElement].name}
-                  </div>
-                  <div className="text-sm">
-                    <span className="text-white/50">Pontos:</span>{' '}
-                    <span className="text-mystic-gold">
-                      {entityType === 'ACTION' 
-                        ? `+${(1 * [1, 1.2, 1.5, 2, 2.8][effortLevel - 1]).toFixed(1)}`
-                        : entityType === 'HABIT'
-                          ? `+${effortLevel * 5} por dia`
-                          : 'Agrega + bônus XP'}
-                    </span>
-                  </div>
-                </>
+                <p className="ds-nota">
+                  Nada foi salvo. Confirme em Invocar para salvar este rascunho ou volte para editar.
+                </p>
               )}
             </section>
             
-            {creationError && <p role="alert">{creationError}</p>}
-            <div className="invocation-actions">
-              <Button 
-                variant="outline" 
-                onClick={() => setStep(2)}
-                className="elemental-press elemental-action elemental-action-secondary"
-              >
+            {creationError && <p role="alert" className="invocation-erro">{creationError}</p>}
+            <div className="ds-folha-pe invocation-pe">
+              <button type="button" onClick={() => setStep(2)} className="ds-botao" data-tipo="secundario">
                 Voltar
-              </Button>
-              <Button 
-                onClick={handleSubmit}
-                disabled={!title.trim()}
-                className="elemental-press elemental-action"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
+              </button>
+              <button type="button" onClick={handleSubmit} disabled={!title.trim()} className="ds-botao" data-tipo="primario">
+                <ArcaneIcon name="invocar" size={18} />
                 Invocar
-              </Button>
+              </button>
             </div>
           </CreationStep>
         )}
@@ -540,9 +506,9 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
 
       {/* Success Dialog */}
       <Dialog open={showSuccess} onOpenChange={open => { if (!open) navigate('/santuario'); }}>
-        <DialogContent className="elemental-system invocation-success" aria-describedby="invocation-success-description">
+        <DialogContent className="ds-folha elemental-system invocation-success" aria-describedby="invocation-success-description">
           <DialogHeader>
-            <DialogTitle className="font-mystic text-xl">
+            <DialogTitle>
               Invocação criada
             </DialogTitle>
           </DialogHeader>

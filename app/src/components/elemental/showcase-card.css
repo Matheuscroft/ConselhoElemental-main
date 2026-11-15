@@ -1,77 +1,27 @@
 /*
- * The project card, opening into its summary.
- *
- * Two things carry it: a foot of blur under the title, where the card stops
- * being a headline and becomes a reading; and the content sharpening out of
- * that blur as it opens, so the detail arrives rather than appears.
+ * A vitrine: o projeto como runa (ds-runa[data-forma=vitrine]) que abre para o
+ * resumo. Aparencia vem dos blocos (--elem-acento pelo data-element, medidor
+ * fio, ds-meta, ds-botao); aqui so a estrutura do summary e do conteudo.
+ * Sem vidro: o pe desfocado saiu com o cartao antigo.
  */
-.elemental-showcase {
-  border: var(--ds-edge);
-  background: var(--ds-surface-raised);
-  box-shadow: var(--ds-rim);
-  transition:
-    border-color var(--ds-duration-reveal) var(--ds-ease),
-    box-shadow var(--ds-duration-reveal) var(--ds-ease);
+details.ds-runa.vitrine { padding: 0; gap: 0; overflow: clip; }
+.vitrine > summary { display: flex; align-items: center; gap: 12px; min-height: 88px; padding: 16px; cursor: pointer; list-style: none; }
+.vitrine > summary::-webkit-details-marker { display: none; }
+.vitrine > summary:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: -2px; border-radius: var(--ds-raio-runa); }
+.vitrine-art { display: grid; place-items: center; color: var(--elem-acento); }
+.vitrine-heading { flex: 1; min-width: 0; display: grid; gap: 6px; }
+.vitrine-heading .ds-runa-titulo { font-weight: 500; }
+.vitrine-heading .ds-medidor { margin-top: 2px; }
+/* O chevron dos blocos aponta para baixo: aberto, vira para cima. */
+details.vitrine[open] > summary .ds-runa-chevron { transform: rotate(180deg); }
+.ds-runa-conteudo.vitrine-content { display: grid; gap: 12px; margin: 0; padding: 16px; }
+.vitrine-content > p { overflow-wrap: anywhere; max-width: none; line-height: 1.7; }
+.vitrine-chips { list-style: none; padding: 0; margin: 0; }
+.vitrine-reward { color: rgb(var(--el-gold)); }
+.vitrine-content > button { width: 100%; }
+@media (min-width: 768px) {
+  .vitrine > summary, .vitrine-content { padding: 20px; }
 }
-
-.elemental-showcase[open] {
-  box-shadow: var(--ds-rim), var(--ds-lift-near);
-}
-
-/*
- * The foot. One blurred layer with a gradient mask, not a stack of six: a
- * real progressive blur costs a backdrop-filter per step, and this reads the
- * same at a fraction of it. Only while the card is open, so the cost is
- * bounded by how many cards someone has actually opened -- on a list of
- * twenty journeys, that is one.
- */
-.elemental-showcase[open] summary::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: 54px;
-  pointer-events: none;
-  -webkit-backdrop-filter: blur(7px);
-  backdrop-filter: blur(7px);
-  -webkit-mask-image: linear-gradient(to top, #000 18%, transparent);
-  mask-image: linear-gradient(to top, #000 18%, transparent);
-}
-
-/* The detail sharpens out of the blur instead of cutting in. */
-.elemental-showcase[open] .elemental-showcase-content {
-  animation: showcase-nitidez var(--ds-duration-settle) var(--ds-ease) both;
-}
-
-@keyframes showcase-nitidez {
-  from { opacity: 0; filter: blur(8px); translate: 0 -8px; }
-  to { opacity: 1; filter: blur(0); translate: 0 0; }
-}
-
-/* The chips arrive a step apart, so the summary reads as a sequence. */
-.elemental-showcase[open] .elemental-showcase-chips li {
-  animation: showcase-nitidez var(--ds-duration-reveal) var(--ds-ease) both;
-}
-
-.elemental-showcase[open] .elemental-showcase-chips li:nth-child(1) { animation-delay: calc(var(--ds-stagger) * 1); }
-.elemental-showcase[open] .elemental-showcase-chips li:nth-child(2) { animation-delay: calc(var(--ds-stagger) * 2); }
-.elemental-showcase[open] .elemental-showcase-chips li:nth-child(3) { animation-delay: calc(var(--ds-stagger) * 3); }
-.elemental-showcase[open] .elemental-showcase-chips li:nth-child(n+4) { animation-delay: calc(var(--ds-stagger) * 4); }
-
-.elemental-showcase-chevron {
-  transition: rotate var(--ds-duration-reveal) var(--ds-ease);
-}
-
-.elemental-showcase[open] .elemental-showcase-chevron {
-  rotate: 180deg;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .elemental-showcase,
-  .elemental-showcase-chevron,
-  .elemental-showcase[open] .elemental-showcase-content,
-  .elemental-showcase[open] .elemental-showcase-chips li {
-    transition: none;
-    animation: none;
-  }
+  .vitrine-content, details.vitrine[open] > summary .ds-runa-chevron { animation: none; transition: none; }
 }

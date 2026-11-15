@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronDown, ArrowRight, Check, CircleHelp } from 'lucide-react';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { QuestRune } from './QuestRune';
 import { trailHref, type QuestTrail } from './quest-path';
 
@@ -13,20 +13,20 @@ export function ProjectChapters({ trail }: { trail: QuestTrail }) {
       const tasks = steps.filter(step => step.kind === 'task');
       const done = tasks.filter(step => step.completed).length;
       const next = steps.find(step => step.available && !step.completed && step.kind === 'task');
-      return <details key={chapter.id} className="quest-chapter" data-element={trail.element}>
+      return <details key={chapter.id} className="quest-chapter ds-runa" data-forma="vitrine" data-element={trail.element}>
         <summary>
-          <span className="quest-chapter-rune" aria-hidden="true"><QuestRune element={trail.element} size={36} /></span>
-          <span><small>Capítulo {index + 1}</small><strong>{chapter.title}</strong><span>{tasks.length ? `${done} de ${tasks.length} rituais concluídos` : 'Sem rituais pontuais'}{steps.some(step => step.kind === 'habit') ? ' · inclui ciclos' : ''}</span></span>
-          <ChevronDown size={20} aria-hidden="true" />
+          <span className="quest-chapter-rune ds-runa-arte" aria-hidden="true"><QuestRune element={trail.element} size={36} /></span>
+          <span className="quest-chapter-texto"><strong className="ds-runa-titulo">{chapter.title}</strong><span className="ds-meta"><span>Capítulo {index + 1}</span><span>{tasks.length ? `${done} de ${tasks.length} rituais concluídos` : 'Sem rituais pontuais'}</span>{steps.some(step => step.kind === 'habit') && <span>inclui ciclos</span>}</span></span>
+          <ArcaneIcon name="chevron" className="ds-runa-chevron" size={16} />
         </summary>
-        <div className="quest-chapter-content">
+        <div className="quest-chapter-content ds-runa-conteudo">
           {chapter.progress != null && Number.isFinite(chapter.progress) && <p>Progresso registrado do capítulo: {chapter.progress}%</p>}
-          {next && !trail.archived && !trail.completed && <Link className="quest-primary" to={trailHref(trail.key, next.key)}>Continuar capítulo<ArrowRight size={17} aria-hidden="true" /></Link>}
+          {next && !trail.archived && !trail.completed && <Link className="quest-primary" to={trailHref(trail.key, next.key)}>Continuar capítulo</Link>}
           {steps.length ? <ul aria-label={`Atividades de ${chapter.title}`}>{steps.map(step => <li key={step.key}>
-            {step.available ? <Link to={trailHref(trail.key, step.key)}>
-              <span aria-hidden="true">{step.completed ? <Check size={19} /> : <QuestRune element={step.element} size={24} />}</span>
-              <span><strong>{step.title}</strong><small>{step.completed ? 'Concluído' : step.kind === 'habit' ? 'Ciclo · execução no calendário' : step.native ? 'Treino · execução no módulo' : step.hasChildren ? 'Ritual com subitens' : 'Ritual disponível'}</small></span><ArrowRight size={16} aria-hidden="true" />
-            </Link> : <div className="quest-chapter-unavailable"><CircleHelp size={19} aria-hidden="true" /><span><strong>{step.title}</strong><small>Referência indisponível</small></span></div>}
+            {step.available ? <Link className="ds-linha" data-element={step.element} data-estado={step.completed ? 'selado' : undefined} to={trailHref(trail.key, step.key)}>
+              {step.completed ? <ArcaneIcon name="concluir" size={28} /> : <QuestRune element={step.element} size={28} />}
+              <span><strong>{step.title}</strong><small>{step.completed ? 'Concluído' : step.kind === 'habit' ? 'Ciclo, execução no calendário' : step.native ? 'Treino, execução no módulo' : step.hasChildren ? 'Ritual com subitens' : 'Ritual disponível'}</small></span><ArcaneIcon name="chevron" className="ds-linha-chevron" size={16} />
+            </Link> : <div className="quest-chapter-unavailable ds-linha" data-estado="selado"><ArcaneIcon name="alerta" size={28} /><span><strong>{step.title}</strong><small>Referência indisponível</small></span></div>}
           </li>)}</ul> : <p>Este capítulo ainda não tem atividades. Na trilha, use Adicionar etapa e selecione este capítulo.</p>}
           {!steps.length && !trail.archived && !trail.completed && <Link className="quest-secondary" to={trailHref(trail.key)}>Abrir trilha</Link>}
         </div>

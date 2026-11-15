@@ -1,4 +1,3 @@
-import { Check } from 'lucide-react';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ArcaneIcon, type ArcaneIconName } from '@/components/elemental/ArcaneIcon';
 
@@ -24,9 +23,9 @@ export function InvocationChoices({ value, onChange }: { value: InvocationType; 
     <legend className="sr-only">O que deseja invocar?</legend>
     {INVOCATION_TYPES.map(choice => <label key={choice.id} className="invocation-choice" data-draft={choice.id === 'DRAFT'}>
       <input type="radio" name="invocation-type" value={choice.id} checked={value === choice.id} onChange={() => onChange(choice.id)} aria-describedby={`invocation-example-${choice.id}`} />
-      <span className="invocation-choice-face">
-        <span className="invocation-choice-sigil" aria-hidden="true"><ArcaneIcon name={choice.icon} size={34} /></span>
-        <Check className="invocation-choice-check" size={18} aria-hidden="true" />
+      <span className="invocation-choice-face ds-runa">
+        <span className="invocation-choice-sigil" aria-hidden="true"><ArcaneIcon name={choice.icon} size={28} /></span>
+        <span className="invocation-choice-check" aria-hidden="true"><ArcaneIcon name="concluir" size={18} /></span>
         <strong>{choice.name}</strong><span>{choice.description}</span>
         <small id={`invocation-example-${choice.id}`}>{choice.example}</small>
       </span>
@@ -37,7 +36,7 @@ export function InvocationChoices({ value, onChange }: { value: InvocationType; 
 export function InvocationProgress({ step }: { step: number }) {
   return <ol className="invocation-progress" aria-label="Etapas da invocação">
     {['Escolher', 'Dar forma', 'Revisar'].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} data-complete={step > index + 1}>
-      <span aria-hidden="true">{step > index + 1 ? <Check size={16} /> : index + 1}</span>
+      <span aria-hidden="true">{step > index + 1 ? <ArcaneIcon name="concluir" size={16} /> : index + 1}</span>
       <strong>{label}</strong>{step > index + 1 && <span className="sr-only">Concluída</span>}
     </li>)}
   </ol>;

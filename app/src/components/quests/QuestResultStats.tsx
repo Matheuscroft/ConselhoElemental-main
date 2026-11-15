@@ -1,14 +1,14 @@
 import { RewardSummary } from '@/components/rewards/RewardSummary';
 import type { ElementId } from '@/types';
 import type { LevelProgress } from '@/services/leveling-calculator';
-import { Clock3, Target } from 'lucide-react';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 
 /** Read-only receipt presentation. Animation never grants or recalculates rewards. */
 export function QuestResultStats({ xp, points, minutes, element, progress, fromLevel }: { xp: number; points: number | null; minutes: number | null | undefined; element?: ElementId; progress?: LevelProgress; fromLevel?: number }) {
   return <><RewardSummary xp={xp} elements={element ? [{ element, amount: xp }] : []} progress={progress} fromLevel={fromLevel} animate /><dl className="quest-receipt-stats quest-receipt-secondary-stats">
 
-    <div><dt><Target size={20} aria-hidden="true" />Pontos registrados</dt><dd>{points === null ? '—' : points.toLocaleString('pt-BR')}</dd></div>
-    <div><dt><Clock3 size={20} aria-hidden="true" />Tempo dedicado</dt><dd>{minutes == null ? '—' : `${minutes.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min`}</dd></div>
+    <div><dt><ArcaneIcon name="conquista" size={20} />Pontos registrados</dt><dd>{points === null ? '—' : points.toLocaleString('pt-BR')}</dd></div>
+    <div><dt><ArcaneIcon name="relogio" size={20} />Tempo dedicado</dt><dd>{minutes == null ? '—' : `${minutes.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min`}</dd></div>
   </dl></>;
 }
 

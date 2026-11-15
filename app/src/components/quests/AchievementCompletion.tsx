@@ -4,11 +4,11 @@ import type { LevelProgress } from '@/services/leveling-calculator';
 import { useShallow } from 'zustand/react/shallow';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Check, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import { achievementPlan, type AchievementKind } from '@/lib/achievement-completion';
 import { trailHref } from './quest-path';
 import { QuestRune } from './QuestRune';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 
 const names = { terra: 'Terra', fogo: 'Fogo', agua: 'Água', ar: 'Ar' };
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
@@ -46,18 +46,18 @@ function CompletionPanel({ kind, id }: { kind: AchievementKind; id: string }) {
       setError(`${reason instanceof Error ? reason.message : 'Não foi possível confirmar.'} Confira o estado da conquista antes de tentar novamente.`);
     }
   };
-  return <section className="achievement-completion" data-element={plan.element} aria-label={`Conclusão da ${label}`}>
+  return <section className="achievement-completion ds-altar" data-element={plan.element} aria-label={`Conclusão da ${label}`}>
     <div className="achievement-heading"><QuestRune element={plan.element} size={36} /><div>
       <h3>{completed ? 'Conquista registrada' : 'Feche este capítulo'}</h3>
-      <p>{completed ? (plan.entity.completionBonus ? `Bônus recebido: ${number(plan.amount)} XP · ${names[plan.element]}` : 'Conclusão anterior sem recibo de bônus. Nenhum XP será debitado ao reabrir.')
-        : plan.amount > 0 && plan.validAmount ? `Bônus da conquista: +${number(plan.amount)} XP · ${names[plan.element]}` : 'O XP dos rituais é recebido em cada atividade. Esta conquista não tem bônus adicional configurado.'}</p>
+      <p>{completed ? (plan.entity.completionBonus ? `Bônus recebido: ${number(plan.amount)} XP, ${names[plan.element]}` : 'Conclusão anterior sem recibo de bônus. Nenhum XP será debitado ao reabrir.')
+        : plan.amount > 0 && plan.validAmount ? `Bônus da conquista: +${number(plan.amount)} XP, ${names[plan.element]}` : 'O XP dos rituais é recebido em cada atividade. Esta conquista não tem bônus adicional configurado.'}</p>
     </div></div>
     {result && result.completed === completed && <div role="status" tabIndex={-1} ref={resultRef} className="achievement-reward-result"><p>{result.message}</p>{result.changed && <RewardSummary xp={result.amount} elements={[{element: result.element, amount: result.amount}]} progress={result.progress} fromLevel={result.fromLevel} animate />}</div>}
     {plan.trail.archived ? <p>Esta obra está arquivada.</p> : !completed && !plan.canComplete ? <p>
       {plan.pending.length ? <>{plan.pending.length} rituais ainda precisam de conclusão ou revisão. <Link to={trailHref(plan.trail.key)}>Ver etapas</Link></> : 'O valor do bônus precisa de revisão antes da conclusão.'}
     </p> : <>
       {!reviewing ? <button type="button" className="quest-secondary" onClick={() => { busy.current = false; setReview(plan.signature); setResult(null); setError(''); }}>
-        {completed ? <RotateCcw size={18} /> : <Check size={18} />}{completed ? `Reabrir ${label}` : `Concluir ${label}`}
+        <ArcaneIcon name={completed ? 'desfazer' : 'concluir'} size={18} />{completed ? `Reabrir ${label}` : `Concluir ${label}`}
       </button> : <div className="achievement-review">
         <p>{completed ? `Reabrir retira somente o bônus registrado de ${number(plan.amount)} XP. Os rituais e seus ganhos ficam preservados.`
           : `Confirme que você alcançou esta conquista. ${plan.trail.total ? 'Os rituais vinculados estão concluídos.' : 'Esta conquista não tem rituais pontuais vinculados.'} Ciclos continuam na rotina; suas atividades não recebem XP novamente.`}</p>

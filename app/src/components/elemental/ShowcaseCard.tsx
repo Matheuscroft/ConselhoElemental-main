@@ -1,6 +1,5 @@
-import { ElementIcon } from './ArcaneIcon';
-import { ArrowUpRight, ChevronDown } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { ArcaneIcon, ElementIcon } from './ArcaneIcon';
+import { Medidor } from './blocos';
 import type { ElementId } from '@/types';
 import './showcase-card.css';
 
@@ -15,20 +14,24 @@ interface ShowcaseCardProps {
   onOpen?: () => void;
 }
 
-/** A short overview opens locally; the primary action keeps the existing detail flow. */
+/** Vitrine do sistema de blocos: uma runa que abre localmente; o botao mantem o fluxo de detalhes. */
 export function ShowcaseCard({ title, description, element, status, progress, chips, reward, onOpen }: ShowcaseCardProps) {
-  return <details className="elemental-showcase" style={{ '--showcase-accent': `var(--element-${element})` } as CSSProperties}>
+  const valor = Number.isFinite(progress) ? Math.min(100, Math.max(0, progress)) / 100 : 0;
+  return <details className="ds-runa vitrine" data-forma="vitrine" data-element={element}>
     <summary>
-      <span className="elemental-showcase-art" aria-hidden="true"><ElementIcon element={element} size={36} /></span>
-      <span className="elemental-showcase-heading"><small>{status}</small><strong>{title}</strong><span>{progress}% concluído</span></span>
-      <ChevronDown className="elemental-showcase-chevron" size={20} aria-hidden="true" />
+      <span className="ds-runa-arte vitrine-art" aria-hidden="true"><ElementIcon element={element} size={36} /></span>
+      <span className="vitrine-heading">
+        <strong className="ds-runa-titulo">{title}</strong>
+        <span className="ds-meta"><span>{status}</span><span>{progress}% concluído</span></span>
+        <Medidor valor={valor} rotulo={`Progresso de ${title}`} />
+      </span>
+      <ArcaneIcon name="chevron" className="ds-runa-chevron" size={16} />
     </summary>
-    <div className="elemental-showcase-content">
-      <p>{description || 'Abra os detalhes para acompanhar os próximos passos.'}</p>
-      <ul className="elemental-showcase-chips" aria-label="Resumo">{chips.map((chip, index) => <li key={`${index}-${chip}`}>{chip}</li>)}</ul>
-      <progress max={100} value={progress} aria-label={`Progresso de ${title}`} />
-      {reward && <p className="elemental-showcase-reward">Recompensa: {reward}</p>}
-      <button type="button" onClick={onOpen}>Abrir detalhes<ArrowUpRight size={18} aria-hidden="true" /></button>
+    <div className="ds-runa-conteudo vitrine-content">
+      <p className="ds-nota">{description || 'Abra os detalhes para acompanhar os próximos passos.'}</p>
+      <ul className="ds-meta vitrine-chips" aria-label="Resumo">{chips.map((chip, index) => <li key={`${index}-${chip}`}>{chip}</li>)}</ul>
+      {reward && <p className="ds-nota vitrine-reward">Recompensa: {reward}</p>}
+      <button type="button" className="ds-botao" data-tipo="secundario" onClick={onOpen}>Abrir detalhes</button>
     </div>
   </details>;
 }
