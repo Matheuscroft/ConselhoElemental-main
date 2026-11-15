@@ -2,12 +2,15 @@ import { QuestNextSteps } from '@/components/quests/QuestNextSteps';
 import { TopBar } from '@/components/layout/TopBar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
-import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { Vazio } from '@/components/elemental/blocos';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
-import { ACENTO } from '@/lib/design/palette';
+import { ACENTO, AURA } from '@/lib/design/palette';
+import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
+import { Contagem } from '@/components/motion/Contagem';
+import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import { useAppStore } from '@/stores/appStore';
 import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
@@ -22,6 +25,13 @@ const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'))
 
 /** Before anyone gives a birth date the aura still burns, in the app's gold. */
 const AURA_SEM_SIGNO = { colour: '#d6b66f', modality: 'fixo' as ZodiacModality };
+
+/**
+ * The whole entrance plays once per time the app is opened. Coming back to the
+ * Sanctuary from another screen gets a short fade instead: a scene that
+ * unfolds every single time stops being a welcome and becomes a wait.
+ */
+let cenaJaVista = false;
 
 const ACCENTS = ACENTO;
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
@@ -132,6 +142,9 @@ function ElementalOrbit({ fracao }: { fracao: number }) {
     };
   }, [hovered, focused, reducedMotion]);
 
+  // Depth: the scene leans a few pixels toward the finger, or with the phone.
+  useParalaxe(orbitRef, !reducedMotion);
+
   return <div className="ep-character-section">
     <div ref={orbitRef} className="ep-orbit" data-motion-paused={reducedMotion} aria-label="Personagem e portais elementais"
       onPointerLeave={() => setHovered(false)}
@@ -139,6 +152,7 @@ function ElementalOrbit({ fracao }: { fracao: number }) {
       onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
       <div className="ep-orbit-track ep-orbit-track-outer" aria-hidden="true" />
       <div className="ep-orbit-track ep-orbit-track-inner" aria-hidden="true" />
+      <div className="ep-chao" aria-hidden="true" />
       <AnelXp fracao={fracao} />
       <div className="ep-avatar-stage">
         <div className="ep-avatar-halo" aria-hidden="true" />
@@ -153,7 +167,7 @@ function ElementalOrbit({ fracao }: { fracao: number }) {
         <img className="ep-elemental-body" src="/sanctuary/elemental-body-v1.png" width={913} height={1723} alt="Personagem elemental com vestes escuras, detalhes dourados e cristal luminoso" draggable={false} />
       </div>
       <nav className="ep-portals" aria-label="Escolha um elemento">{ORDER.map((id, index) => {
-        return <div key={id} className="ep-orbit-position" style={{ '--element-accent': ACCENTS[id], ...orbitStyle(index, 0) } as CSSProperties}>
+        return <div key={id} className="ep-orbit-position" style={{ '--element-accent': ACCENTS[id], '--ordem': index, ...orbitStyle(index, 0) } as CSSProperties}>
           <Link id={`ep-entry-${id}`} to={elementHref(id)} className="ep-portal"
             onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHovered(true); }}
             onPointerLeave={() => setHovered(false)}>
@@ -175,9 +189,28 @@ function ElementDirectory() {
 
 function SanctuaryComposition() {
   // Existing getters read several slices; subscribe to updates from both stores.
-  const { user, currentAccountId, getLevelProgress } = useAppStore();
+  const { user, currentAccountId, getLevelProgress, tasks, habits, actions } = useAppStore();
   const level = getLevelProgress();
   const { profile: signo } = useZodiacPreference();
+
+  // The light of the scene is the element leading the person's week, read from
+  // what they already finished. Nothing is written and nothing is scored.
+  const [hoje] = useState(() => new Date());
+  const semana = useMemo(() => elementoDaSemana(conclusoesDoApp(habits, actions), hoje).elemento, [habits, actions, hoje]);
+  const luzDaSemana = {
+    '--semana-acento': semana ? ACENTO[semana] : 'rgb(var(--el-gold))',
+    '--semana-aura': semana ? AURA[semana] : AURA_SEM_SIGNO.colour,
+  } as CSSProperties;
+
+  const [entrada] = useState<'plena' | 'breve'>(() => (cenaJaVista ? 'breve' : 'plena'));
+  useEffect(() => { cenaJaVista = true; }, []);
+
+  const cenaRef = useRef<HTMLDivElement>(null);
+  useLuzDoToque(cenaRef);
+
+  // With nothing waiting, creating the first ritual is the one thing to do here.
+  const temPendentes = tasks.some((task) => !task.isCompleted);
+  const faltam = Math.max(0, level.xpToNextLevel - (level.xpTotal - level.xpAtLevelStart));
 
   /**
    * Levelling up is rare and earned, which is what a ceremony is for. A habit
@@ -204,21 +237,26 @@ function SanctuaryComposition() {
 
   return <>
     {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
-    <section className="ep-sanctuary" aria-labelledby="ep-title">
-      <div className="ep-character-navigation"><ElementalOrbit fracao={level.progressFraction} /></div>
-      <div className="ep-identity">
-        <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
-        <p className="ep-level-line">Nível {level.level}</p>
-        <p className="ep-level-remaining">faltam {format(Math.max(0, level.xpToNextLevel - (level.xpTotal - level.xpAtLevelStart)))} XP para o nível {level.level + 1}</p>
+    <div ref={cenaRef} className="ep-cena" data-entrada={entrada} style={luzDaSemana}>
+      <section className="ep-sanctuary" aria-labelledby="ep-title">
+        <div className="ep-character-navigation"><ElementalOrbit fracao={level.progressFraction} /></div>
+        <div className="ep-identity">
+          <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
+          <p className="ep-level-line"><span className="ep-nivel-selo">Nível <Contagem valor={level.level} /></span></p>
+          <p className="ep-level-remaining">faltam <Contagem valor={faltam} formatar={format} /> XP para o nível {level.level + 1}</p>
+        </div>
+      </section>
+      <div className="ep-altar">
+        <div className="ep-altar-luz" aria-hidden="true" />
+        <section className="ep-next ds-altar ep-vidro" data-luz aria-labelledby="ep-next-heading">
+          <div className="ds-secao ep-next-heading"><h2 id="ep-next-heading">Seu próximo passo</h2><Link className="ds-botao ep-mola" data-tipo={temPendentes ? 'secundario' : 'primario'} to="/invocar"><ArcaneIcon name="criar" size={18} />Criar ritual</Link></div>
+          <SanctuaryRituals key={currentAccountId ?? "local"} />
+        </section>
       </div>
-    </section>
-    <section className="ep-next ds-altar" aria-labelledby="ep-next-heading">
-      <div className="ds-secao ep-next-heading"><h2 id="ep-next-heading">Seu próximo passo</h2><Link className="ds-botao" data-tipo="secundario" to="/invocar"><ArcaneIcon name="criar" size={18} />Criar ritual</Link></div>
-      <SanctuaryRituals key={currentAccountId ?? "local"} />
-    </section>
-    <QuestNextSteps />
-    <Link className="ds-linha ep-cycle" to="/ciclos"><ArcaneIcon className="ds-linha-sigilo" name="ciclo" size={28} /><div><h3>O poder da constância</h3><p className="ds-nota">Encontre seus hábitos e sequências em Ciclos.</p></div><ArcaneIcon className="ds-linha-chevron" name="seta" size={16} /></Link>
-    <Link className="ds-elo ep-all-paths" to="/mapa"><ArcaneIcon name="mapa" size={16} />Todos os caminhos</Link>
+      <div className="ep-painel ep-revela" data-luz><QuestNextSteps /></div>
+      <Link className="ds-linha ep-cycle ep-painel ep-revela" data-luz to="/ciclos"><ArcaneIcon className="ds-linha-sigilo" name="ciclo" size={28} /><div><h3>O poder da constância</h3><p className="ds-nota">Encontre seus hábitos e sequências em Ciclos.</p></div><ArcaneIcon className="ds-linha-chevron" name="seta" size={16} /></Link>
+      <Link className="ds-elo ep-all-paths ep-revela" to="/mapa"><ArcaneIcon name="mapa" size={16} />Todos os caminhos</Link>
+    </div>
   </>;
 }
 
@@ -308,6 +346,7 @@ export default function ElementalPreview() {
       {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
     </main>
     <MobileBottomNav />
-    <footer className="ep-footer"><span>Uma jornada. Quatro elementos.</span><Link className="ds-elo" to="/mapa">Explorar sua jornada</Link></footer>
+    {/* The Sanctuary already ends on "Todos os caminhos", which goes to the same map. */}
+    <footer className="ep-footer" data-so={requested ? undefined : ''}><span>Uma jornada. Quatro elementos.</span>{requested ? <Link className="ds-elo" to="/mapa">Explorar sua jornada</Link> : null}</footer>
   </div>;
 }

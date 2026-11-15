@@ -45,13 +45,20 @@ test('every blur carries its prefixed twin, or it does nothing on an iPhone', ()
  * gradient mask reads the same for one. It only exists while a card is open,
  * so on a list of twenty journeys the runtime cost is a single blurred strip.
  */
-const TETO_VIDRO = 15;
+const TETO_VIDRO = 13;
 // 15 is a photograph of reality, not a goal: 11 declarations in .css plus four
 // Tailwind `backdrop-blur-*` classes that escaped the old guard. The four are
 // MobileBottomNav, Auth and the two VideoExercisePlayer. They should fall.
 // 16, approved by Fábio (09/11/2026): the glass sill of the two sky buttons in
 // Ciclos (`.ceu-peitoril`, one declaration for Moon and Season, each blurring
 // its own canvas). If it goes, the number goes back to 15.
+// 13 (15/11/2026): the count had already fallen to 12 without the ceiling
+// following it (the old login page and its blurs were deleted). The Sanctuary's
+// altar adds one, `.ep-next.ep-vidro`: the single real pane of that screen,
+// with the week's light behind it, asked for by Fábio. 12 + 1 = 13, so the
+// ceiling still comes down by two. On that screen at most three blurred
+// surfaces are visible at once (top bar, bottom navigation, altar) and none of
+// them sits over another.
 
 test('the app does not spread glass', () => {
   const total = todos.reduce((soma, [arquivo, texto]) => soma

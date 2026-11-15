@@ -110,8 +110,10 @@ void main() {
   float a = AURA_PEAK * (1.0 - exp(-1.2 * field * breath));
 
   // Fade out before the quad's edge so the glow never ends in a straight line.
+  // The fade is round, not one per axis: at higher levels the field is wide
+  // enough to fill the quad, and two straight fades turned it into a column.
   vec2 edge = abs(vUv - 0.5) * 2.0;
-  a *= (1.0 - smoothstep(0.78, 1.0, edge.x)) * (1.0 - smoothstep(0.78, 1.0, edge.y));
+  a *= 1.0 - smoothstep(0.66, 1.0, length(edge));
 
   gl_FragColor = vec4(uColour * a, a);
 }
