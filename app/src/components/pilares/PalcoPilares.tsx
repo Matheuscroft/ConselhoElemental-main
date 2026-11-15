@@ -6,7 +6,9 @@ import { elementHref } from '@/components/elemental/navigation';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { AURA, TINTA } from '@/lib/design/palette';
 import { indiceAtivo } from '@/lib/momentos/reel';
+import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import type { ElementId } from '@/constants';
+import { BRASAS } from './brasas';
 import './palco-pilares.css';
 
 // three.js only arrives with the stage; the pills never wait for it.
@@ -16,6 +18,8 @@ const MolduraFeitico = lazy(() => import('@/components/momentos/MolduraFeitico')
 export interface PilarPalco {
   readonly id: ElementId;
   readonly nome: string;
+  /** What the pillar is about, as a short line under the name (optional). */
+  readonly dominio?: string;
   readonly descricao: string;
   readonly pontos: number;
   readonly porcentagem: number;
@@ -27,6 +31,11 @@ export interface PilarPalco {
 const ASSENTAR_MS = 120;
 /** Half the pill width: the outline of the living frame is a full pill. */
 const RAIO_PILULA = 66;
+
+/** The stage is staged once per opening of the app; coming back only fades. */
+let palcoJaVisto = false;
+/** Dots shown for the areas of a pillar; more than this would stop reading as dots. */
+const PONTOS_MAXIMOS = 14;
 
 const formatar = (valor: number) => valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
@@ -48,6 +57,12 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
   const [foco, setFoco] = useState(() => focoInicial(itens));
   const [rolando, setRolando] = useState(false);
   const trilhoRef = useRef<HTMLDivElement>(null);
+  const raizRef = useRef<HTMLDivElement>(null);
+  const cenaRef = useRef<HTMLDivElement>(null);
+  const [entrada] = useState<'plena' | 'breve'>(() => (palcoJaVisto ? 'breve' : 'plena'));
+  useEffect(() => { palcoJaVisto = true; }, []);
+  useParalaxe(cenaRef, !reduzido);
+  useLuzDoToque(raizRef);
   const gestoRef = useRef(false);
   const focoRef = useRef(foco);
   useEffect(() => { focoRef.current = foco; });
@@ -125,10 +140,16 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
   const vazio = atual.pontos <= 0;
 
   return (
-    <div className="palco-pilares">
-      <div className="palco-cena" data-rolando={rolando}>
+    <div ref={raizRef} className="palco-pilares" data-entrada={entrada}>
+      <div ref={cenaRef} className="palco-cena" data-rolando={rolando}>
         <div className="palco-camadas" aria-hidden="true">
-          {itens.map((item, indice) => <span key={item.id} className="palco-camada" data-ativo={indice === foco} style={tema(item.id)} />)}
+          {itens.map((item, indice) => (
+            <span key={item.id} className="palco-camada" data-ativo={indice === foco} data-elemento={item.id} style={tema(item.id)}>
+              <span className="palco-aura" />
+              <span className="palco-chao" />
+              <span className="palco-horizonte" />
+            </span>
+          ))}
         </div>
         <div
           ref={trilhoRef}
@@ -150,7 +171,7 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
                 id={`pilar-aba-${item.id}`}
                 className="palco-pilula"
                 data-foco={selecionado}
-                style={tema(item.id)}
+                style={{ ...tema(item.id), '--ordem': indice } as CSSProperties}
                 aria-selected={selecionado}
                 aria-controls="pilar-leitura"
                 tabIndex={selecionado ? 0 : -1}
@@ -160,11 +181,26 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
                 <span className="palco-numero" aria-hidden="true">{String(indice + 1).padStart(2, '0')}</span>
                 <ElementIcon element={item.id} size={28} aria-hidden="true" />
                 <strong className="palco-nome" aria-hidden="true">{item.nome}</strong>
-                <span className="palco-pontos" aria-hidden="true">{item.pontos > 0 ? `${formatar(item.pontos)} pontos` : 'Ainda sem pontos'}</span>
+                <span className="palco-pontos" data-vazio={item.pontos <= 0} aria-hidden="true">{item.pontos > 0 ? `${formatar(item.pontos)} pontos` : 'Ainda sem pontos'}</span>
                 <span className="palco-eco" data-foco={selecionado} aria-hidden="true" />
               </button>
             );
           })}
+        </div>
+        <div className="palco-camadas palco-camadas-frente" aria-hidden="true">
+          {itens.map((item, indice) => (
+            <span key={item.id} className="palco-camada" data-ativo={indice === foco} data-elemento={item.id} style={tema(item.id)}>
+              <span className="palco-brasas">
+                {BRASAS.map((brasa, posicao) => (
+                  <span
+                    key={posicao}
+                    className="palco-brasa"
+                    style={{ '--x': `${brasa.x}%`, '--t': brasa.tamanho / 10, '--v': brasa.deriva, '--c': brasa.ciclo, '--a': brasa.avanco } as CSSProperties}
+                  />
+                ))}
+              </span>
+            </span>
+          ))}
         </div>
         <Suspense fallback={null}>
           <MolduraFeitico
@@ -180,22 +216,35 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
         </Suspense>
       </div>
 
-      <section
-        key={atual.id}
-        id="pilar-leitura"
-        className="palco-leitura ds-pane"
-        role="tabpanel"
-        aria-labelledby={`pilar-aba-${atual.id}`}
-        style={tema(atual.id)}
-      >
-        <h2 className="palco-leitura-nome">{atual.nome}</h2>
-        <p className="palco-leitura-texto">{atual.descricao}</p>
-        {vazio
-          ? <p className="palco-leitura-dados">Seu {atual.nome} aparece aqui quando você registrar atividades.</p>
-          : <p className="palco-leitura-dados"><strong>{formatar(atual.pontos)} pontos</strong> <span aria-hidden="true">·</span> {formatar(atual.porcentagem)}% do equilíbrio</p>}
-        <p className="palco-leitura-areas">{atual.areas} áreas · {atual.ativas} ativas</p>
-        <Link className="palco-explorar" to={elementHref(atual.id)}>Explorar {atual.nome} <ArrowRight size={16} aria-hidden="true" /></Link>
-      </section>
+      <div key={atual.id} className="palco-altar" style={tema(atual.id)}>
+        <span className="palco-altar-luz" aria-hidden="true" />
+        <section
+          id="pilar-leitura"
+          className="palco-leitura"
+          data-luz
+          role="tabpanel"
+          aria-labelledby={`pilar-aba-${atual.id}`}
+        >
+          <header className="palco-leitura-topo">
+            <div>
+              {atual.dominio ? <p className="palco-leitura-dominio">{atual.dominio}</p> : null}
+              <h2 className="palco-leitura-nome">{atual.nome}</h2>
+            </div>
+            <span className="palco-leitura-sigilo" aria-hidden="true"><ElementIcon element={atual.id} size={40} /></span>
+          </header>
+          <p className="palco-leitura-texto">{atual.descricao}</p>
+          {vazio
+            ? <p className="palco-leitura-dados" data-vazio="true">{atual.nome === 'Água' || atual.nome === 'Terra' ? 'Sua' : 'Seu'} {atual.nome} aparece aqui quando você registrar atividades.</p>
+            : <p className="palco-leitura-dados"><strong>{formatar(atual.pontos)} pontos</strong> <span aria-hidden="true">·</span> {formatar(atual.porcentagem)}% do equilíbrio</p>}
+          <p className="palco-leitura-areas">
+            <span className="palco-pontinhos" aria-hidden="true">
+              {Array.from({ length: Math.min(atual.areas, PONTOS_MAXIMOS) }, (_, posicao) => <i key={posicao} data-acesa={posicao < atual.ativas} />)}
+            </span>
+            <span>{atual.areas} áreas · {atual.ativas} ativas</span>
+          </p>
+          <Link className="palco-explorar" to={elementHref(atual.id)}>Explorar {atual.nome} <ArrowRight size={16} aria-hidden="true" /></Link>
+        </section>
+      </div>
     </div>
   );
 }

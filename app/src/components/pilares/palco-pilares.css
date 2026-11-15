@@ -1,23 +1,124 @@
 /*
- * The four pillars as pills on a linear rail. The focused pill is lit from
- * inside and the living frame (one canvas) is pinned to the middle of the
- * stage. The floor reflection is CSS only: no second canvas, no blur.
+ * The four pillars as pills on a linear rail, on a stage that is lit by the
+ * one you chose. Behind the pills sit four layers, one per element, and only
+ * the chosen one is lit: aura, a luminous floor with a horizon line, and motes
+ * of the element's own kind. The living frame (one canvas) is pinned to the
+ * middle of the stage. The card of the chosen pillar rises out of the glow and
+ * is the one blurred surface of the screen.
+ *
+ * Only transform, opacity and stroke move. Every time is a --ds-duration-*
+ * token or a multiple of one; the ambient loops are long multiples of the
+ * conjure beat and stop outright for reduced motion.
  */
-.palco-pilares { --palco-altura: 360px; --palco-largura: 132px; --palco-alto: 220px; --palco-topo: 44px; }
+.palco-pilares {
+  --palco-altura: 360px; --palco-largura: 132px; --palco-alto: 220px; --palco-topo: 44px;
+  --palco-sobe: 64px;
+  --palco-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+}
 
-.palco-cena { position: relative; block-size: var(--palco-altura); overflow: hidden; border-radius: 20px; }
+.palco-cena { position: relative; block-size: var(--palco-altura); overflow: hidden; }
 
-/* Four stacked tints; the focused one is opaque, the others cross-fade out. */
+/* Four layers; the chosen one is lit, the others sit dark and paused. */
 .palco-camadas { position: absolute; inset: 0; pointer-events: none; }
+/* The motes pass in front of the pills, small and faint, so they are seen and do not hide the names. */
+.palco-camadas-frente { z-index: 2; }
 .palco-camada {
   position: absolute; inset: 0; opacity: 0;
-  background:
-    radial-gradient(ellipse 52% 28px at 50% calc(var(--palco-topo) + var(--palco-alto) + 12px), color-mix(in srgb, var(--pilar-aura) 22%, transparent), transparent),
-    radial-gradient(ellipse 80% 60% at 50% 40%, color-mix(in srgb, var(--pilar-aura) 14%, transparent), transparent),
-    linear-gradient(to bottom, color-mix(in srgb, var(--pilar-tinta) 70%, transparent), transparent);
   transition: opacity var(--ds-duration-settle) var(--ds-ease);
 }
 .palco-camada[data-ativo='true'] { opacity: 1; }
+.palco-camada > span { position: absolute; }
+
+/* The light behind the stage. It breathes (scale) and answers the hand (translate). */
+.palco-aura {
+  inset: 0;
+  background:
+    radial-gradient(ellipse 52% 58% at 50% 43%, color-mix(in srgb, var(--pilar-aura) 30%, transparent), color-mix(in srgb, var(--pilar-aura) 10%, transparent) 55%, transparent 100%),
+    radial-gradient(ellipse 54% 66% at 50% 42%, color-mix(in srgb, var(--pilar-tinta) 80%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -3px);
+}
+.palco-camada[data-ativo='true'] .palco-aura {
+  animation:
+    palco-acende var(--ds-duration-conjure) var(--ds-ease-conjure) backwards,
+    palco-respira calc(var(--ds-duration-conjure) * 9) ease-in-out infinite;
+}
+
+/* The floor: a pool of light under the pills and a hairline of horizon over it. */
+.palco-chao {
+  inset-inline: 2%; inset-block-start: calc(var(--palco-topo) + var(--palco-alto) - 14px); block-size: 76px;
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, color-mix(in srgb, var(--pilar-aura) 46%, transparent), color-mix(in srgb, var(--pilar-aura) 14%, transparent) 55%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -9px) calc(var(--par-y, 0) * -2px);
+  transform-origin: 50% 50%;
+}
+.palco-camada[data-ativo='true'] .palco-chao { animation: palco-alarga var(--ds-duration-conjure) var(--ds-ease-conjure) backwards; }
+.palco-horizonte {
+  inset-inline: 12%; inset-block-start: calc(var(--palco-topo) + var(--palco-alto) + 12px); block-size: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--pilar-acento) 75%, transparent), transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--pilar-aura) 60%, transparent);
+  translate: calc(var(--par-x, 0) * -5px) 0;
+}
+
+/* Motes of the element's own kind: embers, wisps, bubbles, spores. */
+.palco-brasas { inset: 0; translate: calc(var(--par-x, 0) * 10px) calc(var(--par-y, 0) * 5px); }
+.palco-brasa {
+  position: absolute; inset-inline-start: var(--x); inset-block-start: calc(var(--palco-topo) + var(--palco-alto) - 8px);
+  inline-size: calc(var(--t) * 6px); block-size: calc(var(--t) * 6px);
+  border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, var(--pilar-aura), color-mix(in srgb, var(--pilar-aura) 25%, transparent) 70%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--pilar-aura) 70%, transparent);
+  animation: palco-sobe calc(var(--ds-duration-conjure) * var(--c)) linear calc(var(--ds-duration-conjure) * var(--c) * var(--a) * -1) infinite;
+  animation-play-state: paused;
+}
+.palco-camada[data-ativo='true'] .palco-brasa { animation-play-state: running; }
+
+.palco-camada[data-elemento='ar'] .palco-brasa {
+  inset-block-start: calc(10% + var(--x) * .5);
+  inset-inline-start: calc(var(--x) - 24%);
+  inline-size: calc(var(--t) * 22px); block-size: 2px; border-radius: 12px; box-shadow: none;
+  background: linear-gradient(90deg, transparent, var(--pilar-aura), transparent);
+  animation-name: palco-sopra;
+}
+.palco-camada[data-elemento='agua'] .palco-brasa {
+  inline-size: calc(var(--t) * 10px); block-size: calc(var(--t) * 10px);
+  background: radial-gradient(circle at 32% 30%, rgb(255 255 255 / .55), transparent 28%), transparent;
+  border: 1px solid color-mix(in srgb, var(--pilar-aura) 80%, transparent);
+  box-shadow: inset 0 0 6px color-mix(in srgb, var(--pilar-aura) 45%, transparent);
+  animation-name: palco-borbulha;
+}
+.palco-camada[data-elemento='terra'] .palco-brasa {
+  inline-size: calc(var(--t) * 5px); block-size: calc(var(--t) * 5px);
+  border-radius: 0; box-shadow: none;
+  background: color-mix(in srgb, var(--pilar-aura) 80%, transparent);
+  animation-name: palco-poeira;
+}
+
+@keyframes palco-acende { from { opacity: 0; transform: scale(.7); } 45% { opacity: 1; transform: scale(1.1); } }
+@keyframes palco-respira { 0%, 100% { scale: 1; } 50% { scale: 1.05; } }
+@keyframes palco-alarga { from { opacity: 0; transform: scaleX(.5); } }
+@keyframes palco-sobe {
+  0% { opacity: 0; transform: translate(0, 0) scale(.6); }
+  12% { opacity: .7; }
+  70% { opacity: .4; }
+  100% { opacity: 0; transform: translate(calc(var(--v) * 1px), -230px) scale(.3); }
+}
+@keyframes palco-sopra {
+  0% { opacity: 0; transform: translate(-30px, 0); }
+  20% { opacity: .65; }
+  100% { opacity: 0; transform: translate(150px, calc(var(--v) * -1px)); }
+}
+@keyframes palco-borbulha {
+  0% { opacity: 0; transform: translate(0, 0) scale(.7); }
+  15% { opacity: .8; }
+  50% { transform: translate(calc(var(--v) * .6px), -110px) scale(1); }
+  85% { opacity: .5; }
+  100% { opacity: 0; transform: translate(calc(var(--v) * -.4px), -200px) scale(1.1); }
+}
+@keyframes palco-poeira {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  20% { opacity: .75; }
+  60% { transform: translate(calc(var(--v) * 1px), -80px) rotate(120deg); }
+  100% { opacity: 0; transform: translate(calc(var(--v) * -.6px), -150px) rotate(240deg); }
+}
 
 .palco-trilho {
   position: relative; z-index: 1;
@@ -29,6 +130,8 @@
   scrollbar-width: none;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14%, #000 86%, transparent);
 }
 .palco-trilho::-webkit-scrollbar { display: none; }
 
@@ -43,24 +146,27 @@
   background: linear-gradient(to top, var(--pilar-tinta), transparent), var(--ds-surface-raised);
   border: var(--ds-edge);
   transform: scale(.86);
+  /* The spring: the chosen pill overshoots a little and settles. */
   transition:
-    transform var(--ds-duration-settle) var(--ds-ease),
+    transform var(--ds-duration-settle) var(--ds-ease-conjure),
     opacity var(--ds-duration-feedback) var(--ds-ease),
     border-color var(--ds-duration-feedback) var(--ds-ease),
-    box-shadow var(--ds-duration-feedback) var(--ds-ease);
+    box-shadow var(--ds-duration-settle) var(--ds-ease);
 }
 .palco-pilula[data-foco='true'] {
   opacity: 1; transform: scale(1); color: rgb(var(--el-text));
   border-color: color-mix(in srgb, var(--pilar-acento) 60%, transparent);
-  box-shadow: var(--ds-rim), var(--ds-lift), 0 0 36px color-mix(in srgb, var(--pilar-aura) 24%, transparent);
+  box-shadow: var(--ds-rim), var(--ds-lift), 0 0 44px color-mix(in srgb, var(--pilar-aura) 32%, transparent);
 }
+.palco-pilula:active { transform: scale(.82); transition-duration: var(--ds-duration-press); }
+.palco-pilula[data-foco='true']:active { transform: scale(.97); }
 .palco-pilula:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
 
 /* The lit face fades in over the resting one. */
 .palco-pilula::before, .palco-eco::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 0; opacity: 0;
   background: radial-gradient(ellipse at 50% 32%, color-mix(in srgb, var(--pilar-aura) 55%, var(--pilar-tinta)), var(--pilar-tinta));
-  transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
 }
 .palco-pilula[data-foco='true']::before, .palco-eco[data-foco='true']::before { opacity: 1; }
 .palco-pilula > :not(.palco-eco) { position: relative; z-index: 1; }
@@ -68,17 +174,26 @@
 .palco-numero { font-size: var(--ds-text-micro); letter-spacing: .12em; font-variant-numeric: tabular-nums; }
 .palco-nome { font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-title); font-weight: 500; line-height: 1.2; }
 .palco-pontos { font-size: var(--ds-text-micro); letter-spacing: .12em; text-transform: uppercase; line-height: 1.4; text-wrap: balance; }
+/* No points yet: a small coal that breathes, so the pill is waiting and not dead. */
+.palco-pontos[data-vazio='true']::before {
+  content: ''; display: block; inline-size: 6px; block-size: 6px; margin: 0 auto 6px; border-radius: 50%;
+  background: var(--pilar-acento); box-shadow: 0 0 8px var(--pilar-aura);
+  opacity: .5; animation: palco-brasa-viva calc(var(--ds-duration-conjure) * 5) ease-in-out infinite;
+}
+@keyframes palco-brasa-viva { 0%, 100% { opacity: .25; scale: .8; } 50% { opacity: .9; scale: 1.15; } }
 
-/* Floor echo: the same face, flipped and faded. */
+/* Floor reflection: the same face, flipped and faded. It reads under the glass card. */
 .palco-eco {
   position: absolute; inset-inline: 0; inset-block-start: calc(100% + 12px); block-size: 100%;
-  border-radius: 999px; pointer-events: none; opacity: .28; z-index: 0;
+  border-radius: 999px; pointer-events: none; opacity: .24; z-index: 0;
   background: linear-gradient(to top, var(--pilar-tinta), transparent), var(--ds-surface-raised);
   border: var(--ds-edge); box-sizing: border-box;
   transform: scaleY(-1);
-  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 55%);
-  mask-image: linear-gradient(to bottom, #000, transparent 55%);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent 62%);
+  mask-image: linear-gradient(to bottom, #000, transparent 62%);
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
 }
+.palco-eco[data-foco='true'] { opacity: .5; }
 
 /* The one living canvas, pinned to the middle pill. Scoped; moldura-feitico.css is untouched. */
 .palco-pilares .palco-cena .reel-feitico {
@@ -88,24 +203,131 @@
   block-size: calc(var(--palco-alto) + var(--moldura-margem) * 2);
 }
 
-.palco-leitura { margin-block-start: 16px; min-block-size: 232px; padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; animation: palco-leitura-entra var(--ds-duration-reveal) var(--ds-ease) both; }
-.palco-leitura-nome { font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-title); font-weight: 500; color: var(--pilar-acento); }
-.palco-leitura-texto { font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); }
-.palco-leitura-dados { font-size: var(--ds-text-small); }
+/*
+ * The card. It rises out of the stage by --palco-sobe, so the floor glow and
+ * the reflection pass behind the glass and bend: there is something to see
+ * through it. Light sits behind it (.palco-altar-luz), a rim of one pixel runs
+ * round it and follows the finger, and a little grain keeps it from looking
+ * like a flat fill. The blur is a variable so that "less transparency" can
+ * turn it off without a second declaration of the property.
+ */
+.palco-altar { position: relative; z-index: 6; margin-block-start: calc(var(--palco-sobe) * -1); }
+.palco-altar-luz {
+  position: absolute; inset: -28px -16px -20px; pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 40% at 28% 30%, color-mix(in srgb, var(--pilar-aura) 34%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 34% at 74% 72%, rgb(var(--el-gold) / .22), transparent 100%),
+    radial-gradient(ellipse 36% 20% at 60% 14%, color-mix(in srgb, var(--pilar-acento) 22%, transparent), transparent 100%);
+  animation: palco-luz-sobe var(--ds-duration-conjure) var(--ds-ease) backwards;
+}
+
+.palco-leitura {
+  --palco-vidro-filtro: blur(var(--ds-blur-strong)) saturate(165%);
+  position: relative; isolation: isolate;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+  min-block-size: 220px; padding: 20px; box-sizing: border-box;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--palco-grao),
+    radial-gradient(ellipse 110% 80% at 50% 0%, color-mix(in srgb, var(--pilar-aura) 13%, transparent), transparent 70%),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 46%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+  -webkit-backdrop-filter: var(--palco-vidro-filtro);
+  backdrop-filter: var(--palco-vidro-filtro);
+  animation: palco-leitura-entra var(--ds-duration-conjure) var(--ds-ease-conjure) backwards;
+}
+
+/* The rim: one pixel of light, brightest where the finger is; at rest it sits on the top edge. */
+.palco-leitura::before {
+  content: ''; position: absolute; inset: -1px; z-index: 1; padding: 1px;
+  border-radius: inherit; pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--pilar-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .4;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the glass, under its content. */
+.palco-leitura::after {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--pilar-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.palco-leitura[data-luz-acesa]::before, .palco-leitura[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+.palco-leitura-topo { inline-size: 100%; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.palco-leitura-dominio { margin: 0 0 2px; font-size: var(--ds-text-micro); letter-spacing: .12em; text-transform: uppercase; color: rgb(var(--el-muted)); }
+.palco-leitura-nome { margin: 0; font-family: Cinzel, Georgia, serif; font-size: var(--ds-fluid-display); font-weight: 500; line-height: 1.1; color: var(--pilar-acento); text-shadow: 0 0 26px color-mix(in srgb, var(--pilar-aura) 40%, transparent); }
+.palco-leitura-sigilo { flex: 0 0 auto; display: grid; place-items: center; filter: drop-shadow(0 0 10px color-mix(in srgb, var(--pilar-aura) 55%, transparent)); }
+.palco-leitura-texto { margin: 0; font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.palco-leitura-dados { margin: 0; font-size: var(--ds-text-small); }
 .palco-leitura-dados strong { font-weight: 500; font-variant-numeric: tabular-nums; }
-.palco-leitura-areas { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.palco-leitura-dados[data-vazio='true'] { color: rgb(var(--el-text) / .78); font-style: italic; }
+.palco-leitura-areas { margin: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.palco-pontinhos { display: inline-flex; gap: 4px; }
+.palco-pontinhos > i { inline-size: 6px; block-size: 6px; border-radius: 50%; background: rgb(var(--el-muted) / .3); }
+.palco-pontinhos > i[data-acesa='true'] { background: var(--pilar-acento); box-shadow: 0 0 8px var(--pilar-aura); }
+
 .palco-explorar {
+  position: relative; overflow: hidden;
   margin-block-start: auto; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-block-size: 44px; padding-inline: 20px; border-radius: 999px;
-  font-size: var(--ds-text-small); color: rgb(var(--el-text));
+  min-block-size: 48px; padding-inline: 22px; border-radius: var(--ds-raio-controle);
+  font-size: var(--ds-text-small); font-weight: 600; color: rgb(var(--el-text));
   border: 1px solid color-mix(in srgb, var(--pilar-acento) 60%, transparent);
   background: color-mix(in srgb, var(--pilar-tinta) 60%, transparent);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--pilar-aura) 22%, transparent), inset 0 1px 0 rgb(255 255 255 / 12%);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-feedback) var(--ds-ease);
 }
+.palco-explorar:active { transform: scale(.955); transition-duration: var(--ds-duration-press); }
+.palco-explorar > svg { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
 .palco-explorar:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
+/* One pass of light over the action, once the card has landed. */
+.palco-explorar::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: palco-lampejo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) both;
+}
+@media (hover: hover) {
+  .palco-explorar:hover { border-color: var(--pilar-acento); }
+  .palco-explorar:hover > svg { transform: translateX(4px); }
+}
 
-@keyframes palco-leitura-entra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes palco-leitura-entra { from { opacity: 0; transform: translateY(22px) scale(.97); } }
+@keyframes palco-luz-sobe { from { opacity: 0; } }
+@keyframes palco-lampejo { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+
+/*
+ * The arrival, once per opening of the app: the light comes up, the four pills
+ * are conjured one after another, then the card rises out of the glow. On a
+ * return visit the stage is already known and only fades in.
+ */
+.palco-pilares[data-entrada='plena'] .palco-camadas { animation: palco-aparece var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.palco-pilares[data-entrada='plena'] .palco-pilula { animation: palco-conjura var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2 * var(--ordem, 0)) backwards; }
+/* Not on .palco-altar itself: a faded ancestor would cut the glass off from the stage it bends. */
+.palco-pilares[data-entrada='plena'] .palco-altar-luz { animation-delay: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4); }
+.palco-pilares[data-entrada='plena'] .palco-leitura { animation-delay: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4); }
+.palco-pilares[data-entrada='plena'] .palco-explorar::after { animation-delay: calc(var(--ds-duration-conjure) * 3 + var(--ds-stagger) * 4); }
+.palco-pilares[data-entrada='breve'] .palco-cena { animation: palco-aparece var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+@keyframes palco-aparece { from { opacity: 0; } }
+@keyframes palco-conjura { from { opacity: 0; transform: translateY(32px) scale(.6); } }
+
+/* Someone who asked the system for less transparency gets a solid card. */
+@media (prefers-reduced-transparency: reduce) {
+  .palco-leitura { --palco-vidro-filtro: none; background: rgb(var(--el-surface) / 96%); }
+  .palco-altar-luz { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .palco-pilula, .palco-pilula::before, .palco-eco::before, .palco-camada { transition: none; }
-  .palco-leitura { animation: none; }
+  .palco-pilula, .palco-pilula::before, .palco-eco::before, .palco-eco, .palco-camada, .palco-explorar, .palco-explorar > svg { transition: none; }
+  .palco-leitura, .palco-altar-luz, .palco-cena, .palco-camadas, .palco-pilula, .palco-explorar::after,
+  .palco-aura, .palco-chao, .palco-pontos[data-vazio='true']::before { animation: none; }
+  .palco-brasas { display: none; }
+  .palco-explorar::after { display: none; }
 }

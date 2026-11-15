@@ -1,0 +1,107 @@
+/*
+ * The elemental balance as a panel that is alive: a ring of four arcs that
+ * draws itself, a spark that runs along it, and four bars that fill. A pane,
+ * not glass: the only blurred surface of the screen is the element card.
+ * Every time comes from the --ds-duration-* tokens; only transform, opacity
+ * and stroke dashes move.
+ */
+.eq-painel { margin-block-start: var(--ds-ritmo-secao); padding-inline: 16px; border-radius: var(--ds-raio-runa); }
+.eq-painel > summary { display: flex; align-items: center; gap: 12px; min-block-size: 52px; cursor: pointer; list-style: none; font-family: var(--ds-font-heading); font-size: var(--ds-text-body); color: rgb(var(--el-text)); }
+.eq-painel > summary::-webkit-details-marker { display: none; }
+.eq-painel > summary > span { flex: 1 1 auto; min-inline-size: 0; }
+.eq-painel > summary > small { font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.eq-painel > summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; row-gap: 2px; padding-block: 8px; }
+.eq-painel > summary > span { grid-column: 1; }
+.eq-painel > summary > small { grid-column: 1; grid-row: 2; }
+.eq-painel > summary > svg { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+.eq-painel > summary > svg { flex: 0 0 auto; color: rgb(var(--el-muted)); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.eq-painel[open] > summary > svg { transform: rotate(180deg); }
+.eq-painel > summary:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; border-radius: 12px; }
+
+.eq-corpo { display: grid; grid-template-columns: 128px minmax(0, 1fr); align-items: center; gap: 8px 20px; padding-block: 4px 16px; }
+.eq-nota { grid-column: 1 / -1; margin: 0; max-inline-size: 46ch; font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); }
+
+/* The ring. */
+.eq-anel { position: relative; inline-size: 128px; block-size: 128px; }
+.eq-anel svg { display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
+.eq-anel circle { fill: none; }
+.eq-trilha { stroke: rgb(var(--el-muted) / .16); stroke-width: 5; }
+.eq-anel g, .eq-promessa, .eq-cometa { transform-box: view-box; transform-origin: 60px 60px; }
+.eq-anel g { transform: rotate(var(--giro)); }
+.eq-halo, .eq-arco {
+  stroke: var(--elem-acento);
+  stroke-linecap: butt;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * 3 * var(--ordem));
+}
+.eq-arco { stroke-width: 5; }
+.eq-halo { stroke-width: 11; opacity: .2; }
+.eq-painel[data-chegou='true'] :is(.eq-halo, .eq-arco) { stroke-dasharray: var(--arco) 100; }
+
+/* The spark: a short bright dash that goes around once per breath of the panel. */
+.eq-cometa {
+  stroke: rgb(255 255 255 / .85);
+  stroke-width: 5;
+  stroke-dasharray: 2.4 97.6;
+  opacity: 0;
+  animation: eq-correr calc(var(--ds-duration-conjure) * 12) linear infinite;
+}
+.eq-painel[data-chegou='true'] .eq-cometa { opacity: .8; transition: opacity var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2); }
+@keyframes eq-correr { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+
+.eq-centro { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 2px; text-align: center; color: rgb(var(--el-gold)); }
+.eq-centro strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.1; color: rgb(var(--el-text)); font-variant-numeric: tabular-nums; }
+.eq-centro small { font-size: var(--ds-text-micro); line-height: 1.2; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--el-muted)); }
+
+/* Without points: four promised arcs that breathe one after another. */
+.eq-promessa {
+  stroke: var(--elem-acento);
+  stroke-width: 5;
+  stroke-dasharray: 22 78;
+  opacity: .22;
+  transform: rotate(var(--giro));
+  animation: eq-respira calc(var(--ds-duration-conjure) * 8) var(--ds-ease) calc(var(--ds-duration-conjure) * var(--ordem) * -2) infinite;
+}
+@keyframes eq-respira { 0%, 100% { opacity: .16; } 50% { opacity: .62; } }
+
+.eq-convite h3 { margin: 0 0 6px; font-family: var(--ds-font-heading); font-size: var(--ds-text-body); font-weight: 500; line-height: 1.35; color: rgb(var(--el-text)); text-wrap: balance; }
+.eq-convite p { margin: 0; font-size: var(--ds-text-small); line-height: 1.55; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.eq-marcas { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 12px 0 0; padding: 0; list-style: none; }
+.eq-marcas li { display: inline-flex; }
+
+/* Legend: the name, the number, and a bar with a glint that keeps passing. */
+.eq-legenda { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.eq-legenda > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 6px 8px; }
+.eq-valor { font-family: var(--ds-font-heading); font-size: var(--ds-text-small); font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); white-space: nowrap; }
+.eq-valor strong { font-weight: 500; }
+.eq-legenda > li[data-sem-pontos='true'] .eq-valor { color: rgb(var(--el-muted)); }
+.eq-barra { grid-column: 1 / -1; position: relative; display: block; block-size: 4px; overflow: hidden; border-radius: 12px; background: rgb(var(--el-muted) / .16); }
+.eq-barra > i {
+  position: absolute; inset: 0; border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--elem-acento) 55%, transparent), var(--elem-acento));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--elem-aura) 70%, transparent);
+  transform: scaleX(0); transform-origin: left center;
+  transition: transform calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * 3 * var(--ordem));
+}
+.eq-barra > i::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .6) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: eq-brilho calc(var(--ds-duration-conjure) * 7) var(--ds-ease) calc(var(--ds-duration-conjure) * var(--ordem)) infinite;
+}
+.eq-painel[data-chegou='true'] .eq-barra > i { transform: scaleX(var(--parte)); }
+.eq-legenda > li[data-sem-pontos='true'] .eq-barra > i::after { display: none; }
+@keyframes eq-brilho { 0%, 60% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+
+/* A narrow card puts the ring above its legend. */
+@container (max-width: 330px) {
+  .eq-corpo { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .eq-corpo > :is(.eq-legenda, .eq-convite) { justify-self: stretch; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eq-cometa, .eq-promessa, .eq-barra > i::after { animation: none; }
+  .eq-cometa { display: none; }
+  .eq-promessa { opacity: .4; }
+  .eq-painel > summary > svg { transition: none; }
+}

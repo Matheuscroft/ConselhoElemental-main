@@ -1,4 +1,4 @@
-/* Pilares (1B): cabecalho, equilibrio e rodape em blocos ds-*. O palco fica em components/pilares. */
+/* Pilares: cabecalho e altar de ritual em blocos ds-*. O palco e o equilibrio ficam em components/pilares. */
 .elemental-pillars { container-type: inline-size; color: rgb(var(--el-text)); padding-bottom: 16px; }
 .elemental-pillars :is(a, button):focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 4px; }
 .pillars-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 12px; }
@@ -6,26 +6,53 @@
 .pillars-explore { margin-bottom: var(--ds-ritmo-cabeca); }
 .pillars-explore h3 { font-size: var(--ds-text-body); font-weight: 500; }
 
-/* Equilibrio elemental: ds-grupo recolhido por padrao. */
-.pillars-balance > summary > span { flex: 1 1 auto; }
-.ds-grupo.pillars-balance > summary > small { margin-left: 0; }
-.ds-grupo.pillars-balance[open] > summary > svg { transform: rotate(180deg); }
-.pillars-balance-resumo { margin: 0 0 var(--ds-ritmo-cabeca); }
-.pillars-balance-track { display: flex; gap: 2px; margin-bottom: var(--ds-ritmo-cabeca); }
-.pillars-balance-segment { display: block; flex-basis: 0; flex-shrink: 1; min-width: 0; }
-.pillars-balance-segment:empty { display: none; }
-.pillars-balance-legend { padding: 0; margin: 0 0 var(--ds-ritmo-cabeca); list-style: none; }
-.pillars-balance-legend .ds-linha-valor { display: inline-flex; align-items: baseline; gap: 8px; font-size: var(--ds-text-small); }
-.pillars-balance-legend .ds-linha-valor strong { font-weight: 500; }
-.pillars-balance-legend .ds-linha-valor small { color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: var(--ds-text-micro); }
+/*
+ * The call to practice is a small altar, not a line of text: a gold sigil in a
+ * slow ring, the invitation, and one action. It is a pane (no blur); the warm
+ * light behind it is a gradient. Only transform and opacity move.
+ */
+.pillars-altar {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: 12px 16px;
+  margin-top: var(--ds-ritmo-secao);
+  background:
+    radial-gradient(ellipse 70% 120% at 0 50%, rgb(var(--el-gold) / .16), transparent 70%),
+    linear-gradient(rgb(var(--el-gold) / .05), rgb(var(--el-gold) / .05)),
+    var(--ds-surface-raised);
+  border-color: rgb(var(--el-gold) / .3);
+}
+.pillars-altar-sigilo { position: relative; display: grid; place-items: center; inline-size: 56px; block-size: 56px; color: rgb(var(--el-gold)); }
+.pillars-altar-sigilo::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  border: 1px dashed rgb(var(--el-gold) / .55);
+  box-shadow: 0 0 22px rgb(var(--el-gold) / .22), inset 0 0 14px rgb(var(--el-gold) / .14);
+  animation: pillars-giro calc(var(--ds-duration-conjure) * 24) linear infinite;
+}
+.pillars-altar-sigilo > svg { position: relative; filter: drop-shadow(0 0 6px rgb(var(--el-gold) / .5)); }
+.pillars-altar-texto { min-width: 0; }
+.pillars-altar-texto h3 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.3; text-wrap: balance; }
+.pillars-altar-texto p { margin: 4px 0 0; font-size: var(--ds-text-small); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.pillars-altar-acao { grid-column: 1 / -1; transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.pillars-altar-acao:active:not(:disabled) { transform: scale(.955); transition-duration: var(--ds-duration-press); }
+@keyframes pillars-giro { to { transform: rotate(360deg); } }
 
-/* Rodape: ds-linha com sigilo, texto e botao secundario. */
-.pillars-footer { margin-top: var(--ds-ritmo-secao); padding-block: 16px; border-top: 1px solid var(--ds-fio); }
-.pillars-footer > span { min-width: 0; }
-.pillars-footer strong { display: block; font-weight: 500; font-size: var(--ds-text-small); }
-.pillars-footer small { display: block; color: rgb(var(--el-muted)); margin-top: 4px; font-size: var(--ds-text-micro); }
+@container (min-width: 480px) {
+  .pillars-altar { grid-template-columns: 56px minmax(0, 1fr) auto; }
+  .pillars-altar-acao { grid-column: auto; }
+}
+
+/* It arrives as it is scrolled to, driven by the scroll and not by a script. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .pillars-altar { animation: pillars-revela linear both; animation-timeline: view(block 0px 72px); animation-range: entry 0% entry 60%; }
+  }
+}
+@keyframes pillars-revela { from { opacity: 0; transform: translateY(26px) scale(.98); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pillars-altar-sigilo::before { animation: none; }
+  .pillars-altar-acao { transition: none; }
+}
 @media (max-width: 600px) {
   .pillars-heading { flex-wrap: wrap; gap: 0 16px; }
-  .pillars-footer { grid-template-columns: 28px minmax(0, 1fr); }
-  .pillars-footer > .ds-botao { grid-column: 1 / -1; }
 }
