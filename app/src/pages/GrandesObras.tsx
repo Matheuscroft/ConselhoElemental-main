@@ -7,23 +7,11 @@ import { buildQuestTrails, trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
+import { Medidor, MarcaElemento, Vazio } from '@/components/elemental/blocos';
 import React, { useMemo, useState } from 'react';
-import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { 
-  Plus, 
-  Building2, 
-  CheckCircle2, 
-  Layers, 
-  Calendar,
-  Gift,
-} from 'lucide-react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
-import { ELEMENTS, getAreaById } from '@/constants';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAreaById } from '@/constants';
 import {
   Dialog,
   DialogContent,
@@ -31,7 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import type { Project, ElementId } from '@/types';
+import type { Project } from '@/types';
 
 export const GrandesObras: React.FC = () => {
   const { currentAccountId, projects: storedProjects, tasks, habits, quests, addProject, addMissionToProject } = useAppStore();
@@ -44,7 +32,6 @@ export const GrandesObras: React.FC = () => {
     });
   }, [storedProjects, tasks, habits, quests]);
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('active');
   const [selection, setSelection] = useState<{ id: string; accountId: string | null } | null>(null);
   const selectedProject = selection?.accountId === currentAccountId
     ? projects.find(project => project.id === selection?.id) ?? null : null;
@@ -60,8 +47,6 @@ export const GrandesObras: React.FC = () => {
   const activeProjects = projects.filter(p => p.status === 'active');
   const completedProjects = projects.filter(p => p.status === 'completed');
   const archivedProjects = projects.filter(p => p.status === 'archived');
-
-  const getElementIcon = (elementId: ElementId) => <QuestRune element={elementId} size={24} />;
 
   // Open project detail
   const openProjectDetail = (project: Project) => {
@@ -95,248 +80,165 @@ export const GrandesObras: React.FC = () => {
     setShowCreateProject(false);
   };
 
+  const media = Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / (projects.length || 1));
+
   return (
     <AppLayout>
-      <MotionConfig reducedMotion="user"><div className="quest-catalog">
-      <header className="quest-catalog-heading">
-        <div><h1>Grandes Obras</h1><p>Projetos maiores, organizados em fases, jornadas e ações.</p><span>{activeProjects.length} ativas · {completedProjects.length} concluídas</span></div>
-        <div className="quest-catalog-actions"><QuestComposer key={currentAccountId ?? 'local'} initialKind="project" triggerLabel="Nova Grande Obra" onCreated={key => navigate(trailHref(key))} /><button type="button" className="quest-text-button" onClick={() => setShowCreateProject(true)}>Criar só com nome</button></div>
-      </header>
-
-      {/* Stats Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="quest-catalog-summary grid grid-cols-3 gap-3 mb-6"
-      >
-        <div className="glass-card p-3 text-center">
-          <div className="text-2xl font-bold text-mystic-gold">{projects.length}</div>
-          <div className="text-[10px] text-white/50">Total</div>
-        </div>
-        <div className="glass-card p-3 text-center">
-          <div className="text-2xl font-bold text-green-400">{activeProjects.length}</div>
-          <div className="text-[10px] text-white/50">Ativas</div>
-        </div>
-        <div className="glass-card p-3 text-center">
-          <div className="text-2xl font-bold text-mystic-arcane">
-            {Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / (projects.length || 1))}%
+      <div className="quest-catalog">
+        <header className="ds-cabecalho">
+          <h1>Grandes Obras</h1>
+          <p>Projetos maiores, organizados em fases, jornadas e ações.</p>
+          <div className="ds-cabecalho-acao quest-catalog-actions">
+            <QuestComposer key={currentAccountId ?? 'local'} initialKind="project" triggerLabel="Nova Grande Obra" onCreated={key => navigate(trailHref(key))} />
+            <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setShowCreateProject(true)}>Criar só com nome</button>
           </div>
-          <div className="text-[10px] text-white/50">Média</div>
+        </header>
+
+        <div className="ds-cifras">
+          <div className="ds-cifra">{projects.length}<small>Total</small></div>
+          <div className="ds-cifra">{activeProjects.length}<small>Ativas</small></div>
+          <div className="ds-cifra">{media}%<small>Média</small></div>
         </div>
-      </motion.div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-        <TabsList className="quest-catalog-tabs grid w-full grid-cols-3">
-          <TabsTrigger value="active" className="data-[state=active]:bg-mystic-arcane">
-            <Building2 className="w-4 h-4 mr-1" />
-            Ativas
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="data-[state=active]:bg-mystic-arcane">
-            <CheckCircle2 className="w-4 h-4 mr-1" />
-            Concluídas
-          </TabsTrigger>
-          <TabsTrigger value="archived" className="data-[state=active]:bg-mystic-arcane">
-            <Layers className="w-4 h-4 mr-1" />
-            Arquivadas
-          </TabsTrigger>
-        </TabsList>
+        <div className="ds-secao">
+          <h2>Ativas</h2>
+          <span className="ds-contagem">{activeProjects.length}</span>
+        </div>
+        <ProjectList projects={activeProjects} onSelect={openProjectDetail} onCreate={() => setShowCreateProject(true)} />
 
-        <TabsContent value="active" className="mt-4">
-          <ProjectList 
-            projects={activeProjects} 
-            onSelect={openProjectDetail}
-          />
-        </TabsContent>
+        <details className="ds-grupo">
+          <summary>
+            <span>Selados</span>
+            <small>({completedProjects.length})</small>
+            <ArcaneIcon name="chevron" size={16} />
+          </summary>
+          <ProjectList projects={completedProjects} completed onSelect={openProjectDetail} />
+        </details>
 
-        <TabsContent value="completed" className="mt-4">
-          <ProjectList 
-            projects={completedProjects} 
-            completed
-            onSelect={openProjectDetail}
-          />
-        </TabsContent>
+        <details className="ds-grupo">
+          <summary>
+            <span>Arquivadas</span>
+            <small>({archivedProjects.length})</small>
+            <ArcaneIcon name="chevron" size={16} />
+          </summary>
+          <ProjectList projects={archivedProjects} archived onSelect={openProjectDetail} />
+        </details>
 
-        <TabsContent value="archived" className="mt-4">
-          <ProjectList 
-            projects={archivedProjects} 
-            archived
-            onSelect={openProjectDetail}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Project Detail Modal */}
-      <Dialog open={showDetail && !!selectedProject} onOpenChange={setShowDetail}>
-        <DialogContent className="quest-dialog quest-catalog-detail" aria-labelledby="project-detail-title" aria-describedby="project-detail-description">
-          {selectedProject && (
-            <>
-              <DialogHeader>
-                <div className="text-center">
+        {/* Detalhe da obra */}
+        <Dialog open={showDetail && !!selectedProject} onOpenChange={setShowDetail}>
+          <DialogContent className="ds-folha quest-dialog quest-catalog-detail" data-element={selectedProject?.elementId} aria-labelledby="project-detail-title" aria-describedby="project-detail-description">
+            {selectedProject && (
+              <>
+                <DialogHeader>
                   <div className="quest-catalog-rune"><QuestRune element={selectedProject.elementId} size={64} /></div>
-                  <DialogTitle id="project-detail-title" className="font-mystic text-xl">
-                    {selectedProject.title}
-                  </DialogTitle>
+                  <DialogTitle id="project-detail-title">{selectedProject.title}</DialogTitle>
                   <DialogDescription id="project-detail-description">Consulte a composição e abra a trilha para continuar.</DialogDescription>
-                </div>
-              </DialogHeader>
-              
-              <div className="space-y-4 p-4">
-                {/* Description */}
-                <Link className="quest-primary w-full mb-4" to={trailHref(`project:${selectedProject.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
-                {selectedProject.description && (
-                  <p className="text-sm text-white/70 text-center">
-                    {selectedProject.description}
-                  </p>
-                )}
-                
-                {/* Info badges */}
-                <div className="flex flex-wrap justify-center gap-2">
-                  {selectedProject.areaId && (
-                    <Badge variant="outline" className="bg-white/5">
-                      {getAreaById(selectedProject.areaId)?.name}
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="bg-white/5">
-                    {getElementIcon(selectedProject.elementId)}
-                    <span className="ml-1">{ELEMENTS[selectedProject.elementId].name}</span>
-                  </Badge>
-                  {selectedProject.dueDate && (
-                    <Badge variant="outline" className="bg-white/5">
-                      <Calendar className="w-3 h-3 mr-1" />
-                      Até {new Date(selectedProject.dueDate).toLocaleDateString('pt-BR')}
-                    </Badge>
-                  )}
-                </div>
-                
-                {/* Progress */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/50">Progresso registrado da obra</span>
-                    <span className="text-mystic-gold">{selectedProject.progress}%</span>
+                </DialogHeader>
+
+                <div className="grid gap-4 pt-4">
+                  <Link className="ds-botao w-full" data-tipo="primario" to={trailHref(`project:${selectedProject.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
+                  {selectedProject.description && <p className="ds-nota">{selectedProject.description}</p>}
+
+                  <div className="ds-meta">
+                    <MarcaElemento elemento={selectedProject.elementId} />
+                    {selectedProject.areaId && <span>{getAreaById(selectedProject.areaId)?.name}</span>}
+                    {selectedProject.dueDate && <span>Até {new Date(selectedProject.dueDate).toLocaleDateString('pt-BR')}</span>}
                   </div>
-                  <Progress value={selectedProject.progress} className="h-2" />
-                </div>
-                
-                {/* Stats */}
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  <div className="p-2 rounded-lg bg-white/5">
-                    <div className="text-lg font-bold">{selectedProject.missions.length}</div>
-                    <div className="text-[10px] text-white/50">Capítulos</div>
+
+                  <div className="grid gap-2">
+                    <div className="ds-secao" data-nivel="2" style={{ margin: 0 }}>
+                      <h3>Progresso registrado da obra</h3>
+                      <span className="ds-fracao">{selectedProject.progress}%</span>
+                    </div>
+                    <Medidor valor={selectedProject.progress / 100} espesso conquista={selectedProject.status === 'completed'} rotulo={`Progresso de ${selectedProject.title}`} />
                   </div>
-                  <div className="p-2 rounded-lg bg-white/5">
-                    <div className="text-lg font-bold">{selectedProject.quests.length}</div>
-                    <div className="text-[10px] text-white/50">Jornadas</div>
+
+                  <div className="ds-cifras">
+                    <div className="ds-cifra">{selectedProject.missions.length}<small>Capítulos</small></div>
+                    <div className="ds-cifra">{selectedProject.quests.length}<small>Jornadas</small></div>
+                    <div className="ds-cifra">{selectedProject.tasks.length}<small>Rituais</small></div>
+                    <div className="ds-cifra">{selectedProject.habits.length}<small>Ciclos</small></div>
                   </div>
-                  <div className="p-2 rounded-lg bg-white/5">
-                    <div className="text-lg font-bold">{selectedProject.tasks.length}</div>
-                    <div className="text-[10px] text-white/50">Rituais</div>
-                  </div>
-                  <div className="p-2 rounded-lg bg-white/5">
-                    <div className="text-lg font-bold">{selectedProject.habits.length}</div>
-                    <div className="text-[10px] text-white/50">Ciclos</div>
-                  </div>
-                </div>
-                
-                {/* Missions */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-mystic text-sm">Capítulos da obra</h4>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
-                      className="quest-secondary"
-                      onClick={() => setShowAddMission(true)}
-                    >
-                      <Plus className="w-3 h-3 mr-1" />
-                      Adicionar
-                    </Button>
-                  </div>
-                  
-                  {showAddMission && (
-                    <div className="quest-chapter-create">
-                      <input
-                        type="text"
-                        value={newMissionTitle}
-                        onChange={(e) => setNewMissionTitle(e.target.value)}
-                        aria-label="Nome do capítulo"
-                        placeholder="Nome do capítulo..."
-                        className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-sm"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleAddMission();
-                          if (e.key === 'Escape') setShowAddMission(false);
-                        }}
-                      />
-                      <button type="button" className="quest-secondary" onClick={() => { setShowAddMission(false); setNewMissionTitle(''); }}>Cancelar</button>
-                      <Button size="sm" className="quest-primary" aria-label="Adicionar capítulo" disabled={!newMissionTitle.trim()} onClick={handleAddMission}>
-                        <Plus className="w-4 h-4" />
-                      </Button>
+
+                  <section>
+                    <div className="ds-secao" data-nivel="2" style={{ marginTop: 0 }}>
+                      <h3>Capítulos da obra</h3>
+                      <button type="button" className="ds-elo" onClick={() => setShowAddMission(true)}>
+                        <ArcaneIcon name="criar" size={14} />
+                        Adicionar
+                      </button>
+                    </div>
+
+                    {showAddMission && (
+                      <div className="quest-chapter-create">
+                        <label className="ds-campo flex-1">
+                          <span className="sr-only">Nome do capítulo</span>
+                          <input
+                            type="text"
+                            value={newMissionTitle}
+                            onChange={(e) => setNewMissionTitle(e.target.value)}
+                            aria-label="Nome do capítulo"
+                            placeholder="Nome do capítulo..."
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleAddMission();
+                              if (e.key === 'Escape') setShowAddMission(false);
+                            }}
+                          />
+                        </label>
+                        <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => { setShowAddMission(false); setNewMissionTitle(''); }}>Cancelar</button>
+                        <button type="button" className="ds-botao" data-tipo="secundario" data-icone="" aria-label="Adicionar capítulo" disabled={!newMissionTitle.trim()} onClick={handleAddMission}>
+                          <ArcaneIcon name="criar" size={18} />
+                        </button>
+                      </div>
+                    )}
+
+                    {selectedTrail && <ProjectChapters trail={selectedTrail} />}
+                  </section>
+
+                  {selectedProject.reward && (
+                    <div className="grid gap-2">
+                      <span className="ds-marca" data-tom="ouro"><ArcaneIcon name="conquista" size={14} />Recompensa</span>
+                      <p className="ds-nota">{selectedProject.reward}</p>
                     </div>
                   )}
-                  
-                  {selectedTrail && <ProjectChapters trail={selectedTrail} />}
 
+                  <AchievementCompletion kind="project" id={selectedProject.id} />
                 </div>
-                
-                {/* Reward */}
-                {selectedProject.reward && (
-                  <div className="p-3 rounded-xl bg-mystic-gold/10 border border-mystic-gold/30">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Gift className="w-4 h-4 text-mystic-gold" />
-                      <span className="text-sm font-medium text-mystic-gold">Recompensa</span>
-                    </div>
-                    <p className="text-sm text-white/70">{selectedProject.reward}</p>
-                  </div>
-                )}
-                
-                <AchievementCompletion kind="project" id={selectedProject.id} />
-              </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
 
-      {/* Create Project Dialog */}
-      <Dialog open={showCreateProject} onOpenChange={setShowCreateProject}>
-        <DialogContent className="quest-dialog quest-quick-create" aria-labelledby="project-quick-title" aria-describedby="project-quick-description">
-          <DialogHeader>
-            <DialogTitle id="project-quick-title" className="font-mystic">Nova Grande Obra</DialogTitle>
-            <DialogDescription id="project-quick-description">Comece pelo nome. Você pode organizar as etapas depois.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 p-4">
-            <input
-              type="text"
-              value={newProjectTitle}
-              onChange={(e) => setNewProjectTitle(e.target.value)}
-              aria-label="Nome da Grande Obra"
-              placeholder="Nome da Grande Obra..."
-              className="w-full px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-sm focus:outline-none focus:border-mystic-arcane"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleCreateProject();
-                if (e.key === 'Escape') setShowCreateProject(false);
-              }}
-            />
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowCreateProject(false)}
-                className="flex-1"
-              >
-                Cancelar
-              </Button>
-              <Button 
-                onClick={handleCreateProject}
-                className="flex-1 bg-mystic-arcane hover:bg-mystic-arcane/80"
-              >
-                Criar
-              </Button>
+        {/* Criar só com nome */}
+        <Dialog open={showCreateProject} onOpenChange={setShowCreateProject}>
+          <DialogContent className="ds-folha quest-dialog quest-quick-create" aria-labelledby="project-quick-title" aria-describedby="project-quick-description">
+            <DialogHeader>
+              <DialogTitle id="project-quick-title">Nova Grande Obra</DialogTitle>
+              <DialogDescription id="project-quick-description">Comece pelo nome. Você pode organizar as etapas depois.</DialogDescription>
+            </DialogHeader>
+            <label className="ds-campo my-4">
+              <span>Nome da Grande Obra</span>
+              <input
+                type="text"
+                value={newProjectTitle}
+                onChange={(e) => setNewProjectTitle(e.target.value)}
+                aria-label="Nome da Grande Obra"
+                placeholder="Nome da Grande Obra..."
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleCreateProject();
+                  if (e.key === 'Escape') setShowCreateProject(false);
+                }}
+              />
+            </label>
+            <div className="ds-folha-pe">
+              <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setShowCreateProject(false)}>Cancelar</button>
+              <button type="button" className="ds-botao" data-tipo="primario" onClick={handleCreateProject} disabled={!newProjectTitle.trim()}>Criar</button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      </div></MotionConfig>
+          </DialogContent>
+        </Dialog>
+      </div>
     </AppLayout>
   );
 };
@@ -346,52 +248,38 @@ interface ProjectListProps {
   completed?: boolean;
   archived?: boolean;
   onSelect: (project: Project) => void;
+  onCreate?: () => void;
 }
 
-const ProjectList: React.FC<ProjectListProps> = ({ projects, completed, archived, onSelect }) => {
+const ProjectList: React.FC<ProjectListProps> = ({ projects, completed, archived, onSelect, onCreate }) => {
   if (projects.length === 0) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="glass-card p-8 text-center"
-      >
-        <div className="text-4xl mb-3"><ArcaneIcon name={archived ? 'arquivo' : completed ? 'conquista' : 'obra'} /></div>
-        <h3 className="font-mystic text-lg mb-2">
-          {archived ? 'Nenhuma obra arquivada' : completed ? 'Nenhuma obra concluída' : 'Nenhuma obra ativa'}
-        </h3>
-        <p className="text-white/50 text-sm">
-          {archived 
-            ? 'Projetos arquivados aparecerão aqui.' 
-            : completed 
-              ? 'Complete projetos para vê-los aqui.'
-              : 'Comece um novo projeto para organizar suas metas!'}
-        </p>
-      </motion.div>
+      <Vazio
+        compacto={!!(completed || archived)}
+        titulo={archived ? 'Nenhuma obra arquivada' : completed ? 'Nenhuma obra concluída' : 'Nenhuma obra ativa'}
+        texto={archived
+          ? 'Projetos arquivados aparecerão aqui.'
+          : completed
+            ? 'Complete projetos para vê-los aqui.'
+            : 'Comece um novo projeto para organizar suas metas!'}
+        acao={!archived && !completed && onCreate
+          ? <button type="button" className="ds-botao" data-tipo="secundario" onClick={onCreate}><ArcaneIcon name="criar" size={18} />Criar só com nome</button>
+          : undefined}
+      />
     );
   }
 
   return (
-    <AnimatePresence mode="popLayout">
-      <div className="space-y-4">
-        {projects.map((project, index) => (
-          <ProjectCard 
-            key={project.id} 
-            project={project}
-            index={index}
-            completed={completed}
-            archived={archived}
-            onClick={() => onSelect(project)}
-          />
-        ))}
-      </div>
-    </AnimatePresence>
+    <div>
+      {projects.map(project => (
+        <ProjectCard key={project.id} project={project} completed={completed} archived={archived} onClick={() => onSelect(project)} />
+      ))}
+    </div>
   );
 };
 
 interface ProjectCardProps {
   project: Project;
-  index: number;
   completed?: boolean;
   archived?: boolean;
   onClick?: () => void;
@@ -403,5 +291,5 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived,
   return <article className="quest-catalog-card"><ShowcaseCard title={project.title} description={project.description} element={project.elementId}
     status={archived ? 'Obra arquivada' : completed ? 'Obra concluída' : 'Obra em andamento'} progress={project.progress}
     chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} capítulos`] : [])]}
-    reward={project.reward} onOpen={onClick} /><Link className="quest-catalog-open" to={trailHref(`project:${project.id}`)} aria-label={`Abrir trilha de ${project.title}`}><ArcaneIcon name="jornada" size={20} />{archived || completed ? 'Consultar trilha' : 'Abrir trilha'}<span aria-hidden="true">→</span></Link></article>;
+    reward={project.reward} onOpen={onClick} /><Link className="ds-elo" to={trailHref(`project:${project.id}`)} aria-label={`Abrir trilha de ${project.title}`}>{archived || completed ? 'Consultar trilha' : 'Abrir trilha'}<ArcaneIcon name="chevron" size={16} /></Link></article>;
 };

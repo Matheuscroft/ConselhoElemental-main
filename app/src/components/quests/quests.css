@@ -336,3 +336,10 @@ details.quest-chapter[open] > summary .ds-runa-chevron { transform: rotate(180de
 .achievement-reward-result:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 3px; border-radius: var(--ds-raio-controle); }
 .quest-step-label .ds-meta { justify-content: center; }
 .quest-catalog-card .ds-runa + .ds-runa { margin-top: 0; }
+
+/* Catalogo de Jornadas e Grandes Obras (onda 2F): ritmo entre vitrines e acoes do cabecalho. */
+.quest-catalog-card + .quest-catalog-card { margin-top: var(--ds-ritmo-lista); }
+.quest-catalog-heading-acoes, .ds-cabecalho-acao.quest-catalog-actions { display: grid; gap: 8px; }
+.quest-catalog .ds-cifras { margin-bottom: 0; }
+.quest-catalog-detail .ds-cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.quest-catalog-detail .ds-botao[href] { text-decoration: none; }
