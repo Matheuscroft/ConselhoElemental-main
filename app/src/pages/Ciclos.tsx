@@ -2489,8 +2489,8 @@ export const Ciclos: React.FC = () => {
       </details>
       {/* Timer Modal */}
       <Dialog open={showTimer} onOpenChange={handleTimerModalChange}>
-        <DialogContent aria-labelledby="cycles-timer-title" aria-describedby="cycles-timer-description" className="cycle-dialog elemental-timer-dialog max-w-sm">
-          <DialogHeader>
+        <DialogContent aria-labelledby="cycles-timer-title" aria-describedby="cycles-timer-description" className="foco-dialog" showCloseButton={false}>
+          <DialogHeader className="sr-only">
             <DialogTitle id="cycles-timer-title" className="font-mystic text-center text-xl">
               Ciclo em Andamento
             </DialogTitle>
@@ -2503,8 +2503,11 @@ export const Ciclos: React.FC = () => {
               time={formatTime(timer.elapsedSeconds)}
               running={timer.isRunning}
               plannedLabel={activeHabitData.plannedTimeMinutes > 0 ? formatDuration(activeHabitData.plannedTimeMinutes) : undefined}
+              elapsedSeconds={timer.elapsedSeconds}
+              plannedMinutes={activeHabitData.plannedTimeMinutes > 0 ? activeHabitData.plannedTimeMinutes : undefined}
               onToggle={() => timer.isRunning ? useAppStore.getState().pauseTimer() : useAppStore.getState().resumeTimer()}
               onComplete={handleStopAndComplete}
+              onMinimize={() => handleTimerModalChange(false)}
             />}
         </DialogContent>
       </Dialog>

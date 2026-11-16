@@ -1,0 +1,296 @@
+/*
+ * The focus screen. The element's scene fills the viewport, the time is the
+ * protagonist, and the thumb has two controls: a large round Pause/Resume and a
+ * bar that completes only when held.
+ *
+ * Nothing here blurs what is behind it; the one surface of the screen is the
+ * hold bar, a .ds-pane. Every beat comes from the motion tokens, so reduced
+ * motion collapses them at the source. Ambient loops are multiples of a token
+ * and are switched off outright for anyone who asked for less.
+ */
+
+/* The dialog becomes the screen. Tailwind's centring and sizing lose to this on specificity. */
+.foco-dialog[data-slot="dialog-content"] {
+  position: fixed; inset: 0; z-index: 60;
+  display: block; box-sizing: border-box; width: 100%; max-width: none; height: 100vh; height: 100dvh; max-height: none;
+  margin: 0; padding: 0; overflow: hidden;
+  border: 0; border-radius: 0; box-shadow: none; transform: none; translate: none;
+  background: rgb(var(--el-canvas)); color: rgb(var(--el-text));
+  /* Opens from, and folds back to, where the floating bar sits. */
+  transform-origin: 50% calc(100% - 5.5rem);
+}
+.foco-dialog[data-slot="dialog-content"][data-state="open"] { animation: foco-abrir var(--ds-duration-conjure) var(--ds-ease) both; }
+.foco-dialog[data-slot="dialog-content"][data-state="closed"] { animation: foco-fechar var(--ds-duration-settle) var(--ds-ease-exit) both; }
+@keyframes foco-abrir {
+  from { opacity: 0; transform: scale(.94) translateY(5%); clip-path: inset(34% 8% 0 8% round 16px); }
+  to { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 0); }
+}
+@keyframes foco-fechar {
+  from { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 0); }
+  to { opacity: 0; transform: scale(.94) translateY(5%); clip-path: inset(34% 8% 0 8% round 16px); }
+}
+
+.foco {
+  /* The one numeral step this screen adds to the scale: the time, large. Longer clocks step down. */
+  --ds-foco-numeral: clamp(var(--ds-text-display), 23cqi, 6.5rem);
+  --foco-dial: max(200px, min(84vw, 380px, calc(100dvh - 24rem)));
+  position: absolute; inset: 0; isolation: isolate; overflow: hidden;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; box-sizing: border-box;
+  padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  text-align: center; color: rgb(var(--el-text));
+}
+
+/* ---- The scene ---- */
+.foco-fundo {
+  position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none;
+  background:
+    radial-gradient(120% 62% at 50% 108%, color-mix(in srgb, var(--foco-cor) 30%, transparent), transparent 64%),
+    radial-gradient(90% 55% at 50% -6%, color-mix(in srgb, var(--foco-cor) 13%, transparent), transparent 72%),
+    linear-gradient(180deg, #0a0f18, #070b12 60%, #05080e);
+}
+.foco-luz {
+  position: absolute; left: 50%; top: 46%; width: 130vmin; aspect-ratio: 1; margin: -65vmin 0 0 -65vmin; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--foco-aura) 34%, transparent), color-mix(in srgb, var(--foco-cor) 10%, transparent) 55%, transparent);
+  transform: translate3d(calc(var(--par-x, 0) * 14px), calc(var(--par-y, 0) * 10px), 0);
+  transition: opacity var(--ds-duration-conjure) var(--ds-ease);
+  animation: foco-acender var(--ds-duration-conjure) var(--ds-ease) backwards;
+}
+.foco-luz::after {
+  content: ''; position: absolute; inset: 0; border-radius: 50%; background: inherit;
+  animation: foco-respirar calc(var(--ds-duration-conjure) * 7) ease-in-out infinite;
+}
+.foco[data-running="false"] .foco-luz { opacity: .5; }
+.foco[data-running="false"] .foco-luz::after { animation-duration: calc(var(--ds-duration-conjure) * 15); }
+.foco-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.foco-sombra { position: absolute; inset: 0; background: rgb(4 7 12 / 0%); transition: background-color var(--ds-duration-conjure) var(--ds-ease); }
+.foco[data-running="false"] .foco-sombra { background: rgb(4 7 12 / 54%); }
+/* Fire runs warmer at the foot of the screen, water cooler from above, air paler, earth greener and golden. */
+.foco[data-element="fogo"] .foco-fundo { background:
+  radial-gradient(130% 58% at 50% 112%, color-mix(in srgb, var(--foco-aura) 42%, transparent), transparent 66%),
+  radial-gradient(90% 50% at 50% -6%, color-mix(in srgb, var(--foco-cor) 9%, transparent), transparent 72%),
+  linear-gradient(180deg, #0c0a10, #0a0709 60%, #060406); }
+.foco[data-element="agua"] .foco-fundo { background:
+  radial-gradient(120% 55% at 50% -8%, color-mix(in srgb, var(--foco-aura) 26%, transparent), transparent 70%),
+  radial-gradient(100% 50% at 50% 108%, color-mix(in srgb, var(--foco-cor) 22%, transparent), transparent 66%),
+  linear-gradient(180deg, #08121a, #07101a 60%, #050a12); }
+.foco[data-element="ar"] .foco-fundo { background:
+  radial-gradient(110% 60% at 30% 10%, color-mix(in srgb, var(--foco-cor) 20%, transparent), transparent 68%),
+  radial-gradient(100% 56% at 80% 104%, color-mix(in srgb, var(--foco-aura) 18%, transparent), transparent 66%),
+  linear-gradient(180deg, #0b1218, #090f16 60%, #060a10); }
+.foco[data-element="terra"] .foco-fundo { background:
+  radial-gradient(120% 56% at 50% 108%, color-mix(in srgb, var(--foco-aura) 26%, transparent), transparent 64%),
+  radial-gradient(70% 40% at 50% 30%, color-mix(in srgb, #f0d27a 9%, transparent), transparent 70%),
+  linear-gradient(180deg, #0a120f, #08100d 60%, #050a08); }
+
+/* ---- The bar at the top ---- */
+.foco-topo { display: grid; grid-template-columns: 48px 1fr 48px; align-items: center; animation: foco-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-stagger) both; }
+.foco-icone {
+  display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%;
+  background: rgb(var(--el-text) / 9%); color: rgb(var(--el-text)); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--ds-duration-press) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+span.foco-icone { background: none; cursor: default; }
+button.foco-icone:active { transform: scale(.92); }
+.foco-estado {
+  justify-self: center; display: inline-flex; align-items: center; gap: 8px; min-height: 32px; margin: 0; padding: 0 14px;
+  border: 1px solid rgb(var(--el-text) / 12%); border-radius: 16px; background: rgb(var(--el-text) / 7%);
+  font-size: var(--ds-text-micro); font-weight: 600; letter-spacing: .14em; text-transform: uppercase;
+}
+.foco-estado-ponto { width: 8px; height: 8px; border-radius: 50%; background: rgb(var(--el-muted)); }
+.foco[data-running="true"] .foco-estado-ponto { background: var(--foco-cor); box-shadow: 0 0 10px var(--foco-cor); animation: foco-ponto calc(var(--ds-duration-conjure) * 2) ease-in-out infinite; }
+.foco-pct { justify-self: end; width: 48px; font-size: var(--ds-text-micro); font-variant-numeric: tabular-nums; color: rgb(var(--el-text) / 78%); }
+
+/* ---- The stage: what is being done, and the time ---- */
+.foco-palco { display: grid; justify-items: center; align-content: center; gap: 10px; min-height: 0; }
+.foco-palco > * { animation: foco-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 2) both; }
+.foco-titulo {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; max-width: 22em; margin: 0;
+  font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-title); line-height: 1.25; text-wrap: balance; overflow-wrap: anywhere;
+  text-shadow: 0 2px 18px rgb(0 0 0 / 55%);
+}
+.foco-meta { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 14px; margin: 0; font-size: var(--ds-text-micro); letter-spacing: .04em; color: rgb(var(--el-text) / 74%); }
+.foco-relogio {
+  position: relative; display: block; container-type: inline-size; width: var(--foco-dial); aspect-ratio: 1; flex: none;
+  animation: foco-ancora var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-stagger) * 3) both;
+}
+.foco-miolo { position: absolute; inset: 12%; display: grid; place-items: center; align-content: center; gap: 1.5cqi; }
+
+/* The ring */
+.foco-anel { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.foco-halo { fill: none; stroke: var(--foco-cor); stroke-width: .8; opacity: .34; transform-box: fill-box; transform-origin: center; animation: foco-halo calc(var(--ds-duration-conjure) * 7) ease-in-out infinite; }
+.foco[data-running="false"] .foco-halo { opacity: .14; animation-duration: calc(var(--ds-duration-conjure) * 15); }
+.foco-trilho { fill: none; stroke: rgb(var(--el-text) / 13%); stroke-width: 1.6; }
+.foco-arco, .foco-arco-brilho { fill: none; stroke: var(--foco-cor); stroke-linecap: round; transition: stroke-dashoffset var(--ds-duration-settle) linear, stroke var(--ds-duration-conjure) var(--ds-ease), opacity var(--ds-duration-conjure) var(--ds-ease); }
+.foco-arco { stroke-width: 3.2; }
+.foco-arco-brilho { stroke-width: 9; opacity: .2; }
+.foco[data-running="false"] .foco-arco { opacity: .6; }
+.foco[data-meta="true"] .foco-arco, .foco[data-meta="true"] .foco-arco-brilho { stroke: rgb(var(--el-gold)); }
+.foco[data-meta="true"] .foco-arco-brilho { opacity: .34; }
+.foco-ponta { transform-origin: 100px 100px; transition: transform var(--ds-duration-settle) linear; }
+.foco-ponta circle { fill: rgb(var(--el-text)); opacity: .92; }
+.foco-marco { fill: rgb(var(--el-canvas)); stroke: rgb(var(--el-text) / 42%); stroke-width: 1.2; transition: fill var(--ds-duration-conjure) var(--ds-ease), stroke var(--ds-duration-conjure) var(--ds-ease); }
+.foco-marco[data-aceso="true"] { fill: var(--foco-cor); stroke: var(--foco-cor); }
+.foco[data-meta="true"] .foco-marco[data-aceso="true"] { fill: rgb(var(--el-gold)); stroke: rgb(var(--el-gold)); }
+.foco-tiques line { stroke: rgb(var(--el-text) / 16%); stroke-width: 1.1; stroke-linecap: round; transition: stroke var(--ds-duration-feedback) var(--ds-ease); }
+.foco-tiques line[data-aceso="true"] { stroke: var(--foco-cor); }
+.foco-onda { fill: none; stroke: var(--foco-cor); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: foco-onda calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) both; }
+.foco[data-meta="true"] .foco-onda { stroke: rgb(var(--el-gold)); }
+
+/* The seal, the time and its caption, inside the ring */
+.foco-emblema { position: relative; width: clamp(48px, 24cqi, 120px); aspect-ratio: 1; transform: translate3d(calc(var(--par-x, 0) * 6px), calc(var(--par-y, 0) * 5px), 0); }
+.foco-emblema .timer-scene { inset: -62%; opacity: .75; }
+.foco-selo { position: relative; display: grid; place-items: center; width: 100%; height: 100%; min-width: 48px; min-height: 48px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.foco-selo-arte { display: block; width: 100%; height: 100%; object-fit: contain; animation: foco-selo calc(var(--ds-duration-conjure) * 6) ease-in-out infinite; }
+.foco[data-running="false"] .foco-selo-arte { animation-duration: calc(var(--ds-duration-conjure) * 13); opacity: .8; }
+.foco-selo-luz { position: absolute; inset: -34%; border-radius: 50%; background: radial-gradient(closest-side, var(--foco-aura), transparent); pointer-events: none; animation: foco-toque calc(var(--ds-duration-conjure) * 1.2) var(--ds-ease) both; }
+.foco-tempo {
+  font-family: var(--ds-font-body); font-weight: 300; font-size: var(--ds-foco-numeral); line-height: 1; letter-spacing: -.02em; white-space: nowrap;
+  font-variant-numeric: tabular-nums lining-nums; color: rgb(var(--el-text));
+  text-shadow: 0 0 .4em color-mix(in srgb, var(--foco-aura) 34%, transparent);
+  transition: opacity var(--ds-duration-conjure) var(--ds-ease);
+}
+.foco-tempo[data-longo="true"] { --ds-foco-numeral: clamp(var(--ds-text-title), 15cqi, 4.25rem); }
+.foco[data-running="false"] .foco-tempo { opacity: .8; }
+.foco[data-meta="true"] .foco-tempo { text-shadow: 0 0 .4em rgb(var(--el-gold) / 45%); }
+.foco-digitos { display: inline-flex; align-items: baseline; justify-content: center; }
+.foco-digito { display: inline-block; width: .6em; text-align: center; }
+.foco-digito-valor { display: inline-block; animation: foco-digito var(--ds-duration-settle) var(--ds-ease) both; }
+.foco-doispontos { display: inline-block; width: .3em; text-align: center; transform: translateY(-.07em); opacity: .55; }
+.foco[data-running="true"] .foco-doispontos { animation: foco-dois-pontos calc(var(--ds-duration-conjure) * 1.4) ease-in-out infinite; }
+.foco-legenda { margin: 0; font-size: var(--ds-text-micro); font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--el-text) / 74%); }
+.foco[data-meta="true"] .foco-legenda { color: rgb(var(--el-gold)); }
+
+/* ---- The controls, within thumb's reach ---- */
+.foco-comandos { display: grid; justify-items: center; gap: 14px; width: min(100%, 360px); margin-inline: auto; animation: foco-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 4) both; }
+.foco-pausar {
+  position: relative; display: grid; place-items: center; align-content: center; gap: 2px; width: 92px; height: 92px; padding: 0;
+  border: 1.5px solid color-mix(in srgb, var(--foco-cor) 78%, transparent); border-radius: 50%; color: rgb(var(--el-text)); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--foco-cor) 34%, transparent), color-mix(in srgb, var(--foco-cor) 10%, rgb(var(--el-canvas))));
+  box-shadow: 0 0 36px color-mix(in srgb, var(--foco-aura) 26%, transparent);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease);
+}
+.foco-pausar:active { transform: scale(.92); transition-duration: var(--ds-duration-press); transition-timing-function: var(--ds-ease); }
+.foco-pausar::after {
+  content: ''; position: absolute; inset: -1.5px; border: 1.5px solid var(--foco-cor); border-radius: 50%; opacity: 0; pointer-events: none;
+}
+.foco[data-running="true"] .foco-pausar::after { animation: foco-ecoa calc(var(--ds-duration-conjure) * 3) ease-out infinite; }
+.foco-pausar[data-pausado="true"] { background: var(--foco-cor); color: rgb(var(--el-canvas)); box-shadow: 0 0 44px color-mix(in srgb, var(--foco-aura) 46%, transparent); }
+.foco-pausar-icone { display: grid; place-items: center; animation: foco-icone var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.foco-rotulo { font-size: var(--ds-text-micro); font-weight: 700; letter-spacing: .08em; }
+
+.foco-concluir {
+  position: relative; display: flex; align-items: center; justify-content: center; gap: 12px; box-sizing: border-box; width: 100%; min-height: 56px; margin: 0; padding: 8px 18px;
+  border-radius: 16px; overflow: hidden; color: rgb(var(--el-text)); cursor: pointer; touch-action: none;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.foco-concluir[data-segurando="true"] { transform: scale(.98); border-color: var(--foco-cor); transition-duration: var(--ds-duration-press); }
+.foco-concluir-fio {
+  position: absolute; inset: 0; pointer-events: none; transform-origin: left center; transform: scaleX(var(--seg, 0));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--foco-cor) 50%, transparent), color-mix(in srgb, var(--foco-aura) 34%, transparent));
+  transition: transform var(--ds-duration-settle) var(--ds-ease);
+}
+.foco-concluir[data-segurando="true"] .foco-concluir-fio { transition: none; }
+.foco-concluir > svg, .foco-concluir-texto { position: relative; }
+.foco-concluir-texto { display: grid; justify-items: start; text-align: left; }
+.foco-concluir-rotulo { font-size: var(--ds-text-body); font-weight: 600; line-height: 1.2; }
+.foco-concluir small { font-size: var(--ds-text-micro); line-height: 1.3; color: rgb(var(--el-text) / 74%); }
+.foco-concluir small.foco-dica { color: rgb(var(--el-gold)); animation: foco-dica var(--ds-duration-settle) var(--ds-ease) both; }
+.foco-nota { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-text) / 66%); }
+.foco-nota svg { flex: none; }
+.foco :is(button):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+
+/* ---- Smaller and wider screens ---- */
+@media (max-height: 640px) and (orientation: portrait) {
+  .foco-pausar { width: 76px; height: 76px; }
+  .foco-concluir { min-height: 52px; }
+  .foco-meta { display: none; }
+  .foco-comandos { gap: 10px; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  .foco { --foco-dial: max(180px, min(calc(100dvh - 8.5rem), 44vw)); grid-template-columns: minmax(0, 1fr) minmax(220px, 340px); grid-template-rows: auto minmax(0, 1fr); column-gap: 24px; }
+  .foco-topo { grid-column: 1 / -1; }
+  .foco-palco { grid-column: 1; grid-row: 2; gap: 6px; }
+  .foco-comandos { grid-column: 2; grid-row: 2; align-self: center; }
+  .foco-titulo { -webkit-line-clamp: 1; }
+  .foco-meta { display: flex; }
+  .foco-pausar { width: 84px; height: 84px; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .foco-concluir.ds-pane { background: rgb(var(--el-surface)); }
+  .foco-estado, .foco-icone { background: rgb(var(--el-surface)); }
+}
+
+/* ---- Keyframes ---- */
+@keyframes foco-acender { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
+@keyframes foco-respirar { 0%, 100% { opacity: 0; } 50% { opacity: .55; } }
+@keyframes foco-subir { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+@keyframes foco-ancora { from { opacity: 0; scale: .9; } to { opacity: 1; scale: 1; } }
+@keyframes foco-ponto { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes foco-halo { 0%, 100% { transform: scale(.995); } 50% { transform: scale(1.025); } }
+@keyframes foco-onda { from { opacity: .85; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
+@keyframes foco-selo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+@keyframes foco-toque { from { opacity: .6; transform: scale(.7); } to { opacity: 0; transform: scale(1.3); } }
+@keyframes foco-digito { from { opacity: 0; transform: translateY(.2em) scale(.94); } to { opacity: 1; transform: none; } }
+@keyframes foco-dois-pontos { 0%, 100% { opacity: .9; } 50% { opacity: .3; } }
+@keyframes foco-ecoa { from { opacity: .55; transform: scale(1); } to { opacity: 0; transform: scale(1.32); } }
+@keyframes foco-icone { from { opacity: 0; transform: scale(.4) rotate(-40deg); } to { opacity: 1; transform: none; } }
+@keyframes foco-dica { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 60% { transform: translateX(4px); } }
+
+/* ---- Reduced motion: a still scene, and only the time changes ---- */
+@media (prefers-reduced-motion: reduce) {
+  .foco *, .foco *::before, .foco *::after { animation: none !important; }
+  .foco-luz::after { display: none; }
+  .foco-canvas { display: none; }
+}
+
+/* ---- The seal that closes a session ---- */
+.foco-celebra {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-content: center; justify-items: center; gap: 6px; box-sizing: border-box; padding: 24px; overflow: hidden; text-align: center;
+  color: rgb(var(--el-text));
+  background: radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--foco-cor) 28%, rgb(var(--el-canvas))), rgb(var(--el-canvas)) 72%);
+  animation: foco-celebra-entra var(--ds-duration-settle) var(--ds-ease) both;
+}
+.foco-celebra[data-saindo="true"] { animation: foco-celebra-sai var(--ds-duration-settle) var(--ds-ease-exit) both; }
+.foco-celebra-luz {
+  position: absolute; left: 50%; top: 42%; width: min(150vw, 720px); aspect-ratio: 1; margin: calc(min(150vw, 720px) / -2) 0 0 calc(min(150vw, 720px) / -2); border-radius: 50%; pointer-events: none;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--foco-aura) 38%, transparent), transparent);
+  animation: foco-celebra-luz calc(var(--ds-duration-conjure) * 2) var(--ds-ease) both;
+}
+.foco-celebra-selo { --r: min(24vw, 92px); position: relative; display: grid; place-items: center; width: min(46vw, 176px); aspect-ratio: 1; margin-bottom: 14px; }
+.foco-celebra-selo svg { position: absolute; inset: -4%; width: 108%; height: 108%; overflow: visible; }
+.foco-celebra-trilho { fill: none; stroke: rgb(var(--el-text) / 14%); stroke-width: 1.6; }
+.foco-celebra-anel {
+  fill: none; stroke: var(--foco-cor); stroke-width: 3.2; stroke-linecap: round; stroke-dasharray: 1 1; stroke-dashoffset: 0; transform-box: fill-box; transform-origin: center; transform: rotate(-90deg);
+  animation: foco-celebra-anel calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) var(--ds-duration-feedback) both;
+}
+.foco-celebra-selo img { position: relative; width: 62%; height: auto; animation: foco-celebra-selo var(--ds-duration-conjure) var(--ds-ease-conjure) both; }
+.foco-celebra-selo i {
+  position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--foco-aura); box-shadow: 0 0 12px var(--foco-aura);
+  --a: calc(var(--faisca) * 30deg);
+  animation: foco-faisca calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) calc(var(--ds-duration-feedback) * 2) both;
+}
+.foco-celebra-titulo, .foco-celebra-atividade, .foco-celebra-tempo { position: relative; margin: 0; animation: foco-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-feedback) * 3) both; }
+.foco-celebra-titulo { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-display); line-height: 1.2; }
+.foco-celebra-atividade { max-width: 20em; font-size: var(--ds-text-body); color: rgb(var(--el-text) / 78%); overflow-wrap: anywhere; }
+.foco-celebra-tempo { display: grid; justify-items: center; margin-top: 10px; animation-delay: calc(var(--ds-duration-feedback) * 4); }
+.foco-celebra-numero { font-family: var(--ds-font-body); font-weight: 300; font-size: var(--ds-text-hero); line-height: 1.1; font-variant-numeric: tabular-nums lining-nums; color: rgb(var(--el-gold)); text-shadow: 0 0 .5em rgb(var(--el-gold) / 40%); }
+.foco-celebra-tempo small { font-size: var(--ds-text-micro); letter-spacing: .16em; text-transform: uppercase; color: rgb(var(--el-text) / 74%); }
+@keyframes foco-celebra-entra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes foco-celebra-sai { from { opacity: 1; } to { opacity: 0; } }
+@keyframes foco-celebra-luz { from { opacity: 0; transform: scale(.3); } to { opacity: 1; transform: scale(1); } }
+@keyframes foco-celebra-anel { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes foco-celebra-selo { from { opacity: 0; transform: scale(.5); } to { opacity: 1; transform: none; } }
+@keyframes foco-faisca {
+  from { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--r) * -.7)) scale(.5); }
+  25% { opacity: 1; }
+  to { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--r) * -1.5)) scale(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .foco-celebra, .foco-celebra * { animation: none !important; }
+  .foco-celebra-selo i { display: none; }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .foco-celebra { grid-auto-flow: column; column-gap: 28px; align-content: center; }
+  .foco-celebra-selo { grid-row: 1 / span 3; width: min(34vh, 140px); margin: 0; }
+}

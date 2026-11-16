@@ -1,50 +1,25 @@
 import './elemental-timer.css';
-import { useState } from 'react';
-import { ELEMENTS } from '@/constants';
 import { Check, Pause, Play } from 'lucide-react';
-import type { CSSProperties } from 'react';
+import { FocoTimer, type FocoTimerProps } from '@/components/foco/FocoTimer';
 import type { ElementId } from '@/types';
 
-interface ElementalTimerProps {
-  title: string;
-  element: ElementId;
-  time: string;
-  running: boolean;
-  plannedLabel?: string;
-  effortLabel?: string;
-  onToggle: () => void;
-  onComplete: () => void;
+export type ElementalTimerProps = FocoTimerProps;
+
+/**
+ * The timer of every activity, as the immersive focus screen. Presentation only:
+ * time, pause, completion and reward stay with the owner and arrive as props.
+ * It fills the dialog its owner styles with `foco-dialog`.
+ */
+export function ElementalTimer(props: ElementalTimerProps) {
+  return <FocoTimer {...props} ornamento={<TimerElementScene element={props.element} />} />;
 }
 
-/** Presentation only: time, completion and reward stay with the existing owner. */
-export function ElementalTimer({ title, element, time, running, plannedLabel, effortLabel, onToggle, onComplete }: ElementalTimerProps) {
-  const [pulse, setPulse] = useState(0);
-  const [effectsEnabled, setEffectsEnabled] = useState(true);
-  return <div className="elemental-timer" style={{ '--timer-accent': `var(--element-${element})` } as CSSProperties}>
-    <p className="elemental-timer-status">{running ? 'Em concentração' : 'Tempo pausado'}</p>
-    <h3>{title}</h3>
-    <div className="elemental-timer-dial" data-running={running} data-element={element} data-effects={effectsEnabled}>
-      <TimerElementScene element={element} />
-      {pulse > 0 && <span key={pulse} className="timer-element-touch" aria-hidden="true" />}
-      <button type="button" className="timer-element-focus" aria-label={`Sentir a energia de ${ELEMENTS[element].name}`} onClick={() => setPulse(pulse + 1)}>
-        <img src={`/sanctuary/elements/${element}-v1.webp`} alt="" className="timer-scene-art" width={112} height={112} />
-      </button>
-      <span className="elemental-timer-time" role="timer" aria-label={`Tempo decorrido: ${time}`}>{time}</span>
-      <span className="elemental-timer-caption">Tempo decorrido</span>
-    </div>
-    <button type="button" className="timer-effects-toggle" onClick={() => setEffectsEnabled(!effectsEnabled)}>{effectsEnabled ? 'Pausar efeitos' : 'Ativar efeitos'}</button>
-    <div className="elemental-timer-meta">{plannedLabel && <span>Planejado: {plannedLabel}</span>}{effortLabel && <span>Esforço: {effortLabel}</span>}</div>
-    <TimerControls running={running} onToggle={onToggle} onComplete={onComplete} />
-    <p className="elemental-timer-note">Pode bloquear a tela ou usar outro app. O tempo é atualizado quando você voltar. Pausar interrompe a contagem.</p>
-  </div>;
-}
-
-/** Controls dispatch to their existing domain owners; visual effects own no rewards. */
-export function TimerControls({ running, onToggle, onComplete }: Pick<ElementalTimerProps, 'running' | 'onToggle' | 'onComplete'>) {
+/** The plain two-button control, kept for any caller that wants the controls alone. */
+export function TimerControls({ running, onToggle, onComplete }: Pick<ElementalTimerProps, 'running' | 'onToggle'> & { onComplete: () => void | boolean }) {
   return (
     <div className="elemental-timer-controls">
       <button type="button" onClick={onToggle}>{running ? <Pause size={18} aria-hidden="true" /> : <Play size={18} aria-hidden="true" />}{running ? 'Pausar' : 'Retomar'}</button>
-      <button type="button" className="elemental-timer-complete" onClick={onComplete}><Check size={18} aria-hidden="true" />Concluir</button>
+      <button type="button" className="elemental-timer-complete" onClick={() => { onComplete(); }}><Check size={18} aria-hidden="true" />Concluir</button>
     </div>
   );
 }

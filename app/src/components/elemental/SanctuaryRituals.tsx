@@ -39,14 +39,17 @@ export function SanctuaryRituals() {
     {pending.length ? <ul className="ep-ritual-list">{pending.map((task, index) => <li key={task.id} className="ds-linha ep-ritual-row" data-element={task.elementId}><span className="ds-selo" aria-hidden="true"><CycleSigil element={task.elementId} size="child" /></span><Link className="ep-ritual-title" to={ritualListHref}>{task.title}</Link><button type="button" className="ds-botao ep-ritual-start" data-tipo={index === 0 && !timer.entityId ? 'primario' : 'fantasma'} onClick={() => begin(task.id)} aria-label={`${!canUseSimpleRitualTimer(task) ? 'Abrir detalhes de' : activeTask?.id === task.id ? 'Abrir cronômetro de' : 'Iniciar'} ${task.title}`}><ArcaneIcon name="iniciar" size={14} /><span>{!canUseSimpleRitualTimer(task) || activeTask?.id === task.id ? 'Abrir' : 'Iniciar'}</span></button></li>)}</ul> : <p className="ds-nota">Nenhum ritual pendente. Comece com algo que você quer realizar.</p>}
     <p className="ds-nota ep-session-message" role="status">{message}</p>
     <Dialog open={open} onOpenChange={(value) => { if (!value) setSelected(null); }}>
-      <DialogContent className="ds-folha">
-        <DialogHeader><DialogTitle>Cronômetro do ritual</DialogTitle><DialogDescription>Fechar esta janela mantém o estado do cronômetro. Use Pausar para interromper a contagem.</DialogDescription></DialogHeader>
-        {selectedTask && <ElementalTimer title={selectedTask.title} element={selectedTask.elementId} time={formatTime(timer.elapsedSeconds)} running={timer.isRunning}
+      <DialogContent className="foco-dialog" showCloseButton={false}>
+        <DialogHeader className="sr-only"><DialogTitle>Cronômetro do ritual</DialogTitle><DialogDescription>Fechar esta janela mantém o estado do cronômetro. Use Pausar para interromper a contagem.</DialogDescription></DialogHeader>
+        {selectedTask && <ElementalTimer title={selectedTask.title} element={selectedTask.elementId} time={formatTime(timer.elapsedSeconds)} running={timer.isRunning} elapsedSeconds={timer.elapsedSeconds} plannedMinutes={selectedTask.plannedTimeMinutes ?? undefined}
           onToggle={() => toggleRitualTimer(useAppStore.getState, context)}
+          onMinimize={() => setSelected(null)}
           onComplete={() => {
-            if (completeRitualTimer(useAppStore.getState, context)) setMessage('Ritual concluído. Seu progresso foi atualizado.');
+            const recorded = completeRitualTimer(useAppStore.getState, context);
+            if (recorded) setMessage('Ritual concluído. Seu progresso foi atualizado.');
             else setMessage('Não foi possível confirmar a conclusão. Confira a atividade em Rituais.');
             setSelected(null);
+            return recorded;
           }} />}
       </DialogContent>
     </Dialog>

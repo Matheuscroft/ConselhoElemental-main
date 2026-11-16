@@ -216,6 +216,12 @@ export const Rituais: React.FC = () => {
     }, 3000);
   };
 
+  // Opening keeps the clock as it is; closing minimises the focus screen to the floating bar.
+  const handleTimerOpenChange = (open: boolean) => {
+    setShowTimer(open);
+    if (!open) { setActiveTask(null); const next = new URLSearchParams(questParams); next.delete('cronometro'); setQuestParams(next, { replace: true, preventScrollReset: true }); }
+  };
+
   // Add item to task
   const handleAddItem = (taskId: string, parentItemId: string | null) => {
     if (!newItemTitle.trim()) return;
@@ -773,12 +779,9 @@ export const Rituais: React.FC = () => {
       </CenaRituais>}
 
       {/* Timer Modal */}
-      <Dialog open={showTimer} onOpenChange={open => {
-        setShowTimer(open);
-        if (!open) { setActiveTask(null); const next = new URLSearchParams(questParams); next.delete('cronometro'); setQuestParams(next, { replace: true, preventScrollReset: true }); }
-      }}>
-        <DialogContent className="ds-folha elemental-timer-dialog">
-          <DialogHeader>
+      <Dialog open={showTimer} onOpenChange={handleTimerOpenChange}>
+        <DialogContent className="foco-dialog" showCloseButton={false}>
+          <DialogHeader className="sr-only">
             <DialogTitle>
               Ritual em Andamento
             </DialogTitle>
@@ -794,8 +797,11 @@ export const Rituais: React.FC = () => {
               running={timer.isRunning}
               plannedLabel={activeTaskData.plannedTimeMinutes && activeTaskData.plannedTimeMinutes > 0 ? formatDuration(activeTaskData.plannedTimeMinutes) : undefined}
               effortLabel={EFFORT_LABELS[activeTaskData.effortLevel || 2].label}
+              elapsedSeconds={timer.elapsedSeconds}
+              plannedMinutes={activeTaskData.plannedTimeMinutes ?? undefined}
               onToggle={() => timer.isRunning ? useAppStore.getState().pauseTimer() : useAppStore.getState().resumeTimer()}
               onComplete={handleStopAndComplete}
+              onMinimize={() => handleTimerOpenChange(false)}
             />}
         </DialogContent>
       </Dialog>
