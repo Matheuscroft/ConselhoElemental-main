@@ -7,6 +7,12 @@ import { ResourceMeter } from '@/components/grimorio/ResourceMeter';
 import { ElementMasteryCard } from '@/components/grimorio/ElementMasteryCard';
 import { useGrimoireAnchor } from '@/components/grimorio/useGrimoireAnchor';
 import { GrimoireHistory } from '@/components/grimorio/GrimoireHistory';
+import { CenaGrimorio } from '@/components/grimorio/CenaGrimorio';
+import { useEntradaGrimorio } from '@/components/grimorio/useEntradaGrimorio';
+import { useChegadaGrimorio } from '@/components/grimorio/useChegadaGrimorio';
+import { Contagem } from '@/components/motion/Contagem';
+import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { DURATION } from '@/lib/motion/motion';
 import { buildGrimoireHistory } from '@/components/grimorio/history';
 import { useAppStore } from '@/stores/appStore';
 import { useWorkoutStore } from '@/stores/workoutStore';
@@ -26,6 +32,11 @@ export function Grimorio() {
 
 function GrimorioContent() {
   useGrimoireAnchor();
+  const { entrada, acesa } = useEntradaGrimorio();
+  const reduzido = useMotionPreference();
+  const elementosRef = useRef<HTMLElement>(null);
+  const elementosChegaram = useChegadaGrimorio(elementosRef, 'elementos');
+  const [balanceOpen, setBalanceOpen] = useState(false);
   const { user, updateUser, getElementScores, getLevelProgress, getMasteryProgress, getCompletedHabitsToday, getStreak, tasks, habits, actions, executionLogs } = useAppStore();
   const { getResourceSnapshot } = useWorkoutStore();
   const [editName, setEditName] = useState(false);
@@ -78,11 +89,11 @@ function GrimorioContent() {
   };
 
   return <AppLayout>
-    <div className="grimoire-workspace">
-      <header className="ds-cabecalho"><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></header>
+    <CenaGrimorio entrada={entrada}>
+      <header className="ds-cabecalho gr-cabecalho"><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></header>
       <nav className="ds-abas" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a><a href="#grimoire-backup">Cópia de segurança</a></nav>
 
-      <section id="grimoire-character" tabIndex={-1} className="grimoire-sheet" aria-labelledby="grimoire-character-name">
+      <section id="grimoire-character" tabIndex={-1} className="grimoire-sheet ds-glass-float" data-luz="" aria-labelledby="grimoire-character-name">
         <div className="grimoire-portrait" aria-hidden="true">
           <div className="grimoire-portrait-ring" />
           {portraitFailed ? <ArcaneIcon name="santuario" size={120} /> : <img src="/sanctuary/elemental-body-v1.png" alt="" width={913} height={1723} onError={() => setPortraitFailed(true)} />}
@@ -96,34 +107,34 @@ function GrimorioContent() {
         </div>
         <div className="grimoire-resources ds-pane">
           <div className="grimoire-resource-grid">
-            <ResourceMeter label="Vitalidade · HP" value={hp} maximum={100} color={ACENTO.terra} icon={<ArcaneIcon name="vida" size={18} />} />
-            <ResourceMeter label="Stamina" value={resourceSnapshot.currentStamina} maximum={100} color={ACENTO.agua} icon={<ArcaneIcon name="stamina" size={18} />} />
-            <ResourceMeter label="Prana" value={resourceSnapshot.currentPrana} maximum={100} color={ACENTO.ar} icon={<ArcaneIcon name="prana" size={18} />} />
+            <ResourceMeter label="Vitalidade · HP" value={hp} maximum={100} color={ACENTO.terra} icon={<ArcaneIcon name="vida" size={18} />} chegou={acesa} ordem={0} />
+            <ResourceMeter label="Stamina" value={resourceSnapshot.currentStamina} maximum={100} color={ACENTO.agua} icon={<ArcaneIcon name="stamina" size={18} />} chegou={acesa} ordem={1} />
+            <ResourceMeter label="Prana" value={resourceSnapshot.currentPrana} maximum={100} color={ACENTO.ar} icon={<ArcaneIcon name="prana" size={18} />} chegou={acesa} ordem={2} />
           </div>
-          <ResourceMeter label="Experiência" value={levelXp} maximum={levelProgress.xpToNextLevel} conquista icon={<ArcaneIcon name="conquista" size={18} />} note={`Faltam ${format(levelProgress.xpToNextLevel - levelXp)} XP para o nível ${levelProgress.level + 1}`} />
-          <div className="grimoire-resource-footnote"><span>{format(levelProgress.xpTotal)} XP acumulados</span><span>Recursos do jogo</span></div>
+          <ResourceMeter label="Experiência" value={levelXp} maximum={levelProgress.xpToNextLevel} conquista chegou={acesa} ordem={3} icon={<ArcaneIcon name="conquista" size={18} />} note={`Faltam ${format(levelProgress.xpToNextLevel - levelXp)} XP para o nível ${levelProgress.level + 1}`} />
+          <div className="grimoire-resource-footnote"><span><Contagem valor={acesa ? levelProgress.xpTotal : 0} formatar={format} /> XP acumulados</span><span>Recursos do jogo</span></div>
         </div>
         <footer className="grimoire-sheet-footer"><span>{Number.isFinite(joinedAt.getTime()) ? `Jornada iniciada em ${joinedAt.toLocaleDateString('pt-BR')}` : 'Sua jornada elemental'}</span><Link className="ds-elo" to="/santuario">Ir ao Santuário</Link></footer>
       </section>
 
       <section className="grimoire-overview ds-cifras" aria-labelledby="grimoire-overview-title">
         <h2 id="grimoire-overview-title" className="sr-only">Sua atividade em números</h2>
-        <Link className="ds-cifra" to="/rituais">{completedTasks} / {totalTasks}<small>Rituais concluídos</small></Link>
-        <Link className="ds-cifra" to="/ciclos">{activeHabits}<small>Ciclos cadastrados</small></Link>
-        <div className="ds-cifra">{format(user.totalScore)}<small>Pontos totais</small></div>
-        <a className="ds-cifra" href="#grimoire-history">{format(totalHabitCompletions)}<small>Conclusões de ciclos</small></a>
+        <Link className="ds-cifra" to="/rituais" data-luz=""><span className="gr-brilho" aria-hidden="true" /><span><Contagem valor={acesa ? completedTasks : 0} /> / {totalTasks}</span><small>Rituais concluídos</small></Link>
+        <Link className="ds-cifra" to="/ciclos" data-luz=""><span className="gr-brilho" aria-hidden="true" /><span><Contagem valor={acesa ? activeHabits : 0} /></span><small>Ciclos cadastrados</small></Link>
+        <div className="ds-cifra" data-luz=""><span className="gr-brilho" aria-hidden="true" /><span><Contagem valor={acesa ? user.totalScore : 0} formatar={format} /></span><small>Pontos totais</small></div>
+        <a className="ds-cifra" href="#grimoire-history" data-luz=""><span className="gr-brilho" aria-hidden="true" /><span><Contagem valor={acesa ? totalHabitCompletions : 0} formatar={format} /></span><small>Conclusões de ciclos</small></a>
       </section>
 
-      <section id="grimoire-elements" tabIndex={-1} className="grimoire-elements" aria-labelledby="grimoire-elements-title">
+      <section ref={elementosRef} id="grimoire-elements" tabIndex={-1} className="grimoire-elements" data-chegou={elementosChegaram} aria-labelledby="grimoire-elements-title">
         <div className="ds-secao"><h2 id="grimoire-elements-title">Maestria elemental</h2></div>
-        <p className="ds-nota">Abra um elemento para acompanhar sua evolução.</p>
-        <div className="grimoire-elements-grid">{elementScores.map(score => <ElementMasteryCard key={score.elementId} element={ELEMENTS[score.elementId]} mastery={mastery[score.elementId]} score={score} hasScores={hasScores} />)}</div>
-        {hasScores && <details className="ds-grupo grimoire-balance"><summary><span>Ver equilíbrio dos elementos</span><ArcaneIcon name="chevron" size={16} /></summary><div role="img" aria-label={`Pontuação por elemento: ${elementScores.map(score => `${ELEMENTS[score.elementId].name}, ${format(score.score)} pontos`).join('; ')}`}><ResponsiveContainer width="100%" height={250}><RadarChart data={radarData}><PolarGrid stroke="rgb(var(--el-gold) / .2)" /><PolarAngleAxis dataKey="element" tick={{ fill: 'rgb(var(--el-muted))', fontSize: 12 }} /><PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={{ fill: 'rgb(var(--el-muted))', fontSize: 10 }} /><Radar name="Pontuação" dataKey="score" stroke="rgb(var(--el-gold))" fill="rgb(var(--el-gold))" fillOpacity={0.18} isAnimationActive={false} /></RadarChart></ResponsiveContainer></div></details>}
+        <p className="ds-nota">{hasScores ? 'Abra um elemento para acompanhar sua evolução.' : 'Cada elemento acende conforme você pontua. Abra um para ver o caminho.'}</p>
+        <div className="grimoire-elements-grid">{elementScores.map((score, ordem) => <ElementMasteryCard key={score.elementId} element={ELEMENTS[score.elementId]} mastery={mastery[score.elementId]} score={score} hasScores={hasScores} chegou={elementosChegaram} ordem={ordem} />)}</div>
+        {hasScores && <details className="ds-grupo grimoire-balance" onToggle={event => setBalanceOpen(event.currentTarget.open)}><summary><span>Ver equilíbrio dos elementos</span><ArcaneIcon name="chevron" size={16} /></summary><div role="img" aria-label={`Pontuação por elemento: ${elementScores.map(score => `${ELEMENTS[score.elementId].name}, ${format(score.score)} pontos`).join('; ')}`}>{balanceOpen && <ResponsiveContainer width="100%" height={250}><RadarChart data={radarData}><PolarGrid stroke="rgb(var(--el-gold) / .2)" /><PolarAngleAxis dataKey="element" tick={{ fill: 'rgb(var(--el-muted))', fontSize: 12 }} /><PolarRadiusAxis angle={90} domain={[0, 'auto']} tick={{ fill: 'rgb(var(--el-muted))', fontSize: 12 }} /><Radar name="Pontuação" dataKey="score" stroke="rgb(var(--el-gold))" fill="rgb(var(--el-gold))" fillOpacity={0.26} strokeWidth={2} isAnimationActive={!reduzido} animationDuration={DURATION.conjure} /></RadarChart></ResponsiveContainer>}</div></details>}
       </section>
 
       <GrimoireHistory entries={history} now={now} />
       <ProgressBackup />
-    </div>
+    </CenaGrimorio>
 
     <Dialog open={editName} onOpenChange={setEditName}>
       <DialogContent className="grimoire-dialog ds-folha" showCloseButton={false} aria-labelledby="grimoire-name-title" aria-describedby="grimoire-name-description" onCloseAutoFocus={event => { event.preventDefault(); nameTrigger.current?.focus(); }}>

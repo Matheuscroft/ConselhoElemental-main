@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { ArcaneIcon, type ArcaneIconName } from '@/components/elemental/ArcaneIcon';
 
 export const INVOCATION_TYPES = [
@@ -21,10 +21,10 @@ export function InvocationStepTitle({ children, description, focus = true }: { c
 export function InvocationChoices({ value, onChange }: { value: InvocationType; onChange: (value: InvocationType) => void }) {
   return <fieldset className="invocation-choices">
     <legend className="sr-only">O que deseja invocar?</legend>
-    {INVOCATION_TYPES.map(choice => <label key={choice.id} className="invocation-choice" data-draft={choice.id === 'DRAFT'}>
+    {INVOCATION_TYPES.map((choice, ordem) => <label key={choice.id} className="invocation-choice" data-draft={choice.id === 'DRAFT'} style={{ '--i': ordem } as CSSProperties}>
       <input type="radio" name="invocation-type" value={choice.id} checked={value === choice.id} onChange={() => onChange(choice.id)} aria-describedby={`invocation-example-${choice.id}`} />
-      <span className="invocation-choice-face ds-runa">
-        <span className="invocation-choice-sigil" aria-hidden="true"><ArcaneIcon name={choice.icon} size={28} /></span>
+      <span className="invocation-choice-face ds-runa" data-luz="">
+        <span className="invocation-choice-sigil" aria-hidden="true"><span className="invocation-choice-onda" /><ArcaneIcon name={choice.icon} size={28} /></span>
         <span className="invocation-choice-check" aria-hidden="true"><ArcaneIcon name="concluir" size={18} /></span>
         <strong>{choice.name}</strong><span>{choice.description}</span>
         <small id={`invocation-example-${choice.id}`}>{choice.example}</small>
@@ -33,11 +33,24 @@ export function InvocationChoices({ value, onChange }: { value: InvocationType; 
   </fieldset>;
 }
 
+const PASSOS = ['Escolher', 'Dar forma', 'Revisar'] as const;
+
+/**
+ * The three steps and one thread of light under them. `--prog` is how far the
+ * thread has travelled (the end of the current step, from 0 to 1); the
+ * stylesheet moves it with the spring of the system, so going forward or back
+ * is seen as a movement and not as a number changing. Decorative: the list
+ * alone says where the person is.
+ */
 export function InvocationProgress({ step }: { step: number }) {
-  return <ol className="invocation-progress" aria-label="Etapas da invocação">
-    {['Escolher', 'Dar forma', 'Revisar'].map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} data-complete={step > index + 1}>
-      <span aria-hidden="true">{step > index + 1 ? <ArcaneIcon name="concluir" size={16} /> : index + 1}</span>
-      <strong>{label}</strong>{step > index + 1 && <span className="sr-only">Concluída</span>}
-    </li>)}
-  </ol>;
+  return <div className="invocation-progresso" style={{ '--prog': step / PASSOS.length } as CSSProperties}>
+    <ol className="invocation-progress" aria-label="Etapas da invocação">
+      {PASSOS.map((label, index) => <li key={label} aria-current={step === index + 1 ? 'step' : undefined} data-complete={step > index + 1}>
+        <span aria-hidden="true">{step > index + 1 ? <ArcaneIcon name="concluir" size={16} /> : index + 1}</span>
+        <strong>{label}</strong>{step > index + 1 && <span className="sr-only">Concluída</span>}
+      </li>)}
+    </ol>
+    <span className="invocation-trilha" aria-hidden="true"><span className="invocation-fio" /></span>
+    <span className="invocation-ponta" aria-hidden="true" />
+  </div>;
 }

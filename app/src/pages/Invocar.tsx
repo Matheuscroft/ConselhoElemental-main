@@ -3,10 +3,12 @@ import { dateFromInput, defaultRecurrenceConfig, validateRecurrence } from '@/li
 import { InvocationChoices, InvocationProgress, InvocationStepTitle, INVOCATION_TYPES } from '@/components/invocation/InvocationChoices';
 import '@/styles/elemental-design-system.css';
 import '@/components/invocation/invocation.css';
+import '@/components/invocation/invocation-uau.css';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { CreationStep } from '@/components/motion/CreationStep';
+import { PassoInvocar } from '@/components/invocation/PassoInvocar';
+import { CenaInvocar } from '@/components/invocation/CenaInvocar';
 import { CreationResult } from '@/components/invocation/CreationResult';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout';
@@ -231,6 +233,9 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
     }
   };
 
+  // From the second step on, the room takes the colour of the element being shaped.
+  const elementoDaCena = step > 1 && entityType !== 'DRAFT' ? selectedElement : null;
+
   const canProceed = () => {
     if (step === 1) return true;
     if (step === 2) return title.trim().length > 0;
@@ -240,25 +245,29 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
 
   return (
     <AppLayout showBackButton title="Invocar">
-      <div className="elemental-system invocation">
-      <header className="ds-cabecalho"><h1>Invocar</h1><p>Dê forma ao seu próximo passo.</p></header>
+      <CenaInvocar elemento={elementoDaCena}>
+      <header className="ds-cabecalho inv-cabecalho"><h1>Invocar</h1><p>Dê forma ao seu próximo passo.</p></header>
       <InvocationProgress step={step} />
 
+      {/* The one real pane of glass of this screen, with the room's light behind it. It stays while the steps change inside it. */}
+      <div className="inv-altar">
+      <div className="inv-altar-luz" aria-hidden="true" />
+      <div className="inv-painel ds-glass-float" data-luz="">
       {/* Step 1: Type Selection */}
-      <AnimatePresence mode="wait" initial={false} custom={direction}>
+      <AnimatePresence mode="popLayout" initial={false} custom={direction}>
         {step === 1 && (
-          <CreationStep key="step1" direction={direction}>
+          <PassoInvocar key="step1" direction={direction}>
             <InvocationStepTitle description="Escolha o formato que combina com sua intenção.">O que deseja invocar?</InvocationStepTitle>
             <InvocationChoices value={entityType} onChange={setEntityType} />
             <div className="ds-folha-pe invocation-pe" data-unico=""><button type="button" onClick={() => setStep(2)} className="ds-botao" data-tipo="primario">
               Continuar com {selectedType.name}
             </button></div>
-          </CreationStep>
+          </PassoInvocar>
         )}
 
         {/* Step 2: Basic Info */}
         {step === 2 && (
-          <CreationStep key="step2" direction={direction}>
+          <PassoInvocar key="step2" direction={direction}>
             <InvocationStepTitle focus={false} description={`${selectedType.name}: comece pelo nome e acrescente o que fizer sentido.`}>Dê forma à sua intenção</InvocationStepTitle>
 
             {entityType === 'DRAFT' && (
@@ -359,12 +368,12 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
                 Continuar
               </button>
             </div>
-          </CreationStep>
+          </PassoInvocar>
         )}
 
         {/* Step 3: Details */}
         {step === 3 && (
-          <CreationStep key="step3" direction={direction}>
+          <PassoInvocar key="step3" direction={direction}>
             <InvocationStepTitle description="Ajuste os detalhes. O item será salvo ao confirmar.">Revise sua invocação</InvocationStepTitle>
             
             {/* Effort Level (for tasks and habits) */}
@@ -443,7 +452,7 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
             )}
             
             {/* Summary */}
-            <section className="invocation-review" aria-labelledby="invocation-review-heading">
+            <section className="invocation-review" aria-labelledby="invocation-review-heading" data-element={entityType === 'DRAFT' ? undefined : selectedElement}>
               <div className="ds-secao" data-nivel="2"><h3 id="invocation-review-heading">Sua invocação</h3></div>
               {entityType !== 'DRAFT' && <><p className="invocation-review-name">{title.trim()}</p>{description.trim() && <p className="ds-nota whitespace-pre-wrap">{description.trim()}</p>}</>}
               <dl>
@@ -499,20 +508,22 @@ function InvocationWorkspace({ accountId }: { accountId: string | null }) {
                 Invocar
               </button>
             </div>
-          </CreationStep>
+          </PassoInvocar>
         )}
       </AnimatePresence>
       </div>
+      </div>
+      </CenaInvocar>
 
       {/* Success Dialog */}
       <Dialog open={showSuccess} onOpenChange={open => { if (!open) navigate('/santuario'); }}>
-        <DialogContent className="ds-folha elemental-system invocation-success" aria-describedby="invocation-success-description">
+        <DialogContent className="ds-folha elemental-system invocation-success" data-element={entityType === 'DRAFT' ? undefined : selectedElement} aria-describedby="invocation-success-description">
           <DialogHeader>
             <DialogTitle>
               Invocação criada
             </DialogTitle>
           </DialogHeader>
-          {createdEntity && <CreationResult type={entityType} title={createdEntity.title} />}
+          {createdEntity && <CreationResult type={entityType} title={createdEntity.title} elemento={entityType === 'DRAFT' ? null : selectedElement} />}
         </DialogContent>
       </Dialog>
     </AppLayout>

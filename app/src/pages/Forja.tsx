@@ -1,17 +1,19 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
-import { beatUnless } from '@/lib/motion/motion';
+import { beatUnless, DURATION } from '@/lib/motion/motion';
 import { ForgeFeedback, type ForgeFeedbackValue } from '@/components/forge/ForgeFeedback';
 import { AppLayout } from '@/components/layout';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
-import { Vazio } from '@/components/elemental/blocos';
+import { CenaForja } from '@/components/forge/CenaForja';
+import { EstadoVazioForja } from '@/components/forge/EstadoVazioForja';
 import { ForgeDraftCard } from '@/components/forge/ForgeDraftCard';
 import { INVOCATION_TYPES, type InvocationType } from '@/components/invocation/InvocationChoices';
 import { useAppStore } from '@/stores/appStore';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import '@/styles/elemental-design-system.css';
 import '@/components/forge/forge.css';
+import '@/components/forge/forge-uau.css';
 
 type Classification = Exclude<InvocationType, 'DRAFT'>;
 const TYPES = INVOCATION_TYPES.filter(type => type.id !== 'DRAFT');
@@ -42,12 +44,27 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
   const [editTitle, setEditTitle] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [classification, setClassification] = useState<Classification | null>(null);
-  const [feedback, setFeedback] = useState<ForgeFeedbackValue | null>(null);
+  const [feedback, setFeedback] = useState<(ForgeFeedbackValue & { n: number }) | null>(null);
+  const feedbackSeq = useRef(0);
+  // The newest idea glows for a moment, and the pane that kept it lights up once.
+  const [recemId, setRecemId] = useState<string | null>(null);
+  const [selando, setSelando] = useState(false);
   const [error, setError] = useState('');
   const [captureError, setCaptureError] = useState('');
   const query = search.trim().toLocaleLowerCase('pt-BR');
   const visibleDrafts = drafts.filter(draft => `${draft.title} ${draft.notes ?? ''}`.toLocaleLowerCase('pt-BR').includes(query));
   const selectedType = TYPES.find(type => type.id === classification);
+
+  // `n` makes every announcement a new element, so the celebration plays again for the next idea.
+  function announce(value: ForgeFeedbackValue) {
+    setFeedback({ ...value, n: ++feedbackSeq.current });
+  }
+
+  useEffect(() => {
+    if (!selando && !recemId) return;
+    const fim = window.setTimeout(() => { setSelando(false); setRecemId(null); }, DURATION.conjure * 2);
+    return () => window.clearTimeout(fim);
+  }, [selando, recemId]);
 
   function openDialog(mode: 'classify' | 'edit' | 'delete', id: string) {
     const draft = drafts.find(item => item.id === id);
@@ -66,16 +83,20 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
     if (!title.trim() || captured.current) return;
     setCaptureError('');
     setFeedback(null);
+    let keptId = '';
     try {
       const draft = addDraft(title.trim(), notes.trim());
       if (!draft?.id || !useAppStore.getState().drafts.some(item => item.id === draft.id)) throw new Error('Draft not confirmed');
+      keptId = draft.id;
     } catch {
       setCaptureError('Não foi possível confirmar que a ideia foi guardada. Seu texto continua aqui. Confira a lista antes de tentar novamente.');
       return;
     }
     captured.current = true;
     setTitle(''); setNotes(''); setSearch('');
-    setFeedback({ title: title.trim(), message: 'Ideia guardada na Forja. Classifique quando estiver pronta.' });
+    announce({ title: title.trim(), message: 'Ideia guardada na Forja. Classifique quando estiver pronta.', celebrar: true });
+    setRecemId(keptId);
+    setSelando(true);
     titleInput.current?.focus();
   }
 
@@ -94,7 +115,7 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
     }
     setDialog(null);
     dialogCommitted.current = true;
-    setFeedback({ title: editTitle.trim(), message: 'Alterações da ideia salvas.' });
+    announce({ title: editTitle.trim(), message: 'Alterações da ideia salvas.' });
   }
 
   function classifyDraft() {
@@ -112,7 +133,7 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
       return;
     }
     dialogCommitted.current = true;
-    setFeedback({ title: selectedDraft.title, message: `Ideia transformada em ${selectedType?.name}. O rascunho saiu da Forja.`, destination: classification });
+    announce({ title: selectedDraft.title, message: `Ideia transformada em ${selectedType?.name}. O rascunho saiu da Forja.`, destination: classification });
     setDialog(null);
   }
 
@@ -130,13 +151,16 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
     }
     setDialog(null);
     dialogCommitted.current = true;
-    setFeedback({ title: selectedDraft.title, message: 'Rascunho excluído da Forja.' });
+    announce({ title: selectedDraft.title, message: 'Rascunho excluído da Forja.' });
   }
 
-  return <div className="elemental-system forge-workspace">
-    <header className="ds-cabecalho"><h1>Forja</h1><p>Toda conquista começa com uma ideia.</p></header>
+  return <CenaForja>
+    <header className="ds-cabecalho forge-cabecalho"><h1>Forja</h1><p>Toda conquista começa com uma ideia.</p></header>
     <div className="forge-layout">
-      <section className="forge-capture ds-altar" aria-labelledby="forge-capture-heading">
+      {/* The one real pane of glass of this screen, with the week's light behind it. */}
+      <div className="forge-altar" data-selando={selando ? '' : undefined}>
+      <div className="forge-altar-luz" aria-hidden="true" />
+      <section className="forge-capture ds-glass-float" data-luz="" aria-labelledby="forge-capture-heading">
         <h2 id="forge-capture-heading">Guarde a próxima ideia</h2>
         <p>Capture agora. Escolha o caminho depois.</p>
         <form onSubmit={event => { event.preventDefault(); createDraft(); }}>
@@ -153,24 +177,23 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
           <small>Rascunhos não geram pontos. Você decide quando transformá-los.</small>
         </form>
       </section>
+      </div>
 
       <section className="forge-inbox" aria-labelledby="forge-inbox-heading">
         <div className="ds-secao"><h2 id="forge-inbox-heading">Ideias por lapidar</h2><span className="ds-contagem">{drafts.length} {drafts.length === 1 ? 'rascunho' : 'rascunhos'}</span></div>
-        <div ref={feedbackRegion} tabIndex={-1} className="forge-feedback" role="status" aria-live="polite" aria-atomic="true">{feedback && <>
+        <div ref={feedbackRegion} tabIndex={-1} className="forge-feedback" role="status" aria-live="polite" aria-atomic="true">{feedback && <div className="forge-feedback-caixa" key={feedback.n}>
           <ForgeFeedback value={feedback} />
           <button type="button" className="ds-botao" data-icone="" data-tipo="fantasma" onClick={() => { setFeedback(null); titleInput.current?.focus(); }} aria-label="Dispensar mensagem"><ArcaneIcon name="fechar" size={18} /></button>
-        </>}</div>
+        </div>}</div>
         {error && !selectedDraft && <p role="alert">{error}</p>}
         {(drafts.length > 0 || search) && <div className="forge-search">
           <label className="ds-campo" data-tipo="busca"><ArcaneIcon name="buscar" size={18} /><input type="search" aria-label="Buscar ideias por nome ou anotação" value={search} onChange={event => setSearch(event.target.value)} placeholder="Buscar nas ideias…" /></label>
           {search && <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setSearch('')}>Limpar</button>}
         </div>}
         {query && <p className="forge-result-count">{visibleDrafts.length} de {drafts.length} rascunhos encontrados</p>}
-        {visibleDrafts.length ? <div className="forge-drafts">{visibleDrafts.map(draft => <ForgeDraftCard key={draft.id} draft={draft}
+        {visibleDrafts.length ? <div className="forge-drafts">{visibleDrafts.map(draft => <ForgeDraftCard key={draft.id} draft={draft} recem={draft.id === recemId}
           onClassify={id => openDialog('classify', id)} onEdit={id => openDialog('edit', id)} onDelete={id => openDialog('delete', id)} />)}</div>
-          : <Vazio titulo={query ? 'Nenhuma ideia encontrada' : 'Um espaço para o que ainda vai nascer'}
-            texto={query ? 'Tente outra palavra ou limpe a busca para ver todos os rascunhos.' : 'Guarde pensamentos, planos e possibilidades. Você não precisa organizar tudo agora.'}
-            acao={<button type="button" className="ds-botao" data-tipo="secundario" onClick={() => query ? setSearch('') : titleInput.current?.focus()}>{query ? 'Limpar busca' : 'Escrever minha primeira ideia'}</button>} />}
+          : <EstadoVazioForja filtrado={!!query} onAcao={() => query ? setSearch('') : titleInput.current?.focus()} />}
       </section>
     </div>
 
@@ -208,5 +231,5 @@ function ForgeWorkspace({ accountId }: { accountId: string | null }) {
         {dialog?.mode === 'classify' && <motion.div key={classification} className="forge-type-hint" initial={{ opacity: reduceMotion ? 1 : 0 }} animate={{ opacity: 1 }} transition={beatUnless(reduceMotion, 'feedback')}>{selectedType?.example ?? 'Você pode cancelar e decidir depois.'}</motion.div>}
       </DialogContent>
     </Dialog>
-  </div>;
+  </CenaForja>;
 }

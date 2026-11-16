@@ -6,7 +6,11 @@ import { buildQuestTrails, trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
-import { Medidor, MarcaElemento, Vazio } from '@/components/elemental/blocos';
+import { MarcaElemento } from '@/components/elemental/blocos';
+import { CenaConquistas } from '@/components/quests/CenaConquistas';
+import { ProgressoVivo } from '@/components/quests/ProgressoVivo';
+import { ResumoConquistas } from '@/components/quests/ResumoConquistas';
+import { VazioConquista } from '@/components/quests/VazioConquista';
 import React, { useMemo, useState } from 'react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
@@ -39,6 +43,7 @@ export const Jornadas: React.FC = () => {
 
   const activeQuests = quests.filter(q => !q.isCompleted);
   const completedQuests = quests.filter(q => q.isCompleted);
+  const media = Math.round(quests.reduce((acc, q) => acc + q.progress, 0) / (quests.length || 1));
 
   // Open quest detail
   const openQuestDetail = (quest: Quest) => {
@@ -58,7 +63,7 @@ export const Jornadas: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="quest-catalog">
+      <CenaConquistas tela="jornadas" className="quest-catalog">
         <header className="ds-cabecalho">
           <h1>Jornadas</h1>
           <p>Quests são conquistas intermediárias, organizadas em rituais.</p>
@@ -68,6 +73,8 @@ export const Jornadas: React.FC = () => {
           </div>
         </header>
 
+        <ResumoConquistas total={quests.length} ativas={activeQuests.length} media={media} rotuloMedia="Progresso médio das jornadas" />
+
         <p className="ds-nota">Abra a trilha para escolher um ritual. Expanda o cartão para consultar detalhes e recompensas. {completedQuests.length} de {quests.length} jornadas completadas.</p>
 
         <div className="ds-secao">
@@ -75,13 +82,13 @@ export const Jornadas: React.FC = () => {
           <span className="ds-contagem">{activeQuests.length}</span>
         </div>
         {activeQuests.length > 0 ? (
-          <div>
-            {activeQuests.map(quest => (
-              <QuestCard key={quest.id} quest={quest} onClick={() => openQuestDetail(quest)} />
+          <div className="cq-lista">
+            {activeQuests.map((quest, index) => (
+              <QuestCard key={quest.id} quest={quest} ordem={index} onClick={() => openQuestDetail(quest)} />
             ))}
           </div>
         ) : (
-          <Vazio
+          <VazioConquista
             titulo="Nenhuma jornada ativa"
             texto="Comece uma nova jornada para desafiar-se!"
             acao={<button type="button" className="ds-botao" data-tipo="secundario" onClick={() => setShowCreateQuest(true)}><ArcaneIcon name="criar" size={18} />Criar só com nome</button>}
@@ -95,13 +102,13 @@ export const Jornadas: React.FC = () => {
             <ArcaneIcon name="chevron" size={16} />
           </summary>
           {completedQuests.length > 0 ? (
-            <div>
-              {completedQuests.map(quest => (
-                <QuestCard key={quest.id} quest={quest} completed onClick={() => openQuestDetail(quest)} />
+            <div className="cq-lista">
+              {completedQuests.map((quest, index) => (
+                <QuestCard key={quest.id} quest={quest} ordem={index} completed onClick={() => openQuestDetail(quest)} />
               ))}
             </div>
           ) : (
-            <Vazio compacto titulo="Nenhuma jornada concluída" texto="Complete jornadas para vê-las aqui." />
+            <VazioConquista compacto titulo="Nenhuma jornada concluída" texto="Complete jornadas para vê-las aqui." />
           )}
         </details>
 
@@ -116,7 +123,7 @@ export const Jornadas: React.FC = () => {
                   <DialogDescription id="quest-detail-description">Consulte a composição e abra a trilha para continuar.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 pt-4">
+                <div className="grid gap-4 pt-4 cq-folha-corpo">
                   <Link className="ds-botao w-full" data-tipo="primario" to={trailHref(`quest:${selectedQuest.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
                   {selectedQuest.description && <p className="ds-nota">{selectedQuest.description}</p>}
 
@@ -126,13 +133,7 @@ export const Jornadas: React.FC = () => {
                     {selectedQuest.dueDate && <span>Até {new Date(selectedQuest.dueDate).toLocaleDateString('pt-BR')}</span>}
                   </div>
 
-                  <div className="grid gap-2">
-                    <div className="ds-secao" data-nivel="2" style={{ margin: 0 }}>
-                      <h3>Progresso</h3>
-                      <span className="ds-fracao">{selectedQuest.progress}%</span>
-                    </div>
-                    <Medidor valor={selectedQuest.progress / 100} espesso conquista={selectedQuest.isCompleted} rotulo={`Progresso de ${selectedQuest.title}`} />
-                  </div>
+                  <ProgressoVivo titulo="Progresso" valor={selectedQuest.progress} conquista={selectedQuest.isCompleted} rotulo={`Progresso de ${selectedQuest.title}`} />
 
                   {selectedQuest.tasks.length > 0 && (
                     <section>
@@ -204,7 +205,7 @@ export const Jornadas: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      </CenaConquistas>
     </AppLayout>
   );
 };
@@ -212,14 +213,15 @@ export const Jornadas: React.FC = () => {
 interface QuestCardProps {
   quest: Quest;
   completed?: boolean;
+  ordem?: number;
   onClick?: () => void;
 }
 
-const QuestCard: React.FC<QuestCardProps> = ({ quest, completed, onClick }) => {
+const QuestCard: React.FC<QuestCardProps> = ({ quest, completed, ordem, onClick }) => {
   const area = quest.areaId ? getAreaById(quest.areaId) : null;
   const totalItems = quest.tasks.length + quest.habits.length;
   const completedItems = quest.tasks.filter(t => t.isCompleted).length + quest.habits.filter(h => h.isCompleted).length;
-  return <article className="quest-catalog-card"><ShowcaseCard title={quest.title} description={quest.description} element={quest.elementId}
+  return <article className="quest-catalog-card" data-element={quest.elementId}><ShowcaseCard viva ordem={ordem} conquistada={completed} title={quest.title} description={quest.description} element={quest.elementId}
     status={completed ? 'Jornada concluída' : 'Jornada em andamento'} progress={quest.progress}
     chips={[...(area ? [area.name] : []), `${completedItems}/${totalItems} itens`, ...(quest.dueDate ? [new Date(quest.dueDate).toLocaleDateString('pt-BR')] : [])]}
     reward={quest.reward} onOpen={onClick} /><Link className="ds-elo" to={trailHref(`quest:${quest.id}`)} aria-label={`Abrir trilha de ${quest.title}`}>{completed ? 'Consultar trilha' : 'Abrir trilha'}<ArcaneIcon name="chevron" size={16} /></Link></article>;

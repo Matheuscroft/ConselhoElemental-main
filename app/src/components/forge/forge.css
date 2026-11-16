@@ -10,10 +10,11 @@
 .forge-inbox { min-width: 0; }
 .forge-inbox > .ds-secao { margin-top: 0; }
 .forge-feedback:empty { display: none; }
-.forge-feedback { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; margin-bottom: 16px; border: 1px solid color-mix(in srgb, var(--ds-sucesso) 45%, transparent); border-radius: var(--ds-raio-controle); background: color-mix(in srgb, var(--ds-sucesso) 8%, transparent); color: var(--ds-sucesso); }
+.forge-feedback { margin-bottom: 16px; border-radius: var(--ds-raio-controle); }
+.forge-feedback-caixa { position: relative; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px; border: 1px solid color-mix(in srgb, var(--semana-acento, var(--ds-sucesso)) 45%, transparent); border-radius: var(--ds-raio-controle); background: color-mix(in srgb, var(--semana-acento, var(--ds-sucesso)) 8%, transparent); color: var(--semana-acento, var(--ds-sucesso)); }
 .forge-feedback p { flex: 1 1 180px; font-size: var(--ds-text-small); line-height: 1.6; }
 .forge-feedback a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; text-decoration: underline; text-underline-offset: 4px; }
-.forge-feedback > button { color: inherit; }
+.forge-feedback-caixa > button { color: inherit; }
 .forge-search { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
 .forge-search > .ds-campo { flex: 1; }
 .forge-result-count { margin: -4px 0 16px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); }

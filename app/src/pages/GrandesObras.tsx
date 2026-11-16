@@ -7,7 +7,12 @@ import { buildQuestTrails, trailHref } from '@/components/quests/quest-path';
 import '@/components/quests/quests.css';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ShowcaseCard } from '@/components/elemental/ShowcaseCard';
-import { Medidor, MarcaElemento, Vazio } from '@/components/elemental/blocos';
+import { MarcaElemento } from '@/components/elemental/blocos';
+import { CenaConquistas } from '@/components/quests/CenaConquistas';
+import { NumeroVivo } from '@/components/quests/NumeroVivo';
+import { ProgressoVivo } from '@/components/quests/ProgressoVivo';
+import { ResumoConquistas } from '@/components/quests/ResumoConquistas';
+import { VazioConquista } from '@/components/quests/VazioConquista';
 import React, { useMemo, useState } from 'react';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
@@ -84,7 +89,7 @@ export const GrandesObras: React.FC = () => {
 
   return (
     <AppLayout>
-      <div className="quest-catalog">
+      <CenaConquistas tela="obras" className="quest-catalog">
         <header className="ds-cabecalho">
           <h1>Grandes Obras</h1>
           <p>Projetos maiores, organizados em fases, jornadas e ações.</p>
@@ -94,11 +99,7 @@ export const GrandesObras: React.FC = () => {
           </div>
         </header>
 
-        <div className="ds-cifras">
-          <div className="ds-cifra">{projects.length}<small>Total</small></div>
-          <div className="ds-cifra">{activeProjects.length}<small>Ativas</small></div>
-          <div className="ds-cifra">{media}%<small>Média</small></div>
-        </div>
+        <ResumoConquistas total={projects.length} ativas={activeProjects.length} media={media} rotuloMedia="Progresso médio das obras" />
 
         <div className="ds-secao">
           <h2>Ativas</h2>
@@ -135,7 +136,7 @@ export const GrandesObras: React.FC = () => {
                   <DialogDescription id="project-detail-description">Consulte a composição e abra a trilha para continuar.</DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 pt-4">
+                <div className="grid gap-4 pt-4 cq-folha-corpo">
                   <Link className="ds-botao w-full" data-tipo="primario" to={trailHref(`project:${selectedProject.id}`)}><ArcaneIcon name="jornada" size={20} />Explorar trilha de quests</Link>
                   {selectedProject.description && <p className="ds-nota">{selectedProject.description}</p>}
 
@@ -145,19 +146,13 @@ export const GrandesObras: React.FC = () => {
                     {selectedProject.dueDate && <span>Até {new Date(selectedProject.dueDate).toLocaleDateString('pt-BR')}</span>}
                   </div>
 
-                  <div className="grid gap-2">
-                    <div className="ds-secao" data-nivel="2" style={{ margin: 0 }}>
-                      <h3>Progresso registrado da obra</h3>
-                      <span className="ds-fracao">{selectedProject.progress}%</span>
-                    </div>
-                    <Medidor valor={selectedProject.progress / 100} espesso conquista={selectedProject.status === 'completed'} rotulo={`Progresso de ${selectedProject.title}`} />
-                  </div>
+                  <ProgressoVivo titulo="Progresso registrado da obra" valor={selectedProject.progress} conquista={selectedProject.status === 'completed'} rotulo={`Progresso de ${selectedProject.title}`} />
 
                   <div className="ds-cifras">
-                    <div className="ds-cifra">{selectedProject.missions.length}<small>Capítulos</small></div>
-                    <div className="ds-cifra">{selectedProject.quests.length}<small>Jornadas</small></div>
-                    <div className="ds-cifra">{selectedProject.tasks.length}<small>Rituais</small></div>
-                    <div className="ds-cifra">{selectedProject.habits.length}<small>Ciclos</small></div>
+                    <div className="ds-cifra"><NumeroVivo sempre valor={selectedProject.missions.length} /><small>Capítulos</small></div>
+                    <div className="ds-cifra"><NumeroVivo sempre valor={selectedProject.quests.length} /><small>Jornadas</small></div>
+                    <div className="ds-cifra"><NumeroVivo sempre valor={selectedProject.tasks.length} /><small>Rituais</small></div>
+                    <div className="ds-cifra"><NumeroVivo sempre valor={selectedProject.habits.length} /><small>Ciclos</small></div>
                   </div>
 
                   <section>
@@ -238,7 +233,7 @@ export const GrandesObras: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
+      </CenaConquistas>
     </AppLayout>
   );
 };
@@ -254,7 +249,7 @@ interface ProjectListProps {
 const ProjectList: React.FC<ProjectListProps> = ({ projects, completed, archived, onSelect, onCreate }) => {
   if (projects.length === 0) {
     return (
-      <Vazio
+      <VazioConquista
         compacto={!!(completed || archived)}
         titulo={archived ? 'Nenhuma obra arquivada' : completed ? 'Nenhuma obra concluída' : 'Nenhuma obra ativa'}
         texto={archived
@@ -270,9 +265,9 @@ const ProjectList: React.FC<ProjectListProps> = ({ projects, completed, archived
   }
 
   return (
-    <div>
-      {projects.map(project => (
-        <ProjectCard key={project.id} project={project} completed={completed} archived={archived} onClick={() => onSelect(project)} />
+    <div className="cq-lista">
+      {projects.map((project, index) => (
+        <ProjectCard key={project.id} project={project} ordem={index} completed={completed} archived={archived} onClick={() => onSelect(project)} />
       ))}
     </div>
   );
@@ -282,13 +277,14 @@ interface ProjectCardProps {
   project: Project;
   completed?: boolean;
   archived?: boolean;
+  ordem?: number;
   onClick?: () => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived, onClick }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, completed, archived, ordem, onClick }) => {
   const area = project.areaId ? getAreaById(project.areaId) : null;
   const totalItems = project.missions.length + project.quests.length + project.tasks.length + project.habits.length;
-  return <article className="quest-catalog-card"><ShowcaseCard title={project.title} description={project.description} element={project.elementId}
+  return <article className="quest-catalog-card" data-element={project.elementId}><ShowcaseCard viva ordem={ordem} conquistada={completed} title={project.title} description={project.description} element={project.elementId}
     status={archived ? 'Obra arquivada' : completed ? 'Obra concluída' : 'Obra em andamento'} progress={project.progress}
     chips={[...(area ? [area.name] : []), `${totalItems} itens`, ...(project.missions.length ? [`${project.missions.length} capítulos`] : [])]}
     reward={project.reward} onOpen={onClick} /><Link className="ds-elo" to={trailHref(`project:${project.id}`)} aria-label={`Abrir trilha de ${project.title}`}>{archived || completed ? 'Consultar trilha' : 'Abrir trilha'}<ArcaneIcon name="chevron" size={16} /></Link></article>;

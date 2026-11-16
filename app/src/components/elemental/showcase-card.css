@@ -25,3 +25,64 @@ details.vitrine[open] > summary .ds-runa-chevron { transform: rotate(180deg); }
 @media (prefers-reduced-motion: reduce) {
   .vitrine-content, details.vitrine[open] > summary .ds-runa-chevron { animation: none; transition: none; }
 }
+
+/*
+ * Light and depth, only when the card is made `viva`: the resting card above is
+ * untouched. The seal gets a ring that draws the progress, a halo behind it and
+ * a shadow under it; the card gets a one-pixel rim and a light inside that
+ * follow the finger (--luz-x and --luz-y, written by useLuzDoToque on
+ * `[data-luz]`). The arrival of the ring and the cascade live in quests-uau.css.
+ */
+.vitrine[data-viva] { isolation: isolate; }
+.vitrine[data-viva] .vitrine-art { position: relative; overflow: visible; }
+.vitrine-anel { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; pointer-events: none; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--elem-aura) 55%, transparent)); }
+.vitrine-anel circle { fill: none; stroke-width: 2.5; }
+.vitrine-anel-trilho { stroke: rgb(var(--el-muted) / .2); }
+.vitrine-anel-arco { stroke: var(--elem-acento); transition: stroke-dasharray var(--ds-duration-settle) var(--ds-ease); }
+.vitrine[data-conquistada] .vitrine-anel-arco { stroke: rgb(var(--el-gold)); }
+.vitrine[data-viva] .vitrine-art::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), color-mix(in srgb, var(--elem-aura) 8%, transparent) 50%, transparent 70%);
+  translate: calc(var(--par-x, 0) * -3px) calc(var(--par-y, 0) * -2px);
+}
+.vitrine[data-viva] .vitrine-art > svg:not(.vitrine-anel) {
+  position: relative;
+  filter: drop-shadow(0 4px 7px color-mix(in srgb, var(--elem-aura) 40%, transparent));
+  translate: calc(var(--par-x, 0) * 3px) calc(var(--par-y, 0) * 2px);
+}
+.vitrine[data-viva] > summary { position: relative; isolation: isolate; }
+.vitrine[data-viva] > summary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--elem-aura) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.vitrine[data-viva]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--elem-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .16;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.vitrine[data-luz-acesa] > summary::before, .vitrine[data-luz-acesa]::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-anel-arco, .vitrine[data-viva] > summary::before, .vitrine[data-viva]::before { transition: none; }
+  .vitrine[data-viva] .vitrine-art::before, .vitrine[data-viva] .vitrine-art > svg:not(.vitrine-anel) { translate: none; }
+}

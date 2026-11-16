@@ -2,12 +2,13 @@ import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import type { Draft } from '@/types';
 
-export function ForgeDraftCard({ draft, onClassify, onEdit, onDelete }: {
-  draft: Draft; onClassify: (id: string) => void; onEdit: (id: string) => void; onDelete: (id: string) => void;
+export function ForgeDraftCard({ draft, recem = false, onClassify, onEdit, onDelete }: {
+  draft: Draft; recem?: boolean; onClassify: (id: string) => void; onEdit: (id: string) => void; onDelete: (id: string) => void;
 }) {
   const created = new Date(draft.createdAt);
   const dateLabel = Number.isNaN(created.getTime()) ? 'Data não informada' : created.toLocaleDateString('pt-BR');
-  return <article className="forge-draft ds-runa">
+  // data-luz: the scene writes where the finger is, and the card's rim and inner light follow it.
+  return <article className="forge-draft ds-runa" data-luz="" data-recem={recem ? '' : undefined}>
     <details>
       <summary>
         <span className="forge-draft-rune" aria-hidden="true"><ArcaneIcon name="forja" size={28} /></span>

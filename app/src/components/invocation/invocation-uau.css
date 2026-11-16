@@ -1,0 +1,385 @@
+/*
+ * Invocar, UAU pass. Same language as the Sanctuary, Pillars, Cycles and Rituals:
+ *
+ *  - a room lit by an element: the one leading the week at first, then the one
+ *    being shaped (--inv-acento and --inv-aura, written by CenaInvocar and
+ *    registered as colours, so a change of element is a slow turn of the light
+ *    and not a jump);
+ *  - ONE real pane of glass, the step panel (.ds-glass-float, the system's own
+ *    recipe, so this sheet declares no blur of its own), with that light behind
+ *    it, a one-pixel rim that catches the finger and a light inside that
+ *    follows it. The pane stays still while the steps change inside it;
+ *  - a thread of light under the three steps that travels on the spring of the
+ *    system, forward and back;
+ *  - the formats are cards with the finger's light and a sigil that answers
+ *    the selection;
+ *  - the result is the moment of conjuring, in the colour of the element;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve").
+ *
+ * Loaded after invocation.css, so where the two meet this one wins. Every time
+ * is a --ds-duration-* token or a multiple of one; only transform, opacity,
+ * scale and translate move.
+ */
+
+@property --inv-acento { syntax: '<color>'; inherits: true; initial-value: #d6b66f; }
+@property --inv-aura { syntax: '<color>'; inherits: true; initial-value: #d6b66f; }
+
+.inv-cena {
+  --inv-acento: rgb(var(--el-gold));
+  --inv-aura: #d6b66f;
+  /* Film grain as an image, so a gradient this dark does not band. */
+  --inv-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+  transition: --inv-acento var(--ds-duration-settle) var(--ds-ease), --inv-aura var(--ds-duration-settle) var(--ds-ease);
+}
+/* While the arrival plays, the format cards wait for the heading, the thread and the pane. */
+.inv-cena[data-entrada="plena"] { --inv-base: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8); }
+
+/* ---------- The room: the light behind the heading ---------- */
+.inv-luz {
+  position: absolute;
+  inset: -24px -8px auto -8px;
+  height: 340px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--inv-grao),
+    radial-gradient(ellipse 48% 54% at 42% 30%, color-mix(in srgb, var(--inv-aura) 28%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 46%, rgb(var(--el-gold) / .14), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--inv-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -4px);
+}
+.inv-cena .inv-cabecalho > h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--inv-aura) 34%, transparent); }
+
+/* Buttons answer with a spring: quick down, and back past the mark. */
+.inv-cena .ds-botao { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-feedback) var(--ds-ease), opacity var(--ds-duration-feedback) var(--ds-ease); }
+.inv-cena .ds-botao:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.inv-cena .ds-botao[data-tipo="primario"] {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inv-acento) 76%, white), var(--inv-acento));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--inv-acento) 28%, transparent), inset 0 1px 0 rgb(255 255 255 / .5);
+}
+.inv-cena .ds-botao[data-tipo="primario"]:disabled { box-shadow: none; opacity: .5; }
+
+/* ---------- The steps: a thread of light that travels with the spring ---------- */
+.invocation-trilha { position: absolute; inset: auto 0 0; height: 2px; overflow: hidden; background: rgb(var(--el-muted) / .2); }
+.invocation-fio {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--inv-acento) 35%, transparent), var(--inv-acento));
+  transform: translateX(calc((var(--prog, 0) - 1) * 100%));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+/* The head of the thread: a spark that rides its end. */
+.invocation-ponta {
+  position: absolute;
+  inset: auto 0 -3px;
+  height: 8px;
+  pointer-events: none;
+  transform: translateX(calc((var(--prog, 0) - 1) * 100%));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.invocation-ponta::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--inv-acento);
+  box-shadow: 0 0 12px var(--inv-aura), 0 0 4px var(--inv-acento);
+}
+.inv-cena .invocation-progress li { transition: color var(--ds-duration-settle) var(--ds-ease); }
+.inv-cena .invocation-progress li>span:first-child { position: relative; transition: background-color var(--ds-duration-settle) var(--ds-ease), border-color var(--ds-duration-settle) var(--ds-ease), color var(--ds-duration-settle) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.inv-cena .invocation-progress li[aria-current="step"] { color: var(--inv-acento); }
+.inv-cena .invocation-progress li[aria-current="step"]>span:first-child { background: var(--inv-acento); border-color: var(--inv-acento); transform: scale(1.08); box-shadow: 0 0 14px color-mix(in srgb, var(--inv-aura) 40%, transparent); }
+.inv-cena .invocation-progress li[data-complete="true"]>span:first-child { color: var(--inv-acento); border-color: color-mix(in srgb, var(--inv-acento) 60%, transparent); }
+/* A ring leaves the number each time a step becomes the current one. */
+.inv-cena .invocation-progress li[aria-current="step"]>span:first-child::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--inv-acento);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: inv-anel var(--ds-duration-conjure) var(--ds-ease) both;
+}
+
+/* ---------- The one pane of glass: the step panel ---------- */
+.inv-altar { position: relative; min-width: 0; }
+/* Light behind the pane, so the blur has something to bend. Every light ends inside the box. */
+.inv-altar-luz {
+  position: absolute;
+  inset: -36px -20px -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 30% at 24% 22%, color-mix(in srgb, var(--inv-aura) 34%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 26% at 78% 70%, rgb(var(--el-gold) / .22), transparent 100%),
+    radial-gradient(ellipse 36% 16% at 60% 8%, color-mix(in srgb, var(--inv-acento) 22%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+}
+/* The system's own glass recipe is on the markup; this only dresses it with a clearer fill, the specular edge and the grain. */
+.inv-cena .inv-painel {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: 20px 20px 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--inv-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+/* The rim: one pixel of light around the pane, brightest where the finger is. At rest it sits at the top edge, where a sheet of glass catches a lamp. */
+.inv-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--inv-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the pane, under its content. */
+.inv-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--inv-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.inv-painel[data-luz-acesa]::before, .inv-painel[data-luz-acesa]::after, .inv-painel:focus-within::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+.inv-cena .invocation-step-title h2 { text-shadow: 0 0 22px color-mix(in srgb, var(--inv-aura) 22%, transparent); }
+.inv-cena .invocation-step-title h2:focus { outline: none; }
+/* The foot sits at the pane's edge and stays above the bottom navigation while the step scrolls under it. */
+.inv-painel .invocation-pe.ds-folha-pe { margin-inline: -20px; padding-inline: 20px; background: rgb(var(--el-canvas) / .9); border-top-color: rgb(255 255 255 / 8%); }
+
+/* Fields: a little deeper than the glass, with the element's own glow on focus. */
+.inv-painel .ds-campo :is(input, textarea) {
+  background-color: rgb(var(--el-canvas) / .5);
+  transition: border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.inv-painel .ds-campo :is(input:not([type="range"]), textarea):focus,
+.inv-painel .ds-campo :is(input:not([type="range"]), textarea):focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--inv-acento) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--inv-acento) 55%, transparent), 0 0 30px color-mix(in srgb, var(--inv-acento) 24%, transparent);
+}
+.inv-painel .ds-campo-controle { background-color: rgb(var(--el-canvas) / .5); }
+
+/* ---------- The formats: cards with the finger's light ---------- */
+.inv-cena .invocation-choice-face.ds-runa {
+  isolation: isolate;
+  overflow: clip;
+  animation: inv-carta var(--ds-duration-settle) var(--ds-ease) calc(var(--inv-base, 0ms) + var(--i, 0) * var(--ds-stagger)) backwards;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.invocation-choice-face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--inv-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .16;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.invocation-choice-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(240px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--inv-aura) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.invocation-choice-face[data-luz-acesa]::before, .invocation-choice-face[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+@keyframes inv-carta { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+
+/* Selected: the card lifts on a spring, takes the room's light, and its sigil answers. */
+.inv-cena .invocation-choice input:checked+.invocation-choice-face {
+  border-color: color-mix(in srgb, var(--inv-acento) 80%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--inv-aura) 16%, transparent), color-mix(in srgb, var(--inv-acento) 5%, transparent)), var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), 0 10px 28px color-mix(in srgb, var(--inv-aura) 22%, transparent);
+  transform: translateY(-2px);
+}
+.inv-cena .invocation-choice:active input+.invocation-choice-face { transform: scale(.97); transition-duration: var(--ds-duration-press); }
+.inv-cena .invocation-choice input:focus-visible+.invocation-choice-face { outline: 2px solid color-mix(in srgb, var(--inv-acento) 70%, transparent); outline-offset: 2px; }
+.inv-cena .invocation-choice-sigil {
+  position: relative;
+  color: color-mix(in srgb, var(--inv-acento) 62%, rgb(var(--el-muted)));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), color var(--ds-duration-feedback) var(--ds-ease);
+}
+.inv-cena .invocation-choice-sigil > svg { position: relative; transition: filter var(--ds-duration-settle) var(--ds-ease); }
+/* The halo behind the sigil opens when it is chosen. */
+.invocation-choice-sigil::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--inv-aura) 38%, transparent), transparent 68%);
+  opacity: 0;
+  scale: .6;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.invocation-choice input:checked+.invocation-choice-face .invocation-choice-sigil { color: var(--inv-acento); transform: scale(1.12); }
+.invocation-choice input:checked+.invocation-choice-face .invocation-choice-sigil::before { opacity: 1; scale: 1; }
+.invocation-choice input:checked+.invocation-choice-face .invocation-choice-sigil > svg { filter: drop-shadow(0 0 8px var(--inv-aura)); }
+/* One ring leaves the sigil each time a format is chosen. */
+.invocation-choice-onda { position: absolute; inset: 0; border: 2px solid var(--inv-acento); border-radius: 50%; opacity: 0; pointer-events: none; }
+.invocation-choice input:checked+.invocation-choice-face .invocation-choice-onda { animation: inv-anel var(--ds-duration-conjure) var(--ds-ease) both; }
+@keyframes inv-anel { from { opacity: .9; transform: scale(.5); } to { opacity: 0; transform: scale(2.2); } }
+.inv-cena .invocation-choice-check { visibility: visible; opacity: 0; transform: scale(.4); color: var(--inv-acento); transition: opacity var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.inv-cena .invocation-choice input:checked+.invocation-choice-face .invocation-choice-check { opacity: 1; transform: scale(1); }
+@media (hover: hover) { .inv-cena .invocation-choice:hover .invocation-choice-face { border-color: color-mix(in srgb, var(--inv-acento) 65%, transparent); } }
+
+/* ---------- The element: four seals that glow when chosen ---------- */
+.invocation-element .ds-selo { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.invocation-element .ds-selo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 45%, transparent), transparent 70%);
+  opacity: 0;
+  scale: .6;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.invocation-element .ds-selo[aria-pressed="true"] { transform: scale(1.1); }
+.invocation-element .ds-selo[aria-pressed="true"]::after { opacity: 1; scale: 1.15; }
+.invocation-element .ds-selo:active { transform: scale(.9); transition-duration: var(--ds-duration-press); }
+.invocation-element>span { transition: color var(--ds-duration-feedback) var(--ds-ease); }
+
+/* ---------- Effort: the number answers ---------- */
+.invocation-effort .ds-cifra { transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.invocation-effort .ds-cifra[aria-pressed="true"] { transform: translateY(-2px); }
+.invocation-effort .ds-cifra:active { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+
+/* ---------- Review: the summary has the element's colour ---------- */
+.invocation-review {
+  position: relative;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 32%, rgb(255 255 255 / 8%));
+  border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 120% 100% at 0 0, color-mix(in srgb, var(--elem-aura) 14%, var(--elem-tinta)), transparent 70%), rgb(var(--el-canvas) / .35);
+}
+.invocation-review:not([data-element]) { --elem-acento: rgb(var(--el-gold)); }
+.invocation-review .invocation-review-name { font-family: var(--ds-font-heading); }
+
+/* ---------- The result: the moment of conjuring ---------- */
+.invocation-success.ds-folha {
+  background: radial-gradient(ellipse 90% 46% at 50% 0, color-mix(in srgb, var(--elem-aura) 20%, transparent), transparent 100%), rgb(var(--el-canvas));
+  border-color: color-mix(in srgb, var(--elem-aura) 38%, rgb(var(--el-gold) / .3));
+}
+.invocation-result:not([data-element]) { --elem-acento: rgb(var(--el-gold)); }
+.invocation-conjuro { position: relative; display: grid; place-items: center; width: 96px; height: 96px; margin: 0 auto 4px; }
+.invocation-conjuro > .invocation-success-icon {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  width: 68px;
+  height: 68px;
+  color: var(--elem-acento);
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 55%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--elem-aura) 14%, transparent);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--elem-aura) 40%, transparent);
+  animation: inv-conjurar var(--ds-duration-conjure) var(--ds-ease-conjure) both;
+}
+.invocation-conjuro > .invocation-success-icon > svg { filter: drop-shadow(0 0 8px var(--elem-aura)); }
+.invocation-conjuro-halo {
+  position: absolute;
+  inset: -22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 46%, transparent), transparent 68%);
+  animation: inv-halo var(--ds-duration-conjure) var(--ds-ease) both, inv-respirar calc(var(--ds-duration-conjure) * 5) ease-in-out var(--ds-duration-conjure) infinite alternate;
+}
+.invocation-conjuro-anel { position: absolute; inset: 14px; border: 2px solid var(--elem-acento); border-radius: 50%; opacity: 0; animation: inv-anel calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) var(--ds-duration-reveal) both; }
+.invocation-conjuro-anel[data-segundo] { border-width: 1px; animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 3); }
+.invocation-conjuro i {
+  --giro: calc(var(--faisca) * 30deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px;
+  border-radius: 50%;
+  background: var(--elem-aura);
+  box-shadow: 0 0 6px var(--elem-aura);
+  opacity: 0;
+  animation: inv-faisca calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--faisca) * var(--ds-stagger) * .5) both;
+}
+.invocation-conjuro i:nth-of-type(even) { width: 3px; height: 3px; margin: -1.5px; }
+.invocation-result-title { font-family: var(--ds-font-heading); font-weight: 500; text-shadow: 0 0 24px color-mix(in srgb, var(--elem-aura) 40%, transparent); }
+.invocation-result > :nth-child(2) { animation: inv-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2) backwards; }
+.invocation-result > :nth-child(3) { animation: inv-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 3) backwards; }
+.invocation-result > :nth-child(4) { animation: inv-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.invocation-result > :nth-child(5) { animation: inv-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 5) backwards; }
+.invocation-result .ds-botao { min-height: 48px; transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.invocation-result .ds-botao:active { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.invocation-result .ds-botao[data-tipo="primario"] { background: linear-gradient(180deg, color-mix(in srgb, var(--elem-acento) 76%, white), var(--elem-acento)); box-shadow: 0 8px 24px color-mix(in srgb, var(--elem-aura) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / .5); }
+@keyframes inv-conjurar { from { opacity: 0; transform: scale(.3) rotate(-18deg); } }
+@keyframes inv-halo { from { opacity: 0; scale: .4; } to { opacity: 1; scale: 1; } }
+@keyframes inv-respirar { from { transform: scale(.94); opacity: .8; } to { transform: scale(1.06); opacity: 1; } }
+@keyframes inv-faisca {
+  0% { opacity: 0; transform: rotate(var(--giro)) translateY(-26px) scale(.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--giro)) translateY(-64px) scale(.2); }
+}
+@keyframes inv-subir { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- The arrival, once per opening of the app ---------- */
+.inv-cena[data-entrada="plena"] .inv-luz { animation: inv-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.inv-cena[data-entrada="plena"] .inv-cabecalho > * { animation: inv-entrar var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.inv-cena[data-entrada="plena"] .inv-cabecalho > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.inv-cena[data-entrada="plena"] .invocation-progresso { animation: inv-entrar var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.inv-cena[data-entrada="plena"] .inv-altar { animation: inv-entrar var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+/* Coming back from another screen: the room is already known, so it only fades in. */
+.inv-cena[data-entrada="breve"] :is(.inv-cabecalho, .invocation-progresso, .inv-altar) { animation: inv-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+@keyframes inv-aparecer { from { opacity: 0; } }
+@keyframes inv-entrar { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- System preferences ---------- */
+/* Someone who asked for less transparency gets a pane that is nearly solid, so the blur has nothing left to show. */
+@media (prefers-reduced-transparency: reduce) {
+  .inv-cena .inv-painel { background: rgb(var(--el-surface) / 96%); }
+  .inv-luz, .inv-altar-luz { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .inv-luz, .inv-altar-luz { translate: none; }
+  .invocation-conjuro i, .invocation-conjuro-anel, .invocation-choice-onda,
+  .inv-cena .invocation-progress li[aria-current="step"]>span:first-child::after { display: none; }
+  .invocation-conjuro-halo, .invocation-conjuro > .invocation-success-icon, .invocation-result > p, .invocation-result > a,
+  .inv-cena .invocation-choice-face.ds-runa { animation: none; }
+}

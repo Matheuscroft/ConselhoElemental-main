@@ -1,11 +1,12 @@
 .invocation { width: min(100%, 760px); margin: 0 auto; padding-bottom: 24px; }
 
-/* Passo a passo: sequencia de verdade, os numeros ficam como selos de 28. */
-.invocation-progress { display: flex; padding: 0; list-style: none; margin: 0 0 var(--ds-ritmo-secao); gap: 12px; }
-.invocation-progress li { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-height: 44px; color: rgb(var(--el-muted)); border-bottom: 2px solid rgb(var(--el-muted) / .2); padding-bottom: 12px; }
+/* Passo a passo: sequencia de verdade, os numeros ficam como selos de 28. O fio de luz por baixo e do invocation-uau.css. */
+.invocation-progresso { position: relative; margin: 0 0 var(--ds-ritmo-secao); overflow-x: clip; }
+.invocation-progress { display: flex; padding: 0 0 12px; list-style: none; margin: 0; gap: 0; }
+.invocation-progress li { flex: 1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; min-width: 0; min-height: 44px; padding-right: 8px; color: rgb(var(--el-muted)); }
 .invocation-progress li>span:first-child { display: grid; place-items: center; flex: 0 0 28px; width: 28px; height: 28px; border: 1px solid rgb(var(--el-muted) / .3); border-radius: 50%; font-family: var(--ds-font-heading); font-size: var(--ds-text-micro); line-height: 1; }
 .invocation-progress strong { font-weight: 500; font-size: var(--ds-text-micro); }
-.invocation-progress li[aria-current="step"] { color: rgb(var(--el-gold)); border-color: currentColor; }
+.invocation-progress li[aria-current="step"] { color: rgb(var(--el-gold)); }
 .invocation-progress li[aria-current="step"]>span:first-child { background: rgb(var(--el-gold)); border-color: rgb(var(--el-gold)); color: rgb(var(--el-canvas)); }
 .invocation-progress li[data-complete="true"]>span:first-child { color: rgb(var(--el-gold)); border-color: rgb(var(--el-gold) / .6); }
 
@@ -82,12 +83,8 @@
 .invocation-result-title { font-size: var(--ds-text-lead); font-weight: 600; overflow-wrap: anywhere; }
 .invocation-result > p { line-height: 1.6; }
 .invocation-result .ds-botao { white-space: normal; text-align: center; text-decoration: none; }
-.invocation-result .invocation-success-icon { animation: invocation-saved var(--ds-duration-reveal) var(--ds-ease) both; }
-@keyframes invocation-saved { from { opacity: .4; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-@media(max-width:400px) { .invocation-progress { gap: 8px; } }
 @media(hover:hover) { .invocation-choice:hover .invocation-choice-face { border-color: rgb(var(--el-gold) / .65); } }
 @media(prefers-reduced-motion:reduce) {
-  .invocation-result .invocation-success-icon { animation: none; }
   .invocation-choice-face.ds-runa { transition: none; }
 }

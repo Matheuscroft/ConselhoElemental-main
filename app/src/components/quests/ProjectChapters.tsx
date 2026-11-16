@@ -1,5 +1,8 @@
+import type { CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { Medidor } from '@/components/elemental/blocos';
+import './quests-uau.css';
 import { QuestRune } from './QuestRune';
 import { trailHref, type QuestTrail } from './quest-path';
 
@@ -13,10 +16,10 @@ export function ProjectChapters({ trail }: { trail: QuestTrail }) {
       const tasks = steps.filter(step => step.kind === 'task');
       const done = tasks.filter(step => step.completed).length;
       const next = steps.find(step => step.available && !step.completed && step.kind === 'task');
-      return <details key={chapter.id} className="quest-chapter ds-runa" data-forma="vitrine" data-element={trail.element}>
+      return <details key={chapter.id} className="quest-chapter ds-runa" data-forma="vitrine" data-element={trail.element} style={{ '--i': Math.min(index, 7) } as CSSProperties}>
         <summary>
           <span className="quest-chapter-rune ds-runa-arte" aria-hidden="true"><QuestRune element={trail.element} size={36} /></span>
-          <span className="quest-chapter-texto"><strong className="ds-runa-titulo">{chapter.title}</strong><span className="ds-meta"><span>Capítulo {index + 1}</span><span>{tasks.length ? `${done} de ${tasks.length} rituais concluídos` : 'Sem rituais pontuais'}</span>{steps.some(step => step.kind === 'habit') && <span>inclui ciclos</span>}</span></span>
+          <span className="quest-chapter-texto"><strong className="ds-runa-titulo">{chapter.title}</strong><span className="ds-meta"><span>Capítulo {index + 1}</span><span>{tasks.length ? `${done} de ${tasks.length} rituais concluídos` : 'Sem rituais pontuais'}</span>{steps.some(step => step.kind === 'habit') && <span>inclui ciclos</span>}</span>{tasks.length > 0 && <Medidor valor={done / tasks.length} rotulo={`Rituais concluídos em ${chapter.title}`} />}</span>
           <ArcaneIcon name="chevron" className="ds-runa-chevron" size={16} />
         </summary>
         <div className="quest-chapter-content ds-runa-conteudo">

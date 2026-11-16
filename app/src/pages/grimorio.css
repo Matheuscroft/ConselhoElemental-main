@@ -9,12 +9,17 @@
 .grimoire-dialog :is(a, button, input):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
 .grimoire-workspace :is(section, h2)[id] { scroll-margin-top: 100px; }
 .grimoire-workspace .ds-nota { margin-top: -8px; margin-bottom: var(--ds-ritmo-cabeca); }
-.grimoire-sheet {
-  position: relative; isolation: isolate; border: 1px solid var(--grimoire-line); border-radius: var(--ds-raio-runa);
+/* The sheet is the screen's one real pane of glass: the system's own .ds-glass-float on the markup, so this file declares no blur. It only dresses the glass (clearer fill, specular edge, grain; see the UAU block below). */
+.grimoire-workspace .grimoire-sheet {
+  position: relative; isolation: isolate; border: 1px solid rgb(255 255 255 / 10%); border-radius: var(--ds-raio-runa);
   margin-top: var(--ds-ritmo-cabeca);
   padding: 22px 18px 0;
-  background: radial-gradient(ellipse at 85% 15%, color-mix(in srgb, var(--element-agua) 10%, transparent), transparent 48%), radial-gradient(ellipse at 0% 100%, rgb(var(--el-gold) / .07), transparent 55%), linear-gradient(120deg, rgb(var(--el-surface) / .76), rgb(var(--el-canvas) / .9));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / .07), 0 18px 60px rgb(0 0 0 / .15);
+  background:
+    var(--gr-grao),
+    radial-gradient(ellipse at 85% 12%, color-mix(in srgb, var(--semana-aura) 16%, transparent), transparent 52%),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
 }
 .grimoire-identity { position: relative; z-index: 1; padding-right: 96px; min-height: 205px; }
 .grimoire-rank { display: flex; align-items: center; gap: 7px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); line-height: 1.6; }
@@ -24,8 +29,8 @@
 .grimoire-streak { margin: 8px 0 20px; }
 .grimoire-streak > span:first-child { color: var(--elem-acento); }
 .grimoire-portrait { position: absolute; z-index: 0; pointer-events: none; top: 24px; right: 7px; width: 106px; height: 205px; display: flex; align-items: center; justify-content: center; color: rgb(var(--el-gold)); }
-.grimoire-portrait > img { position: relative; width: 100%; height: 100%; object-fit: contain; object-position: center; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--element-agua) 12%, transparent)); }
-.grimoire-portrait-ring { position: absolute; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid rgb(var(--el-gold) / .35); box-shadow: 0 0 45px color-mix(in srgb, var(--element-agua) 10%, transparent), inset 0 0 32px rgb(var(--el-gold) / .06); }
+.grimoire-portrait > img { position: relative; width: 100%; height: 100%; object-fit: contain; object-position: center; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--semana-aura) 34%, transparent)); }
+.grimoire-portrait-ring { position: absolute; width: 100%; aspect-ratio: 1; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--semana-acento) 45%, transparent); box-shadow: 0 0 45px color-mix(in srgb, var(--semana-aura) 24%, transparent), inset 0 0 32px color-mix(in srgb, var(--semana-aura) 10%, transparent); }
 .grimoire-portrait-ring::before { content: ''; position: absolute; inset: -9px; border-radius: inherit; border: 1px dashed rgb(var(--el-gold) / .18); }
 .grimoire-portrait-seal { position: absolute; bottom: -2px; left: calc(50% - 18px); width: 36px; height: 36px; display: grid; place-items: center; background: rgb(var(--el-canvas) / .8); border: 1px solid var(--grimoire-line); border-radius: 50%; }
 .grimoire-resources { position: relative; z-index: 1; min-width: 0; padding: 18px 14px 12px; border-radius: var(--ds-raio-runa); }
@@ -44,12 +49,12 @@
 .grimoire-overview > :is(a, div) { overflow-wrap: anywhere; }
 .grimoire-elements-grid { display: grid; gap: var(--ds-ritmo-lista); align-items: start; }
 .grimoire-elements-grid > .ds-runa { margin-top: 0; }
-.grimoire-element { overflow: clip; }
+.grimoire-element { overflow: clip; isolation: isolate; }
 .grimoire-element > summary { display: flex; align-items: center; gap: 14px; min-height: 56px; cursor: pointer; list-style: none; }
 .grimoire-element > summary::-webkit-details-marker, .grimoire-timeline summary::-webkit-details-marker { display: none; }
 .grimoire-element > summary:focus-visible, .grimoire-timeline summary:focus-visible { outline-offset: 2px; border-radius: var(--ds-raio-controle); }
-.grimoire-element-art { flex: 0 0 56px; width: 56px; height: 56px; position: relative; display: grid; place-items: center; color: var(--elem-acento); }
-.grimoire-element-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.grimoire-element-art { flex: 0 0 64px; width: 64px; height: 64px; position: relative; display: grid; place-items: center; color: var(--elem-acento); }
+.grimoire-element-art img { position: absolute; inset: 9px; width: calc(100% - 18px); height: calc(100% - 18px); object-fit: contain; }
 .grimoire-element-name { display: grid; flex: 1; gap: 4px; min-width: 0; }
 .grimoire-element-name strong { font-family: Cinzel, Georgia, serif; font-weight: 500; font-size: var(--ds-text-lead); color: var(--elem-acento); }
 .grimoire-element-name > span { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
@@ -95,7 +100,7 @@
   .grimoire-elements-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container (min-width: 690px) {
-  .grimoire-sheet { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(0, 1.6fr); column-gap: 28px; padding: 28px 28px 0; }
+  .grimoire-workspace .grimoire-sheet { display: grid; grid-template-columns: minmax(180px, .7fr) minmax(0, 1.6fr); column-gap: 28px; padding: 28px 28px 0; }
   .grimoire-portrait { position: relative; grid-column: 1; grid-row: 1 / 3; inset: auto; width: 100%; height: 100%; min-height: 345px; max-height: 440px; }
   .grimoire-portrait > img { width: 100%; height: 360px; }
   .grimoire-portrait-seal { bottom: 12px; }
@@ -107,4 +112,284 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .grimoire-workspace *, .grimoire-workspace *::after, .grimoire-dialog { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}
+
+/* ==========================================================================
+   Passada UAU do Grimório. A luz do elemento que lidera a semana
+   (--semana-acento, --semana-aura, escritas por CenaGrimorio), uma entrada por
+   abertura do app, uma única superfície de vidro (a ficha, .ds-glass-float),
+   a luz do dedo (--luz-x, --luz-y) e a profundidade (--par-x, --par-y)
+   escritas por hooks. Só transform, opacity e traços se movem; toda duração
+   vem dos tokens.
+   ========================================================================== */
+.gr-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --gr-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+}
+/* While the arrival plays, the bars and the counters wait for the sheet to land. */
+.gr-cena[data-entrada="plena"] { --gr-base: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8); }
+
+/* The light behind the heading and the sheet. Every gradient ends inside the box, so none is cut by its edge. */
+.gr-luz {
+  position: absolute;
+  inset: -24px 8px auto 8px;
+  height: 640px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--gr-grao),
+    radial-gradient(ellipse 50% 24% at 40% 14%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 58% 26% at 72% 40%, color-mix(in srgb, var(--semana-aura) 24%, transparent), transparent 100%),
+    radial-gradient(ellipse 44% 18% at 24% 62%, rgb(var(--el-gold) / .16), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 66% 64% at 50% 44%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 66% 64% at 50% 44%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+.gr-cabecalho > h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 34%, transparent); }
+
+/* ---------- The finger's light: a rim of one pixel and a glow inside, on every [data-luz] surface ---------- */
+.gr-cena :is(.grimoire-sheet, .grimoire-element, .gr-grafico)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--gr-foco, var(--semana-acento)) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .3;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.gr-cena .grimoire-sheet::before { inset: -1px; opacity: .38; }
+.gr-cena .grimoire-sheet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.gr-cena :is(.grimoire-sheet, .grimoire-element, .gr-grafico)[data-luz-acesa]::before,
+.gr-cena .grimoire-sheet[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.gr-brilho {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--ds-raio-runa);
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--gr-foco, var(--semana-acento)) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+[data-luz-acesa] > .gr-brilho, [data-luz-acesa] > summary > .gr-brilho { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* ---------- The sheet: the resources sit on the glass as a lighter pane, not a second plate ---------- */
+.gr-cena .grimoire-resources { background: rgb(var(--el-canvas) / .4); border-color: rgb(255 255 255 / 8%); }
+.gr-cena .grimoire-portrait > img { translate: calc(var(--par-x, 0) * 7px) calc(var(--par-y, 0) * 4px); animation: gr-respirar calc(var(--ds-duration-conjure) * 7) ease-in-out infinite alternate; }
+.gr-cena .grimoire-portrait-ring { translate: calc(var(--par-x, 0) * -4px) calc(var(--par-y, 0) * -3px); }
+.gr-cena .grimoire-portrait-ring::before { animation: gr-girar calc(var(--ds-duration-conjure) * 40) linear infinite; }
+.gr-cena .grimoire-portrait-seal { background: color-mix(in srgb, rgb(var(--el-canvas)) 70%, var(--semana-aura)); }
+@keyframes gr-respirar { from { transform: translateY(0) scale(1); } to { transform: translateY(-5px) scale(1.012); } }
+@keyframes gr-girar { to { transform: rotate(360deg); } }
+
+/* ---------- The meters: a thicker thread, a gradient and a glint that keeps passing ---------- */
+.grimoire-meter .ds-medidor[data-forma="fio"][data-espesso] { height: 6px; border-radius: 12px; background: rgb(var(--el-muted) / .18); }
+.grimoire-meter .ds-medidor[data-forma="fio"]::after { background: linear-gradient(90deg, color-mix(in srgb, var(--medidor-cor, var(--elem-acento)) 50%, transparent), var(--medidor-cor, var(--elem-acento))); }
+.grimoire-meter .ds-medidor[data-forma="fio"][data-conquista]::after { background: linear-gradient(90deg, rgb(var(--el-gold) / .5), rgb(var(--el-gold))); }
+.gr-fio { position: absolute; inset-block: 0; inset-inline-start: 0; inline-size: calc(var(--medidor-valor) * 100%); overflow: hidden; pointer-events: none; }
+.gr-fio > i {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .6) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: gr-brilho calc(var(--ds-duration-conjure) * 7) var(--ds-ease) calc(var(--gr-base, 0ms) + var(--ds-duration-conjure) * 2 + var(--ordem, 0) * var(--ds-duration-reveal)) infinite;
+}
+.grimoire-meter[data-vazio] .gr-fio { display: none; }
+@keyframes gr-brilho { 0%, 60% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+@keyframes gr-encher { from { transform: scaleX(0); } }
+.gr-cena[data-entrada="plena"] .grimoire-resources .ds-medidor::after { animation: gr-encher calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--gr-base) + var(--ordem, 0) * var(--ds-stagger) * 3) backwards; }
+.grimoire-element-detail .ds-medidor::after { animation: gr-encher calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+
+/* ---------- Numbers in tiles ---------- */
+.grimoire-workspace .grimoire-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-ritmo-lista); }
+.grimoire-overview > .ds-cifra, .grimoire-overview > .ds-cifra:first-child {
+  position: relative; isolation: isolate; overflow: clip; align-content: center; min-height: 76px;
+  padding: 14px 16px; border: var(--ds-edge); border-radius: var(--ds-raio-runa);
+  background: var(--ds-surface-raised);
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.grimoire-overview > .ds-cifra > span:not(.gr-brilho) { min-width: 0; }
+.grimoire-overview > a.ds-cifra:active { scale: .97; transition-duration: var(--ds-duration-press); }
+@media (hover: hover) { .grimoire-overview > a.ds-cifra:hover { border-color: rgb(var(--el-gold) / .45); } }
+@container (min-width: 520px) { .grimoire-workspace .grimoire-overview { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* ---------- Mastery cards: the ring, the seal and a card that lights under the finger ---------- */
+.grimoire-element { --gr-foco: var(--elem-acento); }
+.gr-cena .grimoire-element::before { opacity: .16; }
+.grimoire-element-art { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.grimoire-element:active .grimoire-element-art { scale: .94; transition-duration: var(--ds-duration-press); }
+.gr-anel { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.gr-anel circle { fill: none; }
+.gr-anel-trilha { stroke: rgb(var(--el-muted) / .18); stroke-width: 3; }
+.gr-anel-halo, .gr-anel-arco {
+  stroke: var(--elem-acento);
+  stroke-linecap: butt;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * 3 * var(--ordem, 0));
+}
+.gr-anel-arco { stroke-width: 3; }
+.gr-anel-halo { stroke-width: 8; opacity: .2; }
+.grimoire-element[data-chegou="true"] :is(.gr-anel-halo, .gr-anel-arco) { stroke-dasharray: var(--arco) 100; }
+/* The spark runs along the earned arc only, rests, and goes again. */
+.gr-anel-cometa {
+  stroke: rgb(255 255 255 / .9);
+  stroke-width: 3;
+  stroke-dasharray: 2.6 97.4;
+  opacity: 0;
+}
+.grimoire-element[data-chegou="true"] .gr-anel-cometa { animation: gr-cometa calc(var(--ds-duration-conjure) * 9) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-duration-conjure) * 2 + var(--ordem, 0) * var(--ds-duration-reveal)) infinite backwards; }
+@keyframes gr-cometa {
+  0% { stroke-dashoffset: 0; opacity: 0; }
+  8% { opacity: .9; }
+  40% { stroke-dashoffset: calc(var(--arco) * -1); opacity: .9; }
+  48%, 100% { stroke-dashoffset: calc(var(--arco) * -1); opacity: 0; }
+}
+.gr-anel-promessa { stroke: var(--elem-acento); stroke-width: 3; stroke-dasharray: 18 82; opacity: .2; animation: gr-respira-promessa calc(var(--ds-duration-conjure) * 8) var(--ds-ease) calc(var(--ordem, 0) * var(--ds-duration-conjure) * -1) infinite; }
+@keyframes gr-respira-promessa { 0%, 100% { opacity: .14; } 50% { opacity: .55; } }
+.gr-anel-selo {
+  position: absolute; right: -4px; bottom: -4px; box-sizing: border-box; display: grid; place-items: center;
+  min-width: 22px; height: 22px; padding-inline: 5px; line-height: 1;
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 60%, transparent); border-radius: 12px;
+  background: rgb(var(--el-canvas)); color: var(--elem-acento);
+  font-family: var(--ds-font-heading); font-size: var(--ds-text-micro); font-variant-numeric: tabular-nums;
+}
+.grimoire-element-art img { translate: calc(var(--par-x, 0) * 2px) calc(var(--par-y, 0) * 1.5px); filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--elem-aura) 32%, transparent)); }
+/* The cards come in as the section is first seen, one after another. */
+.grimoire-element { transition: opacity var(--ds-duration-settle) var(--ds-ease) calc(var(--ordem, 0) * var(--ds-stagger) * 2), transform var(--ds-duration-settle) var(--ds-ease) calc(var(--ordem, 0) * var(--ds-stagger) * 2), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.grimoire-elements[data-chegou="false"] .grimoire-element { opacity: 0; transform: translateY(16px) scale(.98); }
+
+/* ---------- History: the line that draws itself, and rows that light under the finger ---------- */
+.gr-grafico {
+  --gr-foco: var(--semana-acento);
+  position: relative; isolation: isolate; overflow: clip; display: grid; gap: 8px;
+  margin-bottom: var(--ds-ritmo-cabeca); padding: 16px 16px 12px;
+  border: var(--ds-edge); border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 70% 90% at 84% 0, color-mix(in srgb, var(--semana-aura) 16%, transparent), transparent 100%), var(--ds-surface-raised);
+}
+.gr-grafico-cabeca { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.gr-grafico-cabeca > div { display: grid; gap: 2px; min-width: 0; }
+.gr-grafico-cabeca small { font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
+.gr-grafico-cabeca strong { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-title); line-height: 1.2; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+.gr-grafico-cabeca strong > span { font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.gr-grafico-cabeca p { font-size: var(--ds-text-micro); line-height: 1.4; text-align: right; color: rgb(var(--el-muted)); }
+.gr-grafico-area { position: relative; min-height: 44px; touch-action: pan-y; cursor: crosshair; }
+.gr-grafico-area > svg { display: block; width: 100%; height: auto; aspect-ratio: 300 / 88; overflow: visible; }
+.gr-grafico-base { stroke: rgb(var(--el-muted) / .24); stroke-width: 1; stroke-dasharray: 3 5; }
+.gr-grafico-topo { stop-color: var(--semana-acento); stop-opacity: .34; }
+.gr-grafico-fundo { stop-color: var(--semana-acento); stop-opacity: 0; }
+.gr-grafico-linha, .gr-grafico-halo {
+  fill: none; stroke: var(--semana-acento); stroke-linejoin: round; stroke-linecap: butt;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  transition: stroke-dashoffset calc(var(--ds-duration-conjure) * 2) var(--ds-ease) var(--ds-duration-reveal);
+}
+.gr-grafico-linha { stroke-width: 2.2; }
+.gr-grafico-halo { stroke-width: 7; opacity: .2; }
+.gr-grafico[data-chegou="true"] :is(.gr-grafico-linha, .gr-grafico-halo) { stroke-dashoffset: 0; }
+.gr-grafico-area-cor { opacity: 0; transition: opacity var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-conjure); }
+.gr-grafico[data-chegou="true"] .gr-grafico-area-cor { opacity: 1; }
+.gr-grafico-ponta {
+  fill: var(--semana-acento); stroke: rgb(var(--el-canvas)); stroke-width: 1.5;
+  filter: drop-shadow(0 0 5px var(--semana-aura));
+  transform-box: fill-box; transform-origin: center; transform: scale(0); opacity: 0;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-conjure) * 2 + var(--ds-duration-reveal)), opacity var(--ds-duration-feedback) var(--ds-ease) calc(var(--ds-duration-conjure) * 2 + var(--ds-duration-reveal));
+}
+.gr-grafico[data-chegou="true"] .gr-grafico-ponta { transform: scale(1); opacity: 1; }
+.gr-grafico-marca { position: absolute; inset-block: 0; inset-inline-start: var(--foco-x, 0); width: 1px; background: color-mix(in srgb, var(--semana-acento) 60%, transparent); pointer-events: none; }
+.gr-grafico-marca::after { content: ''; position: absolute; left: 50%; top: var(--foco-y, 0); width: 10px; height: 10px; translate: -50% -50%; border-radius: 50%; background: var(--semana-acento); box-shadow: 0 0 0 3px rgb(var(--el-canvas)), 0 0 12px var(--semana-aura); }
+.gr-grafico-pe { display: flex; justify-content: space-between; gap: 12px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+
+.grimoire-timeline summary.ds-linha { position: relative; isolation: isolate; }
+.grimoire-timeline summary.ds-linha > svg { color: rgb(var(--el-gold)); }
+.grimoire-timeline summary.ds-linha::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; border-radius: var(--ds-raio-controle); pointer-events: none;
+  background: radial-gradient(200px circle at var(--luz-x, 50%) var(--luz-y, 50%), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0; transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.grimoire-timeline summary.ds-linha[data-luz-acesa]::before { opacity: 1; }
+.grimoire-timeline > li { transition: opacity var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)), transform var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)); }
+.grimoire-timeline > :nth-child(1) { --i: 0; }
+.grimoire-timeline > :nth-child(2) { --i: 1; }
+.grimoire-timeline > :nth-child(3) { --i: 2; }
+.grimoire-timeline > :nth-child(4) { --i: 3; }
+.grimoire-timeline > :nth-child(5) { --i: 4; }
+.grimoire-timeline > :nth-child(6) { --i: 5; }
+.grimoire-timeline > :nth-child(7) { --i: 6; }
+.grimoire-timeline > :nth-child(n+8) { --i: 7; }
+.grimoire-history[data-chegou="false"] .grimoire-timeline > li { opacity: 0; transform: translateX(-10px); }
+.grimoire-load-more { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.grimoire-load-more:active { scale: .97; transition-duration: var(--ds-duration-press); }
+
+/* ---------- An empty page invites ---------- */
+.gr-vazio {
+  position: relative; isolation: isolate; display: grid; justify-items: center; gap: 12px; padding: 28px 20px 24px; text-align: center; overflow: clip;
+  border: 1px dashed rgb(var(--el-gold) / .3); border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura) 16%, transparent), transparent 100%), var(--ds-surface-sunken);
+}
+.gr-vazio h3 { margin: 0; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.4; color: rgb(var(--el-text)); }
+.gr-vazio p { max-width: 36ch; margin: 0; font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); }
+.gr-vazio .ds-botao { min-height: 48px; margin-top: 4px; }
+.gr-vazio-orbes { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin-bottom: 4px; }
+.gr-vazio-orbe { position: relative; display: block; width: 56px; height: 56px; animation: gr-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ordem) * var(--ds-duration-reveal) * -1) infinite alternate; }
+.gr-vazio-orbe:is(:nth-child(2), :nth-child(3)) { margin-bottom: 14px; }
+.gr-vazio-orbe::before { content: ''; position: absolute; inset: -10px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), transparent 68%); }
+.gr-vazio-orbe img { position: relative; display: block; width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 6px 10px color-mix(in srgb, var(--elem-aura) 30%, transparent)); }
+@keyframes gr-flutuar { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+
+/* ---------- The balance (radar) opens as a panel of its own ---------- */
+.grimoire-balance[open] > div { animation: gr-aparecer var(--ds-duration-reveal) var(--ds-ease) both; }
+
+/* ---------- The arrival, once per opening of the app ---------- */
+/*
+ * The light comes up, the header lands, the tabs, the glass lifts over the
+ * light, the portrait and the identity settle in, the numbers follow. Coming
+ * back, everything only fades.
+ */
+.gr-cena[data-entrada="plena"] .gr-luz { animation: gr-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.gr-cena[data-entrada="plena"] .gr-cabecalho > * { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.gr-cena[data-entrada="plena"] .gr-cabecalho > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.gr-cena[data-entrada="plena"] > .ds-abas { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-sheet { animation: gr-chegar var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-portrait-ring { animation: gr-anel-chegar var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-portrait > img { animation: gr-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards, gr-respirar calc(var(--ds-duration-conjure) * 7) ease-in-out calc(var(--ds-duration-conjure) * 2) infinite alternate; }
+.gr-cena[data-entrada="plena"] .grimoire-identity > * { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 7) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-identity > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8); }
+.gr-cena[data-entrada="plena"] .grimoire-identity > :nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 9); }
+.gr-cena[data-entrada="plena"] .grimoire-identity > :nth-child(4) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 10); }
+.gr-cena[data-entrada="plena"] .grimoire-resources { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-overview > .ds-cifra { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4) backwards; }
+.gr-cena[data-entrada="plena"] .grimoire-overview > :nth-child(3) { animation-delay: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 6); }
+.gr-cena[data-entrada="plena"] .grimoire-overview > :nth-child(4) { animation-delay: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 7); }
+.gr-cena[data-entrada="breve"] :is(.gr-cabecalho, .grimoire-sheet, .grimoire-overview) { animation: gr-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+@keyframes gr-aparecer { from { opacity: 0; } }
+@keyframes gr-subir { from { opacity: 0; transform: translateY(14px); } }
+@keyframes gr-chegar { from { opacity: 0; transform: translateY(18px) scale(.985); } }
+@keyframes gr-anel-chegar { from { opacity: 0; transform: scale(.7); } }
+
+/* Someone who asked the system for less transparency gets a sheet that is nearly solid, so the blur has nothing left to show. */
+@media (prefers-reduced-transparency: reduce) {
+  .gr-cena .grimoire-sheet { background: rgb(var(--el-surface) / 96%); }
+  .gr-cena .grimoire-resources { background: rgb(var(--el-canvas) / .5); }
+  .gr-luz, .gr-cena .grimoire-sheet::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gr-luz, .gr-cena .grimoire-portrait > img, .gr-cena .grimoire-portrait-ring, .grimoire-element-art img { translate: none; }
+  .gr-anel-cometa, .gr-fio { display: none; }
 }

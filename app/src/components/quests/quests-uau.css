@@ -1,0 +1,348 @@
+/*
+ * Jornadas e Grandes Obras, UAU pass. Same language as the Sanctuary, Pillars,
+ * Cycles and Rituals:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by CenaConquistas; gold until the week has a leader);
+ *  - ONE real pane of glass per screen, the summary (.ds-glass-float, so this
+ *    sheet declares no blur of its own), with that light behind it, a one-pixel
+ *    rim that catches the finger and a light inside that follows it;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve");
+ *  - everything else is the same material without the blur.
+ *
+ * Loaded after quests.css, so where the two meet this one wins. Every time is a
+ * --ds-duration-* token or a multiple of one; only transform, opacity, scale,
+ * translate and stroke dashes move.
+ */
+
+.cq-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --cq-base: 0ms;
+  --cq-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+}
+/* While the arrival plays, the cards wait for the heading and the summary. */
+.cq-cena[data-entrada="plena"][data-abrindo="true"] { --cq-base: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4); }
+
+/* ---------- The light behind the heading ---------- */
+.cq-luz {
+  position: absolute;
+  inset: -24px 8px auto 8px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--cq-grao),
+    radial-gradient(ellipse 48% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 44%, rgb(var(--el-gold) / .16), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--semana-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Heading and actions ---------- */
+.cq-cena .ds-cabecalho > h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 34%, transparent); }
+.cq-cena .quest-catalog-actions .quest-primary {
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--el-gold)) 76%, white), rgb(var(--el-gold)));
+  box-shadow: 0 8px 24px rgb(var(--el-gold) / .26), inset 0 1px 0 rgb(255 255 255 / .5);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.cq-cena .quest-catalog-actions .quest-primary:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.cq-cena .quest-catalog-actions .ds-botao { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.cq-cena .quest-catalog-actions .ds-botao:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+/* One pass of light over the main action, after the scene has arrived. */
+.cq-cena[data-entrada="plena"] .quest-catalog-actions .quest-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: cq-lampejo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) both;
+}
+@keyframes cq-lampejo { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+
+/* ---------- The summary: the one pane of glass ---------- */
+.cq-resumo { position: relative; margin: 0 0 var(--ds-ritmo-secao); }
+/* Light behind the pane, so the blur has something to bend. Every light ends inside the box. */
+.cq-resumo-luz {
+  position: absolute;
+  inset: -32px -8px -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+}
+/* The glass itself is the system's recipe on the markup; here only the fill, the specular edge and the grain. */
+.cq-cena .cq-painel {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: 16px;
+  padding: 18px 16px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--cq-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+/* The rim: one pixel of light, brightest where the finger is; at rest it sits at the top edge. */
+.cq-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the glass, under its content. */
+.cq-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.cq-painel[data-luz-acesa]::before, .cq-painel[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.cq-painel .ds-cifra { font-size: var(--ds-fluid-display); text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 38%, transparent); }
+.cq-painel .ds-cifra > small { text-shadow: none; }
+.cq-painel .ds-medidor { --medidor-cor: var(--semana-acento); }
+
+/* ---------- Glowing meters: the fill carries a soft light of its own ---------- */
+:is(.cq-cena, .quest-catalog-detail) .ds-medidor[data-forma="fio"] { overflow: visible; border-radius: var(--ds-raio-controle); }
+:is(.cq-cena, .quest-catalog-detail) .ds-medidor[data-forma="fio"]::after {
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--medidor-cor, var(--elem-acento)) 52%, transparent), var(--medidor-cor, var(--elem-acento)));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--medidor-cor, var(--elem-acento)) 60%, transparent);
+  transition: transform var(--ds-duration-settle) var(--ds-ease);
+}
+:is(.cq-cena, .quest-catalog-detail) .ds-medidor[data-forma="fio"][data-conquista]::after { background: rgb(var(--el-gold)); box-shadow: 0 0 12px rgb(var(--el-gold) / .6); }
+.cq-painel .ds-medidor[data-forma="fio"]::after, .quest-catalog-detail .ds-medidor[data-forma="fio"]::after { transition-duration: var(--ds-duration-conjure); }
+
+/* ---------- Section rhythm ---------- */
+.cq-cena > .ds-nota { max-width: none; margin-bottom: var(--ds-ritmo-cabeca); }
+.cq-cena .ds-secao > h2 { text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 22%, transparent); }
+
+/* ---------- The cards: a cascade, a ring that draws, a seal with depth ---------- */
+.cq-cena .quest-catalog-card { position: relative; }
+.cq-cena .vitrine[data-viva] { animation: cq-chegar var(--ds-duration-settle) var(--ds-ease) calc(var(--cq-base) + var(--i, 0) * var(--ds-stagger)) backwards; }
+.cq-cena[data-entrada="breve"] .vitrine[data-viva] { animation: cq-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+@keyframes cq-chegar { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+@keyframes cq-aparecer { from { opacity: 0; } }
+@keyframes cq-subir { from { opacity: 0; transform: translateY(14px); } }
+
+/* The ring draws once per opening; afterwards it only follows the progress. */
+.cq-cena[data-entrada="plena"] .vitrine-anel-arco { animation: cq-desenhar var(--ds-duration-conjure) var(--ds-ease) calc(var(--cq-base) + var(--i, 0) * var(--ds-stagger) + var(--ds-duration-reveal)) backwards; }
+@keyframes cq-desenhar { from { stroke-dasharray: 0 100; } }
+.cq-cena[data-entrada="plena"] .vitrine[data-viva] .vitrine-art > svg:not(.vitrine-anel) { animation: cq-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--cq-base) + var(--i, 0) * var(--ds-stagger) + var(--ds-duration-reveal)) backwards; }
+@keyframes cq-selar { from { opacity: 0; scale: .4; } }
+.cq-cena[data-entrada="plena"] .vitrine[data-viva] .ds-medidor[data-forma="fio"]::after { animation: cq-encher var(--ds-duration-conjure) var(--ds-ease) calc(var(--cq-base) + var(--i, 0) * var(--ds-stagger) + var(--ds-duration-reveal)) backwards; }
+@keyframes cq-encher { from { transform: scaleX(0); } }
+
+/* A press on a card answers with a spring. */
+.cq-cena .vitrine[data-viva] > summary { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cq-cena .vitrine[data-viva] > summary:active { scale: .985; transition-duration: var(--ds-duration-press); }
+.cq-cena .vitrine[data-viva] .ds-runa-chevron { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cq-cena .vitrine[data-viva] .vitrine-content > .ds-botao { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.cq-cena .vitrine[data-viva] .vitrine-content > .ds-botao:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.cq-cena .vitrine[data-conquistada] { border-color: rgb(var(--el-gold) / .4); }
+
+/* "Abrir trilha": the way into the map, tinted by the element, the arrow leaning forward. */
+.cq-cena .quest-catalog-card > .ds-elo {
+  justify-self: start;
+  gap: 8px;
+  margin-left: 4px;
+  padding: 0 14px;
+  border-radius: var(--ds-raio-controle);
+  font-size: var(--ds-text-small);
+  color: var(--elem-acento);
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.cq-cena .quest-catalog-card > .ds-elo > svg { transition: translate var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cq-cena .quest-catalog-card > .ds-elo:active { scale: .95; transition-duration: var(--ds-duration-press); }
+@media (hover: hover) {
+  .cq-cena .quest-catalog-card > .ds-elo:hover { background: color-mix(in srgb, var(--elem-acento) 12%, transparent); }
+  .cq-cena .quest-catalog-card > .ds-elo:hover > svg { translate: 4px 0; }
+}
+
+/* ---------- Empty states: four runes, each in its own light ---------- */
+.cq-vazio {
+  position: relative;
+  isolation: isolate;
+  gap: 12px;
+  overflow: clip;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 16%, transparent), transparent 100%),
+    var(--ds-surface-sunken);
+}
+.cq-cena .cq-vazio { animation: cq-chegar var(--ds-duration-settle) var(--ds-ease) var(--cq-base) backwards; }
+.cq-vazio-runas { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin-bottom: 4px; }
+.cq-vazio-runa {
+  position: relative;
+  display: block;
+  color: var(--elem-acento);
+  animation: cq-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ordem) * var(--ds-duration-reveal) * -1) infinite alternate;
+}
+.cq-vazio-runa:is(:nth-child(2), :nth-child(3)) { margin-bottom: 12px; }
+.cq-vazio-runa::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), transparent 68%); }
+.cq-vazio-runa > svg { position: relative; filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--elem-aura) 40%, transparent)); }
+.cq-vazio[data-compacto] .cq-vazio-runas { margin-bottom: 0; }
+.cq-vazio[data-compacto] .cq-vazio-runa { opacity: .7; }
+.cq-vazio h3 { text-wrap: balance; }
+.cq-vazio .ds-botao { margin-top: 4px; }
+@keyframes cq-flutuar { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+
+/* ---------- The detail sheet: it arrives on a spring ---------- */
+.quest-dialog.quest-catalog-detail {
+  background:
+    radial-gradient(ellipse 90% 34% at 50% 0, color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 20%, transparent), transparent 100%),
+    rgb(var(--el-canvas));
+}
+.quest-dialog.quest-catalog-detail[data-state="open"] { animation: cq-folha var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+@keyframes cq-folha { from { opacity: 0; scale: .9; translate: 0 28px; } }
+.quest-catalog-detail .quest-catalog-rune {
+  position: relative;
+  color: var(--elem-acento, var(--quest-gold));
+  border-color: color-mix(in srgb, var(--elem-acento, rgb(var(--el-gold))) 45%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 26%, transparent), color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 6%, transparent) 70%);
+  box-shadow: 0 0 34px color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / .1);
+}
+.quest-catalog-detail[data-state="open"] .quest-catalog-rune { animation: cq-selar var(--ds-duration-settle) var(--ds-ease-conjure) var(--ds-duration-reveal) backwards; }
+.quest-catalog-detail[data-state="open"] .quest-rune-glint { animation: quest-rune-light var(--ds-duration-settle) ease-out calc(var(--ds-duration-reveal) + var(--ds-duration-settle)) both; }
+.quest-catalog-detail .cq-folha-corpo > * { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--n, 0) * var(--ds-stagger)) backwards; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(1) { --n: 1; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(2) { --n: 2; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(3) { --n: 3; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(4) { --n: 4; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(5) { --n: 5; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(6) { --n: 6; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(7) { --n: 7; }
+.quest-catalog-detail .cq-folha-corpo > :nth-child(n+8) { --n: 8; }
+.quest-catalog-detail .cq-folha-corpo .ds-cifra { text-shadow: 0 0 20px color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 34%, transparent); }
+.quest-catalog-detail .cq-folha-corpo > .ds-botao[data-tipo="primario"] {
+  background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--el-gold)) 76%, white), rgb(var(--el-gold)));
+  box-shadow: 0 8px 24px rgb(var(--el-gold) / .26), inset 0 1px 0 rgb(255 255 255 / .5);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.quest-catalog-detail .cq-folha-corpo > .ds-botao[data-tipo="primario"]:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+
+/* ---------- Chapters: they arrive in a cascade and carry their own progress ---------- */
+.quest-chapters > .quest-chapter { animation: cq-chegar var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)) backwards; }
+.quest-chapter-texto .ds-medidor { margin-top: 2px; }
+.quest-chapter .quest-chapter-rune > svg { filter: drop-shadow(0 3px 6px color-mix(in srgb, var(--elem-aura) 40%, transparent)); }
+.quest-chapter .ds-runa-chevron { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.quest-chapter > summary { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.quest-chapter > summary:active { scale: .985; transition-duration: var(--ds-duration-press); }
+.quest-chapter[open] .quest-chapter-content > ul > li { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--n, 0) * var(--ds-stagger)) backwards; }
+.quest-chapter-content > ul > li:nth-child(1) { --n: 0; }
+.quest-chapter-content > ul > li:nth-child(2) { --n: 1; }
+.quest-chapter-content > ul > li:nth-child(3) { --n: 2; }
+.quest-chapter-content > ul > li:nth-child(4) { --n: 3; }
+.quest-chapter-content > ul > li:nth-child(5) { --n: 4; }
+.quest-chapter-content > ul > li:nth-child(n+6) { --n: 5; }
+.quest-chapter-empty { background: radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, rgb(var(--el-gold)) 8%, transparent), transparent 100%); }
+
+/* ---------- The trail lights up, step by step ---------- */
+.quest-map .quest-step-stone { animation: cq-acender var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--passo, 0) * var(--ds-stagger) * 2) backwards; }
+@keyframes cq-acender { from { opacity: 0; scale: .5; } }
+.quest-map .quest-step-label { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--passo, 0) * var(--ds-stagger) * 2 + var(--ds-stagger) * 2) backwards; }
+.quest-map .quest-connector { animation: cq-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--passo, 0) * var(--ds-stagger) * 2 + var(--ds-stagger) * 3) backwards; }
+.quest-map .quest-finish-line { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--passo-total, 0) * var(--ds-stagger) * 2 + var(--ds-stagger) * 2) backwards; }
+/* What is done keeps its light; what is next breathes. */
+.quest-path > li[data-complete="true"] .quest-step-stone { box-shadow: 0 0 22px color-mix(in srgb, var(--quest-accent) 42%, transparent), inset 0 1px 0 rgb(255 255 255 / .12); }
+.quest-path > li[data-complete="true"] .quest-connector path { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--quest-accent) 60%, transparent)); }
+.quest-path > li[data-next="true"] .quest-step-stone { box-shadow: 0 0 26px color-mix(in srgb, var(--quest-accent) 55%, transparent), inset 0 1px 0 rgb(255 255 255 / .35); }
+.quest-path > li[data-next="true"] .quest-step-stone::before {
+  content: '';
+  position: absolute;
+  inset: -16px;
+  z-index: -1;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--quest-accent) 36%, transparent), transparent 68%);
+  animation: cq-respirar calc(var(--ds-duration-conjure) * 4) ease-in-out infinite alternate;
+}
+@keyframes cq-respirar { from { transform: scale(.9); opacity: .6; } to { transform: scale(1.1); opacity: 1; } }
+
+/* ---------- Closing a Journey or a Great Work: the same flourish as a sealed ritual ---------- */
+.achievement-completion[data-conquistada] { border-color: rgb(var(--el-gold) / .4); }
+.achievement-completion[data-conquistada] .achievement-heading > svg { filter: drop-shadow(0 0 8px rgb(var(--el-gold) / .5)); }
+.achievement-reward-result { display: grid; gap: 8px; margin-bottom: 14px; animation: cq-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+.achievement-reward-result > p { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); line-height: 1.4; color: rgb(var(--el-text)); text-align: center; }
+.cq-celebra { position: relative; display: grid; place-items: center; width: 80px; height: 80px; margin: 4px auto 0; color: var(--elem-acento); }
+.cq-celebra-selo { position: relative; display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 28%, transparent), transparent 70%); filter: drop-shadow(0 0 10px var(--elem-aura)); animation: cq-selar var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.cq-celebra-anel { position: absolute; inset: 8px; border: 2px solid var(--elem-acento); border-radius: 50%; animation: cq-anel var(--ds-duration-conjure) var(--ds-ease) both; }
+.cq-celebra-anel[data-eco] { animation-delay: calc(var(--ds-stagger) * 3); }
+.cq-celebra i {
+  --giro: calc(var(--faisca) * 45deg);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px;
+  border-radius: 50%;
+  background: var(--elem-aura);
+  animation: cq-faisca var(--ds-duration-conjure) var(--ds-ease) both;
+}
+@keyframes cq-anel { from { opacity: .9; transform: scale(.4); } to { opacity: 0; transform: scale(2.2); } }
+@keyframes cq-faisca {
+  from { opacity: 1; transform: rotate(var(--giro)) translateY(-18px) scale(1); }
+  to { opacity: 0; transform: rotate(var(--giro)) translateY(-44px) scale(.2); }
+}
+
+/* ---------- Arrival of the scene, once per opening of the app ---------- */
+.cq-cena[data-entrada="plena"] .cq-luz { animation: cq-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.cq-cena[data-entrada="plena"] .ds-cabecalho > * { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cq-cena[data-entrada="plena"] .ds-cabecalho > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.cq-cena[data-entrada="plena"] .ds-cabecalho > :nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4); }
+.cq-cena[data-entrada="plena"] .cq-resumo { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+.cq-cena[data-entrada="plena"] > :is(.ds-nota, .ds-secao) { animation: cq-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards; }
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.cq-cena[data-entrada="breve"] :is(.ds-cabecalho, .cq-resumo) { animation: cq-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* ---------- System preferences ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .cq-cena .cq-painel { background: rgb(var(--el-surface) / 96%); }
+  .cq-resumo-luz, .cq-luz { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cq-luz, .cq-resumo-luz { translate: none; }
+  .cq-cena *, .cq-cena *::before, .cq-cena *::after,
+  .quest-catalog-detail, .quest-catalog-detail *,
+  .quest-map .quest-step-stone, .quest-map .quest-step-stone::before, .quest-map .quest-step-label, .quest-map .quest-connector, .quest-map .quest-finish-line,
+  .achievement-reward-result, .cq-celebra *, .quest-chapters > .quest-chapter, .quest-chapter-content > ul > li { animation: none !important; }
+  .cq-celebra i, .cq-celebra-anel { display: none; }
+  .cq-cena .quest-catalog-actions :is(.quest-primary, .ds-botao),
+  .cq-painel::before, .cq-painel::after,
+  :is(.cq-cena, .quest-catalog-detail) .ds-medidor[data-forma="fio"]::after,
+  .cq-cena .vitrine[data-viva] > summary, .cq-cena .vitrine[data-viva] .ds-runa-chevron, .cq-cena .vitrine[data-viva] .vitrine-content > .ds-botao,
+  .cq-cena .quest-catalog-card > .ds-elo, .cq-cena .quest-catalog-card > .ds-elo > svg,
+  .quest-chapter .ds-runa-chevron, .quest-chapter > summary,
+  .quest-catalog-detail .cq-folha-corpo > .ds-botao[data-tipo="primario"] { transition: none; }
+}
+
+/* Number and its suffix stay one item, so a grid parent (.ds-cifra) never drops the % to its own row. */
+.cq-numero { white-space: nowrap; }

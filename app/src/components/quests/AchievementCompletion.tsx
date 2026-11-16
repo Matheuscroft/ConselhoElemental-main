@@ -9,6 +9,8 @@ import { achievementPlan, type AchievementKind } from '@/lib/achievement-complet
 import { trailHref } from './quest-path';
 import { QuestRune } from './QuestRune';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { CelebracaoConquista } from './CelebracaoConquista';
+import './quests-uau.css';
 
 const names = { terra: 'Terra', fogo: 'Fogo', agua: 'Água', ar: 'Ar' };
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
@@ -46,13 +48,13 @@ function CompletionPanel({ kind, id }: { kind: AchievementKind; id: string }) {
       setError(`${reason instanceof Error ? reason.message : 'Não foi possível confirmar.'} Confira o estado da conquista antes de tentar novamente.`);
     }
   };
-  return <section className="achievement-completion ds-altar" data-element={plan.element} aria-label={`Conclusão da ${label}`}>
+  return <section className="achievement-completion ds-altar" data-element={plan.element} data-conquistada={completed ? '' : undefined} aria-label={`Conclusão da ${label}`}>
     <div className="achievement-heading"><QuestRune element={plan.element} size={36} /><div>
       <h3>{completed ? 'Conquista registrada' : 'Feche este capítulo'}</h3>
       <p>{completed ? (plan.entity.completionBonus ? `Bônus recebido: ${number(plan.amount)} XP, ${names[plan.element]}` : 'Conclusão anterior sem recibo de bônus. Nenhum XP será debitado ao reabrir.')
         : plan.amount > 0 && plan.validAmount ? `Bônus da conquista: +${number(plan.amount)} XP, ${names[plan.element]}` : 'O XP dos rituais é recebido em cada atividade. Esta conquista não tem bônus adicional configurado.'}</p>
     </div></div>
-    {result && result.completed === completed && <div role="status" tabIndex={-1} ref={resultRef} className="achievement-reward-result"><p>{result.message}</p>{result.changed && <RewardSummary xp={result.amount} elements={[{element: result.element, amount: result.amount}]} progress={result.progress} fromLevel={result.fromLevel} animate />}</div>}
+    {result && result.completed === completed && <div role="status" tabIndex={-1} ref={resultRef} className="achievement-reward-result">{result.changed && result.completed && <CelebracaoConquista elemento={result.element} />}<p>{result.message}</p>{result.changed && <RewardSummary xp={result.amount} elements={[{element: result.element, amount: result.amount}]} progress={result.progress} fromLevel={result.fromLevel} animate />}</div>}
     {plan.trail.archived ? <p>Esta obra está arquivada.</p> : !completed && !plan.canComplete ? <p>
       {plan.pending.length ? <>{plan.pending.length} rituais ainda precisam de conclusão ou revisão. <Link to={trailHref(plan.trail.key)}>Ver etapas</Link></> : 'O valor do bônus precisa de revisão antes da conclusão.'}
     </p> : <>

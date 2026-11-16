@@ -2,12 +2,13 @@ import type { CSSProperties, ReactNode } from 'react';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { QuestRune } from './QuestRune';
 import type { QuestStep, QuestTrail } from './quest-path';
+import './quests-uau.css';
 
 const OFFSETS = [0, 1, 0, -1];
 export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
   trail: QuestTrail; selectedKey?: string; onSelect: (key: string) => void; detail: (step: QuestStep) => ReactNode;
 }) {
-  return <div className="quest-map" data-element={trail.element}>
+  return <div className="quest-map" data-element={trail.element} style={{ '--passo-total': Math.min(trail.steps.length, 14) } as CSSProperties}>
     <ol className="quest-path" aria-label={`Etapas de ${trail.title}`}>
       {trail.steps.map((step, index) => {
         const selected = selectedKey === step.key;
@@ -15,7 +16,7 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
         const detailId = `quest-detail-${encodeURIComponent(trail.key)}-${index}`;
         const offset = OFFSETS[index % OFFSETS.length];
         const delta = OFFSETS[(index + 1) % OFFSETS.length] - offset;
-        return <li key={step.key} style={{ '--step-offset': offset, '--step-direction': delta } as CSSProperties} data-complete={step.available && step.completed} data-next={next} data-available={step.available} data-selected={selected}>
+        return <li key={step.key} style={{ '--step-offset': offset, '--step-direction': delta, '--passo': Math.min(index, 14) } as CSSProperties} data-complete={step.available && step.completed} data-next={next} data-available={step.available} data-selected={selected}>
           {index < trail.steps.length - 1 && <svg className="quest-connector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 C0 50 100 50 100 100" /></svg>}
           <button type="button" className="quest-step" onClick={() => onSelect(step.key)} aria-expanded={selected} aria-controls={selected ? detailId : undefined} aria-current={next ? 'step' : undefined}>
             <span className="quest-step-stone" aria-hidden="true"><span className="quest-step-face">{!step.available ? <ArcaneIcon name="alerta" size={27} /> : step.completed ? <ArcaneIcon name="concluir" size={27} /> : step.kind === 'habit' ? <ArcaneIcon name="ciclo" size={27} /> : <QuestRune element={trail.element} size={46} />}</span></span>

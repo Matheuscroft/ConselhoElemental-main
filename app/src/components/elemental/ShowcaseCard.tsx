@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { ArcaneIcon, ElementIcon } from './ArcaneIcon';
 import { Medidor } from './blocos';
 import type { ElementId } from '@/types';
@@ -12,14 +13,29 @@ interface ShowcaseCardProps {
   chips: string[];
   reward?: string;
   onOpen?: () => void;
+  /**
+   * Optional light and depth, off by default so the card at rest is unchanged:
+   * a ring of progress around the element's seal, the finger's light on the
+   * card, and `ordem` as the place in the cascade of an arrival.
+   */
+  viva?: boolean;
+  ordem?: number;
+  conquistada?: boolean;
 }
 
 /** Vitrine do sistema de blocos: uma runa que abre localmente; o botao mantem o fluxo de detalhes. */
-export function ShowcaseCard({ title, description, element, status, progress, chips, reward, onOpen }: ShowcaseCardProps) {
+export function ShowcaseCard({ title, description, element, status, progress, chips, reward, onOpen, viva = false, ordem, conquistada = false }: ShowcaseCardProps) {
   const valor = Number.isFinite(progress) ? Math.min(100, Math.max(0, progress)) / 100 : 0;
-  return <details className="ds-runa vitrine" data-forma="vitrine" data-element={element}>
+  const estilo = viva && ordem !== undefined ? ({ '--i': Math.min(ordem, 7) } as CSSProperties) : undefined;
+  return <details className="ds-runa vitrine" data-forma="vitrine" data-element={element} data-luz={viva ? '' : undefined} data-viva={viva ? '' : undefined} data-conquistada={viva && conquistada ? '' : undefined} style={estilo}>
     <summary>
-      <span className="ds-runa-arte vitrine-art" aria-hidden="true"><ElementIcon element={element} size={36} /></span>
+      <span className="ds-runa-arte vitrine-art" aria-hidden="true">
+        {viva && <svg className="vitrine-anel" viewBox="0 0 56 56" focusable="false">
+          <circle className="vitrine-anel-trilho" cx="28" cy="28" r="25" pathLength={100} />
+          <circle className="vitrine-anel-arco" cx="28" cy="28" r="25" pathLength={100} strokeDasharray={`${+(valor * 100).toFixed(2)} 100`} strokeLinecap="round" transform="rotate(-90 28 28)" />
+        </svg>}
+        <ElementIcon element={element} size={36} />
+      </span>
       <span className="vitrine-heading">
         <strong className="ds-runa-titulo">{title}</strong>
         <span className="ds-meta"><span>{status}</span><span>{progress}% concluído</span></span>
