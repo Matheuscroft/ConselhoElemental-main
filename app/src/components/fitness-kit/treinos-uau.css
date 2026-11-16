@@ -1,0 +1,437 @@
+/* ==========================================================================
+   Treinos, passada UAU (shell e aba Treinos). A mesma linguagem do Santuario,
+   Pilares, Ciclos e Rituais:
+     - uma sala acesa pelo elemento que lidera a semana (--semana-acento e
+       --semana-aura, escritas por useCenaTreinos; Fogo, o elemento do esforco,
+       ate a semana ter lider);
+     - UMA superficie de vidro real, o seletor de secoes (.ds-glass-float, a
+       receita do sistema: nenhuma declaracao nova de desfoque aqui);
+     - uma entrada por abertura do app (data-entrada="plena") e so um fade ao
+       voltar (data-entrada="breve");
+     - a luz do dedo (--luz-x, --luz-y) e a profundidade (--par-x, --par-y),
+       escritas por hooks. O resto e o mesmo material sem desfoque (.ds-pane).
+   So transform e opacity se movem; toda duracao vem dos tokens.
+   ========================================================================== */
+.tr-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --tr-base: calc(var(--ds-stagger) * 0);
+  --tr-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  isolation: isolate;
+}
+/* While the arrival plays, the cards wait for the heading and the tabs. */
+.tr-cena[data-entrada="plena"] { --tr-base: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4); }
+
+/* The light behind the heading. Every gradient ends inside the box, so none is cut by its edge. */
+.tr-luz {
+  position: absolute;
+  inset: 0 8px auto 8px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--tr-grao),
+    radial-gradient(ellipse 48% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 44%, rgb(var(--el-gold) / .16), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--semana-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Cabecalho: o corpo do resto do app, com a seta de voltar de 44px ---------- */
+.tr-voltar {
+  border: 1px solid var(--ds-fio);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-surface) / 50%);
+  color: rgb(var(--el-gold));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.tr-voltar:active { transform: scale(.92); transition-duration: var(--ds-duration-press); }
+.tr-voltar:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: 2px; }
+@media (hover: hover) {
+  .tr-voltar:hover { border-color: rgb(var(--el-gold) / .5); background: rgb(var(--el-gold) / .08); }
+}
+.tr-titulo {
+  margin: 0;
+  font-family: var(--ds-font-heading);
+  font-weight: 500;
+  font-size: var(--ds-fluid-display);
+  line-height: 1.2;
+  letter-spacing: .02em;
+  color: rgb(var(--el-text));
+  overflow-wrap: break-word;
+  text-wrap: balance;
+  text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 34%, transparent);
+}
+.tr-subtitulo {
+  margin: 4px 0 0;
+  font-size: var(--ds-text-small);
+  line-height: 1.5;
+  color: rgb(var(--el-muted));
+  text-wrap: balance;
+}
+/* A thread of the week's light under the heading. */
+.tr-cabecalho-texto::after {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 1px;
+  margin: 10px auto 0;
+  background: linear-gradient(90deg, transparent, var(--semana-acento, rgb(var(--el-gold))), transparent);
+  opacity: .8;
+}
+
+/* ---------- Seletor de secoes: vidro real, com a barra que desliza em mola ---------- */
+.fitness-elemental .tr-abas {
+  --aba-i: 0;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  width: 100%;
+  height: auto;
+  padding: 4px;
+  border-radius: var(--ds-raio-runa);
+}
+.fitness-elemental .tr-abas[data-ativa="history"] { --aba-i: 1; }
+.fitness-elemental .tr-abas[data-ativa="body"] { --aba-i: 2; }
+.fitness-elemental .tr-abas[data-ativa="health"] { --aba-i: 3; }
+.tr-abas-indicador {
+  position: absolute;
+  z-index: 0;
+  inset-block: 4px;
+  inset-inline-start: 4px;
+  width: calc((100% - 8px) / 4);
+  border: 1px solid color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 45%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 24%, transparent), color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 10%, transparent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%), 0 6px 18px color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 18%, transparent);
+  transform: translateX(calc(var(--aba-i, 0) * 100%));
+  /* The spring of the system: the pill passes its mark and comes back. */
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+  pointer-events: none;
+}
+/* The shared tabs ship a filled background for the active one; the pill replaces it, uncut. */
+.fitness-elemental .tr-abas > .tr-aba.tr-aba {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  height: auto;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--ds-raio-controle);
+  background: transparent;
+  box-shadow: none;
+  color: rgb(var(--el-muted));
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.fitness-elemental .tr-abas > .tr-aba.tr-aba:is([data-state="active"], [aria-current="page"]) { background: transparent; color: rgb(var(--el-text)); }
+.fitness-elemental .tr-abas > .tr-aba.tr-aba:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.fitness-elemental .tr-abas > .tr-aba.tr-aba:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: -2px; }
+@media (hover: hover) {
+  .fitness-elemental .tr-abas > .tr-aba.tr-aba:hover { color: rgb(var(--el-text)); }
+}
+
+/* ---------- Acoes e cartoes respondem com mola ---------- */
+.tr-botao {
+  min-height: 44px;
+  transition:
+    transform var(--ds-duration-settle) var(--ds-ease-conjure),
+    filter var(--ds-duration-feedback) var(--ds-ease),
+    background-color var(--ds-duration-feedback) var(--ds-ease),
+    box-shadow var(--ds-duration-feedback) var(--ds-ease),
+    opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.tr-botao:active:not(:disabled) { transform: scale(.95); transition-duration: var(--ds-duration-press); }
+.tr-botao[data-variante="primary"]:not(:disabled) {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(180deg, color-mix(in srgb, rgb(var(--el-gold)) 76%, white), rgb(var(--el-gold)));
+  box-shadow: 0 8px 24px rgb(var(--el-gold) / .26), inset 0 1px 0 rgb(255 255 255 / .5);
+}
+@media (hover: hover) {
+  .tr-botao[data-variante="primary"]:hover:not(:disabled), .tr-botao[data-variante="coral"]:hover:not(:disabled) { filter: brightness(1.06); }
+}
+.tr-cartao-vivo { transition: border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.tr-cartao-vivo:active, button:active > .tr-cartao-vivo { transform: scale(.985); transition-duration: var(--ds-duration-press); }
+.tr-fab { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-feedback) var(--ds-ease); box-shadow: 0 10px 28px rgb(var(--el-gold) / .32); }
+.tr-fab:active { transform: scale(.92); transition-duration: var(--ds-duration-press); }
+@media (hover: hover) {
+  .tr-fab:hover { transform: scale(1.06); }
+}
+
+/* The light that follows the finger across a card: a glow under the content and a one-pixel rim. */
+:is(.fitness-elemental-card, .fitness-catalog-group)[data-luz] { position: relative; isolation: isolate; }
+:is(.fitness-elemental-card, .fitness-catalog-group)[data-luz]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--elem-aura, var(--semana-aura, rgb(var(--el-gold)))) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+:is(.fitness-elemental-card, .fitness-catalog-group)[data-luz]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--elem-acento, var(--semana-acento, rgb(var(--el-gold)))) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+:is(.fitness-elemental-card, .fitness-catalog-group)[data-luz][data-luz-acesa]::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+:is(.fitness-elemental-card, .fitness-catalog-group)[data-luz][data-luz-acesa]::after { opacity: .9; transition-duration: var(--ds-duration-feedback); }
+
+/* ---------- Titulos de secao ---------- */
+.tr-secao-titulo {
+  margin: 0;
+  font-family: var(--ds-font-heading);
+  font-weight: 500;
+  font-size: var(--ds-text-title);
+  line-height: 1.3;
+  color: rgb(var(--el-text));
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+.tr-secao-titulo[data-nivel="page"] { font-size: var(--ds-fluid-display); line-height: 1.2; }
+.tr-secao-subtitulo { margin: 4px 0 0; font-size: var(--ds-text-small); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.tr-secao-acao {
+  border-radius: var(--ds-raio-controle);
+  color: rgb(var(--el-gold));
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.tr-secao-acao:active { transform: scale(.95); transition-duration: var(--ds-duration-press); }
+@media (hover: hover) {
+  .tr-secao-acao:hover { background: rgb(var(--el-gold) / .08); }
+}
+/* A capital only on the first letter: "capitalize" would also raise the "de" and the "a". */
+.tr-inicial { display: inline-block; }
+.tr-inicial::first-letter { text-transform: uppercase; }
+
+/* ---------- Explorar modalidades: runas de mesma altura, cada uma no seu elemento ---------- */
+.tr-grade { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 12px; }
+.tr-grade > .tr-runa.ds-runa { margin-top: 0; }
+.tr-grade > .tr-runa:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.tr-grade > .tr-runa {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 148px;
+  padding: 16px 10px;
+  overflow: clip;
+  color: rgb(var(--el-text));
+  cursor: pointer;
+  animation: tr-chegar var(--ds-duration-settle) var(--ds-ease) calc(var(--tr-base, calc(var(--ds-stagger) * 0)) + var(--i, 0) * var(--ds-stagger)) backwards;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-feedback) var(--ds-ease);
+}
+.tr-grade > .tr-runa:active { transform: scale(.95); transition-duration: var(--ds-duration-press); }
+.tr-grade > .tr-runa:focus-visible { outline: 2px solid var(--elem-acento); outline-offset: 2px; }
+.tr-grade > .tr-runa[aria-pressed="true"] {
+  border-color: var(--elem-acento);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--elem-acento) 55%, transparent), 0 0 28px color-mix(in srgb, var(--elem-aura) 22%, transparent);
+}
+/* The light of the finger, under the content, and a rim that catches it. */
+.tr-runa-brilho, .tr-runa-borda { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; }
+.tr-runa-brilho {
+  z-index: -1;
+  background: radial-gradient(240px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--elem-aura) 22%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.tr-runa-borda {
+  z-index: 1;
+  padding: 1px;
+  background: radial-gradient(170px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--elem-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .16;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.tr-runa[data-luz-acesa] > :is(.tr-runa-brilho, .tr-runa-borda) { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+/* The sigil: a medallion lit by the element, drifting a little against the hand. */
+.tr-sigilo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 45%, transparent);
+  border-radius: 50%;
+  color: var(--elem-acento);
+  background:
+    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--elem-aura) 30%, transparent), color-mix(in srgb, var(--elem-aura) 6%, transparent) 72%),
+    rgb(var(--el-canvas) / 40%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--elem-aura) 22%, transparent), inset 0 1px 0 rgb(255 255 255 / 12%);
+  translate: calc(var(--par-x, 0) * 3px) calc(var(--par-y, 0) * 2px);
+}
+.tr-sigilo::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px dashed color-mix(in srgb, var(--elem-acento) 38%, transparent);
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* The outer ring only turns while the finger is on the rune. */
+.tr-runa[data-luz-acesa] .tr-sigilo::before { animation: tr-girar calc(var(--ds-duration-conjure) * 12) linear infinite; }
+.tr-runa-nome {
+  max-width: 100%;
+  font-family: var(--ds-font-heading);
+  font-size: var(--ds-text-body);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: .02em;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  text-wrap: balance;
+}
+.tr-runa-descricao { max-width: 100%; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); text-wrap: balance; }
+@media (max-width: 380px) {
+  .tr-runa-nome { font-size: var(--ds-text-small); }
+  .tr-grade { gap: 10px; }
+}
+
+/* ---------- Meus treinos ---------- */
+.tr-meus-cab { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; }
+.tr-meus-contagem { margin-left: 8px; font-family: var(--ds-font-body); font-size: var(--ds-text-small); font-variant-numeric: tabular-nums; color: rgb(var(--el-muted)); }
+.tr-novo {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid rgb(var(--el-gold) / .55);
+  border-radius: var(--ds-raio-controle);
+  background: linear-gradient(180deg, color-mix(in srgb, rgb(var(--el-gold)) 76%, white), rgb(var(--el-gold)));
+  box-shadow: 0 8px 24px rgb(var(--el-gold) / .26), inset 0 1px 0 rgb(255 255 255 / .5);
+  color: rgb(var(--el-canvas));
+  font-size: var(--ds-text-small);
+  font-weight: 600;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), filter var(--ds-duration-feedback) var(--ds-ease);
+}
+.tr-novo:active { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.tr-novo:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: 2px; }
+@media (hover: hover) {
+  .tr-novo:hover { filter: brightness(1.06); }
+}
+/* One pass of light over the main action, after the scene has arrived. */
+.tr-cena[data-entrada="plena"] :is(.tr-novo, .tr-vazio .tr-botao[data-variante="primary"])::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .55) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: tr-lampejo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) both;
+}
+.tr-meus { animation: tr-chegar var(--ds-duration-settle) var(--ds-ease) var(--tr-base, calc(var(--ds-stagger) * 0)) backwards; }
+.tr-meus-busca { background: var(--ds-surface-raised); }
+
+/* ---------- Estados vazios que convidam ---------- */
+.tr-vazio {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 28px 20px 24px;
+  border: var(--ds-edge);
+  border-radius: var(--ds-raio-runa);
+  text-align: center;
+  overflow: clip;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 16%, transparent), transparent 100%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  animation: tr-chegar var(--ds-duration-settle) var(--ds-ease) var(--tr-base, calc(var(--ds-stagger) * 0)) backwards;
+}
+.tr-vazio[data-compacto="true"] { gap: 8px; padding: 18px 16px; }
+.tr-vazio-sigilo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 4px;
+  border: 1px solid color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 45%, transparent);
+  border-radius: 50%;
+  color: var(--semana-acento, rgb(var(--el-gold)));
+  background: radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 30%, transparent), color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 6%, transparent) 72%), rgb(var(--el-canvas) / 40%);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 26%, transparent), inset 0 1px 0 rgb(255 255 255 / 12%);
+}
+.tr-vazio[data-compacto="true"] .tr-vazio-sigilo { width: 44px; height: 44px; margin-bottom: 0; }
+.tr-vazio-sigilo::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 1px dashed color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 36%, transparent);
+  border-radius: 50%;
+  animation: tr-respirar calc(var(--ds-duration-conjure) * 5) ease-in-out infinite alternate;
+}
+.tr-vazio[data-compacto="true"] .tr-vazio-sigilo::before { inset: -5px; }
+.tr-vazio-titulo { margin: 0; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.4; color: rgb(var(--el-text)); text-wrap: balance; }
+.tr-vazio-texto { max-width: 36ch; margin: 0; font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.tr-vazio .tr-botao { min-height: 48px; margin-top: 4px; }
+
+/* ---------- A chegada, uma vez por abertura do app ---------- */
+.tr-cena[data-entrada="plena"] .tr-luz { animation: tr-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.tr-cena[data-entrada="plena"] .tr-cabecalho > * { animation: tr-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.tr-cena[data-entrada="plena"] .tr-cabecalho > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.tr-cena[data-entrada="plena"] .tr-cabecalho > :nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4); }
+.tr-cena[data-entrada="plena"] .tr-abas { animation: tr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 5) backwards; }
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.tr-cena[data-entrada="breve"] :is(.tr-cabecalho, .tr-abas) { animation: tr-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+@keyframes tr-aparecer { from { opacity: 0; } }
+@keyframes tr-subir { from { opacity: 0; transform: translateY(14px); } }
+@keyframes tr-chegar { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+@keyframes tr-lampejo { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+@keyframes tr-girar { to { transform: rotate(360deg); } }
+@keyframes tr-respirar { from { transform: scale(.94); opacity: .7; } to { transform: scale(1.06); opacity: 1; } }
+
+/* ---------- Preferencias do sistema ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .tr-luz { display: none; }
+  /* The glass of the tabs stops blurring through the system's own variable; the surface turns opaque. */
+  .fitness-elemental .tr-abas.ds-glass-float { --ds-blur-strong: 0px; background: rgb(var(--el-surface) / 96%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tr-luz, .tr-sigilo { translate: none; }
+  .tr-vazio-sigilo::before, .tr-sigilo::before, .tr-runa[data-luz-acesa] .tr-sigilo::before { animation: none; }
+  .tr-grade > .tr-runa, .tr-vazio, .tr-meus, .tr-cena[data-entrada] .tr-luz, .tr-cena[data-entrada] .tr-cabecalho > *, .tr-cena[data-entrada] .tr-abas { animation: none; }
+  .tr-cena[data-entrada] :is(.tr-novo, .tr-vazio .tr-botao)::after { display: none; }
+  .tr-abas-indicador { transition: none; }
+}
+@media (forced-colors: active) {
+  .tr-grade > .tr-runa[aria-pressed="true"] { outline: 2px solid Highlight; }
+  .tr-abas-indicador { border-color: Highlight; }
+  .fitness-elemental .tr-abas > .tr-aba.tr-aba:is([data-state="active"], [aria-current="page"]) { outline: 2px solid Highlight; outline-offset: -2px; }
+}

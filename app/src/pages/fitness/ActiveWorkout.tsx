@@ -1,5 +1,5 @@
 import { ActivitySessionMetrics } from '@/components/workout/ActivitySessionMetrics';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import {
@@ -20,12 +20,16 @@ import {
   FitnessEmptyState,
   FitnessHeader,
   FitnessPageShell,
-  FitnessStickyAction,
   MuscleBars,
   VideoExercisePlayer,
-  WorkoutStatsGrid,
   type ExerciseCardState,
 } from '@/components/fitness-kit';
+import { TreinoAnel } from '@/components/fitness-kit/treino-anel';
+import { TreinoBarraAcao } from '@/components/fitness-kit/treino-barra';
+import { TreinoCena } from '@/components/fitness-kit/treino-cena';
+import { TreinoDescanso, useDescanso } from '@/components/fitness-kit/treino-descanso';
+import { TreinoEstatisticas } from '@/components/fitness-kit/treino-estatisticas';
+import '@/components/fitness-kit/treino-uau.css';
 import { getYogaIllustrationFullSrc } from '@/constants/yoga-image-prompts';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatClock, formatMinutes } from '@/lib/fitness-kit/format';
@@ -53,6 +57,20 @@ export const ActiveWorkout: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+  const [alturaBarra, setAlturaBarra] = useState<number>();
+
+  // Rest only reads which sets are done: it never delays or records anything.
+  const setsConcluidas = useMemo(
+    () => (session?.exerciseResults ?? []).flatMap((result) => {
+      const plan = workout?.exercises.find((exercisePlan) => exercisePlan.order === result.order);
+      return result.sets
+        .filter((set) => set.completed && !set.skipped)
+        .map((set) => ({ id: set.id, descansoSegundos: plan?.sets.find((setPlan) => setPlan.setNumber === set.setNumber)?.restSeconds ?? 60 }));
+    }),
+    [session, workout],
+  );
+  const haSeriePendente = (session?.exerciseResults ?? []).some((result) => result.sets.some((set) => !set.completed && !set.skipped));
+  const { descanso, dispensar } = useDescanso(setsConcluidas, haSeriePendente);
 
   const startedAt = session?.startedAt;
   const status = session?.status;
@@ -146,21 +164,27 @@ export const ActiveWorkout: React.FC = () => {
   ];
 
   return (
-    <FitnessPageShell focused withFixedAction>
+    <FitnessPageShell focused withFixedAction fixedActionHeight={alturaBarra}>
+      <TreinoCena>
       <FitnessHeader
         title={session.workoutNameSnapshot}
         subtitle={subtitle}
         onBack={() => navigate('/treinos')}
         backLabel="Voltar para Treinos"
       />
-      <div className="mt-6" aria-label="Progresso da sessão">
-        <p className="text-center text-sm text-fitness-muted" aria-live="polite">
-          {completedSets} de {totalSets} {['running','swimming','cycling','martial_arts'].includes(workout?.category ?? '') ? 'blocos concluídos' : 'séries concluídas'}{skippedSets > 0 ? ` · ${skippedSets} puladas` : ''}
-        </p>
-        <progress className="mt-3 h-1.5 w-full overflow-hidden rounded-full accent-fitness-green" value={doneSets} max={Math.max(1, totalSets)} aria-label="Séries processadas" />
-      </div>
+      <section className="treino-progresso ds-pane treino-entra" aria-label="Progresso da sessão">
+        <TreinoAnel valor={totalSets > 0 ? doneSets / totalSets : 0} tamanho={68} espessura={7} rotulo="Séries processadas">
+          {totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0}%
+        </TreinoAnel>
+        <div className="treino-progresso-texto">
+          <span className="treino-progresso-numero">{completedSets} de {totalSets}</span>
+          <p className="treino-progresso-rotulo" aria-live="polite">
+            {['running','swimming','cycling','martial_arts'].includes(workout?.category ?? '') ? 'blocos concluídos' : 'séries concluídas'}{skippedSets > 0 ? ` · ${skippedSets} ${skippedSets === 1 ? 'pulada' : 'puladas'}` : ''}
+          </p>
+        </div>
+      </section>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-5 space-y-4">
         {orderedResults.map((result) => {
           const exercise = getExerciseById(result.exerciseId);
           const plan = workout?.exercises.find((exercisePlan) => exercisePlan.order === result.order);
@@ -214,7 +238,7 @@ export const ActiveWorkout: React.FC = () => {
 
       <FitnessCard radius="lg" className="mt-5 p-6">
         <h2 className="font-sans text-xl font-semibold text-fitness-text">Impacto Arcano (potencial)</h2>
-        <WorkoutStatsGrid metrics={impactMetrics} className="mt-5 [&_dd]:text-[28px]" />
+        <TreinoEstatisticas metrics={impactMetrics} denso />
         <p className="mt-6 text-sm text-fitness-muted">
           Prana disponível: {resourceSnapshot.basePrana > 0 ? `${resourceSnapshot.currentPrana}/${resourceSnapshot.basePrana}` : 'não configurado'} · Stamina disponível: {resourceSnapshot.currentStamina}/{resourceSnapshot.baseStamina}
         </p>
@@ -224,14 +248,18 @@ export const ActiveWorkout: React.FC = () => {
       </details>
 
       <p className="mt-5 text-sm text-fitness-muted">Tempo da sessão e tempo ativo declarado são medidas diferentes. O descanso não entra no tempo ativo.</p>
-      <FitnessStickyAction focused layout="row">
-        <FitnessButton className="flex-1 !h-12 !px-3 !text-sm !shadow-none" onClick={() => setIsPaused((current) => !current)}>
-          {isPaused ? 'Ver relógio' : 'Ocultar relógio'}
-        </FitnessButton>
-        <FitnessButton variant="coral" className="flex-1 !h-12 !px-3 !text-sm" onClick={handleFinishClick}>
-          {hasIncompleteSets ? 'Finalizar treino' : 'Concluir treino'}
-        </FitnessButton>
-      </FitnessStickyAction>
+      </TreinoCena>
+      <TreinoBarraAcao onHeightChange={setAlturaBarra}>
+        {descanso && <TreinoDescanso key={descanso.fim} descanso={descanso} onDispensar={dispensar} />}
+        <div className="treino-barra-botoes">
+          <button type="button" className="treino-acao" onClick={() => setIsPaused((current) => !current)}>
+            {isPaused ? 'Ver relógio' : 'Ocultar relógio'}
+          </button>
+          <button type="button" className="treino-acao treino-acao--principal" onClick={handleFinishClick}>
+            {hasIncompleteSets ? 'Finalizar treino' : 'Concluir treino'}
+          </button>
+        </div>
+      </TreinoBarraAcao>
 
       <AlertDialog open={showFinishConfirm} onOpenChange={setShowFinishConfirm}>
         <AlertDialogContent className="rounded-fit-lg border-0 bg-fitness-surface text-fitness-text">

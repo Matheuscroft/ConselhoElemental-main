@@ -165,8 +165,9 @@ function FitnessLibraryRoot() {
     <div className="mx-auto max-w-xl">
       <FitnessHeader title={tab === 'workouts' && modality ? modality.label : { workouts: 'Exercício Físico', history: 'Histórico', body: 'Meu corpo', health: 'Saúde' }[tab] ?? 'Treinos'} subtitle={tab === 'workouts' && modality ? 'Exercícios, treinos e sequências' : 'Seu movimento, sua evolução'} onBack={() => { if (tab === 'workouts' && modality) { const next = new URLSearchParams(params); next.delete('modalidade'); next.delete('source'); setParams(next); } else navigate('/pilares'); }} backLabel={tab === 'workouts' && modality ? 'Voltar às modalidades' : 'Voltar aos Pilares'} />
       <Tabs value={tab} onValueChange={selectTab} className="mt-6">
-        <TabsList aria-label="Seções de Exercício Físico" className="fitness-elemental-tabs grid h-12 w-full grid-cols-4 rounded-2xl bg-fitness-surface p-1">
-          {([['workouts', 'Treinos'], ['history', 'Histórico'], ['body', 'Corpo'], ['health', 'Saúde']] as const).map(([value, label]) => <TabsTrigger key={value} value={value} onClick={() => { if (value === 'workouts' && tab === 'workouts') selectTab(value); }} className="h-10 rounded-xl px-1 text-xs sm:text-sm text-fitness-muted data-[state=active]:bg-[rgb(var(--el-gold)/0.12)] data-[state=active]:text-[rgb(var(--el-gold))]">{label}</TabsTrigger>)}
+        <TabsList aria-label="Seções de Exercício Físico" data-ativa={tab} className="fitness-elemental-tabs tr-abas ds-glass-float">
+          <span className="tr-abas-indicador" aria-hidden="true" />
+          {([['workouts', 'Treinos'], ['history', 'Histórico'], ['body', 'Corpo'], ['health', 'Saúde']] as const).map(([value, label]) => <TabsTrigger key={value} value={value} onClick={() => { if (value === 'workouts' && tab === 'workouts') selectTab(value); }} className="tr-aba">{label}</TabsTrigger>)}
         </TabsList>
         <TabsContent value="workouts" className="mt-6 space-y-8 pb-12">
             {active && <FitnessCard className="border border-fitness-primary/30 p-5"><div className="flex items-center gap-2 text-fitness-primary"><Play size={17} /><p className="font-medium">Sessão em andamento</p></div><p className="mt-2 break-words text-lg font-semibold">{active.nameSnapshot}</p><FitnessButton size="md" className="mt-4 w-full" onClick={() => navigate(`/fitness/ativo/${active.id}`)}>Retomar treino</FitnessButton></FitnessCard>}
@@ -177,7 +178,10 @@ function FitnessLibraryRoot() {
               modalitiesHeadingRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
             }} />
             <section aria-labelledby="fitness-modalities-heading" className="space-y-4">
-              <h2 id="fitness-modalities-heading" ref={modalitiesHeadingRef} tabIndex={-1} className="scroll-mt-6 rounded-lg text-xl outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">Explorar modalidades</h2>
+              <div>
+                <h2 id="fitness-modalities-heading" ref={modalitiesHeadingRef} tabIndex={-1} className="tr-secao-titulo scroll-mt-6 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">Explorar modalidades</h2>
+                <p className="tr-secao-subtitulo">Cada caminho tem a luz de um elemento. Escolha o seu.</p>
+              </div>
               <FitnessCategoryGrid options={availableModalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} />
             </section>
           </>}
@@ -206,7 +210,7 @@ function FitnessLibraryRoot() {
         </FitnessEmbeddedContext.Provider>
       </Tabs>
     </div>
-    {tab === 'workouts' && modality && !createVisible && !createOpen && <button type="button" aria-label="Criar treino" onClick={() => { setPresetId(undefined); setCreateOpen(true); }} className="fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-5 z-40 grid h-14 w-14 place-items-center rounded-2xl border border-[rgb(var(--el-gold)/0.5)] bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))] shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary md:right-8"><Plus className="h-7 w-7" aria-hidden="true" /></button>}
+    {tab === 'workouts' && modality && !createVisible && !createOpen && <button type="button" aria-label="Criar treino" onClick={() => { setPresetId(undefined); setCreateOpen(true); }} className="tr-fab fixed bottom-[calc(5.75rem+env(safe-area-inset-bottom))] right-5 z-40 grid h-14 w-14 place-items-center rounded-2xl border border-[rgb(var(--el-gold)/0.5)] bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))] shadow-lg outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary md:right-8"><Plus className="h-7 w-7" aria-hidden="true" /></button>}
     {createOpen && modality && <NativeTemplateDialog catalog={selectedCatalog} modality={modality.id} presetId={presetId} onClose={closeCreator} />}
     <ExerciseDetailSheet variant="fitness" exercise={adaptedDetail} open={!!detail} onOpenChange={(open) => { if (!open) setDetail(null); }} onAddToWorkout={(exercise) => { setPresetId(exercise.id); setDetail(null); setCreateOpen(true); }} />
   </FitnessPageShell>;

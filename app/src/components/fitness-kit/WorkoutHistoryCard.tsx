@@ -1,7 +1,6 @@
-import React from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { FitnessCard } from './FitnessCard';
-import { FitnessIconBadge } from './FitnessIconBadge';
+import React, { type CSSProperties } from 'react';
+import { ChevronRight, type LucideIcon } from 'lucide-react';
+import type { ElementId } from '@/types';
 
 interface WorkoutHistoryCardProps {
   name: string;
@@ -11,27 +10,35 @@ interface WorkoutHistoryCardProps {
   metricNode?: React.ReactNode;
   icon: LucideIcon;
   onClick?: () => void;
+  /** Elemento da modalidade: dá à runa a cor e o fio de luz dele. Sem isto ela fica dourada. */
+  element?: ElementId;
+  /** Nome da modalidade, dito junto da data. */
+  modalityLabel?: string;
+  /** Posição na lista: cada runa entra um passo depois da anterior. */
+  order?: number;
 }
 
-/** Item do histórico: badge à esquerda, texto central com quebra, data à direita. Layout em linha em todos os tamanhos. */
-export const WorkoutHistoryCard: React.FC<WorkoutHistoryCardProps> = ({ name, dateLabel, metricValue, metricUnit, metricNode, icon, onClick }) => {
-  const body = (
-    <FitnessCard radius="md" interactive={Boolean(onClick)} className="flex items-center gap-3 px-4 py-4 min-w-0">
-      <FitnessIconBadge icon={icon} size="md" className="shrink-0" />
-      <div className="min-w-0 flex-1 text-left pr-3">
-        <p className="text-sm text-fitness-text-soft break-words">{name}</p>
-        <p className="text-lg font-medium leading-tight text-fitness-primary break-words mt-0.5">
-          {metricNode ?? <>{metricValue}{metricUnit && <span className="ml-0.5">{metricUnit}</span>}</>}
-        </p>
-      </div>
-      <p className="shrink-0 text-sm text-fitness-text whitespace-nowrap max-w-[35%] truncate">{dateLabel}</p>
-    </FitnessCard>
+/** Sessão como runa: sigilo na cor da modalidade, nome, quando e qual, e a recompensa que ela rendeu. */
+export const WorkoutHistoryCard: React.FC<WorkoutHistoryCardProps> = ({ name, dateLabel, metricValue, metricUnit, metricNode, icon: Icon, onClick, element, modalityLabel, order = 0 }) => {
+  const content = (
+    <>
+      <span className="saude-runa-sigilo" aria-hidden="true"><Icon strokeWidth={1.75} /></span>
+      <span className="saude-runa-texto">
+        <span className="saude-runa-nome">{name}</span>
+        <span className="saude-runa-meta">{dateLabel}{modalityLabel && <> · {modalityLabel}</>}</span>
+        <span className="saude-runa-metrica">{metricNode ?? <>{metricValue}{metricUnit && <span> {metricUnit}</span>}</>}</span>
+      </span>
+      {onClick && <ChevronRight className="saude-runa-seta" aria-hidden="true" />}
+    </>
   );
+  const shared = {
+    className: 'saude-runa saude-entra',
+    'data-element': element,
+    'data-luz': '',
+    style: { '--ordem': order } as CSSProperties,
+  };
 
-  if (!onClick) return body;
-  return (
-    <button type="button" onClick={onClick} className="block w-full rounded-fit outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">
-      {body}
-    </button>
-  );
+  return onClick
+    ? <button type="button" onClick={onClick} {...shared}>{content}</button>
+    : <div {...shared}>{content}</div>;
 };

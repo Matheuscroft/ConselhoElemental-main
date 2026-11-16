@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import './treino-uau.css';
 
 interface VideoExercisePlayerProps {
   title: string;
@@ -29,9 +30,9 @@ export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title,
     void videoRef.current?.play().catch(() => { setPlaying(false); setVideoFailed(true); });
   };
 
-  if (videoFailed) return <div className="rounded-2xl bg-fitness-surface-muted p-4 text-sm text-fitness-muted" role="status">Não foi possível reproduzir este vídeo. Confira o endereço na edição do treino.<button type="button" className="mt-2 block min-h-11 text-fitness-primary" onClick={() => { setVideoFailed(false); setPlaying(false); }}>Tentar novamente</button></div>;
+  if (videoFailed) return <div className="treino-video-erro" role="status">Não foi possível reproduzir este vídeo. Confira o endereço na edição do treino.<button type="button" onClick={() => { setVideoFailed(false); setPlaying(false); }}>Tentar novamente</button></div>;
   return (
-    <div className={cn('relative aspect-[16/10] w-full overflow-hidden rounded-2xl bg-fitness-canvas shadow-fitness-card', className)}>
+    <div className={cn('treino-video', className)}>
       {src ? (
         <video
           ref={videoRef}
@@ -44,7 +45,7 @@ export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title,
           onPause={() => setPlaying(false)}
           onEnded={() => setPlaying(false)}
           aria-label={`Vídeo: ${title}`}
-          className="h-full w-full object-cover"
+          className="object-cover"
         />
       ) : (
         <img
@@ -52,20 +53,15 @@ export const VideoExercisePlayer: React.FC<VideoExercisePlayerProps> = ({ title,
           alt={`Demonstração: ${title}`}
           loading="lazy"
           onError={() => setPosterFailed(true)}
-          className="h-full w-full object-contain"
+          className="object-contain"
         />
       )}
 
       {src && !playing && (
         <>
-          <div aria-hidden="true" className="absolute inset-0 bg-black/35" />
-          <button
-            type="button"
-            onClick={handlePlay}
-            aria-label={`Reproduzir vídeo: ${title}`}
-            className="absolute left-1/2 top-1/2 grid h-[68px] w-[68px] -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white backdrop-blur-md outline-none transition-transform duration-200 hover:scale-105 focus-visible:ring-2 focus-visible:ring-fitness-primary"
-          >
-            <Play className="ml-1 h-8 w-8 fill-white" aria-hidden="true" />
+          <div aria-hidden="true" className="treino-video-veu" />
+          <button type="button" onClick={handlePlay} aria-label={`Reproduzir vídeo: ${title}`} className="treino-video-play">
+            <Play className="ml-1 h-9 w-9 fill-current" aria-hidden="true" />
           </button>
         </>
       )}

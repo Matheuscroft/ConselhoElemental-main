@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowDown, ArrowUp, Pencil, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { FitnessButton, SectionHeader } from '@/components/fitness-kit';
+import { FitnessButton, FitnessEmptyState, SectionHeader } from '@/components/fitness-kit';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
@@ -58,9 +58,9 @@ export function WorkoutSequenceLibrary({ modality }: { modality?: WorkoutExercis
   const [editing, setEditing] = useState<WorkoutSequence | null>(null);
   const [activating, setActivating] = useState<WorkoutSequence | null>(null);
   const visible = modality ? sequences.filter((sequence) => sequence.templateIds.some((id) => templates.some((template) => template.id === id && template.modality === modality))) : sequences;
-  return <section className="space-y-4"><SectionHeader title="Sequências" subtitle="Treinos em uma ordem que se repete." /><FitnessButton size="md" variant="secondary" className="w-full" disabled={templates.length < 2} onClick={() => setCreating(true)}><Plus size={17} />Criar sequência</FitnessButton>{templates.length < 2 && <p className="text-xs text-fitness-muted">Crie pelo menos dois treinos para montar uma sequência.</p>}{visible.map((sequence) => {
+  return <section className="space-y-4"><SectionHeader title="Sequências" subtitle="Treinos em uma ordem que se repete." /><FitnessButton size="md" variant="secondary" className="w-full" disabled={templates.length < 2} onClick={() => setCreating(true)}><Plus size={17} />Criar sequência</FitnessButton>{templates.length < 2 && <p className="text-xs leading-relaxed text-fitness-muted">Crie pelo menos dois treinos para montar uma sequência.</p>}{visible.map((sequence) => {
     const active = rotations.some((rotation) => rotation.id === sequence.id && rotation.isActive);
     const valid = sequence.templateIds.length >= 2 && sequence.templateIds.every((id) => templates.some((template) => template.id === id));
     return <SequenceLibraryCard key={sequence.id} id={`workout-sequence-${sequence.id}`} focused={requestedSequence === sequence.id} name={sequence.name} description={sequence.description} members={sequence.templateIds.map((id, index) => ({ id: `${id}-${index}`, name: templates.find((template) => template.id === id)?.name ?? 'Treino indisponível' }))}><FitnessButton size="md" variant="secondary" className="w-full" onClick={() => setEditing(sequence)}><Pencil size={16} />Editar sequência</FitnessButton><FitnessButton size="md" variant="secondary" className={`w-full ${active ? 'text-emerald-300' : ''}`} disabled={!active && !valid} onClick={() => { if (active) { deactivateWorkoutSequence(sequence.id); toast.success('Sequência devolvida ao planejamento.'); } else setActivating(sequence); }}>{active ? 'Desativar e voltar ao planejamento' : 'Tornar Sequência de Ciclos'}</FitnessButton>{!valid && <p className="text-xs text-fitness-muted">Esta sequência precisa de pelo menos dois treinos disponíveis.</p>}</SequenceLibraryCard>;
-  })}{!visible.length && <p className="text-sm text-fitness-muted">Suas sequências aparecerão aqui.</p>}{creating && <CreateSequenceModal onClose={() => setCreating(false)} />}{editing && <CreateSequenceModal sequence={editing} onClose={() => setEditing(null)} />}{activating && <MakeCycleModal sequence={activating} onClose={() => setActivating(null)} />}</section>;
+  })}{!visible.length && <FitnessEmptyState compact message="Suas sequências aparecerão aqui." />}{creating && <CreateSequenceModal onClose={() => setCreating(false)} />}{editing && <CreateSequenceModal sequence={editing} onClose={() => setEditing(null)} />}{activating && <MakeCycleModal sequence={activating} onClose={() => setActivating(null)} />}</section>;
 }

@@ -2,6 +2,7 @@ import React, { useId } from 'react';
 import { Activity, Check, ChevronDown, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RevealPanel } from '@/components/motion/RevealPanel';
+import './treino-uau.css';
 
 export type ExerciseCardState = 'pending' | 'active' | 'completed' | 'skipped';
 
@@ -16,7 +17,7 @@ interface ExerciseCardProps {
   children?: React.ReactNode;
 }
 
-/** Card do exercício na sessão ativa: círculo de status, título, chevron, barra de progresso colada na base. */
+/** Card do exercício na sessão ativa: o exercício da vez é o protagonista (luz do elemento, título grande, "Agora"). */
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, state, progress, expanded, onToggle, children }) => {
   const panelId = useId();
   const completed = state === 'completed';
@@ -27,7 +28,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
     <div
       data-state={state}
       className={cn(
-        'fitness-elemental-card relative overflow-hidden rounded-fit-sm motion-safe:transition-colors motion-safe:duration-200',
+        'treino-exercicio fitness-elemental-card relative overflow-hidden rounded-fit-sm motion-safe:transition-colors motion-safe:duration-200',
         completed ? 'bg-fitness-canvas' : 'bg-fitness-surface'
       )}
     >
@@ -36,37 +37,28 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({ title, subtitle, sta
         onClick={onToggle}
         aria-expanded={expanded}
         aria-controls={panelId}
-        className="flex min-h-[92px] w-full items-center gap-4 px-5 pb-4 pt-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-fitness-primary"
+        className="treino-exercicio-cabeca"
       >
-        <span
-          aria-hidden="true"
-          className={cn(
-            'fitness-elemental-badge grid h-11 w-11 shrink-0 place-items-center rounded-2xl',
-            completed ? 'bg-fitness-surface-muted text-fitness-muted-dark' : 'text-[rgb(var(--el-gold))]'
-          )}
-        >
-          {skipped && <SkipForward className="h-5 w-5" strokeWidth={2} />}
-          {!completed && !skipped && <Activity className="h-5 w-5" />}
-          {completed && <Check className="h-5 w-5" strokeWidth={2} />}
+        <span aria-hidden="true" className="treino-exercicio-selo">
+          {skipped && <SkipForward className="h-6 w-6" strokeWidth={2} />}
+          {!completed && !skipped && <Activity className="h-6 w-6" />}
+          {completed && <Check className="h-6 w-6" strokeWidth={2.5} />}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className={cn('block break-words text-xl font-medium', completed ? 'text-fitness-muted' : 'text-fitness-text')}>{title}</span>
-          <span className="block break-words text-base text-fitness-muted">{subtitle}</span>
+        <span className="treino-exercicio-texto">
+          {state === 'active' && <span className="treino-exercicio-agora">Agora</span>}
+          <span className="treino-exercicio-titulo">{title}</span>
+          <span className="treino-exercicio-sub">{subtitle}</span>
         </span>
-        <ChevronDown
-          aria-hidden="true"
-          className={cn('h-7 w-7 shrink-0 text-fitness-text motion-safe:transition-transform motion-safe:duration-200', expanded && 'rotate-180', completed && 'text-fitness-muted')}
-          strokeWidth={1.5}
-        />
+        <ChevronDown aria-hidden="true" className="treino-exercicio-seta" data-aberto={expanded} strokeWidth={1.75} />
       </button>
 
       <RevealPanel id={panelId} open={expanded}>
-        <div role="region" aria-label={`Detalhes: ${title}`} className="space-y-3 px-4 pb-6">{children}</div>
+        <div role="region" aria-label={`Detalhes: ${title}`} className="treino-exercicio-corpo">{children}</div>
       </RevealPanel>
 
-      <div className="absolute inset-x-0 bottom-0 h-1.5" aria-hidden="true">
+      <div className="treino-exercicio-barra" aria-hidden="true">
         <div
-          className={cn('fitness-motion-bar h-full w-full origin-left rounded-r-full', completed || skipped ? 'bg-fitness-muted-dark' : 'bg-fitness-green')}
+          className="fitness-motion-bar"
           style={{ transform: `scaleX(${(completed ? 100 : clamped) / 100})` }}
         />
       </div>

@@ -1,22 +1,22 @@
 import { NativeWorkoutPreview } from './NativeWorkoutPreview';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, type CSSProperties } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import {
   FitnessBottomNav,
   FitnessButton,
   FitnessEmptyState,
-  FitnessListRow,
   WorkoutPreviewHero,
   FitnessPageShell,
-  FitnessStickyAction,
-  SectionHeader,
-
 } from '@/components/fitness-kit';
+import { TreinoBarraAcao } from '@/components/fitness-kit/treino-barra';
+import { TreinoCena } from '@/components/fitness-kit/treino-cena';
+import { TreinoLinha } from '@/components/fitness-kit/treino-linha';
+import '@/components/fitness-kit/treino-uau.css';
 import { ExerciseDetailSheet } from '@/components/workout';
 import { resolveExerciseMedia } from '@/lib/workout/exercise-media';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatClock, formatMinutes } from '@/lib/fitness-kit/format';
-import { CATEGORY_ICONS, CATEGORY_LABELS, LEVEL_LABELS } from '@/lib/workout';
+import { CATEGORY_LABELS, LEVEL_LABELS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { WorkoutExercise, WorkoutExerciseLevel, WorkoutExercisePlan } from '@/types/workout';
 
@@ -44,6 +44,7 @@ export const WorkoutPreview: React.FC = () => {
 const LegacyWorkoutPreview: React.FC = () => {
   const navigate = useNavigate();
   const [detailExercise, setDetailExercise] = useState<WorkoutExercise | null>(null);
+  const [alturaBarra, setAlturaBarra] = useState<number>();
   const { workoutId } = useParams<{ workoutId: string }>();
 
   const workout = useWorkoutStore((state) => (workoutId ? state.getWorkoutById(workoutId) : undefined));
@@ -96,44 +97,41 @@ const LegacyWorkoutPreview: React.FC = () => {
   const actionLabel = isCompleted ? 'Ver resumo' : workout.status === 'in_progress' ? 'Continuar treino' : FITNESS_COPY.startWorkout;
   const actionDisabled = isCompleted ? !workout.lastSessionId : !canStart;
 
+  const totalSets = rows.reduce((sum, row) => sum + row.plan.sets.length, 0);
+
   return (
-    <FitnessPageShell focused withFixedAction showPageMap={false} bleed flushTop>
-      <WorkoutPreviewHero title={workout.name} heroImage={rows.map(({ plan, exercise }) => resolveExerciseMedia(plan, exercise, exercise).poster).find(Boolean)} onBack={() => navigate(`/treinos?modalidade=${workout.category}`)} />
+    <FitnessPageShell focused withFixedAction fixedActionHeight={alturaBarra} showPageMap={false} bleed flushTop>
+      <TreinoCena>
+      <WorkoutPreviewHero title={workout.name} heroImage={rows.map(({ plan, exercise }) => resolveExerciseMedia(plan, exercise, exercise).poster).find(Boolean)} onBack={() => navigate(`/treinos?modalidade=${workout.category}`)}>
+        <li className="treino-chip">{CATEGORY_LABELS[workout.category]} · {rows.every((row)=>row.exercise?.source === 'native') ? 'Registro manual' : SCORE_LABEL[difficultyScore]}</li>
+        <li className="treino-chip treino-chip--xp">{formatMinutes(workout.estimatedDurationMinutes)}</li>
+        <li className="treino-chip">{rows.length} {rows.length === 1 ? 'exercício' : 'exercícios'} · {totalSets} {totalSets === 1 ? 'série' : 'séries'}</li>
+      </WorkoutPreviewHero>
 
-      <div className="relative -mt-8 rounded-t-[2rem] bg-fitness-canvas px-6 pt-7">
-        <div className="flex items-baseline justify-between gap-4">
-          <h2 className="min-w-0 break-words font-display text-[28px] font-medium leading-tight text-fitness-text">{workout.name}</h2>
-          <span className="shrink-0 text-lg font-medium text-fitness-primary">{formatMinutes(workout.estimatedDurationMinutes)}</span>
-        </div>
+      <div className="treino-corpo">
+        <p className="treino-corpo-nota treino-entra" style={{ '--i': 2 } as CSSProperties}>Tempo planejado, ajustável ao executar.</p>
 
-        <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
-          <span className="text-sm text-fitness-muted">{CATEGORY_LABELS[workout.category]} · {rows.every((row)=>row.exercise?.source === 'native') ? 'Registro manual' : SCORE_LABEL[difficultyScore]}</span>
-          <span className="text-sm text-fitness-muted">Tempo planejado, ajustável ao executar</span>
-        </div>
-
-        <div className="mt-12">
-          <SectionHeader title={FITNESS_COPY.program} />
-          <p className="mt-2 text-sm text-fitness-muted">
-            {rows.length} {rows.length === 1 ? 'exercício' : 'exercícios'} · Toque para ver a execução
-          </p>
-          <div className="mt-5 space-y-4">
-            {rows.length === 0 ? (
-              <FitnessEmptyState message="Este treino ainda não tem exercícios." />
-            ) : (
-              rows.map(({ plan, exercise }) => (
-                <FitnessListRow
-                  key={plan.id}
-                  icon={CATEGORY_ICONS[exercise?.category ?? 'mixed'] ?? CATEGORY_ICONS.mixed}
-                  title={exercise?.name ?? 'Exercício removido'}
-                  subtitle={describePlan(plan, exercise)}
-                  onClick={exercise ? () => setDetailExercise(exercise) : undefined}
-                  ariaLabel={exercise ? `Ver detalhes de ${exercise.name}` : undefined}
-                />
-              ))
-            )}
+        <h2 className="treino-secao treino-entra" style={{ '--i': 3 } as CSSProperties}>{FITNESS_COPY.program}</h2>
+        <p className="treino-corpo-nota treino-entra" style={{ '--i': 3 } as CSSProperties}>Toque em um exercício para ver a execução.</p>
+        {rows.length === 0 ? (
+          <FitnessEmptyState message="Este treino ainda não tem exercícios." />
+        ) : (
+          <div className="treino-lista">
+            {rows.map(({ plan, exercise }, index) => (
+              <TreinoLinha
+                key={plan.id}
+                numero={index + 1}
+                indice={index}
+                titulo={exercise?.name ?? 'Exercício removido'}
+                subtitulo={describePlan(plan, exercise)}
+                onClick={exercise ? () => setDetailExercise(exercise) : undefined}
+                ariaLabel={exercise ? `Ver detalhes de ${exercise.name}` : undefined}
+              />
+            ))}
           </div>
-        </div>
+        )}
       </div>
+      </TreinoCena>
 
       <ExerciseDetailSheet
         variant="fitness"
@@ -142,11 +140,11 @@ const LegacyWorkoutPreview: React.FC = () => {
         onOpenChange={(open) => { if (!open) setDetailExercise(null); }}
       />
 
-      <FitnessStickyAction focused>
-        <FitnessButton className="w-full" disabled={actionDisabled} onClick={handlePrimaryAction}>
+      <TreinoBarraAcao onHeightChange={setAlturaBarra}>
+        <button type="button" className="treino-acao treino-acao--principal w-full" disabled={actionDisabled} onClick={handlePrimaryAction}>
           {actionLabel}
-        </FitnessButton>
-      </FitnessStickyAction>
+        </button>
+      </TreinoBarraAcao>
     </FitnessPageShell>
   );
 };

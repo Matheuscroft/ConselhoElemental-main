@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useRef, type CSSProperties } from 'react';
+import { Plus } from 'lucide-react';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import type { MetricItem } from '@/lib/fitness-kit/adapters';
+import { cn } from '@/lib/utils';
 import { BodySilhouette } from './BodySilhouette';
 import { FitnessButton } from './FitnessButton';
-import { FitnessCard } from './FitnessCard';
+import { useChegadaSaude } from './saude-chegada';
 
 interface BodyMetricsCardProps {
   metrics: MetricItem[];
@@ -11,49 +13,59 @@ interface BodyMetricsCardProps {
   onRecord?: () => void;
   /** Link para o histórico corporal completo. */
   onViewAll?: () => void;
+  /** Medidas registradas além das quatro mostradas (ids), que também acendem a silhueta. */
+  extraIds?: readonly string[];
+  /** A única superfície de vidro real da aba; sem isto o cartão é uma placa sem desfoque. */
+  glass?: boolean;
 }
 
-/** Silhueta (~35%) + grade 2 × 2 de medidas reais (~65%). */
-export const BodyMetricsCard: React.FC<BodyMetricsCardProps> = ({ metrics, measuredAt, onRecord, onViewAll }) => (
-  <FitnessCard radius="lg" className="p-5 sm:p-6">
-    <div className="flex items-start justify-between gap-3">
-      <h2 className="font-sans text-xl font-semibold leading-tight text-fitness-text">{FITNESS_COPY.yourBody}</h2>
-      {onViewAll && (
-        <button
-          type="button"
-          onClick={onViewAll}
-          className="-mr-2 min-h-11 shrink-0 rounded-full px-2 text-base font-medium text-fitness-primary outline-none transition-colors hover:text-fitness-primary-hover focus-visible:ring-2 focus-visible:ring-fitness-primary"
-        >
-          Detalhes
-        </button>
-      )}
-    </div>
-    {measuredAt && <p className="mt-1 text-xs text-fitness-muted">Última avaliação: <time dateTime={measuredAt}>{new Date(measuredAt).toLocaleDateString('pt-BR')}</time></p>}
-    <div className="mt-5 grid grid-cols-[minmax(0,36fr)_minmax(0,64fr)] items-center gap-3">
-      <BodySilhouette className="mx-auto h-44 w-full max-w-28 sm:h-48" />
-      {metrics.length === 0 ? (
-        <div className="min-w-0">
-          <p className="text-base leading-relaxed text-fitness-muted">Suas medidas aparecem aqui após a primeira avaliação.</p>
+/** Silhueta com luz própria e pontos que acendem, uma lista de medidas reais e a ação principal da aba. */
+export const BodyMetricsCard: React.FC<BodyMetricsCardProps> = ({ metrics, measuredAt, onRecord, onViewAll, extraIds = [], glass = false }) => {
+  const ref = useRef<HTMLElement>(null);
+  const arrived = useChegadaSaude(ref, 'corpo-silhueta');
+  const lit = [...metrics.map((metric) => metric.id), ...extraIds];
+
+  return (
+    <section
+      ref={ref}
+      data-luz=""
+      data-chegou={arrived}
+      aria-label={FITNESS_COPY.yourBody}
+      className={cn('saude-corpo saude-entra', glass ? 'saude-vidro ds-glass-float' : 'ds-pane')}
+      style={{ '--ordem': 1 } as CSSProperties}
+    >
+      <div className="saude-corpo-cabeca">
+        <div>
+          <h2>{FITNESS_COPY.yourBody}</h2>
+          {measuredAt && <p>Última avaliação: <time dateTime={measuredAt}>{new Date(measuredAt).toLocaleDateString('pt-BR')}</time></p>}
         </div>
-      ) : (
-        <dl className="grid grid-cols-2 gap-x-2 gap-y-5">
-          {metrics.map((metric) => (
-            <div key={metric.id} className="min-w-0">
-              <dd className="break-words text-lg sm:text-xl font-medium text-fitness-text">
-                {metric.value}
-                {metric.unit && <span className="ml-1 text-xs sm:text-sm">{metric.unit}</span>}
-              </dd>
-              <dt className="break-words text-xs sm:text-sm text-fitness-muted">{metric.label}</dt>
-            </div>
-          ))}
-        </dl>
+        {onViewAll && <button type="button" onClick={onViewAll} className="saude-link">Detalhes</button>}
+      </div>
+
+      <div className="saude-corpo-palco">
+        <BodySilhouette lit={lit} arrived={arrived} />
+        {metrics.length === 0 ? (
+          <div className="saude-corpo-convite">
+            <p>Suas medidas aparecem aqui, cada uma acendendo um ponto do corpo, depois da primeira avaliação.</p>
+          </div>
+        ) : (
+          <dl className="saude-medidas">
+            {metrics.map((metric) => (
+              <div key={metric.id} className="saude-medida">
+                <dt>{metric.label}</dt>
+                <dd>{metric.value}{metric.unit && <span>{metric.unit}</span>}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+      </div>
+
+      {onRecord && (
+        <FitnessButton size="lg" className="saude-corpo-acao w-full" onClick={onRecord}>
+          <Plus className="h-5 w-5" aria-hidden="true" />
+          {metrics.length === 0 ? 'Registrar avaliação' : 'Registrar nova avaliação'}
+        </FitnessButton>
       )}
-    </div>
-    {metrics.length === 0 && onRecord && (
-      <FitnessButton size="md" className="mt-4 w-full" onClick={onRecord}>Registrar avaliação</FitnessButton>
-    )}
-    {metrics.length > 0 && onRecord && (
-      <FitnessButton size="md" variant="secondary" className="mt-4 w-full" onClick={onRecord}>Registrar nova avaliação</FitnessButton>
-    )}
-  </FitnessCard>
-);
+    </section>
+  );
+};

@@ -1,4 +1,6 @@
 import './fitness-elemental.css';
+import './treinos-uau.css';
+import { useCenaTreinos } from './treinos-cena';
 import { LayoutGrid } from 'lucide-react';
 import { AllRoutesSheet } from '@/components/layout/AllRoutesSheet';
 import React, { useContext, useEffect, useState } from 'react';
@@ -48,6 +50,10 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
   const embedded = useContext(FitnessEmbeddedContext);
   const timerRunning = useAppStore((state) => state.timer.isRunning);
   const tickTimer = useAppStore((state) => state.tickTimer);
+  // The scene is for the screens of the module that live in the open; the
+  // immersive execution and the embedded content keep their own calm.
+  const comCena = !embedded && !fullscreen;
+  const { cenaRef, entrada, luz } = useCenaTreinos(comCena);
 
   // O AppLayout normalmente mantém o relógio do timer global; como esta casca
   // substitui o AppLayout no módulo, preservamos esse comportamento.
@@ -71,15 +77,22 @@ export const FitnessPageShell: React.FC<FitnessPageShellProps> = ({
       <AllRoutesSheet open={routesOpen} onOpenChange={setRoutesOpen} variant="fitness" />
       <main
         id="main-content"
-        style={withFixedAction && fixedActionHeight !== undefined ? { paddingBottom: `calc(${fixedActionHeight}px + 5.5rem + env(safe-area-inset-bottom))` } : undefined}
+        ref={cenaRef}
+        data-entrada={comCena ? entrada : undefined}
+        style={{
+          ...(comCena ? luz : undefined),
+          ...(withFixedAction && fixedActionHeight !== undefined ? { paddingBottom: `calc(${fixedActionHeight}px + 5.5rem + env(safe-area-inset-bottom))` } : undefined),
+        }}
         className={cn(
           'relative mx-auto',
+          comCena && 'tr-cena',
           fullscreen ? 'max-w-xl' : focused ? 'mx-auto max-w-xl md:ml-72 md:mr-0 md:max-w-none' : 'max-w-md md:ml-72 md:mr-0 md:max-w-none',
           !flushTop && 'pt-[calc(1.5rem+env(safe-area-inset-top))]',
           bottomPadding,
           className
         )}
       >
+        {comCena && <div className="tr-luz" aria-hidden="true" />}
         {showPageMap && <div className={focused ? 'absolute right-6 top-[calc(1.5rem+env(safe-area-inset-top))] z-10' : 'mx-auto flex w-full justify-end px-6 pb-3 md:max-w-md'}>
           <button type="button" aria-label="Mapa de páginas" onClick={() => setRoutesOpen(true)} className={cn('flex min-h-11 items-center justify-center gap-2 rounded-full text-sm text-fitness-muted hover:text-fitness-text focus-visible:ring-2 focus-visible:ring-fitness-primary', focused ? 'w-11' : 'px-3')}>
             <LayoutGrid className="h-5 w-5" aria-hidden="true" /> {!focused && 'Todas as páginas'}

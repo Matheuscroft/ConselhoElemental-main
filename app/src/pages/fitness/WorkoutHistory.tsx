@@ -1,19 +1,43 @@
 import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
-import React, { useContext, useMemo, useState } from 'react';
+import React, { useContext, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { History as HistoryIcon } from 'lucide-react';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { FitnessButton, FitnessTopTabs, FitnessEmptyState, FitnessPageShell, SectionHeader, WorkoutHistoryCard } from '@/components/fitness-kit';
+import { FitnessButton, FitnessTopTabs, FitnessPageShell, WorkoutHistoryCard } from '@/components/fitness-kit';
+import '@/components/fitness-kit/saude-uau.css';
+import { SaudeCena } from '@/components/fitness-kit/saude-cena';
+import { useChegadaSaude } from '@/components/fitness-kit/saude-chegada';
+import { elementoDaModalidade } from '@/components/fitness-kit/saude-luz';
+import { SaudeCabeca, SaudeNumeroVivo } from '@/components/fitness-kit/saude-painel';
+import { SaudeVazio } from '@/components/fitness-kit/saude-vazio';
+import { FITNESS_ICONS } from '@/components/fitness-kit/FitnessGlyph';
 import { mapSessionsToHistoryItems } from '@/lib/fitness-kit/adapters';
 import { FITNESS_COPY } from '@/lib/fitness-kit/copy';
 import { formatDayLabel, formatMonthLabel } from '@/lib/fitness-kit/format';
-import { CATEGORY_ICONS } from '@/lib/workout';
+import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
 import { useAppStore } from '@/stores/appStore';
 import { isEmptyShortNativeSession } from '@/lib/workout/empty-native-session';
 import { toast } from 'sonner';
+
+/** The one pane of glass of this tab: how many sessions the period holds, counted when it is first seen. */
+const ResumoHistorico: React.FC<{ total: number; periodLabel: string }> = ({ total, periodLabel }) => {
+  const ref = useRef<HTMLElement>(null);
+  const arrived = useChegadaSaude(ref, 'historico-resumo');
+  return (
+    <section ref={ref} className="saude-resumo saude-vidro ds-glass-float saude-entra" data-luz="" style={{ '--ordem': 1 } as CSSProperties} aria-label="Resumo do período">
+      <span className="saude-resumo-sigilo" aria-hidden="true"><HistoryIcon strokeWidth={1.75} /></span>
+      <div>
+        <strong><SaudeNumeroVivo number={{ value: total, format: (value) => String(Math.round(value)) }} arrived={arrived} /></strong>
+        <p>{total === 1 ? 'treino registrado' : 'treinos registrados'}</p>
+      </div>
+      <small>{periodLabel}</small>
+    </section>
+  );
+};
 
 export const WorkoutHistory: React.FC = () => {
   const embedded = useContext(FitnessEmbeddedContext);
@@ -67,56 +91,79 @@ export const WorkoutHistory: React.FC = () => {
   const hasAnyCompleted = sessions.some((session) => session.status === 'completed') || nativeHistory.some((session) => session.status === 'completed');
   const isMonthEmpty = items.length === 0 && hasAnyCompleted && !showAll;
 
+  const periodLabel = day ? new Date(`${day}T12:00:00`).toLocaleDateString('pt-BR') : showAll ? 'Todo o histórico' : formatMonthLabel();
+  const actionLabel = day ? 'Limpar filtro' : hasAnyCompleted ? (showAll ? 'Este mês' : isMonthEmpty ? 'Ver tudo' : FITNESS_COPY.showAll) : undefined;
+  const startPath = embedded ? '/fitness' : '/treinos';
+
   return (
     <FitnessPageShell withNav>
       <FitnessTopTabs />
-      {emptyRecords.length > 0 && <div className="mb-4 rounded-xl border border-white/10 p-3">
-        <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => {
-          try { const result = cleanupEmpty();
-            if (result.removed) toast.success(`${result.removed} registro(s) vazio(s) removido(s).`);
-            if (result.unavailable) toast.info(`${result.unavailable} registro(s) preservado(s): recibo insuficiente para reverter com segurança.`);
-          } catch (error) { toast.error(error instanceof Error ? error.message : 'Não foi possível limpar os registros.'); }
-        }}>Remover {emptyRecords.length} registro(s) vazio(s)</FitnessButton>
-        <p className="mt-2 text-xs text-fitness-muted">Somente 0 XP, menos de 1 minuto e nenhuma série realizada. Eventual Prana é revertido pelo recibo original.</p>
-      </div>}
-      <SectionHeader
-        level={embedded ? 'section' : 'page'}
-        title="Histórico de treinos"
-        subtitle={day ? new Date(`${day}T12:00:00`).toLocaleDateString('pt-BR') : showAll ? 'Todo o histórico' : formatMonthLabel()}
-        actionLabel={day ? 'Limpar filtro' : hasAnyCompleted ? (showAll ? 'Este mês' : isMonthEmpty ? 'Ver tudo' : FITNESS_COPY.showAll) : undefined}
-        onAction={() => day ? clearDay() : setShowAll((current) => !current)}
-      />
+      <SaudeCena chave="historico">
+        {emptyRecords.length > 0 && <div className="saude-aviso ds-pane">
+          <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => {
+            try { const result = cleanupEmpty();
+              if (result.removed) toast.success(`${result.removed} registro(s) vazio(s) removido(s).`);
+              if (result.unavailable) toast.info(`${result.unavailable} registro(s) preservado(s): recibo insuficiente para reverter com segurança.`);
+            } catch (error) { toast.error(error instanceof Error ? error.message : 'Não foi possível limpar os registros.'); }
+          }}>Remover {emptyRecords.length} registro(s) vazio(s)</FitnessButton>
+          <p>Somente 0 XP, menos de 1 minuto e nenhuma série realizada. Eventual Prana é revertido pelo recibo original.</p>
+        </div>}
+        <SaudeCabeca
+          level={embedded ? 'section' : 'page'}
+          title="Histórico de treinos"
+          subtitle={periodLabel}
+          actionLabel={actionLabel}
+          onAction={() => day ? clearDay() : setShowAll((current) => !current)}
+        />
 
-      <div className="mt-8 space-y-5">
-        {items.length === 0 ? (
-          <FitnessEmptyState
-            message={hasAnyCompleted ? 'Nenhum treino registrado neste período.' : FITNESS_COPY.empty.history}
-            action={isMonthEmpty ? (
-              <FitnessButton variant="primary" onClick={() => setShowAll(true)}>
-                Ver todo o histórico
-              </FitnessButton>
-            ) : !hasAnyCompleted ? (
-              <FitnessButton variant="primary" onClick={() => navigate(embedded ? '/fitness' : '/treinos')}>
-                Iniciar treino
-              </FitnessButton>
-            ) : undefined}
-          />
-        ) : (
-          items.map((item) => (
-            <WorkoutHistoryCard
-              key={item.id}
-              name={item.name}
-              dateLabel={item.dateLabel}
-              metricValue={item.reward == null ? 'XP indisponível' : `+${formatEarthXp(item.reward)} XP`}
-              metricNode={item.reward == null ? undefined : <ElementalXpBadge value={`+${formatEarthXp(item.reward)}`} element="terra" size="sm" />}
-              metricUnit=""
-              icon={CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.mixed}
-              onClick={() => navigate(`/treinos/resumo/${item.id}`)}
-            />
-          ))
-        )}
-      </div>
+        <div className="saude-pilha">
+          {!hasAnyCompleted ? (
+            <div className="saude-vazio-painel saude-vidro ds-glass-float saude-entra" style={{ '--ordem': 1 } as CSSProperties}>
+              <SaudeVazio
+                icon={FITNESS_ICONS.strength}
+                title="Seu histórico começa no primeiro treino"
+                text={FITNESS_COPY.empty.history}
+                action={<FitnessButton variant="primary" onClick={() => navigate(startPath)}>Iniciar treino</FitnessButton>}
+              />
+            </div>
+          ) : (
+            <ResumoHistorico total={items.length} periodLabel={periodLabel} />
+          )}
 
+          {items.length === 0 ? (hasAnyCompleted && (
+            <div className="ds-pane saude-vazio-painel saude-entra" style={{ '--ordem': 2 } as CSSProperties}>
+              <SaudeVazio
+                icon={HistoryIcon}
+                title={isMonthEmpty ? 'Este mês ainda está em branco' : 'Nada por aqui'}
+                text="Nenhum treino registrado neste período."
+                action={isMonthEmpty ? (
+                  <FitnessButton variant="primary" onClick={() => setShowAll(true)}>
+                    Ver todo o histórico
+                  </FitnessButton>
+                ) : undefined}
+              />
+            </div>
+          )) : (
+            <div className="saude-lista">
+              {items.map((item, index) => (
+                <WorkoutHistoryCard
+                  key={item.id}
+                  order={Math.min(index + 2, 9)}
+                  name={item.name}
+                  dateLabel={`${item.dateLabel}, ${new Date(item.sortDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}`}
+                  modalityLabel={CATEGORY_LABELS[item.category] ?? undefined}
+                  element={elementoDaModalidade(item.category)}
+                  metricValue={item.reward == null ? 'XP indisponível' : `+${formatEarthXp(item.reward)} XP`}
+                  metricNode={item.reward == null ? undefined : <ElementalXpBadge value={`+${formatEarthXp(item.reward)}`} element="terra" size="sm" />}
+                  metricUnit=""
+                  icon={CATEGORY_ICONS[item.category] ?? CATEGORY_ICONS.mixed}
+                  onClick={() => navigate(`/treinos/resumo/${item.id}`)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </SaudeCena>
     </FitnessPageShell>
   );
 };

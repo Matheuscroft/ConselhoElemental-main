@@ -1,31 +1,39 @@
 import { isNativeSession, sessionActivity } from '@/lib/fitness/activity-history';
 import { useFitnessHistory } from '@/lib/fitness/use-fitness-history';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
-import { Trash2 } from 'lucide-react';
+import { ChevronDown, Scale, Trash2 } from 'lucide-react';
 import {
   BodyMetricsCard,
-  ChartWidget,
+  FitnessButton,
   FitnessTopTabs,
-  FitnessCard,
   FitnessHeader,
   FitnessPageShell,
-  SectionHeader,
+  RingsOverview,
   TrendAreaChart,
   WorkoutHistoryCard,
+  type RingMetric,
 } from '@/components/fitness-kit';
-import { RingsOverview, type RingDef } from '@/components/fitness/MetricRing';
+import '@/components/fitness-kit/saude-uau.css';
+import { SaudeCena } from '@/components/fitness-kit/saude-cena';
+import { elementoDaModalidade, useSaudeLuz } from '@/components/fitness-kit/saude-luz';
+import { SaudePainel } from '@/components/fitness-kit/saude-painel';
+import { SaudeVazio } from '@/components/fitness-kit/saude-vazio';
 import { BODY_MEASUREMENT_FIELDS, BodyMeasurementDialog } from '@/components/workout';
 import { mapMeasurementToMetrics } from '@/lib/fitness-kit/adapters';
 import { formatDurationCompact } from '@/lib/fitness/fitness-format';
 import { buildDayBuckets } from '@/lib/fitness/fitness-insights';
-import { CATEGORY_ICONS, formatWorkoutDateTime } from '@/lib/workout';
+import { CATEGORY_ICONS, CATEGORY_LABELS, formatWorkoutDateTime } from '@/lib/workout';
 import { useWorkoutStore } from '@/stores/workoutStore';
 
-export const Corpo: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
+const ordem = (valor: number) => ({ '--ordem': Math.min(valor, 9) }) as CSSProperties;
+const oneDecimal = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+
+const BodyContent: React.FC<{ embedded: boolean }> = ({ embedded }) => {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const luz = useSaudeLuz();
   const latest = useWorkoutStore((state) => state.getLatestBodyMeasurement());
   const history = useWorkoutStore(useShallow((state) => state.getBodyMeasurementHistory()));
   const sessions = useFitnessHistory();
@@ -39,81 +47,134 @@ export const Corpo: React.FC<{ embedded?: boolean }> = ({ embedded = false }) =>
     value: m.weightKg as number,
   })), [history]);
   const days = useMemo(() => buildDayBuckets(sessions, 7), [sessions]);
-  const rings: RingDef[] = [
-    { value: days.at(-1)?.minutes ?? 0, max: 60, color: '#00C99A', trackColor: '#165B50', label: 'Tempo hoje', valueLabel: formatDurationCompact(days.at(-1)?.minutes ?? 0) },
-    { value: days.reduce((sum, day) => sum + day.workouts, 0), max: 3, color: '#FF9B52', trackColor: '#6B4021', label: 'Treinos nos últimos 7 dias', valueLabel: `${days.reduce((sum, day) => sum + day.workouts, 0)} / 3` },
+  const todayMinutes = days.at(-1)?.minutes ?? 0;
+  const weekWorkouts = days.reduce((sum, day) => sum + day.workouts, 0);
+  const rings: RingMetric[] = [
+    { id: 'time', value: todayMinutes, max: 60, color: '#00C99A', trackColor: '#165B50', label: 'Tempo hoje', display: formatDurationCompact(todayMinutes), count: { value: todayMinutes, format: (value) => formatDurationCompact(Math.round(value)) } },
+    { id: 'workouts', value: weekWorkouts, max: 3, color: '#FF9B52', trackColor: '#6B4021', label: 'Treinos nos últimos 7 dias', display: `${weekWorkouts} / 3`, count: { value: weekWorkouts, format: (value) => `${Math.round(value)} / 3` } },
   ];
   const recent = sessions.filter((session) => session.status === 'completed').slice(0, 3);
+  const latestWeight = latest?.weightKg;
 
   return (
-    <FitnessPageShell focused withNav showPageMap={false}>
-      <FitnessTopTabs />
+    <>
       {!embedded && <FitnessHeader title="Meu corpo" onBack={() => navigate('/treinos/insights')} backLabel="Voltar para Saúde" />}
-      <div className={embedded ? "space-y-5" : "mt-8 space-y-6"}>
-        <BodyMetricsCard metrics={metrics} measuredAt={latest?.measuredAt} onRecord={() => setDialogOpen(true)} />
+      <div className={embedded ? 'saude-pilha' : 'saude-pilha saude-pilha-pagina'}>
+        <BodyMetricsCard glass metrics={metrics} measuredAt={latest?.measuredAt} extraIds={extraFields.map((field) => String(field.key))} onRecord={() => setDialogOpen(true)} />
+
         {extraFields.length > 0 && (
-          <FitnessCard radius="lg" className="p-6">
-            <SectionHeader title="Outras medidas" />
-            <dl className="mt-5 grid grid-cols-2 gap-5">
-              {extraFields.map((field) => <div key={field.key} className="min-w-0">
-                <dt className="text-sm text-fitness-muted">{field.label}</dt>
-                <dd className="mt-1 break-words text-xl text-fitness-text">{latest?.[field.key]} <span className="text-sm">{field.unit}</span></dd>
+          <section className="saude-extras ds-pane saude-entra" style={ordem(2)} aria-label="Outras medidas">
+            <h2 className="saude-secao">Outras medidas</h2>
+            <dl>
+              {extraFields.map((field) => <div key={field.key} className="saude-extra">
+                <dt>{field.label}</dt>
+                <dd>{latest?.[field.key]}<span>{field.unit}</span></dd>
               </div>)}
             </dl>
-          </FitnessCard>
+          </section>
         )}
-        <ChartWidget title="Evolução do peso" radius="lg"
-          subtitle={latest?.weightKg != null ? `${latest.weightKg} kg na última avaliação` : undefined}
-          emptyMessage={trend.length < 2 ? 'Registre pelo menos duas avaliações com peso para acompanhar sua evolução.' : undefined}
-          summary={`Peso por avaliação: ${trend.map((point) => `${point.label}: ${point.value} kg`).join(', ')}`}>
-          <TrendAreaChart data={trend} unit="kg" height={190} />
-        </ChartWidget>
+
+        <SaudePainel
+          order={3}
+          arrivalKey="corpo-peso"
+          title="Evolução do peso"
+          subtitle={latestWeight != null ? 'Na última avaliação' : undefined}
+          highlight={latestWeight != null && trend.length >= 2 ? { value: latestWeight, format: oneDecimal, unit: 'kg' } : undefined}
+          summary={trend.length >= 2 ? `Peso por avaliação: ${trend.map((point) => `${point.label}: ${point.value} kg`).join(', ')}` : undefined}
+          empty={trend.length >= 2 ? undefined : (
+            <SaudeVazio
+              icon={Scale}
+              title="A curva do peso começa aqui"
+              text="Registre pelo menos duas avaliações com peso para acompanhar sua evolução."
+              action={<FitnessButton size="md" variant="secondary" onClick={() => setDialogOpen(true)}>Registrar avaliação</FitnessButton>}
+            />
+          )}
+        >
+          {(arrived) => <TrendAreaChart data={trend} unit="kg" decimals={1} height={190} color={luz.acento} animate arrived={arrived} fitRange highlight={trend.length - 1} />}
+        </SaudePainel>
+
         <section aria-label="Histórico de avaliações">
-          <SectionHeader title="Avaliações" subtitle={`${history.length} ${history.length === 1 ? 'registro' : 'registros'}`} />
-          {history.length === 0 ? <p className="py-6 text-base text-fitness-muted">Registre sua primeira avaliação no cartão acima.</p> : (
-            <div className="mt-5 space-y-4">
-              {[...history].reverse().map((measurement) => (
-                <FitnessCard key={measurement.id} radius="md" className="p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <time dateTime={measurement.measuredAt} className="text-sm text-fitness-text-soft">{formatWorkoutDateTime(measurement.measuredAt)}</time>
-                    <button type="button" aria-label={`Excluir avaliação de ${formatWorkoutDateTime(measurement.measuredAt)}`}
-                      onClick={() => deleteMeasurement(measurement.id)}
-                      className="grid h-11 w-11 shrink-0 place-items-center rounded-full text-fitness-muted hover:bg-fitness-red/10 hover:text-fitness-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">
-                      <Trash2 className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                  </div>
-                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
-                    {BODY_MEASUREMENT_FIELDS.filter((field) => typeof measurement[field.key] === 'number').map((field) => (
-                      <div key={field.key} className="min-w-0"><dt className="text-sm text-fitness-muted">{field.label}</dt><dd className="break-words text-base">{measurement[field.key]} {field.unit}</dd></div>
-                    ))}
-                  </dl>
-                </FitnessCard>
-              ))}
+          <div className="saude-secao-linha saude-entra" style={ordem(4)}>
+            <h2 className="saude-secao">Avaliações</h2>
+            <small>{history.length} {history.length === 1 ? 'registro' : 'registros'}</small>
+          </div>
+          {history.length === 0 ? (
+            <div className="ds-pane saude-vazio-painel saude-entra" style={ordem(5)}>
+              <SaudeVazio compact icon={Scale} title="Nenhuma avaliação ainda" text="Sua primeira avaliação, feita no cartão acima, vira a primeira runa desta lista." />
+            </div>
+          ) : (
+            <ul className="saude-lista">
+              {[...history].reverse().map((measurement, index) => {
+                const date = new Date(measurement.measuredAt);
+                return (
+                  <li key={measurement.id} className="saude-avaliacao ds-pane saude-entra" data-luz="" style={ordem(index + 5)}>
+                    <div className="saude-avaliacao-cabeca">
+                      <span className="saude-avaliacao-data" aria-hidden="true">
+                        <b>{date.toLocaleDateString('pt-BR', { day: '2-digit' })}</b>
+                        <small>{date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}</small>
+                      </span>
+                      <time dateTime={measurement.measuredAt}>{formatWorkoutDateTime(measurement.measuredAt)}</time>
+                      <button type="button" aria-label={`Excluir avaliação de ${formatWorkoutDateTime(measurement.measuredAt)}`}
+                        onClick={() => deleteMeasurement(measurement.id)}
+                        className="saude-excluir">
+                        <Trash2 aria-hidden="true" />
+                      </button>
+                    </div>
+                    <dl className="saude-avaliacao-medidas">
+                      {BODY_MEASUREMENT_FIELDS.filter((field) => typeof measurement[field.key] === 'number').map((field) => (
+                        <div key={field.key}><dt>{field.label}</dt><dd>{measurement[field.key]} {field.unit}</dd></div>
+                      ))}
+                    </dl>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        <details className="saude-detalhes ds-pane saude-entra" style={ordem(6)}>
+          <summary>Atividade de treino<ChevronDown aria-hidden="true" /></summary>
+          <RingsOverview variant="painel" metrics={rings} ariaLabel="Tempo de treino hoje e número de treinos nos últimos sete dias" arrivalKey="corpo-aneis" />
+          <p className="saude-nota">Referências visuais: 60 minutos por dia e 3 treinos em 7 dias.</p>
+        </details>
+
+        <section aria-label="Treinos recentes">
+          <div className="saude-secao-linha saude-entra" style={ordem(7)}>
+            <h2 className="saude-secao">Treinos recentes</h2>
+            <button type="button" className="saude-link" onClick={() => navigate('/treinos/historico')}>Ver histórico</button>
+          </div>
+          {recent.length === 0 ? (
+            <div className="ds-pane saude-vazio-painel saude-entra" style={ordem(8)}>
+              <SaudeVazio compact icon={CATEGORY_ICONS.mixed} title="Nenhum treino concluído" text="Seus treinos concluídos aparecem aqui." />
+            </div>
+          ) : (
+            <div className="saude-lista">
+              {recent.map((session, index) => {
+                const category = (isNativeSession(session) ? session.exerciseResults[0]?.modality : getWorkoutById(session.workoutId)?.category) ?? 'mixed';
+                return (
+                  <WorkoutHistoryCard key={session.id} order={index + 8} name={isNativeSession(session) ? session.nameSnapshot : session.workoutNameSnapshot}
+                    dateLabel={new Date(session.completedAt ?? session.startedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    modalityLabel={CATEGORY_LABELS[category]}
+                    element={elementoDaModalidade(category)}
+                    icon={CATEGORY_ICONS[category] ?? CATEGORY_ICONS.mixed}
+                    metricValue={String(Math.round(sessionActivity(session).seconds / 60))} metricUnit="min"
+                    onClick={() => navigate(`/treinos/resumo/${session.id}`)} />
+                );
+              })}
             </div>
           )}
         </section>
-        <details className="rounded-fit-lg bg-fitness-surface p-6">
-          <summary className="cursor-pointer rounded-lg text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">Atividade de treino</summary>
-          <div className="mt-5 flex items-center gap-4">
-            <RingsOverview rings={rings} size={120} summary="Tempo de treino hoje e número de treinos nos últimos sete dias" />
-            <ul className="min-w-0 space-y-4">{rings.map((ring) => <li key={ring.label}><p className="text-sm text-fitness-muted">{ring.label}</p><p className="text-base">{ring.valueLabel}</p></li>)}</ul>
-          </div>
-          <p className="mt-4 text-sm text-fitness-muted">Referências visuais: 60 minutos por dia e 3 treinos em 7 dias.</p>
-        </details>
-        <section aria-label="Treinos recentes">
-          <SectionHeader title="Treinos recentes" actionLabel="Ver histórico" onAction={() => navigate('/treinos/historico')} />
-          <div className="mt-5 space-y-4">
-            {recent.length === 0 ? <p className="py-4 text-base text-fitness-muted">Seus treinos concluídos aparecem aqui.</p> : recent.map((session) => (
-              <WorkoutHistoryCard key={session.id} name={isNativeSession(session) ? session.nameSnapshot : session.workoutNameSnapshot}
-                dateLabel={new Date(session.completedAt ?? session.startedAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                icon={CATEGORY_ICONS[(isNativeSession(session) ? session.exerciseResults[0]?.modality : getWorkoutById(session.workoutId)?.category) ?? 'mixed'] ?? CATEGORY_ICONS.mixed}
-                metricValue={String(Math.round(sessionActivity(session).seconds / 60))} metricUnit="min"
-                onClick={() => navigate(`/treinos/resumo/${session.id}`)} />
-            ))}
-          </div>
-        </section>
       </div>
       <BodyMeasurementDialog variant="fitness" open={dialogOpen} onOpenChange={setDialogOpen} />
-    </FitnessPageShell>
+    </>
   );
 };
+
+export const Corpo: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => (
+  <FitnessPageShell focused withNav showPageMap={false}>
+    <FitnessTopTabs />
+    <SaudeCena chave="corpo">
+      <BodyContent embedded={embedded} />
+    </SaudeCena>
+  </FitnessPageShell>
+);

@@ -1,33 +1,41 @@
-import React from 'react';
+import React, { type CSSProperties } from 'react';
 import { cn } from '@/lib/utils';
+import type { ElementoId } from '@/lib/design/palette';
+import { elementoDaModalidade } from './treinos-elementos';
 
 interface WorkoutCategoryCardProps {
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   selected: boolean;
   description?: string;
-  /** Variação de altura para reproduzir o ritmo escalonado do grid da referência. */
+  /** Mantida por compatibilidade: a grade agora é uniforme e a altura não varia mais. */
   tall?: boolean;
+  /** Elemento que pinta a runa (sigilo, fio de luz e brilho). Sem ele, o do esforço: Fogo. */
+  element?: ElementoId;
+  /** Posição na cascata de entrada. */
+  index?: number;
   onSelect: () => void;
 }
 
-/** Modalidade com selo SVG e contorno dourado ao selecionar. */
-export const WorkoutCategoryCard: React.FC<WorkoutCategoryCardProps> = ({ label, icon: Icon, selected, description, tall = false, onSelect }) => (
+/** Modalidade como runa: o sigilo e a cor do elemento, com a luz que segue o dedo e a mola ao tocar. */
+export const WorkoutCategoryCard: React.FC<WorkoutCategoryCardProps> = ({ label, icon: Icon, selected, description, element = 'fogo', index = 0, onSelect }) => (
   <button
     type="button"
     onClick={onSelect}
     aria-pressed={selected}
+    data-element={element}
+    data-luz=""
+    style={{ '--i': index } as CSSProperties}
     className={cn(
-      'fitness-elemental-category flex w-full flex-col items-center justify-center gap-3 rounded-fit border bg-fitness-surface px-3 text-center outline-none',
-      'transition-[filter,transform,border-color] duration-200 hover:brightness-110 active:scale-[0.98] motion-reduce:transition-none motion-reduce:transform-none',
+      'ds-runa fitness-elemental-category tr-runa text-center outline-none',
       'focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas',
-      tall ? 'aspect-[0.78] min-h-[190px]' : 'aspect-[1.12] min-h-[145px]',
-      selected ? 'border-fitness-primary' : 'border-white/10'
     )}
   >
-    <span className="fitness-elemental-badge grid h-16 w-16 place-items-center rounded-2xl text-[rgb(var(--el-gold))]"><Icon className="h-10 w-10" strokeWidth={1.55} aria-hidden="true" /></span>
-    <span className={cn('max-w-full break-words font-display text-[19px] font-medium leading-tight', selected ? 'text-fitness-primary' : 'text-fitness-text')}>{label}</span>
-    {description && <span className="text-xs text-fitness-muted">{description}</span>}
+    <span className="tr-runa-brilho" aria-hidden="true" />
+    <span className="tr-runa-borda" aria-hidden="true" />
+    <span className="tr-sigilo" aria-hidden="true"><Icon className="h-8 w-8" strokeWidth={1.55} /></span>
+    <span className="tr-runa-nome">{label}</span>
+    {description && <span className="tr-runa-descricao">{description}</span>}
   </button>
 );
 
@@ -36,6 +44,8 @@ export interface CategoryOption {
   description?: string;
   label: string;
   icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  /** Elemento que pinta a runa; por padrão vem da modalidade. */
+  element?: ElementoId;
 }
 
 interface FitnessCategoryGridProps {
@@ -45,33 +55,20 @@ interface FitnessCategoryGridProps {
   ariaLabel: string;
 }
 
-/** Grid de duas colunas escalonadas (esquerda: curto-curto-alto · direita: alto-curto-curto). */
-export const FitnessCategoryGrid: React.FC<FitnessCategoryGridProps> = ({ options, selectedId, onSelect, ariaLabel }) => {
-  const columns: Array<Array<{ option: CategoryOption; tall: boolean }>> = [[], []];
-  options.forEach((option, index) => {
-    const column = index % 2;
-    const row = Math.floor(index / 2);
-    const tall = column === 0 ? row % 3 === 2 : row % 3 === 0;
-    columns[column].push({ option, tall });
-  });
-
-  return (
-    <div role="group" aria-label={ariaLabel} className="grid grid-cols-2 items-start gap-5">
-      {columns.map((column, columnIndex) => (
-        <div key={columnIndex} className="flex flex-col gap-5">
-          {column.map(({ option, tall }) => (
-            <WorkoutCategoryCard
-              key={option.id}
-              label={option.label}
-              description={option.description}
-              icon={option.icon}
-              tall={tall}
-              selected={selectedId === option.id}
-              onSelect={() => onSelect(option.id)}
-            />
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-};
+/** Grade uniforme de duas colunas: todas as runas com a mesma altura, entrando em cascata. */
+export const FitnessCategoryGrid: React.FC<FitnessCategoryGridProps> = ({ options, selectedId, onSelect, ariaLabel }) => (
+  <div role="group" aria-label={ariaLabel} className="tr-grade">
+    {options.map((option, index) => (
+      <WorkoutCategoryCard
+        key={option.id}
+        label={option.label}
+        description={option.description}
+        icon={option.icon}
+        element={option.element ?? elementoDaModalidade(option.id)}
+        index={index}
+        selected={selectedId === option.id}
+        onSelect={() => onSelect(option.id)}
+      />
+    ))}
+  </div>
+);

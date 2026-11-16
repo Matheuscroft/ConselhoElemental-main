@@ -4,6 +4,9 @@ import type { PerformedSet } from '@/types/workout';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { isNewSetCompletion } from './set-receipt';
 
+/** Reads a motion token from the stylesheet, so the seal keeps the app's own beats instead of numbers typed here. */
+const token = (element: Element, name: string) => getComputedStyle(element).getPropertyValue(name).trim();
+
 /** Stays mounted while the form is pending, so only a newly recorded set animates. */
 export function WorkoutSetReceipt({ set, activity = false }: { set: PerformedSet; activity?: boolean }) {
   const reduced = useMotionPreference();
@@ -19,7 +22,14 @@ export function WorkoutSetReceipt({ set, activity = false }: { set: PerformedSet
       [{ opacity: 0.45, transform: 'translateY(6px)' }, { opacity: 1, transform: 'translateY(0)' }],
       { duration: 240, easing: 'cubic-bezier(.23,1,.32,1)' },
     );
-    return () => animation.cancel();
+    // The seal settles with the short spring of the app (the "conjure" curve), with no delay.
+    // Guarded: the receipt's own animation is the one that matters if the browser cannot find the seal.
+    const seal = receipt.current.querySelector?.('.fitness-set-receipt-seal') ?? null;
+    const sealAnimation = seal?.animate?.(
+      [{ transform: 'scale(.5)', opacity: 0.4 }, { transform: 'scale(1.14)', opacity: 1, offset: 0.6 }, { transform: 'scale(1)', opacity: 1 }],
+      { duration: Number.parseFloat(token(seal, '--ds-duration-settle')) || undefined, easing: token(seal, '--ds-ease-conjure') || 'ease-out' },
+    );
+    return () => { animation.cancel(); sealAnimation?.cancel(); };
   }, [id, completed, skipped, reduced]);
 
   const done = completed || skipped;
@@ -32,13 +42,17 @@ export function WorkoutSetReceipt({ set, activity = false }: { set: PerformedSet
   ].filter(Boolean);
 
   return <div role="status" aria-live="polite" aria-atomic="true">
-    {done && <div ref={receipt} className="fitness-set-receipt" data-skipped={Boolean(skipped)}>
+    {done && <div ref={receipt} className="fitness-set-receipt treino-recibo" data-skipped={Boolean(skipped)}>
       <span className="fitness-set-receipt-seal" aria-hidden="true">
-        {skipped ? <SkipForward size={20} /> : <Check size={20} />}
+        {skipped ? <SkipForward size={22} /> : <Check size={24} strokeWidth={2.75} />}
       </span>
-      <div className="min-w-0">
-        <p className="font-medium text-fitness-text">{activity ? 'Bloco' : 'Série'} {set.setNumber} · {skipped ? 'Pulado' : 'Registrado'}</p>
-        <p className="mt-1 break-words text-xs text-fitness-muted">{skipped ? 'Sem registro de execução.' : metrics.length ? metrics.join(' · ') : 'Execução concluída.'}</p>
+      <div className="min-w-0 flex-1">
+        <p className="treino-recibo-titulo">{activity ? 'Bloco' : 'Série'} {set.setNumber} · {skipped ? 'Pulado' : 'Registrado'}</p>
+        {skipped
+          ? <p className="treino-recibo-nota">Sem registro de execução.</p>
+          : metrics.length
+            ? <ul className="treino-recibo-metricas">{metrics.map((metric) => <li key={String(metric)}>{metric}</li>)}</ul>
+            : <p className="treino-recibo-nota">Execução concluída.</p>}
       </div>
     </div>}
   </div>;

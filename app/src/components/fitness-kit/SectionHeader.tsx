@@ -22,17 +22,17 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   <div className={cn('flex items-start justify-between gap-4', className)}>
     <div className="min-w-0">
       {level === 'page' ? (
-        <h1 className="font-display text-[30px] font-medium leading-[1.1] text-fitness-text">{title}</h1>
+        <h1 className="tr-secao-titulo" data-nivel="page">{title}</h1>
       ) : (
-        <h2 className="font-display text-2xl font-medium leading-tight text-fitness-text">{title}</h2>
+        <h2 className="tr-secao-titulo">{title}</h2>
       )}
-      {subtitle && <p className="mt-1 text-base text-fitness-muted">{subtitle}</p>}
+      {subtitle && <p className="tr-secao-subtitulo">{subtitle}</p>}
     </div>
     {actionLabel && onAction && (
       <button
         type="button"
         onClick={onAction}
-        className="-mr-2 mt-1 min-h-11 shrink-0 rounded-full px-2 text-base font-medium text-fitness-primary outline-none transition-colors hover:text-fitness-primary-hover focus-visible:ring-2 focus-visible:ring-fitness-primary"
+        className="tr-secao-acao -mr-2 mt-1 min-h-11 shrink-0 px-3 outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"
       >
         {actionLabel}
       </button>

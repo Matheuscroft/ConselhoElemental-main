@@ -24,6 +24,7 @@ import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
 import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
+import '@/components/fitness-kit/treino-uau.css';
 
 const shortDate = (value: string): string => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
@@ -60,6 +61,10 @@ export const WorkoutSummary: React.FC = () => {
       return true;
     });
   }, [session]);
+
+  // A summary opened right after finishing celebrates; one opened later from the history only shows the seal.
+  const [abertoEm] = useState(() => Date.now());
+  const foiAgora = (concluidaEm?: string) => Boolean(concluidaEm) && abertoEm - new Date(concluidaEm as string).getTime() < 3 * 60 * 1000;
 
   const [selectedExerciseId, setSelectedExerciseId] = useState<string | undefined>(undefined);
   const effectiveExerciseId = selectedExerciseId ?? exerciseOptions[0]?.exerciseId;
@@ -111,7 +116,7 @@ export const WorkoutSummary: React.FC = () => {
       try { if (typeof navigator.share === 'function') await navigator.share({ title: nativeSession.nameSnapshot, text }); else { await navigator.clipboard.writeText(text); toast.success('Resumo copiado'); } }
       catch (error) { if (!(error instanceof DOMException && error.name === 'AbortError')) toast.error('Não foi possível compartilhar o resumo'); }
     };
-    return <WorkoutSummaryView name={nativeSession.nameSnapshot} icon={Icon} timeRange={timeRange} metrics={nativeMetrics} onBack={() => navigate('/treinos/historico')} onShare={() => void share()} onSave={() => navigate('/treinos/historico')}>
+    return <WorkoutSummaryView celebracao={{ xp: xp ?? null, fresca: foiAgora(nativeSession.completedAt), formatarXp: formatEarthXp }} name={nativeSession.nameSnapshot} icon={Icon} timeRange={timeRange} metrics={nativeMetrics} onBack={() => navigate('/treinos/historico')} onShare={() => void share()} onSave={() => navigate('/treinos/historico')}>
       <FitnessCard radius="lg" className="overflow-hidden border border-fitness-green/25 bg-gradient-to-br from-fitness-green/15 via-fitness-surface to-fitness-surface p-6">
         <p className="text-sm font-medium text-fitness-muted">Recompensa conquistada</p>
         <RewardSummary xp={xp ?? null} elements={xp == null ? [] : [{ element: "terra", amount: xp }]} />
@@ -181,6 +186,7 @@ export const WorkoutSummary: React.FC = () => {
 
   return (
     <WorkoutSummaryView
+      celebracao={{ xp: legacyReward ?? null, fresca: foiAgora(session.completedAt), formatarXp: formatEarthXp }}
       name={session.workoutNameSnapshot}
       icon={Icon}
       timeRange={timeRange}

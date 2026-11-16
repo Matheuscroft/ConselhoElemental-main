@@ -1,6 +1,7 @@
 import React from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { ElementoId } from '@/lib/design/palette';
 
 type BadgeSize = 'sm' | 'md' | 'lg';
 
@@ -13,13 +14,16 @@ const SIZE_CLASSES: Record<BadgeSize, { box: string; icon: string }> = {
 interface FitnessIconBadgeProps {
   icon: LucideIcon;
   size?: BadgeSize;
+  /** Pinta o selo com a cor do elemento; sem ele, o ouro de sempre. */
+  element?: ElementoId;
   className?: string;
 }
 
 /** Selo de treino com traço dourado; decorativo quando acompanha um rótulo. */
-export const FitnessIconBadge: React.FC<FitnessIconBadgeProps> = ({ icon: Icon, size = 'sm', className }) => (
+export const FitnessIconBadge: React.FC<FitnessIconBadgeProps> = ({ icon: Icon, size = 'sm', element, className }) => (
   <span
     aria-hidden="true"
+    data-element={element}
     className={cn(
       'fitness-elemental-badge grid shrink-0 place-items-center rounded-2xl text-[rgb(var(--el-gold))]',
       SIZE_CLASSES[size].box,

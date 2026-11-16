@@ -101,7 +101,7 @@ export function MuscleExerciseCatalog({ exercises, onSelect, icon = FITNESS_ICON
         {groups.map(group => {
           const open = expandedGroup === group.id;
           const targetNames = MUSCLE_TARGETS.filter(target => group.exercises.some(exercise => exercise.primaryMuscles?.includes(target.id))).map(target => target.label);
-          return <section key={group.id} className="fitness-catalog-group" data-expanded={open}>
+          return <section key={group.id} className="fitness-catalog-group" data-expanded={open} data-luz="">
             <h3><button type="button" className="fitness-catalog-group-toggle" id={`${panelId}-${group.id}-toggle`} aria-expanded={open} aria-controls={`${panelId}-${group.id}`} onClick={() => { setExpandedGroup(current => current === group.id ? null : group.id); setLimit(8); }}>
               <span className="fitness-elemental-badge grid h-12 w-12 shrink-0 place-items-center rounded-2xl"><FitnessGlyph name={group.icon} size={32} /></span>
               <span className="min-w-0 flex-1"><span className="block font-display text-xl text-fitness-text">{group.label}</span><span className="mt-1 block text-xs font-normal leading-relaxed text-fitness-muted">{targetNames.slice(0,3).join(' · ') || 'Sem região principal definida'}</span></span>

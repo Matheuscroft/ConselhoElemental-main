@@ -1,0 +1,553 @@
+/*
+ * Treinos, abas Saúde, Corpo e Histórico: a passada UAU de apresentação.
+ *
+ * Uma cena com a luz do elemento da semana atrás do conteúdo, uma entrada em
+ * cascata que acontece uma vez por abertura do app, UMA superfície de vidro real
+ * por aba (`.ds-glass-float`, que vem da fundação: nada aqui declara desfoque),
+ * anéis, linhas e barras que se desenham quando chegam à tela e números que
+ * contam. Todo o resto é placa sem desfoque (`.ds-pane`).
+ *
+ * Toda duração é um token --ds-duration-* ou múltiplo de um; só transform,
+ * opacity, clip-path e traços se movem. Raios: só os tokens de 12px e 16px, e 50%.
+ */
+
+/* ---------- A cena: a luz da semana, que acende uma vez ---------- */
+.saude-cena { position: relative; isolation: isolate; min-inline-size: 0; }
+.saude-aura {
+  position: absolute;
+  inset-block: -2rem auto;
+  inset-inline: -1.5rem;
+  block-size: 28rem;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 58% 50% at 26% 20%, color-mix(in srgb, var(--saude-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 50% 44% at 80% 44%, color-mix(in srgb, var(--saude-aura) 20%, transparent), transparent 100%),
+    radial-gradient(ellipse 44% 34% at 16% 74%, rgb(var(--el-gold) / .14), transparent 100%);
+}
+.saude-cena[data-entrada='plena'] .saude-aura { animation: saude-luz-acende calc(var(--ds-duration-conjure) * 2) var(--ds-ease) backwards; }
+@keyframes saude-luz-acende { from { opacity: 0; } to { opacity: 1; } }
+
+/* A entrada: cada peça chega um passo depois da anterior, só na primeira vez. */
+.saude-cena[data-entrada='plena'] .saude-entra {
+  animation: saude-entra var(--ds-duration-settle) var(--ds-ease) calc(var(--ordem, 0) * var(--ds-stagger) * 2) backwards;
+}
+@keyframes saude-entra { from { opacity: 0; transform: translateY(16px) scale(.98); } to { opacity: 1; transform: none; } }
+
+/* A luz do dedo: um fio de um pixel e um brilho por dentro, em toda superfície [data-luz]. */
+.saude-cena [data-luz] { position: relative; isolation: isolate; }
+.saude-cena [data-luz]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--saude-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .26;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.saude-cena [data-luz]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--saude-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.saude-cena [data-luz][data-luz-acesa]::before,
+.saude-cena [data-luz][data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* ---------- Texto e ritmo comuns ---------- */
+.saude-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-block-end: 20px; }
+.saude-cabeca > div { min-inline-size: 0; }
+.saude-cabeca :is(h1, h2) {
+  margin: 0;
+  font-family: var(--ds-font-heading);
+  font-size: var(--ds-text-title);
+  font-weight: 500;
+  line-height: var(--ds-leading-snug);
+  color: rgb(var(--el-text));
+  text-wrap: balance;
+  overflow-wrap: break-word;
+  text-shadow: 0 0 24px color-mix(in srgb, var(--saude-aura) 32%, transparent);
+}
+.saude-cabeca p { margin: 4px 0 0; font-size: var(--ds-text-small); line-height: 1.45; color: rgb(var(--el-muted)); }
+/* "de" e "a" no meio do texto continuam minúsculos: só a primeira letra sobe. */
+.saude-cabeca p::first-letter { text-transform: uppercase; }
+
+.saude-link {
+  flex: none;
+  min-block-size: 44px;
+  margin-inline-end: -8px;
+  padding: 0 8px;
+  border-radius: var(--ds-raio-controle);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  white-space: nowrap;
+  color: rgb(var(--el-gold));
+  cursor: pointer;
+}
+.saude-link:focus-visible,
+.saude-atalho:focus-visible,
+.saude-semana-passo:focus-visible,
+.saude-semana-atual:focus-visible,
+.saude-excluir:focus-visible,
+.saude-runa:focus-visible,
+.saude-detalhes > summary:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: 2px; }
+
+.saude-secao { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: var(--ds-leading-snug); color: rgb(var(--el-text)); }
+.saude-cena > .saude-secao, .saude-cena > .saude-secao-linha { margin-block: 28px 12px; }
+.saude-secao-linha { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block-end: 12px; min-block-size: 44px; }
+.saude-secao-linha small { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.saude-nota { margin: 12px 0 0; font-size: var(--ds-text-micro); line-height: 1.55; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.saude-pilha { display: grid; gap: 20px; min-inline-size: 0; }
+.saude-pilha-pagina { margin-block-start: 32px; }
+.saude-lista { display: grid; gap: var(--ds-ritmo-lista); margin: 0; padding: 0; list-style: none; }
+
+/* ---------- A única superfície de vidro real de cada aba ---------- */
+/* O desfoque vem de .ds-glass-float. Aqui só a forma e o véu da luz da semana por baixo do vidro. */
+.saude-cena .saude-vidro {
+  position: relative;
+  border-radius: var(--ds-raio-runa);
+  background:
+    radial-gradient(ellipse 90% 80% at 12% 0, color-mix(in srgb, var(--saude-aura) 16%, transparent), transparent 70%),
+    rgb(var(--el-surface) / 66%);
+}
+.saude-cena :is(.ds-pane, .saude-vidro) { color: rgb(var(--el-text)); }
+
+/* ---------- O herói de Hoje: três anéis que se desenham ---------- */
+.saude-aneis {
+  display: grid;
+  grid-template-columns: minmax(0, 45fr) minmax(0, 55fr);
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  border-radius: var(--ds-raio-runa);
+}
+.saude-aneis-palco { position: relative; inline-size: 100%; max-inline-size: 11rem; aspect-ratio: 1; justify-self: center; }
+.saude-aneis-palco svg { position: relative; display: block; inline-size: 100%; block-size: 100%; overflow: visible; }
+
+.saude-anel-arco, .saude-anel-halo {
+  stroke-dasharray: .01 100;
+  opacity: 0;
+  transition:
+    stroke-dasharray calc(var(--ds-duration-conjure) * 2) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * 3 * var(--ordem, 0)),
+    opacity var(--ds-duration-feedback) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * 3 * var(--ordem, 0));
+}
+.saude-anel[data-chegou='true'] :is(.saude-anel-arco, .saude-anel-halo) { stroke-dasharray: var(--arco) 100; }
+.saude-anel[data-chegou='true'] .saude-anel-arco { opacity: 1; }
+.saude-anel[data-chegou='true'] .saude-anel-halo { opacity: .2; }
+
+/* O brilho que percorre: uma varredura de luz dando a volta nos anéis, sem parar. */
+.saude-varredura {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 0deg, transparent 0 58%, color-mix(in srgb, var(--saude-acento) 50%, transparent) 90%, rgb(255 255 255 / .6) 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 0 47%, #000 48% 98%, transparent 99%);
+  mask-image: radial-gradient(circle closest-side, transparent 0 47%, #000 48% 98%, transparent 99%);
+  opacity: .55;
+  animation: saude-gira calc(var(--ds-duration-conjure) * 12) linear infinite;
+}
+@keyframes saude-gira { to { transform: rotate(1turn); } }
+
+.saude-aneis-centro { position: absolute; inset: 27%; display: grid; place-content: center; justify-items: center; text-align: center; }
+.saude-aneis-centro strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-title); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); text-shadow: 0 0 18px color-mix(in srgb, var(--saude-aura) 50%, transparent); }
+.saude-aneis-centro small { font-size: var(--ds-text-micro); line-height: 1.2; color: rgb(var(--el-muted)); }
+
+.saude-legenda { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; min-inline-size: 0; }
+.saude-legenda li { display: flex; align-items: flex-start; gap: 10px; min-inline-size: 0; }
+.saude-legenda-sigilo { flex: none; inline-size: 12px; block-size: 12px; margin-block-start: 5px; border-radius: 50%; background: var(--cor); box-shadow: 0 0 10px color-mix(in srgb, var(--cor) 70%, transparent); }
+.saude-legenda-texto { min-inline-size: 0; }
+.saude-legenda-texto p { margin: 0; font-size: var(--ds-text-small); line-height: 1.3; color: rgb(var(--el-muted)); text-wrap: balance; }
+.saude-legenda-texto strong { display: block; margin-block-start: 2px; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.25; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+
+/* Os mesmos anéis, sem vidro, dentro de "Atividade de treino". */
+.saude-aneis-painel { padding: 14px; }
+.saude-aneis-painel .saude-aneis-palco { max-inline-size: 8rem; }
+.saude-detalhes .saude-aneis-painel { margin-block-start: 4px; border: 0; background: rgb(var(--el-canvas) / .35); box-shadow: none; }
+
+/* ---------- Cartões de métrica da semana ---------- */
+.saude-metricas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.saude-cena .saude-metrica {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: 'sigilo valor' 'titulo titulo' 'corpo corpo';
+  align-items: center;
+  gap: 10px 8px;
+  min-inline-size: 0;
+  padding: 14px;
+  border-radius: var(--ds-raio-runa);
+  background:
+    radial-gradient(ellipse 120% 120% at 0 0, color-mix(in srgb, var(--saude-aura) 10%, transparent), transparent 62%),
+    var(--ds-surface-raised);
+}
+.saude-metrica-sigilo {
+  grid-area: sigilo;
+  display: grid;
+  place-items: center;
+  inline-size: 36px;
+  block-size: 36px;
+  border-radius: var(--ds-raio-controle);
+  border: 1px solid color-mix(in srgb, var(--saude-acento) 40%, transparent);
+  background: color-mix(in srgb, var(--saude-acento) 12%, transparent);
+  color: var(--saude-acento);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--saude-aura) 22%, transparent);
+}
+.saude-metrica-sigilo svg { inline-size: 20px; block-size: 20px; }
+.saude-metrica-valor { grid-area: valor; justify-self: end; text-align: end; min-inline-size: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; color: rgb(var(--el-text)); }
+.saude-metrica-valor span { margin-inline-start: 3px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+/* O nome inteiro, na própria linha: quebra só entre palavras, nunca no meio de uma. */
+.saude-metrica-titulo {
+  grid-area: titulo;
+  margin: 0;
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  line-height: 1.3;
+  color: rgb(var(--el-text));
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
+  text-wrap: balance;
+}
+.saude-metrica-corpo { grid-area: corpo; min-inline-size: 0; }
+.saude-metrica-vazio { grid-area: corpo; display: grid; gap: 8px; }
+.saude-metrica-vazio p { margin: 0; font-size: var(--ds-text-micro); line-height: 1.45; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.saude-metrica-fantasma {
+  display: block;
+  block-size: 28px;
+  border-block-end: 1px dashed rgb(var(--el-muted) / .4);
+  background: radial-gradient(ellipse 60% 100% at 50% 100%, color-mix(in srgb, var(--saude-acento) 24%, transparent), transparent 100%);
+  animation: saude-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite;
+}
+@keyframes saude-respira { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+
+/* O mini-gráfico: a linha é revelada da esquerda para a direita. */
+.saude-spark { position: relative; inline-size: 100%; }
+.saude-spark svg {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: visible;
+  clip-path: inset(-6px 100% -6px -6px);
+  transition: clip-path calc(var(--ds-duration-conjure) * 2) var(--ds-ease) var(--ds-duration-reveal);
+}
+.saude-spark[data-chegou='true'] svg { clip-path: inset(-6px -6px -6px -6px); }
+.saude-spark-linha { fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.saude-spark-ponta {
+  position: absolute;
+  inline-size: 8px;
+  block-size: 8px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--cor);
+  box-shadow: 0 0 0 2px rgb(var(--el-canvas)), 0 0 10px var(--cor);
+  transform: scale(0);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-conjure) * 2 + var(--ds-duration-reveal));
+}
+.saude-spark[data-chegou='true'] .saude-spark-ponta { transform: scale(1); }
+
+/* As barras da semana: sobem uma depois da outra; hoje acende. */
+.saude-barras-limite { margin: 0 0 4px; text-align: end; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.saude-barras-grade { display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; }
+.saude-barra { display: grid; justify-items: center; gap: 8px; min-inline-size: 0; }
+.saude-barra-trilha { position: relative; overflow: hidden; inline-size: 8px; block-size: 64px; border-radius: var(--ds-raio-controle); background: rgb(var(--el-muted) / .18); }
+.saude-barras[data-tamanho='md'] .saude-barra-trilha { inline-size: 12px; block-size: 150px; }
+.saude-barras[data-tamanho='md'] .saude-barra { gap: 10px; }
+.saude-barra-preenche {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  display: block;
+  overflow: hidden;
+  block-size: calc(var(--parte) * 100%);
+  border-radius: inherit;
+  background: linear-gradient(to top, color-mix(in srgb, var(--saude-acento) 50%, transparent), var(--saude-acento));
+  transition: block-size calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) calc(var(--ds-duration-settle) + var(--ds-stagger) * var(--ordem, 0));
+}
+.saude-barra:not([data-vazia='true']) .saude-barra-preenche { min-block-size: 8px; }
+.saude-barras[data-chegou='false'] .saude-barra-preenche { block-size: 0; min-block-size: 0; }
+.saude-barra-rotulo { font-size: var(--ds-text-micro); line-height: 1; color: rgb(var(--el-muted)); }
+.saude-barra[data-hoje] .saude-barra-trilha { box-shadow: 0 0 0 1px color-mix(in srgb, rgb(var(--el-gold)) 70%, transparent), 0 0 14px color-mix(in srgb, var(--saude-aura) 50%, transparent); }
+.saude-barra[data-hoje] .saude-barra-preenche { background: linear-gradient(to top, var(--saude-acento), rgb(var(--el-gold))); }
+.saude-barra[data-hoje] .saude-barra-preenche::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, transparent 30%, rgb(255 255 255 / .6) 50%, transparent 70%);
+  transform: translateY(120%);
+  animation: saude-brilho-barra calc(var(--ds-duration-conjure) * 7) var(--ds-ease) infinite;
+}
+@keyframes saude-brilho-barra { 0%, 60% { transform: translateY(120%); } 100% { transform: translateY(-120%); } }
+.saude-barra[data-hoje] .saude-barra-rotulo { font-weight: 600; color: rgb(var(--el-gold)); }
+
+/* ---------- Painéis de gráfico (Evolução, Semana, peso) ---------- */
+.saude-painel { padding: 18px 16px 14px; border-radius: var(--ds-raio-runa); min-inline-size: 0; }
+.saude-painel-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-block-end: 12px; }
+.saude-painel-cabeca > div { min-inline-size: 0; }
+.saude-painel-cabeca h3 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.25; color: rgb(var(--el-text)); text-wrap: balance; overflow-wrap: normal; }
+.saude-painel-cabeca p { margin: 2px 0 0; font-size: var(--ds-text-small); line-height: 1.4; color: rgb(var(--el-muted)); }
+.saude-painel-destaque { flex: none; font-family: var(--ds-font-heading); font-size: var(--ds-text-title); font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; color: rgb(var(--el-gold)); text-shadow: 0 0 20px color-mix(in srgb, var(--saude-aura) 40%, transparent); }
+.saude-painel-destaque span { margin-inline-start: 4px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); text-shadow: none; }
+.saude-painel-corpo { min-inline-size: 0; }
+
+/* ---------- Estados vazios: um convite que respira ---------- */
+.saude-vazio { display: grid; justify-items: center; gap: 10px; padding: 20px 8px 12px; text-align: center; }
+.saude-vazio-sigilo {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 72px;
+  block-size: 72px;
+  border-radius: 50%;
+  color: var(--saude-acento);
+  background: radial-gradient(circle, color-mix(in srgb, var(--saude-aura) 24%, transparent), transparent 70%);
+}
+.saude-vazio-sigilo svg { inline-size: 32px; block-size: 32px; }
+.saude-vazio-anel { position: absolute; inset: 4px; border-radius: 50%; border: 1px dashed color-mix(in srgb, var(--saude-acento) 55%, transparent); animation: saude-gira calc(var(--ds-duration-conjure) * 30) linear infinite; }
+.saude-vazio h3 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.3; color: rgb(var(--el-text)); text-wrap: balance; overflow-wrap: normal; }
+.saude-vazio p { margin: 0; max-inline-size: 22rem; font-size: var(--ds-text-small); line-height: 1.55; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.saude-vazio > button { margin-block-start: 6px; }
+.saude-vazio[data-compacto] { gap: 8px; padding: 10px 8px 6px; }
+.saude-vazio[data-compacto] .saude-vazio-sigilo { inline-size: 48px; block-size: 48px; }
+.saude-vazio[data-compacto] .saude-vazio-sigilo svg { inline-size: 22px; block-size: 22px; }
+.saude-vazio-painel { padding: 8px 12px 12px; border-radius: var(--ds-raio-runa); min-inline-size: 0; }
+
+/* ---------- Corpo: a silhueta com luz atrás e pontos que acendem ---------- */
+.saude-corpo { display: grid; gap: 14px; padding: 18px 16px 16px; border-radius: var(--ds-raio-runa); min-inline-size: 0; }
+.saude-corpo-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.saude-corpo-cabeca h2 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.25; color: rgb(var(--el-text)); }
+.saude-corpo-cabeca p { margin: 2px 0 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
+.saude-corpo-palco { display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); align-items: center; gap: 12px; overflow: clip; }
+.saude-silhueta { position: relative; inline-size: 100%; max-inline-size: 8.5rem; aspect-ratio: 912 / 1724; justify-self: center; }
+.saude-silhueta img {
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px color-mix(in srgb, var(--saude-aura) 45%, transparent)) brightness(.92);
+}
+.saude-silhueta-luz {
+  position: absolute;
+  inset: -8% -22%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse 50% 52% at 50% 46%, color-mix(in srgb, var(--saude-aura) 46%, transparent), transparent 72%);
+  animation: saude-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite;
+}
+.saude-ponto {
+  position: absolute;
+  inline-size: 10px;
+  block-size: 10px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--saude-acento);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--saude-aura) 30%, transparent), 0 0 12px var(--saude-aura);
+  transform: scale(0);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-settle) + var(--ds-stagger) * 2 * var(--ordem, 0));
+}
+.saude-silhueta[data-chegou='true'] .saude-ponto { transform: scale(1); }
+.saude-ponto::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid var(--saude-acento);
+  opacity: 0;
+  animation: saude-pulsa calc(var(--ds-duration-conjure) * 3) ease-out calc(var(--ds-duration-reveal) * var(--ordem, 0) * -1) infinite;
+}
+@keyframes saude-pulsa { 0% { transform: scale(.6); opacity: .8; } 100% { transform: scale(1.6); opacity: 0; } }
+/* Sem medidas: os pontos esperam, vazados, o primeiro registro. */
+.saude-silhueta[data-convite] .saude-ponto { background: transparent; box-shadow: none; border: 1.5px solid var(--saude-acento); opacity: .6; }
+.saude-silhueta[data-convite] .saude-ponto::after { display: none; }
+
+.saude-medidas { display: grid; margin: 0; min-inline-size: 0; }
+.saude-medida { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 10px 0; border-block-end: 1px solid var(--ds-fio); }
+.saude-medida:last-child { border-block-end: 0; }
+.saude-medida dt { min-inline-size: 0; font-size: var(--ds-text-micro); line-height: 1.35; color: rgb(var(--el-muted)); }
+.saude-medida dd { margin: 0; flex: none; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.2; font-variant-numeric: tabular-nums; white-space: nowrap; color: rgb(var(--el-text)); }
+.saude-medida dd span { margin-inline-start: 3px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.saude-corpo-convite p { margin: 0; font-size: var(--ds-text-small); line-height: 1.55; color: rgb(var(--el-muted)); text-wrap: pretty; }
+/* A ação principal: ouro cheio, com um brilho por baixo. */
+.saude-corpo .saude-corpo-acao { box-shadow: 0 6px 22px color-mix(in srgb, rgb(var(--el-gold)) 28%, transparent); }
+
+.saude-extras { padding: 16px; border-radius: var(--ds-raio-runa); min-inline-size: 0; }
+.saude-extras dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0 0; }
+.saude-extra { min-inline-size: 0; padding: 10px 12px; border-radius: var(--ds-raio-controle); border: var(--ds-edge); background: rgb(var(--el-canvas) / .4); }
+.saude-extra dt { font-size: var(--ds-text-micro); line-height: 1.35; color: rgb(var(--el-muted)); }
+.saude-extra dd { margin: 2px 0 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.saude-extra dd span { margin-inline-start: 3px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+
+/* A lista de avaliações, em runas. */
+.saude-cena .saude-avaliacao { display: grid; gap: 10px; padding: 12px 8px 14px 14px; border-radius: var(--ds-raio-runa); box-shadow: var(--ds-rim), inset 3px 0 0 color-mix(in srgb, var(--saude-acento) 60%, transparent); }
+.saude-avaliacao-cabeca { display: flex; align-items: center; gap: 12px; }
+.saude-avaliacao-cabeca time { flex: 1; min-inline-size: 0; font-size: var(--ds-text-small); line-height: 1.35; color: rgb(var(--el-text)); }
+.saude-avaliacao-data, .saude-dia-data {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 48px;
+  block-size: 48px;
+  line-height: 1;
+  border-radius: var(--ds-raio-controle);
+  border: 1px solid color-mix(in srgb, var(--saude-acento) 30%, transparent);
+  background: color-mix(in srgb, var(--saude-acento) 10%, transparent);
+}
+.saude-avaliacao-data b, .saude-dia-data b { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.saude-avaliacao-data small, .saude-dia-data small { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.saude-excluir { display: grid; place-items: center; flex: none; inline-size: 44px; block-size: 44px; border-radius: 50%; color: rgb(var(--el-muted)); cursor: pointer; transition: color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.saude-excluir svg { inline-size: 20px; block-size: 20px; }
+@media (hover: hover) { .saude-excluir:hover { color: var(--ds-perigo); background: rgb(255 79 85 / .1); } }
+.saude-avaliacao-medidas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 16px; margin: 0; padding-inline-end: 8px; }
+.saude-avaliacao-medidas > div { min-inline-size: 0; }
+.saude-avaliacao-medidas dt { font-size: var(--ds-text-micro); line-height: 1.35; color: rgb(var(--el-muted)); }
+.saude-avaliacao-medidas dd { margin: 0; font-size: var(--ds-text-body); font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+
+.saude-detalhes { padding: 0 16px 16px; border-radius: var(--ds-raio-runa); }
+.saude-detalhes > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-block-size: 56px; list-style: none; cursor: pointer; border-radius: var(--ds-raio-controle); font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; color: rgb(var(--el-text)); }
+.saude-detalhes > summary::-webkit-details-marker { display: none; }
+.saude-detalhes > summary svg { flex: none; inline-size: 20px; block-size: 20px; color: rgb(var(--el-muted)); transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+.saude-detalhes[open] > summary svg { transform: rotate(180deg); }
+
+/* ---------- Histórico: a sessão como runa na cor da modalidade ---------- */
+.saude-resumo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--ds-raio-runa);
+}
+.saude-resumo-sigilo {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: var(--ds-raio-controle);
+  border: 1px solid color-mix(in srgb, var(--saude-acento) 45%, transparent);
+  background: color-mix(in srgb, var(--saude-acento) 14%, transparent);
+  color: var(--saude-acento);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--saude-aura) 30%, transparent);
+}
+.saude-resumo-sigilo svg { inline-size: 24px; block-size: 24px; }
+.saude-resumo strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-display); font-weight: 500; line-height: 1; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); text-shadow: 0 0 22px color-mix(in srgb, var(--saude-aura) 45%, transparent); }
+.saude-resumo p { margin: 4px 0 0; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.saude-resumo small { max-inline-size: 8rem; font-size: var(--ds-text-micro); line-height: 1.35; text-align: end; color: rgb(var(--el-muted)); text-wrap: balance; }
+
+.saude-aviso { margin-block-end: 16px; padding: 12px; border-radius: var(--ds-raio-runa); }
+.saude-aviso p { margin: 8px 0 0; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); }
+
+.saude-cena .saude-runa {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: 14px 12px 14px 14px;
+  border: var(--ds-edge);
+  border-radius: var(--ds-raio-runa);
+  text-align: start;
+  color: rgb(var(--el-text));
+  background:
+    radial-gradient(ellipse 120% 150% at 0 0, color-mix(in srgb, var(--elem-acento) 14%, transparent), transparent 62%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), inset 3px 0 0 color-mix(in srgb, var(--elem-acento) 70%, transparent);
+  transition: border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+/* Com elemento, a cor é a dele (as variáveis vêm de [data-element]); sem ele, a luz da semana. */
+.saude-cena .saude-runa:not([data-element]) { --elem-acento: var(--saude-acento); --elem-aura: var(--saude-aura); }
+.saude-cena button.saude-runa { cursor: pointer; }
+.saude-cena button.saude-runa:active { transform: scale(.985); transition-duration: var(--ds-duration-press); }
+@media (hover: hover) { .saude-cena button.saude-runa:hover { border-color: color-mix(in srgb, var(--elem-acento) 50%, transparent); } }
+.saude-runa-sigilo {
+  display: grid;
+  place-items: center;
+  inline-size: 48px;
+  block-size: 48px;
+  border-radius: var(--ds-raio-controle);
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 45%, transparent);
+  background: color-mix(in srgb, var(--elem-acento) 14%, transparent);
+  color: var(--elem-acento);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--elem-aura) 26%, transparent);
+}
+.saude-runa-sigilo svg { inline-size: 26px; block-size: 26px; }
+.saude-runa-texto { display: grid; gap: 2px; min-inline-size: 0; }
+.saude-runa-nome { font-size: var(--ds-text-body); font-weight: 500; line-height: 1.35; overflow-wrap: break-word; text-wrap: balance; }
+.saude-runa-meta { font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.saude-runa-metrica { margin-block-start: 4px; font-size: var(--ds-text-small); font-weight: 500; color: rgb(var(--el-gold)); }
+.saude-runa-seta { inline-size: 18px; block-size: 18px; color: rgb(var(--el-muted)); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+@media (hover: hover) { .saude-cena button.saude-runa:hover .saude-runa-seta { transform: translateX(3px); } }
+
+/* ---------- Semana: navegação e os dias ---------- */
+.saude-semana-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-block-end: 4px; }
+.saude-cena .saude-semana-passo { display: grid; place-items: center; flex: none; inline-size: 44px; block-size: 44px; padding: 0; border-radius: 50%; color: rgb(var(--el-text)); cursor: pointer; }
+.saude-semana-passo svg { inline-size: 20px; block-size: 20px; }
+.saude-semana-passo:disabled { opacity: .3; cursor: default; }
+.saude-semana-atual { min-block-size: 44px; padding: 0 16px; border: 1px solid transparent; border-radius: var(--ds-raio-controle); font-size: var(--ds-text-small); font-weight: 500; color: rgb(var(--el-gold)); cursor: pointer; transition: border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.saude-semana-atual[data-fora] { border-color: rgb(var(--el-gold) / .4); background: rgb(var(--el-gold) / .08); }
+
+.saude-dias { display: grid; gap: var(--ds-ritmo-lista); margin: 0; padding: 0; list-style: none; }
+.saude-cena .saude-dia { display: flex; align-items: center; gap: 12px; min-block-size: 64px; padding: 8px 4px 8px 8px; border-radius: var(--ds-raio-runa); }
+.saude-dia[data-hoje] { border-color: rgb(var(--el-gold) / .5); box-shadow: var(--ds-rim), 0 0 22px color-mix(in srgb, var(--saude-aura) 24%, transparent); }
+.saude-dia[data-hoje] .saude-dia-data { border-color: rgb(var(--el-gold)); background: rgb(var(--el-gold)); }
+.saude-dia[data-hoje] .saude-dia-data :is(b, small) { color: rgb(var(--el-canvas)); }
+.saude-dia-texto { flex: 1; min-inline-size: 0; }
+.saude-dia-texto p { margin: 0; font-size: var(--ds-text-small); line-height: 1.4; color: rgb(var(--el-text)); }
+.saude-dia-texto p:first-child { font-weight: 500; }
+.saude-dia-texto p:last-child { color: rgb(var(--el-text)); }
+.saude-dia[data-vazio='true'] .saude-dia-texto :is(p:first-child, span) { color: rgb(var(--el-muted)); }
+.saude-dia-texto em { margin-inline-start: 8px; padding: 1px 8px; border-radius: var(--ds-raio-controle); font-size: var(--ds-text-micro); font-style: normal; color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / .16); }
+.saude-dia-linha { flex: none; inline-size: 56px; }
+
+/* ---------- Atalhos e fecho de Hoje ---------- */
+.saude-atalhos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-block-start: 20px; }
+.saude-cena .saude-atalho { display: flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 52px; padding: 0 12px; border-radius: var(--ds-raio-runa); font-size: var(--ds-text-body); font-weight: 500; color: rgb(var(--el-text)); cursor: pointer; transition: border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.saude-cena .saude-atalho:active { transform: scale(.985); transition-duration: var(--ds-duration-press); }
+.saude-atalho svg { flex: none; inline-size: 20px; block-size: 20px; color: rgb(var(--el-gold)); }
+@media (hover: hover) { .saude-cena .saude-atalho:hover { border-color: rgb(var(--el-gold) / .45); } }
+.saude-acao-final { display: flex; justify-content: center; margin-block-start: 28px; padding-inline: 16px; }
+
+/* ---------- Telas estreitas (360px) ---------- */
+@media (max-width: 380px) {
+  .saude-aneis { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 16px; }
+  .saude-aneis-palco { max-inline-size: 10rem; }
+  .saude-legenda li { align-items: center; }
+  .saude-metricas { gap: 10px; }
+  .saude-cena .saude-metrica { padding: 12px; }
+  .saude-metrica-valor { font-size: var(--ds-text-body); }
+  .saude-dia-linha { display: none; }
+  .saude-resumo small { display: none; }
+  .saude-resumo { grid-template-columns: auto minmax(0, 1fr); }
+  .saude-cena .saude-runa { grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; padding-inline: 10px; }
+  .saude-runa-sigilo { inline-size: 44px; block-size: 44px; }
+}
+
+/* ---------- Quem pediu menos transparência recebe um vidro quase sólido ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .saude-cena .saude-vidro { background: rgb(var(--el-surface) / 96%); }
+  .saude-aura { display: none; }
+}
+
+/* ---------- Quem pediu menos movimento recebe tudo em repouso ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .saude-cena[data-entrada='plena'] .saude-aura,
+  .saude-cena[data-entrada='plena'] .saude-entra { animation: none; }
+  .saude-varredura, .saude-vazio-anel, .saude-silhueta-luz, .saude-metrica-fantasma,
+  .saude-ponto::after, .saude-barra[data-hoje] .saude-barra-preenche::after { animation: none; }
+  .saude-varredura { opacity: .3; }
+  .saude-ponto::after { display: none; }
+  .saude-barra[data-hoje] .saude-barra-preenche::after { display: none; }
+  .saude-cena button.saude-runa:active, .saude-cena .saude-atalho:active { transform: none; }
+  .saude-spark svg { clip-path: none; transition: none; }
+}
