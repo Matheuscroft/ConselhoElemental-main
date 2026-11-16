@@ -32,3 +32,122 @@
     #070b12 92%
   );
 }
+
+/* ---------- The living plate (the entry only) ---------- */
+/*
+ * Four layers, each travelling a different distance with the hand: the plate
+ * the least, the element lights further, the embers the most. `--par-x` and
+ * `--par-y` come from the scene that owns this one; without them every layer
+ * rests where it is drawn.
+ */
+.fundo-santuario[data-viva] .fundo-camada {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fundo-camada-placa { translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -3px); }
+.fundo-camada-luzes { translate: calc(var(--par-x, 0) * -14px) calc(var(--par-y, 0) * -7px); }
+.fundo-camada-brasas { translate: calc(var(--par-x, 0) * -22px) calc(var(--par-y, 0) * -11px); }
+
+.fundo-placa {
+  position: absolute;
+  inset: 0;
+  animation: fundo-acender calc(var(--ds-duration-conjure) * 2) var(--ds-ease) both;
+}
+
+.fundo-placa picture {
+  display: block;
+  block-size: 100%;
+}
+
+/* Scaled past the frame, so the travel of the layers never shows an edge. */
+.fundo-santuario[data-viva] .fundo-placa img {
+  scale: 1.1;
+  animation: fundo-respirar calc(var(--ds-duration-conjure) * 11) ease-in-out infinite alternate;
+}
+
+/* The four elements as soft lights around the altar, the way the plate frames them. */
+.fundo-luz {
+  position: absolute;
+  inline-size: 62%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--fundo-cor) 42%, transparent) 0%, transparent 66%);
+  opacity: 0.34;
+  animation:
+    fundo-luz-entrada calc(var(--ds-duration-conjure) * 2) var(--ds-ease) calc(var(--ds-stagger) * 6) both,
+    fundo-luz-pulso calc(var(--ds-duration-conjure) * 8) ease-in-out calc(var(--ds-duration-conjure) * 3) infinite alternate;
+}
+
+.fundo-luz-fogo { inset-block-start: 4%; inset-inline-start: -22%; }
+.fundo-luz-ar { inset-block-start: 2%; inset-inline-end: -22%; animation-delay: calc(var(--ds-stagger) * 8), calc(var(--ds-duration-conjure) * 5); }
+.fundo-luz-terra { inset-block-start: 26%; inset-inline-start: -26%; animation-delay: calc(var(--ds-stagger) * 10), calc(var(--ds-duration-conjure) * 4); }
+.fundo-luz-agua { inset-block-start: 24%; inset-inline-end: -26%; animation-delay: calc(var(--ds-stagger) * 12), calc(var(--ds-duration-conjure) * 6); }
+
+/* Embers and motes: small points of the element's own colour, climbing and fading. */
+.fundo-brasa {
+  position: absolute;
+  inset-inline-start: var(--b-x);
+  inset-block-end: 22%;
+  inline-size: var(--b-tam);
+  block-size: var(--b-tam);
+  border-radius: 50%;
+  background: var(--fundo-cor);
+  box-shadow: 0 0 8px 1px color-mix(in srgb, var(--fundo-cor) 70%, transparent);
+  opacity: 0;
+  animation: fundo-subir calc(var(--ds-duration-conjure) * var(--b-t)) ease-out calc(var(--ds-duration-settle) * var(--b-i) + var(--ds-duration-conjure) * 2) infinite;
+}
+
+/* The moment the light comes on: a warm bloom behind the hood that rises and settles. */
+.fundo-lampejo {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 42% at 50% 30%, rgb(255 236 190 / 62%), transparent 70%);
+  opacity: 0;
+  animation: fundo-lampejo calc(var(--ds-duration-conjure) * 3) var(--ds-ease) calc(var(--ds-stagger) * 2) both;
+}
+
+@keyframes fundo-acender {
+  from { opacity: 0; scale: 1.14; }
+}
+
+@keyframes fundo-respirar {
+  from { scale: 1.1; }
+  to { scale: 1.15; }
+}
+
+@keyframes fundo-luz-entrada {
+  from { opacity: 0; scale: 0.6; }
+}
+
+@keyframes fundo-luz-pulso {
+  from { opacity: 0.26; scale: 0.96; }
+  to { opacity: 0.44; scale: 1.06; }
+}
+
+@keyframes fundo-subir {
+  0% { opacity: 0; translate: 0 0; }
+  12% { opacity: 0.9; }
+  70% { opacity: 0.55; }
+  100% { opacity: 0; translate: var(--b-dx) -58vh; }
+}
+
+@keyframes fundo-lampejo {
+  0% { opacity: 0; }
+  30% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fundo-camada-placa,
+  .fundo-camada-luzes,
+  .fundo-camada-brasas { translate: none; }
+  .fundo-placa,
+  .fundo-santuario[data-viva] .fundo-placa img,
+  .fundo-luz,
+  .fundo-lampejo { animation: none; }
+  .fundo-lampejo,
+  .fundo-brasa { display: none; }
+}

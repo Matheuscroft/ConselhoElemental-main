@@ -1,0 +1,318 @@
+/*
+ * Passada UAU da tela de acesso a conta. Camada visual somente: nada aqui
+ * decide o que aparece, so como aparece. Tudo vive sob `.acesso-cena`, a raiz
+ * desta tela, para nao vazar para as outras telas de entrada.
+ *
+ * O santuario fica atras (a mesma placa da abertura), a luz do dedo e escrita
+ * em --luz-x e --luz-y pelo cartao, e o unico vidro e o do cartao de acesso,
+ * que reaproveita .ds-glass-float sem declarar blur novo.
+ */
+
+/* ---------- O lugar: santuario atras, luz suave por cima ---------- */
+.entry-shell.acesso-cena { position: relative; isolation: isolate; overflow-x: clip; }
+.acesso-cena::before, .acesso-cena::after { content: ''; position: fixed; inset: 0; pointer-events: none; }
+.acesso-cena::before {
+  z-index: -2;
+  /* The plate is darkened enough that text on it clears AA: 55% at the top, solid ground by the lower third. */
+  background:
+    linear-gradient(to bottom, rgb(7 11 18 / 58%) 0%, rgb(7 11 18 / 80%) 38%, rgb(7 11 18 / 94%) 70%, #070b12 100%),
+    image-set(url('/sanctuary/despertar/placa-base-390w.webp') 1x, url('/sanctuary/despertar/placa-base-780w.webp') 2x) 50% 30% / cover no-repeat;
+}
+.acesso-cena::after {
+  z-index: -1;
+  background:
+    radial-gradient(60% 38% at 18% 8%, rgb(var(--el-gold) / 15%), transparent 70%),
+    radial-gradient(55% 34% at 88% 30%, rgb(139 206 227 / 11%), transparent 72%);
+  animation: acesso-respirar calc(var(--ds-duration-conjure) * 8) ease-in-out infinite alternate;
+}
+@media (min-width: 768px) {
+  .acesso-cena::before {
+    background:
+      linear-gradient(to bottom, rgb(7 11 18 / 58%) 0%, rgb(7 11 18 / 80%) 38%, rgb(7 11 18 / 94%) 70%, #070b12 100%),
+      url('/sanctuary/despertar/placa-base-1024w.webp') 50% 30% / cover no-repeat;
+  }
+}
+@keyframes acesso-respirar { from { opacity: .55; translate: 0 0; } to { opacity: 1; translate: 0 12px; } }
+.acesso-cena .entry-halo { box-shadow: 0 0 80px rgb(var(--el-gold) / 10%) inset; animation: acesso-respirar calc(var(--ds-duration-conjure) * 7) ease-in-out infinite alternate; }
+
+/* ---------- Entrada coreografada: marca, titulo, cartao, botoes ---------- */
+@keyframes acesso-subir { from { opacity: 0; translate: 0 14px; scale: .985; } }
+@keyframes acesso-troca-a { from { opacity: 0; translate: 0 6px; } }
+@keyframes acesso-troca-b { from { opacity: 0; translate: 0 6px; } }
+.acesso-cena .entry-masthead { animation: acesso-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+.acesso-cena .entry-artwork { animation: acesso-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.acesso-cena .entry-main > header { animation: acesso-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.acesso-cena .entry-main > p { animation: acesso-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 4) backwards; }
+.acesso-cena .entry-main > .entry-access-card { animation: acesso-subir var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-stagger) * 6) backwards; }
+.acesso-cena .account-entry > :is(.account-oauth, .account-keep, .account-oauth-divider, .account-email-toggle, .account-switch) { animation: acesso-subir var(--ds-duration-settle) var(--ds-ease-conjure) backwards; }
+.acesso-cena .account-entry > .account-oauth { animation-delay: calc(var(--ds-stagger) * 9); }
+.acesso-cena .account-entry > .account-keep { animation-delay: calc(var(--ds-stagger) * 11); }
+.acesso-cena .account-entry > .account-oauth-divider { animation-delay: calc(var(--ds-stagger) * 12); }
+.acesso-cena .account-entry > .account-email-toggle { animation-delay: calc(var(--ds-stagger) * 13); }
+.acesso-cena .account-entry > .account-switch { animation-delay: calc(var(--ds-stagger) * 14); }
+/* Changing the mode renames the animation, which restarts it: the heading and the form re-enter. */
+.acesso-cena[data-modo="login"] :is(.entry-main > header h1, .account-reveal-inner form) { animation: acesso-troca-a var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.acesso-cena[data-modo="signup"] :is(.entry-main > header h1, .account-reveal-inner form) { animation: acesso-troca-b var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.acesso-cena .entry-main > header h1 { text-shadow: 0 0 32px rgb(var(--el-gold) / 30%), 0 2px 12px rgb(0 0 0 / 55%); }
+.acesso-cena .entry-main > p { color: #bcc6d4; text-shadow: 0 1px 8px rgb(0 0 0 / 55%); }
+
+/* ---------- O cartao: vidro real, borda especular e a luz do dedo ---------- */
+.acesso-cartao { position: relative; isolation: isolate; }
+.entry-shell.acesso-cena .entry-main .entry-access-card {
+  padding: 24px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgb(var(--el-surface) / 70%), rgb(var(--el-surface) / 54%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 20%), inset 0 0 40px rgb(255 255 255 / 2%), 0 26px 64px rgb(0 0 0 / 52%), 0 0 0 1px rgb(0 0 0 / 22%);
+}
+.entry-shell.acesso-cena .entry-main .account-step.acesso-cartao {
+  border-color: rgb(255 255 255 / 12%);
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgb(var(--el-surface) / 84%), rgb(var(--el-surface) / 70%));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 20px 50px rgb(0 0 0 / 46%);
+}
+/* The light inside the glass, under the content. */
+.acesso-cartao::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(300px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(var(--el-gold) / 15%), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The specular edge: always a hint along the top, bright where the finger is. */
+.acesso-cartao::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / 90%), rgb(var(--el-gold) / 55%) 38%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .3;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.acesso-cartao[data-luz-acesa]::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.acesso-cartao[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.acesso-cartao:focus-within::after { opacity: .7; }
+
+/* ---------- Divisor ---------- */
+.acesso-cena .account-oauth-divider { color: #aab4c4; letter-spacing: .08em; }
+.acesso-cena .account-oauth-divider::before, .acesso-cena .account-oauth-divider::after { border-top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgb(255 255 255 / 20%)); }
+.acesso-cena .account-oauth-divider::after { background: linear-gradient(270deg, transparent, rgb(255 255 255 / 20%)); }
+
+/* ---------- Botao do Google: mantem a marca, responde ao toque com mola ---------- */
+.acesso-cena .restore-workspace .account-oauth .account-oauth-button {
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 30%), 0 10px 28px rgb(0 0 0 / 38%), 0 0 0 1px rgb(255 255 255 / 40%) inset;
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure);
+}
+.acesso-cena .restore-workspace .account-oauth .account-oauth-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgb(66 133 244 / 16%) 50%, transparent 62%);
+  translate: -110% 0;
+  animation: acesso-lume calc(var(--ds-duration-conjure) * 2) var(--ds-ease) calc(var(--ds-stagger) * 18) 1 both;
+}
+@keyframes acesso-lume { to { translate: 110% 0; } }
+.acesso-cena .restore-workspace .account-oauth .account-oauth-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 2px 4px rgb(0 0 0 / 30%), 0 16px 36px rgb(0 0 0 / 44%), 0 0 26px rgb(255 255 255 / 14%); }
+.acesso-cena .restore-workspace .account-oauth .account-oauth-button:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ds-duration-feedback), var(--ds-duration-press), var(--ds-duration-press); }
+
+/* ---------- Entrar com e-mail: secundario elegante ---------- */
+.acesso-cena .restore-workspace .account-entry .account-email-toggle {
+  min-height: 52px;
+  border: 1px solid rgb(var(--el-gold) / 42%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 4%);
+  color: #f2efe7;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%);
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure);
+}
+.acesso-cena .restore-workspace .account-entry .account-email-toggle::after {
+  content: '';
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  rotate: 45deg;
+  transition: rotate var(--ds-duration-reveal) var(--ds-ease-conjure), margin var(--ds-duration-reveal) var(--ds-ease);
+}
+.acesso-cena .restore-workspace .account-entry .account-email-toggle[aria-expanded="true"]::after { rotate: 225deg; margin-top: 4px; }
+.acesso-cena .restore-workspace .account-entry .account-email-toggle:hover:not(:disabled) { background: rgb(var(--el-gold) / 10%); border-color: rgb(var(--el-gold) / 75%); box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%), 0 0 24px rgb(var(--el-gold) / 14%); }
+.acesso-cena .restore-workspace .account-entry .account-email-toggle:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-press); }
+.acesso-cena .restore-workspace .account-entry .account-email-toggle[aria-expanded="true"] { border-color: rgb(var(--el-gold) / 70%); background: rgb(var(--el-gold) / 8%); }
+
+/* ---------- Campos: foco que acende ---------- */
+.entry-shell.acesso-cena .entry-main form input {
+  border-color: rgb(255 255 255 / 20%);
+  border-radius: 12px;
+  background: rgb(7 11 18 / 62%);
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 35%);
+  transition: border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.entry-shell.acesso-cena .entry-main form input:hover:not(:disabled) { border-color: rgb(255 255 255 / 34%); }
+.entry-shell.acesso-cena .entry-main form input:focus-visible { border-color: rgb(var(--el-gold)); background: rgb(7 11 18 / 80%); outline: 2px solid rgb(var(--el-gold) / 85%); outline-offset: 2px; box-shadow: inset 0 2px 6px rgb(0 0 0 / 35%), 0 0 0 4px rgb(var(--el-gold) / 16%), 0 0 28px rgb(var(--el-gold) / 26%); }
+.acesso-cena form label:focus-within, .acesso-cena form > div:focus-within > label { color: #f6e4b4; transition: color var(--ds-duration-feedback) var(--ds-ease); }
+.entry-shell.acesso-cena .entry-main form input:disabled { opacity: .6; }
+
+/* ---------- Enviar: ouro com brilho e mola ---------- */
+.entry-shell.acesso-cena .entry-main form > button[type=submit] {
+  border-color: rgb(255 255 255 / 30%);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ecd391, #d5b66f 55%, #c4a359);
+  color: #10141b;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%), 0 10px 28px rgb(var(--el-gold) / 24%);
+  transition: filter var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure), opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.entry-shell.acesso-cena .entry-main form > button[type=submit]:hover:not(:disabled) { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgb(255 255 255 / 60%), 0 14px 34px rgb(var(--el-gold) / 34%); }
+.entry-shell.acesso-cena .entry-main form > button[type=submit]:active:not(:disabled) { transform: scale(.97); transition-duration: var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-press), var(--ds-duration-feedback); }
+.entry-shell.acesso-cena .entry-main form > button[type=submit]:disabled { opacity: .5; box-shadow: none; }
+
+/* ---------- Links: sublinhado que cresce ---------- */
+.acesso-cena :is(.account-link-button, .account-text-link, .entry-recovery-link) {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: rgb(var(--el-gold) / 55%);
+  text-underline-offset: 4px;
+  transition: text-decoration-color var(--ds-duration-feedback) var(--ds-ease), text-decoration-thickness var(--ds-duration-reveal) var(--ds-ease), text-underline-offset var(--ds-duration-reveal) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease);
+}
+.acesso-cena :is(.account-link-button, .account-text-link, .entry-recovery-link):hover:not(:disabled),
+.acesso-cena :is(.account-link-button, .account-text-link, .entry-recovery-link):focus-visible { text-decoration-color: #f1dba7; text-decoration-thickness: 2px; text-underline-offset: 6px; color: #f1dba7; }
+.acesso-cena .entry-recovery-link { display: inline-flex; align-items: center; justify-self: end; }
+.acesso-cena .account-switch { color: #bcc6d4; }
+
+/* ---------- Manter conectado: um selo ---------- */
+.acesso-cena .account-keep {
+  padding: .15rem .9rem .6rem;
+  border: 1px solid rgb(255 255 255 / 11%);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 3%);
+  transition: border-color var(--ds-duration-reveal) var(--ds-ease), background-color var(--ds-duration-reveal) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease);
+}
+.acesso-cena .account-keep:has(input:checked) { border-color: rgb(var(--el-gold) / 50%); background: rgb(var(--el-gold) / 8%); box-shadow: 0 0 26px rgb(var(--el-gold) / 10%); }
+.acesso-cena .restore-workspace-consent { color: #d1d7df; }
+.acesso-cena .restore-workspace-consent input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: grid;
+  place-content: center;
+  border: 1.5px solid #8491a4;
+  border-radius: 50%;
+  background: rgb(7 11 18 / 60%);
+  transition: background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure);
+}
+.acesso-cena .restore-workspace-consent input[type="checkbox"]::after {
+  content: '';
+  width: 6px;
+  height: 11px;
+  border: solid #10141b;
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  translate: 0 -1px;
+  scale: 0;
+  transition: scale var(--ds-duration-reveal) var(--ds-ease-conjure);
+}
+.acesso-cena .restore-workspace-consent input[type="checkbox"]:checked { border-color: rgb(var(--el-gold)); background: linear-gradient(180deg, #ecd391, #c4a359); box-shadow: 0 0 0 4px rgb(var(--el-gold) / 14%), 0 0 18px rgb(var(--el-gold) / 38%); }
+.acesso-cena .restore-workspace-consent input[type="checkbox"]:checked::after { scale: 1; }
+.acesso-cena .restore-workspace-consent input[type="checkbox"]:active:not(:disabled) { transform: scale(.88); transition-duration: var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-press); }
+.acesso-cena .restore-workspace-consent input[type="checkbox"]:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
+.acesso-cena .restore-workspace-consent input[type="checkbox"]:disabled { opacity: .55; }
+
+/* ---------- Estados: erro e aviso com presenca ---------- */
+@keyframes acesso-alerta { from { opacity: 0; translate: 0 -6px; scale: .98; box-shadow: 0 0 0 0 rgb(255 120 100 / 45%); } }
+.acesso-cena :is(.account-entry, .account-step) .restore-workspace-error,
+.acesso-cena .restore-workspace-error.account-step-error {
+  position: relative;
+  padding: 14px 14px 14px 48px;
+  border: 1px solid rgb(255 150 135 / 50%);
+  border-left-width: 1px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(255 110 90 / 13%), rgb(255 110 90 / 5%));
+  color: #ffc9c2;
+  box-shadow: 0 0 28px rgb(255 110 90 / 10%);
+  animation: acesso-alerta var(--ds-duration-settle) var(--ds-ease-conjure) backwards;
+}
+/* The mark is drawn, not typed: a ring with a bar and a dot, so no screen reader reads it. */
+.acesso-cena :is(.account-entry, .account-step) .restore-workspace-error::before,
+.acesso-cena .restore-workspace-error.account-step-error::before {
+  content: '';
+  position: absolute;
+  left: 15px;
+  top: 14px;
+  width: 21px;
+  height: 21px;
+  border: 1.5px solid currentColor;
+  border-radius: 50%;
+  background:
+    linear-gradient(currentColor, currentColor) 50% 5px / 2px 7px no-repeat,
+    linear-gradient(currentColor, currentColor) 50% 14px / 2px 2px no-repeat;
+}
+.entry-shell.acesso-cena .entry-main .entry-auth-feedback {
+  position: relative;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border: 1px solid rgb(139 206 227 / 45%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(139 206 227 / 13%), rgb(139 206 227 / 5%));
+  color: #d3edf4;
+  box-shadow: 0 0 28px rgb(139 206 227 / 12%);
+  animation: acesso-alerta var(--ds-duration-settle) var(--ds-ease-conjure) backwards;
+}
+.acesso-cena .entry-auth-feedback svg { color: #8bcee3; }
+.acesso-cena .account-workspace-release {
+  position: relative;
+  padding: 14px 16px;
+  border: 1px solid rgb(var(--el-gold) / 45%);
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgb(var(--el-gold) / 12%), rgb(var(--el-gold) / 4%));
+  color: #f2e2b9;
+  box-shadow: 0 0 28px rgb(var(--el-gold) / 9%);
+}
+.acesso-cena .account-step-status:not(:empty) { color: #c4e4ed; }
+.acesso-cena .account-error-code { opacity: .85; }
+
+/* ---------- Escolhas e cartoes dos passos seguintes ---------- */
+.acesso-cena .account-choice-card { border-color: rgb(255 255 255 / 16%); background: rgb(7 11 18 / 55%); transition: border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure); }
+.acesso-cena .account-choice-card:active { transform: scale(.98); transition-duration: var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-press); }
+.acesso-cena .account-choice-card[data-selected="true"] { border-color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / 12%); box-shadow: 0 0 26px rgb(var(--el-gold) / 16%); }
+.acesso-cena .account-outline-link { border-radius: 12px; border-color: rgb(var(--el-gold) / 40%); background: rgb(255 255 255 / 4%); transition: background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure); }
+.acesso-cena .account-outline-link:hover { background: rgb(var(--el-gold) / 10%); border-color: rgb(var(--el-gold) / 75%); }
+.acesso-cena .account-outline-link:active { transform: scale(.97); transition-duration: var(--ds-duration-feedback), var(--ds-duration-feedback), var(--ds-duration-press); }
+.acesso-cena .restore-workspace .account-step button:not(.account-link-button):not(:disabled) { transition: filter var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-reveal) var(--ds-ease-conjure); }
+.acesso-cena .restore-workspace .account-step button:not(.account-link-button):not(:disabled):active { transform: scale(.97); transition-duration: var(--ds-duration-feedback), var(--ds-duration-press); }
+
+/* ---------- Telas pequenas ---------- */
+@media (max-width: 767px) {
+  .entry-shell.acesso-cena .entry-main .entry-access-card, .entry-shell.acesso-cena .entry-main .account-step.acesso-cartao { padding: 20px; }
+}
+@media (max-width: 360px) {
+  .entry-shell.acesso-cena .entry-main .entry-access-card, .entry-shell.acesso-cena .entry-main .account-step.acesso-cartao { padding: 16px; }
+  .acesso-cena .account-keep { padding-inline: .7rem; }
+}
+
+/* ---------- Preferencias do sistema ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .entry-shell.acesso-cena .entry-main .entry-access-card { background: rgb(var(--el-surface) / 96%); }
+  .entry-shell.acesso-cena .entry-main .account-step.acesso-cartao { background: rgb(var(--el-surface) / 98%); }
+  .acesso-cena::before { opacity: .35; }
+  .acesso-cena::after { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .acesso-cena::after, .acesso-cena .entry-halo { animation: none; }
+  .acesso-cena :is(.entry-masthead, .entry-artwork, .entry-main > header, .entry-main > p, .entry-main > .entry-access-card, .account-entry > *, .entry-auth-feedback, .restore-workspace-error, .account-reveal-inner form, .account-switch, .entry-main > header h1) { animation: none !important; }
+  .acesso-cena .restore-workspace .account-oauth .account-oauth-button::after { animation: none; display: none; }
+  .acesso-cena *, .acesso-cena *::before, .acesso-cena *::after { transition: none !important; }
+}

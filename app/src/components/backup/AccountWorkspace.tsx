@@ -1,6 +1,7 @@
 import { EntryArtwork, EntryBrand } from '@/components/entry/EntryVisuals';
 import { connectCurrentAccountProgress, receiveReviewedAccountProgress, resumeAccountConnection } from '@/lib/backup/connect-account-progress';
 import './account-journey.css';
+import './acesso-conta.css';
 import { ACCOUNT_RESOLUTION_KEY } from '@/lib/backup/account-resolution-key';
 import { accountErrorCode } from '@/lib/backup/account-auth-messages';
 import { accessAccount, resendAccountConfirmation, validAccountAccess, validAccountEmail, type AccountAccessMode } from '@/lib/backup/account-access';
@@ -12,7 +13,7 @@ import { reviewAccountVersions } from '@/lib/backup/account-conflict';
 import { reviewAccountBinding } from '@/lib/backup/account-binding';
 import type { LiveAccountSession } from '@/lib/backup/account-live-sync';
 import { ACCOUNT_BINDING_KEY, inspectAccountBinding, type AccountBinding } from '@/lib/backup/account-binding';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { ArrowLeft, Download, Eye, EyeOff, LoaderCircle, MailCheck } from 'lucide-react';
 import { createWorkspaceSafetyCopy, readWorkspaceBaseline, type WorkspaceBaseline } from '@/lib/backup/workspace-preview';
 import { verifyPreviousSafetyCopy } from '@/lib/backup/restore-confirmation';
@@ -77,6 +78,20 @@ const totalsLine=(summary:{xp:number;tasks:number;habits:number}|null)=>summary?
 const dayLabel=(value:unknown)=>{const time=typeof value==='string'?Date.parse(value):NaN;return Number.isFinite(time)?new Date(time).toLocaleDateString('pt-BR'):'';};
 const signedInNotice=(address?:string|null)=>address&&address.trim()?`Você entrou como ${address.trim()}.`:'Você entrou na sua conta.';
 const GoogleIcon=()=><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.45a5.5 5.5 0 0 1-2.39 3.62v3h3.87c2.27-2.09 3.57-5.17 3.57-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.91l-3.87-3c-1.07.72-2.45 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.1A12 12 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.27a12 12 0 0 0 0 10.76l4-3.1z"/><path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.43-3.43C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.27 6.62l4 3.1C6.22 6.88 8.87 4.77 12 4.77z"/></svg>;
+/**
+ * Presentation only: where the finger is on a glass card, written to `--luz-x` and
+ * `--luz-y` so the stylesheet can follow it. Nothing here reads or writes data.
+ */
+function acenderLuz(event: ReactPointerEvent<HTMLElement>) {
+  const card = event.currentTarget, box = card.getBoundingClientRect();
+  card.style.setProperty('--luz-x', `${Math.round(event.clientX - box.left)}px`);
+  card.style.setProperty('--luz-y', `${Math.round(event.clientY - box.top)}px`);
+  card.setAttribute('data-luz-acesa', '');
+}
+function apagarLuz(event: ReactPointerEvent<HTMLElement>) { event.currentTarget.removeAttribute('data-luz-acesa'); }
+function soltarLuz(event: ReactPointerEvent<HTMLElement>) { if (event.pointerType !== 'mouse') apagarLuz(event); }
+const luzDoDedo = { 'data-luz': '', onPointerDown: acenderLuz, onPointerMove: acenderLuz, onPointerUp: soltarLuz, onPointerLeave: apagarLuz, onPointerCancel: apagarLuz };
+
 export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (session: LiveAccountSession) => void; notice?: AccountReturnNotice } = {}) {
   const startsSignup=new URLSearchParams(window.location.search ?? '').get('modo') === 'cadastro' || window.location.pathname === '/cadastro';
   const [accessMode,setAccessMode]=useState<AccountAccessMode>(startsSignup ? 'signup' : 'login'),[confirmation,setConfirmation]=useState('');
@@ -638,7 +653,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const advancedTitle = 'Opções avançadas', advancedLead = 'Para guardar arquivos de cópia ou resolver um problema. Você não precisa disto no dia a dia.';
   const entryTitle = accessMode === 'signup' ? 'Comece sua jornada' : 'Sua jornada continua';
   const entryLead = accessMode === 'signup' ? 'Crie sua conta para ver seu progresso em qualquer aparelho.' : 'Entre para ver seu progresso em qualquer aparelho.';
-  return <div className="entry-shell">
+  return <div className="entry-shell acesso-cena" data-modo={accessMode}>
     <a className="entry-skip" href="#account-workspace-title">Ir para o acesso da conta</a>
     <div className="entry-masthead"><EntryBrand /><a className="entry-top-link" href="/santuario" hidden={!userId}><ArrowLeft size={16} aria-hidden="true" />Voltar ao app</a></div>
     <div className="entry-layout">
@@ -649,7 +664,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     <p>{showAdvanced ? advancedLead : signedView ? signedView.lead : entryLead}</p>
     {!ACCOUNT_ACCESS_RELEASED&&<p className="account-workspace-release" role="status">O acesso à conta ainda não está liberado nesta versão.</p>}
     {!ACCOUNT_TRANSFER_WRITES_RELEASED&&<section aria-labelledby="account-mobile"><h2 id="account-mobile">Seu progresso no celular</h2><p>Você já pode importar sua cópia completa neste aparelho, incluindo atividades, histórico e XP. Cadastro e acesso à conta são separados: envio e sincronização ainda não liberados.</p><a className="restore-workspace-back" href="/?progresso=restaurar">Importar minha cópia neste aparelho</a><p>Para validar sua conta, crie o acesso abaixo, confirme o e-mail e entre novamente. Entrar não envia nem substitui sua jornada.</p></section>}
-    <section className="entry-access-card ds-pane" aria-label="Acesso à conta" hidden={!!userId}>
+    <section className="entry-access-card ds-glass-float acesso-cartao" {...luzDoDedo} aria-label="Acesso à conta" hidden={!!userId}>
       {authFeedback&&<p className="entry-auth-feedback" role="status" aria-live="polite"><MailCheck size={19} aria-hidden="true" /><span>{authFeedback}</span></p>}
       <div className="account-entry" hidden={!!userId}>
         <div className="account-oauth" role="group" aria-label="Entrar com Google">
@@ -679,7 +694,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         {accessMode==='login'?<p className="account-switch">Não tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('signup')}>Criar conta com e-mail</button></p>:<p className="account-switch">Já tem conta? <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>switchMode('login')}>Entrar</button></p>}
       </div>
     </section>
-    {view && <section key={step} className="account-step ds-pane" data-step={step} hidden={showAdvanced} aria-labelledby={userId ? undefined : 'account-step-title'} aria-label={userId ? view.title : undefined}>
+    {view && <section key={step} className="account-step ds-pane acesso-cartao" {...luzDoDedo} data-step={step} hidden={showAdvanced} aria-labelledby={userId ? undefined : 'account-step-title'} aria-label={userId ? view.title : undefined}>
       {!userId && <h2 id="account-step-title">{view.title}</h2>}
       {view.body}
       {userId && <div className="account-step-footer">
@@ -687,7 +702,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
         <button type="button" className="account-link-button" disabled={!ready||busy} onClick={()=>closeAccess()}>Sair desta conta</button>
       </div>}
     </section>}
-    <section id="account-advanced" className="account-advanced account-step ds-pane" aria-label={advancedTitle} hidden={!showAdvanced}>
+    <section id="account-advanced" className="account-advanced account-step ds-pane acesso-cartao" {...luzDoDedo} aria-label={advancedTitle} hidden={!showAdvanced}>
     <button type="button" className="restore-workspace-secondary" onClick={closeAdvanced}>Voltar</button>
     <div hidden={!ACCOUNT_TRANSFER_WRITES_RELEASED&&!pending&&!resolution}>
     {ready&&baseline&&!baseline.snapshot&&!pending&&!binding&&!resolution&&<section aria-labelledby="account-new"><h2 id="account-new">Sua primeira jornada</h2>

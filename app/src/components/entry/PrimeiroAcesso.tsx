@@ -47,7 +47,14 @@ export function PrimeiroAcesso() {
 
   if (step === 'despertar') {
     return (
-      <Suspense fallback={<div className="primeiro-acesso-carregando" role="status">Abrindo o santuário…</div>}>
+      <Suspense
+        fallback={(
+          <div className="primeiro-acesso-carregando" role="status">
+            <span className="primeiro-acesso-brasa" aria-hidden="true" />
+            Abrindo o santuário…
+          </div>
+        )}
+      >
         <DespertarCena onComplete={() => avancar(true)} onSkip={() => avancar(false)} />
       </Suspense>
     );

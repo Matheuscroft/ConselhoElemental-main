@@ -1,4 +1,20 @@
+/*
+ * The welcome. The sanctuary lives behind it (see fundo-santuario.css); in
+ * front sits one pane of real glass with the four elements and the two ways
+ * in. Every beat is a motion token, in multiples of the stagger, so the
+ * whole arrival is one sentence of about two seconds and collapses into a
+ * still page for anyone who asked for less movement.
+ */
 .boas {
+  /*
+   * The welcome path never loads the theme sheet that declares these, and the
+   * glass recipe reads them. Same values, declared once here for this screen.
+   */
+  --el-canvas: 8 11 18;
+  --el-surface: 20 27 39;
+  --el-gold: 213 182 111;
+  --entry-gold: #d5b66f;
+  --entry-text: #f4ece0;
   position: relative;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -8,6 +24,7 @@
   overflow: hidden;
   background: #070b12;
   color: #f4ece0;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .boas-pular {
@@ -16,7 +33,7 @@
   inset-inline-start: 12px;
   z-index: 3;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #16202b;
   color: #f4ece0;
 }
@@ -40,49 +57,29 @@
   gap: 12px;
 }
 
-.boas-corpo {
-  position: relative;
-  z-index: 1;
-  inline-size: min(100%, 460px);
-  margin-inline: auto;
+.boas-topo .entry-brand {
+  animation: boas-descer var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 2) both;
 }
 
-.boas-topo {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.boas-entrar {
-  display: inline-flex;
-  align-items: center;
-  min-block-size: 44px;
-  padding-inline: 16px;
-  border: 1px solid rgb(244 236 224 / 20%);
-  border-radius: 999px;
-  color: rgb(244 236 224 / 78%);
-  font-size: var(--ds-text-body);
+.boas-topo .entry-brand svg {
+  filter: drop-shadow(0 0 8px rgb(213 182 111 / 55%));
 }
 
 .boas-corpo {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 18px;
-  padding-block: 28px;
-  animation: boas-entrada var(--ds-duration-settle) var(--ds-ease) both;
-}
-
-@keyframes boas-entrada {
-  from { opacity: 0; translate: 0 8px; }
-  to { opacity: 1; translate: 0 0; }
+  gap: 14px;
+  padding-block: 20px 8px;
+  min-inline-size: 0;
 }
 
 .boas-saudacao {
   margin: 0;
-  color: rgb(214 182 111 / 88%);
+  color: rgb(232 204 138);
   font-size: var(--ds-text-lead);
+  text-shadow: 0 1px 14px rgb(7 11 18 / 85%);
+  animation: boas-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 4) both;
 }
 
 .boas-corpo h1 {
@@ -90,69 +87,256 @@
   font-family: Cinzel, Georgia, serif;
   font-size: var(--ds-fluid-display);
   font-weight: 400;
-  line-height: 1.06;
-  letter-spacing: -0.02em;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 26px rgb(7 11 18 / 92%), 0 0 2px rgb(7 11 18 / 60%);
+  overflow-wrap: break-word;
+}
+
+.boas-linha {
+  display: block;
+  animation: boas-linha calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) calc(var(--ds-stagger) * 5) both;
+}
+
+.boas-linha-ouro {
+  color: #ecd29a;
+  animation-delay: calc(var(--ds-stagger) * 7);
+}
+
+/* The second line catches the light once, as a gold thread running through the letters. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .boas-linha-ouro {
+    background: linear-gradient(100deg, #f4ece0 0%, #f4dfa8 38%, #d6b66f 60%, #f4ece0 100%) 0% 0 / 240% 100% no-repeat;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    text-shadow: none;
+    filter: drop-shadow(0 2px 14px rgb(7 11 18 / 80%));
+    animation:
+      boas-linha calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) calc(var(--ds-stagger) * 7) both,
+      boas-fio calc(var(--ds-duration-conjure) * 3) ease-in-out calc(var(--ds-stagger) * 12) both;
+  }
+}
+
+/* ---------- The pane of glass ---------- */
+/* Glass comes from .ds-glass-float: this only lets a little more of the sanctuary through and gives it its light. */
+.boas-painel.ds-glass-float {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-inline-size: 0;
+  margin-block-start: 4px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgb(var(--el-surface) / 62%);
+  animation: boas-painel var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 8) both;
+}
+
+/* The rim: one pixel of light around the glass, brightest where the finger is. At rest it sits on the top edge, where a lamp catches a sheet of glass. */
+.boas-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    200px circle at var(--luz-x, 50%) var(--luz-y, 0px),
+    rgb(255 255 255 / 85%),
+    rgb(213 182 111 / 55%) 38%,
+    transparent 74%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0.42;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+
+/* The light inside the glass, under the content. */
+.boas-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    300px circle at var(--luz-x, 50%) var(--luz-y, 0px),
+    rgb(213 182 111 / 16%),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+
+.boas-painel[data-luz-acesa]::before,
+.boas-painel[data-luz-acesa]::after,
+.boas-painel:focus-within::before {
+  opacity: 1;
+  transition-duration: var(--ds-duration-feedback);
 }
 
 .boas-resumo {
   margin: 0;
   max-inline-size: 38ch;
-  color: rgb(244 236 224 / 70%);
-  font-size: var(--ds-text-lead);
-  line-height: 1.45;
+  color: rgb(244 236 224 / 84%);
+  font-size: var(--ds-text-body);
+  line-height: 1.5;
+  animation: boas-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 10) both;
 }
 
+/* ---------- The four seals ---------- */
 .boas-elementos {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 14px;
-  margin: 2px 0 0;
+  gap: 8px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.boas-elementos li {
+.boas-selo {
   display: flex;
-  align-items: baseline;
-  gap: 7px;
-  font-size: var(--ds-text-body);
+  align-items: center;
+  gap: 8px;
+  min-inline-size: 0;
+  min-block-size: 56px;
+  padding: 8px;
+  border: 1px solid color-mix(in srgb, var(--selo-cor) 38%, transparent);
+  border-radius: 12px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--selo-cor) 17%, transparent),
+    color-mix(in srgb, var(--selo-cor) 5%, transparent)
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%), 0 0 18px -8px color-mix(in srgb, var(--selo-cor) 60%, transparent);
+  animation: boas-selo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * (12 + var(--selo-i))) both;
 }
 
-.boas-elementos strong {
+.boas-sigilo {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  inline-size: 34px;
+  block-size: 34px;
+  border-radius: 50%;
+  animation: boas-sigilo var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-stagger) * (13 + var(--selo-i))) both;
+}
+
+/* The glow of each sigil breathes, one after another. */
+.boas-sigilo::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--selo-cor) 46%, transparent), transparent 68%);
+  animation: boas-pulso calc(var(--ds-duration-conjure) * 6) ease-in-out calc(var(--ds-duration-conjure) * (3 + var(--selo-i))) infinite alternate;
+}
+
+.boas-sigilo svg {
+  position: relative;
+}
+
+.boas-selo-texto {
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  line-height: 1.2;
+  overflow-wrap: break-word;
+}
+
+.boas-selo strong {
+  color: var(--selo-cor);
+  font-size: var(--ds-text-body);
   font-weight: 600;
 }
 
-.boas-elementos span {
-  color: rgb(244 236 224 / 58%);
+.boas-selo-texto span {
+  color: rgb(244 236 224 / 78%);
+  font-size: var(--ds-text-micro);
 }
 
+/* ---------- The two ways in ---------- */
 .boas-acoes {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-block-start: 6px;
+  margin-block-start: 2px;
 }
 
 .boas-primaria,
 .boas-secundaria {
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-block-size: 54px;
-  border-radius: 999px;
+  border-radius: 16px;
   font-size: var(--ds-text-lead);
+  text-decoration: none;
+  transition:
+    scale var(--ds-duration-feedback) var(--ds-ease-conjure),
+    translate var(--ds-duration-feedback) var(--ds-ease),
+    box-shadow var(--ds-duration-feedback) var(--ds-ease),
+    background-color var(--ds-duration-feedback) var(--ds-ease),
+    border-color var(--ds-duration-feedback) var(--ds-ease);
 }
 
 .boas-primaria {
-  border: 1px solid #d5b66f;
-  background: #d5b66f;
+  min-block-size: 56px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px solid #e9d095;
+  background: linear-gradient(180deg, #ecd49b 0%, #d5b66f 55%, #bf9d55 100%);
   color: #1a1408;
   font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 45%), 0 10px 30px -6px rgb(213 182 111 / 45%);
+  animation: boas-mola var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-stagger) * 17) both;
+}
+
+/* The glint: a band of light that crosses the button once it has arrived, and again from time to time. */
+.boas-primaria::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 32%, rgb(255 255 255 / 70%) 50%, transparent 68%);
+  translate: -120% 0;
+  animation: boas-lampejo calc(var(--ds-duration-conjure) * 9) ease-in-out calc(var(--ds-stagger) * 24) infinite;
 }
 
 .boas-secundaria {
-  border: 1px solid rgb(244 236 224 / 45%);
+  min-block-size: 48px;
+  border: 1px solid rgb(244 236 224 / 40%);
+  background: rgb(255 255 255 / 4%);
   color: #f4ece0;
+  animation: boas-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 19) both;
+}
+
+.boas-primaria:active,
+.boas-secundaria:active {
+  scale: 0.97;
+}
+
+@media (hover: hover) {
+  .boas-primaria:hover {
+    translate: 0 -2px;
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 55%), 0 14px 38px -6px rgb(213 182 111 / 65%);
+  }
+
+  .boas-secundaria:hover {
+    border-color: rgb(244 236 224 / 70%);
+    background: rgb(255 255 255 / 9%);
+  }
 }
 
 .boas-primaria:focus-visible,
@@ -161,20 +345,79 @@
   outline-offset: 3px;
 }
 
+/* ---------- The arrival ---------- */
+@keyframes boas-descer {
+  from { opacity: 0; translate: 0 -10px; }
+}
+
+@keyframes boas-subir {
+  from { opacity: 0; translate: 0 14px; }
+}
+
+@keyframes boas-linha {
+  from { opacity: 0; translate: 0 0.5em; filter: blur(10px); }
+}
+
+@keyframes boas-fio {
+  from { background-position: 100% 0; }
+  to { background-position: 0% 0; }
+}
+
+@keyframes boas-painel {
+  from { opacity: 0; translate: 0 32px; }
+}
+
+@keyframes boas-selo {
+  from { opacity: 0; translate: 0 12px; border-color: transparent; }
+  55% { box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%), 0 0 30px 2px color-mix(in srgb, var(--selo-cor) 62%, transparent); }
+}
+
+@keyframes boas-sigilo {
+  from { opacity: 0; scale: 0.3; rotate: -30deg; }
+}
+
+@keyframes boas-pulso {
+  from { opacity: 0.45; scale: 0.9; }
+  to { opacity: 1; scale: 1.12; }
+}
+
+@keyframes boas-mola {
+  from { opacity: 0; translate: 0 26px; scale: 0.94; }
+}
+
+@keyframes boas-lampejo {
+  0% { translate: -120% 0; }
+  18%, 100% { translate: 120% 0; }
+}
+
+/* ---------- System preferences ---------- */
+/* Someone who asked for less transparency gets a pane that is nearly solid, so the blur has nothing left to show. */
+@media (prefers-reduced-transparency: reduce) {
+  .boas-painel.ds-glass-float {
+    background: rgb(var(--el-surface) / 96%);
+  }
+}
+
+/* The end state is the base style, so switching the animations off is enough. */
 @media (prefers-reduced-motion: reduce) {
-  .boas-corpo {
+  .boas-topo .entry-brand,
+  .boas-saudacao,
+  .boas-linha,
+  .boas-linha-ouro,
+  .boas-painel.ds-glass-float,
+  .boas-resumo,
+  .boas-selo,
+  .boas-sigilo,
+  .boas-sigilo::before,
+  .boas-primaria,
+  .boas-primaria::after,
+  .boas-secundaria {
     animation: none;
   }
 }
 
-/* iOS only, for the same reason as the survey before it. */
-.boas {
-  -webkit-tap-highlight-color: transparent;
-}
-
-.boas-primaria,
-.boas-secundaria {
-  -webkit-appearance: none;
-  appearance: none;
-  touch-action: manipulation;
+/* Narrow phones: the four seals give the words the room so none breaks mid-word. */
+@media (max-width: 400px) {
+  .boas-selo { gap: 6px; padding: 6px; }
+  .boas-sigilo { inline-size: 28px; block-size: 28px; }
 }
