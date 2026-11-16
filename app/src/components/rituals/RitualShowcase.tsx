@@ -16,7 +16,9 @@ interface RitualShowcaseProps {
 /** Disclosure is presentation-only. Execution actions stay outside its toggle. */
 export function RitualShowcase({ title, description, element, completed, status, summary, actions, children }: RitualShowcaseProps) {
   const id = useId();
-  return <article className="ds-runa ritual-showcase" data-forma="vitrine" data-element={element} data-completed={completed} style={{ '--ritual-accent': `var(--element-${element})` } as CSSProperties}>
+  return <article className="ds-runa ritual-showcase" data-forma="vitrine" data-element={element} data-completed={completed} data-luz style={{ '--ritual-accent': `var(--element-${element})` } as CSSProperties}>
+    <span className="rit-borda" aria-hidden="true" />
+    <span className="rit-brilho" aria-hidden="true" />
     <details>
       <summary aria-controls={`${id}-details`} className="ds-runa-cabeca">
         <span className="ritual-showcase-art" aria-hidden="true">

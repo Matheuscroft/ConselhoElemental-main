@@ -15,7 +15,12 @@ import { assinarAscensoes, emitirAscensao } from '@/lib/progresso/canal';
 import type { AscensaoNova } from '@/lib/progresso/eventos';
 import { nivelDeVfx, nivelForcado } from '@/lib/momentos/nivel-vfx';
 import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
-import { DURATION, stagger } from '@/lib/motion/motion';
+import { DURATION, beatUnless, stagger } from '@/lib/motion/motion';
+import { Contagem } from '@/components/motion/Contagem';
+import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
+import { useEntradaCiclos } from '@/components/cycles/useEntradaCiclos';
+import { PlacarElemental } from '@/components/cycles/PlacarElemental';
+import { AbasDeslizantes } from '@/components/cycles/AbasDeslizantes';
 import { ACENTO, AURA, TINTA, type ElementoId } from '@/lib/design/palette';
 import { CycleSigil } from '@/components/cycles/CycleSigil';
 import { BotaoLua } from '@/components/cycles/ceu/BotaoLua';
@@ -45,6 +50,7 @@ import { CycleRoutineToolbar } from '@/components/cycles/CycleRoutineToolbar';
 import { CycleSubitemComposer } from '@/components/cycles/CycleSubitemComposer';
 import { hasCycleFilters, matchesCycleFilters, normalizeCycleSearch, type CycleFilters as CycleFilterState } from '@/components/cycles/cycle-discovery';
 import './ciclos.css';
+import '@/components/cycles/ciclos-uau.css';
 import '@/components/elemental/element-discovery.css';
 import { 
   Plus, SkipForward, Search,
@@ -1485,6 +1491,41 @@ export const Ciclos: React.FC = () => {
   const acoesDoApp = useAppStore(state => state.actions);
   const conclusoes = useMemo(() => conclusoesDoApp(habits, acoesDoApp), [habits, acoesDoApp]);
 
+  // The room's light is the element leading the person's week, read from what
+  // they already finished (same helper as the Sanctuary and Pillars; read-only,
+  // nothing is written or scored). Gold while the week has no leader.
+  const [hojeDaCena] = useState(() => new Date());
+  const elementoDaCena = useMemo(() => elementoDaSemana(conclusoes, hojeDaCena).elemento, [conclusoes, hojeDaCena]);
+  const luzDaSemana = {
+    '--semana-acento': elementoDaCena ? ACENTO[elementoDaCena] : 'rgb(var(--el-gold))',
+    '--semana-aura': elementoDaCena ? AURA[elementoDaCena] : '#d6b66f',
+  } as React.CSSProperties;
+  // Arrival once per opening of the app; coming back is only a short fade.
+  const { entrada, abrindo } = useEntradaCiclos();
+  const cenaRef = useRef<HTMLDivElement>(null);
+  useLuzDoToque(cenaRef);
+  useParalaxe(cenaRef, !reducedMotion);
+  // How a block of the page arrives. The first time in an opening of the app it
+  // rises in the order of the sequence (light, header, panel, days, then the
+  // list); coming back it only fades. `atraso` is where in that sequence it sits.
+  const chegada = (atraso: number) => ({
+    initial: entrada === 'plena' ? { opacity: 0, y: 16 } : { opacity: 0 },
+    animate: { opacity: 1, y: 0, transition: beatUnless(reducedMotion, entrada === 'plena' ? 'settle' : 'reveal', { delay: entrada === 'plena' ? atraso : 0 }) },
+  });
+  // A cycle card: in the opening it waits for the list, then each one a step
+  // after the last; changing the day cascades them in at once. The delay lives
+  // inside `animate`, so it never slows the layout moves of a reorder.
+  const cartaoDeCiclo = (indice: number) => {
+    if (abrindo && entrada === 'breve') {
+      return { initial: { opacity: 0 }, animate: { opacity: 1, scale: 1, y: 0, transition: beatUnless(reducedMotion, 'reveal') } };
+    }
+    const atraso = (abrindo ? DURATION.conjure / 1000 : 0) + stagger(Math.min(indice, 8));
+    return {
+      initial: { opacity: 0, scale: 0.95, y: 12 },
+      animate: { opacity: 1, scale: 1, y: 0, transition: beatUnless(reducedMotion, 'settle', { delay: atraso }) },
+    };
+  };
+
   // Read-only: how many cycles each day of the Reel has done, from the same
   // store data the routine below reads.
   const diasDoReel = useMemo(() => dayShortcuts.map((offset) => {
@@ -1571,7 +1612,7 @@ export const Ciclos: React.FC = () => {
             <Badge 
               key={areaId}
               variant="outline"
-              className="cycle-subitem-area-badge text-[10px] min-w-0 max-w-full"
+              className="cycle-subitem-area-badge text-xs min-w-0 max-w-full"
               style={{ 
                 backgroundColor: `${aggArea.color}10`, 
                 borderColor: `${aggArea.color}50`,
@@ -1592,7 +1633,7 @@ export const Ciclos: React.FC = () => {
           <Badge
             key="own-area"
             variant="outline"
-            className="cycle-subitem-area-badge text-[10px] min-w-0 max-w-full"
+            className="cycle-subitem-area-badge text-xs min-w-0 max-w-full"
             style={{
               backgroundColor: `${(childArea?.color || '#808080')}20`,
               borderColor: `${(childArea?.color || '#808080')}80`,
@@ -1619,7 +1660,7 @@ export const Ciclos: React.FC = () => {
               event.preventDefault();
               handlePromoteDrop(parentHabitId);
             }}
-            className={`mb-2 rounded-lg border border-dashed px-3 py-1.5 text-[11px] transition-colors ${
+            className={`mb-2 rounded-lg border border-dashed px-3 py-1.5 text-xs transition-colors ${
               dragOverPromoteParentId === parentHabitId
                 ? 'border-mystic-gold/70 bg-mystic-gold/15 text-mystic-gold'
                 : 'border-white/20 text-white/50'
@@ -1682,7 +1723,7 @@ export const Ciclos: React.FC = () => {
                 <div className="cycle-main-content flex-1 min-w-0">
                   <CycleSubitemIdentity name={child.name} kind={childType} completed={childCompleted}
                     expanded={childExpanded} onToggle={hasChildren ? () => toggleHabitChildExpansion(child.id) : undefined} />
-                  <div className="cycle-subitem-metadata mt-1 text-[10px]">
+                  <div className="cycle-subitem-metadata mt-1 text-xs">
                     {childType !== 'text' && (
                       <div className="cycle-subitem-area-row">
                         {renderChildAreaBadges(child)}
@@ -1690,14 +1731,14 @@ export const Ciclos: React.FC = () => {
                     )}
 
                     {childType === 'valuable' && child.plannedTimeMinutes > 0 && (
-                      <Badge variant="outline" className="bg-white/5 text-white/60 text-[9px]">
+                      <Badge variant="outline" className="bg-white/5 text-white/60 text-xs">
                         <Clock className="w-3 h-3 mr-1" />
                         {formatDuration(child.plannedTimeMinutes)}
                       </Badge>
                     )}
                   </div>
                   {childIsCheckable && childCompleted && childCompletion && childCompletion.timeSpentMinutes > 0 && (
-                    <div className="mt-1 text-[10px] text-mystic-gold">
+                    <div className="mt-1 text-xs text-mystic-gold">
                       Completado em {childCompletion.timeSpentMinutes}min
                     </div>
                   )}
@@ -1792,28 +1833,22 @@ export const Ciclos: React.FC = () => {
   return (
     <AppLayout>
       <MotionConfig reducedMotion="user">
-      <div className="cycles-workspace">
+      <div ref={cenaRef} className="cycles-workspace" data-entrada={entrada} style={luzDaSemana}>
       <header className="cycles-header">
-        <div className="cycles-heading"><span className="cycles-emblem"><ArcaneIcon name="ciclo" size={30} /></span><div><h2>Ciclos</h2><p>Hábitos que aparecem nos dias da sua recorrência.</p><small>{habits.length} ciclos cadastrados</small></div></div>
+        <div className="cycles-heading"><span className="cycles-emblem"><ArcaneIcon name="ciclo" size={30} /></span><div><h2>Ciclos</h2><p>Hábitos que aparecem nos dias da sua recorrência.</p><small><Contagem valor={habits.length} /> {habits.length === 1 ? 'ciclo cadastrado' : 'ciclos cadastrados'}</small></div></div>
         <Button ref={newCycleTriggerRef} onClick={() => setShowQuickCreateCycle(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Novo ciclo</Button>
       </header>
-      <button type="button" className="cycle-insights-shortcut" onClick={() => {
+      <PlacarElemental aoAbrir={() => {
         const section = insightsRef.current;
         if (!section) return;
         section.open = true;
         section.querySelector('summary')?.focus({ preventScroll: true });
         section.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
-      }}><ArcaneIcon name="conquista" size={19} />Ver pontuação elemental<ChevronDown size={18} aria-hidden="true" /></button>
-      {/* Day Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="cycle-day-panel"
-      >
-        {/* Background glow */}
-        <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 bg-mystic-gold/10 rounded-full blur-3xl" />
-        <div className="pointer-events-none absolute bottom-0 left-0 w-24 h-24 bg-mystic-arcane/10 rounded-full blur-2xl" />
-        
+      }} />
+      {/* Day Card: the one real pane of glass of this screen, with the week's light behind it. */}
+      <div className="cycle-day-altar">
+      <div className="cycle-day-luz" aria-hidden="true" />
+      <div className="cycle-day-panel ds-glass-float" data-luz>
         <CycleCalendarNavigation selectedDate={selectedDate} onPrevious={goToPreviousDay} onNext={goToNextDay} onToday={goToToday}
           onSelect={date => selectCalendarDate(date)} />
 
@@ -1839,35 +1874,34 @@ export const Ciclos: React.FC = () => {
         />
         </div>
 
-        {/* Moon Phase & Season */}
-        <div className="cycle-sky-links mb-4">
-          <BotaoLua
-            nome={ceu.lua.name}
-            phaseAngle={ceu.lua.phaseAngle}
-            illuminated={ceu.lua.illuminated}
-            waxing={ceu.lua.waxing}
-            south={ceu.south}
-            onAbrir={() => navigate('/lua')}
-          />
-          <BotaoEstacao nome={season.name} south={ceu.south} fim={ceu.fim} onAbrir={() => navigate('/estacoes')} />
-        </div>
-
         <p className="sr-only">{completedToday} de {totalToday} ciclos concluídos nesta data</p>
-      </motion.div>
+      </div>
+      </div>
+
+      {/* Moon Phase & Season: outside the pane, so no blurred surface sits over another. */}
+      <div className="cycle-sky-links">
+        <BotaoLua
+          nome={ceu.lua.name}
+          phaseAngle={ceu.lua.phaseAngle}
+          illuminated={ceu.lua.illuminated}
+          waxing={ceu.lua.waxing}
+          south={ceu.south}
+          onAbrir={() => navigate('/lua')}
+        />
+        <BotaoEstacao nome={season.name} south={ceu.south} fim={ceu.fim} onAbrir={() => navigate('/estacoes')} />
+      </div>
 
       <CycleXpRecovery />
 
-      <div className="cycles-view-switch" role="group" aria-label="Visão de Ciclos">
+      <AbasDeslizantes className="cycles-view-switch" role="group" aria-label="Visão de Ciclos">
         <button type="button" aria-pressed={workspaceView === 'routine'} aria-controls="cycle-routine-panel" onClick={() => setWorkspaceView('routine')}><ArcaneIcon name="ritual" size={20} />Rotina<span>{displayedMixedCards.length}</span></button>
         <button type="button" aria-pressed={workspaceView === 'sequences'} aria-controls="cycle-library-panel" onClick={() => setWorkspaceView('sequences')}><ArcaneIcon name="ciclo" size={20} />Sequências<span>{sequenceSummaries.length}</span></button>
-      </div>
+      </AbasDeslizantes>
       <section id="cycle-routine-panel" aria-label="Rotina da data selecionada" hidden={workspaceView !== 'routine'}>
       {/* Treinos do dia (módulo de Treino/Fitness) */}
       {workoutsForSelectedDate.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: stagger(3) }}
+          {...chegada(DURATION.conjure / 1000)}
           className="mb-6"
         >
           <div className="flex items-center justify-between mb-3">
@@ -1894,11 +1928,7 @@ export const Ciclos: React.FC = () => {
       )}
 
       {/* Habits List */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: stagger(3) }}
-      >
+      <motion.div {...chegada(DURATION.conjure / 1000)}>
         {displayedMixedCards.length > 0 && <CycleRoutineToolbar
           title={selectedDate.toDateString() === new Date().toDateString() ? 'Ciclos de hoje' : `Ciclos de ${selectedDate.toLocaleDateString('pt-BR')}`}
           agendaHref={`/temporal/semana?${new URLSearchParams({ data: dateToInput(selectedDate) })}`}
@@ -1912,6 +1942,7 @@ export const Ciclos: React.FC = () => {
             <div className="space-y-3">
               {(() => {
               const renderCard = (card: (typeof visibleCycleCards)[number], sealedGroup: boolean) => {
+                const cartao = cartaoDeCiclo(visibleCycleCards.indexOf(card));
                 if (card.type === 'sequence') {
                   const item = card.summary;
                   if (!item) return null;
@@ -1920,11 +1951,12 @@ export const Ciclos: React.FC = () => {
                   if (!sequenceHabit) {
                     return (
                       <motion.div
-                        key={`sequence-${item.sequence.id}`}
+                        key={`${chaveDoDia(selectedDate)}:sequence-${item.sequence.id}`}
                         layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={cartao.initial}
+                        animate={cartao.animate}
                         exit={{ opacity: 0, scale: 0.95 }}
+                        data-luz
                         data-drag-over={dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id ? 'true' : undefined}
                         style={{ '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
                         draggable={canReorderVisibleCards && !sealedGroup}
@@ -1934,6 +1966,7 @@ export const Ciclos: React.FC = () => {
                         onDragEnd={handleMixedCardDragEnd}
                         className="cycle-routine-card ds-runa ds-pane relative p-4 transition-all cursor-grab active:cursor-grabbing"
                       >
+                        <span className="cycle-luz" aria-hidden="true" />
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-medium">{item.sequence.name}</p>
                           <span className="cycle-card-meta-note">Sem ciclo atual</span>
@@ -1955,16 +1988,17 @@ export const Ciclos: React.FC = () => {
 
                   return (
                     <motion.div
-                      key={`sequence-${item.sequence.id}`}
+                      key={`${chaveDoDia(selectedDate)}:sequence-${item.sequence.id}`}
                       data-completed={completed} data-element={seqElement.id}
                       data-em-andamento={activeHabit === sequenceHabit.id ? 'true' : undefined}
                       data-selando={selando.has(sequenceHabit.id) ? 'true' : undefined}
                       data-drag-over={dragOverMixedCard?.type === 'sequence' && dragOverMixedCard.id === item.sequence.id ? 'true' : undefined}
                       style={{ '--cyc-acento': ACENTO[seqElement.id], '--cyc-tinta': TINTA[seqElement.id], '--cyc-aura': AURA[seqElement.id], '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
                       layout
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
+                      initial={cartao.initial}
+                      animate={cartao.animate}
                       exit={{ opacity: 0, scale: 0.95 }}
+                      data-luz
                       draggable={canReorderVisibleCards && !isFitnessSequence && !sealedGroup}
                       onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
                       onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'sequence', item.sequence.id)}
@@ -1976,6 +2010,7 @@ export const Ciclos: React.FC = () => {
                           : ''
                       }`}
                     >
+                      <span className="cycle-luz" aria-hidden="true" />
                       <div className="cycle-sequence-card-header mb-3">
                         <div className="cycle-sequence-card-title">
                           <p className="break-words font-medium">{item.sequence.name}</p>
@@ -2111,7 +2146,7 @@ export const Ciclos: React.FC = () => {
                           )}
 
                           {completed && completion?.timeSpentMinutes && completion.timeSpentMinutes > 0 && (
-                            <div className="mt-2 text-[10px] text-mystic-gold">
+                            <div className="mt-2 text-xs text-mystic-gold">
                               Completado em {completion.timeSpentMinutes}min
                             </div>
                           )}
@@ -2190,16 +2225,17 @@ export const Ciclos: React.FC = () => {
 
                 return (
                   <motion.div
-                    key={habit.id}
+                    key={`${chaveDoDia(selectedDate)}:${habit.id}`}
                     data-completed={completed} data-element={element.id}
                     data-em-andamento={activeHabit === habit.id ? 'true' : undefined}
                     data-selando={selando.has(habit.id) ? 'true' : undefined}
                     data-drag-over={dragOverMixedCard?.type === 'habit' && dragOverMixedCard.id === habit.id ? 'true' : undefined}
                     style={{ '--cyc-acento': ACENTO[element.id], '--cyc-tinta': TINTA[element.id], '--cyc-aura': AURA[element.id], '--cycle-accent': 'var(--cyc-acento)' } as React.CSSProperties}
                     layout
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={cartao.initial}
+                    animate={cartao.animate}
                     exit={{ opacity: 0, scale: 0.95 }}
+                    data-luz
                     draggable={canReorderVisibleCards && !completed && !sealedGroup && !habit.controlledBySequenceId}
                     onDragStart={(event) => handleMixedCardDragStart(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
                     onDragOver={sealedGroup ? undefined : (event) => handleMixedCardDragOver(event as unknown as React.DragEvent<HTMLDivElement>, 'habit', habit.id)}
@@ -2207,6 +2243,7 @@ export const Ciclos: React.FC = () => {
                     onDragEnd={handleMixedCardDragEnd}
                     className="cycle-routine-card ds-runa ds-pane relative p-4 transition-all"
                   >
+                    <span className="cycle-luz" aria-hidden="true" />
                     <div className="cycle-main-row">
                       <div className="cycle-main-content flex-1 min-w-0">
                         <div className="cycle-card-heading flex items-start justify-between">
@@ -2421,10 +2458,10 @@ export const Ciclos: React.FC = () => {
           <div className="cycle-welcome-showcase"><span className="cycle-welcome-art" aria-hidden="true"><ArcaneIcon name="ciclo" size={50} /></span><div><h3>Um passo leva ao próximo</h3><p>Reúna seus ciclos em uma sequência e acompanhe qual está na vez.</p><Button onClick={() => setShowQuickCreateSequence(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Criar sequência</Button></div></div>
         ) : (
           <div className="space-y-2">
-            <p className="text-[11px] text-white/45">Abra uma sequência para ver os passos e gerenciar sua execução. A ordem da rotina é ajustada na aba Rotina.</p>
+            <p className="text-xs text-white/45">Abra uma sequência para ver os passos e gerenciar sua execução. A ordem da rotina é ajustada na aba Rotina.</p>
             {visibleSequenceSummaries.map((item) => (
               <CycleSequenceShowcase key={item.sequence.id} active={item.sequence.isActive} onOpen={() => item.sequence.memberRestriction === 'WORKOUT' || item.currentHabit?.sourceModule === 'modulo_treino' ? navigate(`/fitness?sequence=${encodeURIComponent(item.sequence.id)}`) : openCycleSequenceEditor(item.sequence.id)} name={item.sequence.name} description={item.sequence.description}
-                headerExtra={<Badge variant="outline" className="shrink-0 bg-white/5 text-[10px]">Passo {item.currentPositionLabel}</Badge>}
+                headerExtra={<Badge variant="outline" className="shrink-0 bg-white/5 text-xs">Passo {item.currentPositionLabel}</Badge>}
                 members={getMembersForSequence(item.sequence.id).map((membership) => {
                   const member = findHabitById(habits, membership.habitId);
                   return { id: membership.id, name: member?.title || member?.name || 'Ciclo indisponível', current: member?.id === item.currentHabit?.id };
@@ -2486,7 +2523,7 @@ export const Ciclos: React.FC = () => {
                 <ArcaneIcon name="ciclo" size={32} />
                 <p>{activeHabitData.name}</p>
                 <p role="timer" aria-label="Tempo total do ciclo">{formatTime(timer.elapsedSeconds)}</p>
-                <p className="text-[11px] text-white/45 mt-1">Tempo total do ciclo</p>
+                <p className="text-xs text-white/45 mt-1">Tempo total do ciclo</p>
               </div>
 
               <div className="rounded-xl border border-white/10 bg-black/20 p-3">
@@ -2503,7 +2540,7 @@ export const Ciclos: React.FC = () => {
               </div>
 
               {executionPreviousTask && (executionPreviousTaskCompletion || executionPreviousTimingFromSession) && (
-                <div className="rounded-lg border border-white/10 bg-black/15 px-2.5 py-2 text-[11px] text-white/70">
+                <div className="rounded-lg border border-white/10 bg-black/15 px-2.5 py-2 text-xs text-white/70">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <span>
                       Anterior: {executionPreviousTask.name} |
@@ -2523,14 +2560,14 @@ export const Ciclos: React.FC = () => {
               <div className="rounded-xl border border-mystic-gold/40 bg-mystic-gold/10 p-3">
                 {executionCurrentTask ? (
                   <>
-                    <p className="text-[11px] text-white/50">Tarefa atual</p>
+                    <p className="text-xs text-white/50">Tarefa atual</p>
                     <h3 className="font-mystic text-base mt-1 leading-tight">{executionCurrentTask.name}</h3>
                     <div className="mt-2 rounded-lg border border-white/15 bg-black/25 px-2.5 py-2">
-                      <p className="text-[10px] text-white/55">Tempo da atual</p>
+                      <p className="text-xs text-white/55">Tempo da atual</p>
                       <p className="text-lg font-mono font-semibold text-mystic-gold mt-0.5">
                         {formatTime(executionTaskElapsedSeconds)}
                       </p>
-                      <p className="text-[10px] text-white/45 mt-1">
+                      <p className="text-xs text-white/45 mt-1">
                         Início no cronômetro: {formatExecutionSnapshot(executionTaskStartCycleSeconds)}
                       </p>
                     </div>
@@ -2539,7 +2576,7 @@ export const Ciclos: React.FC = () => {
                     )}
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {executionCurrentTask.plannedTimeMinutes > 0 && (
-                        <Badge variant="outline" className="bg-white/5 text-[10px]">
+                        <Badge variant="outline" className="bg-white/5 text-xs">
                           <Clock className="w-3 h-3 mr-1" />
                           {formatDuration(executionCurrentTask.plannedTimeMinutes)}
                         </Badge>
@@ -2551,7 +2588,7 @@ export const Ciclos: React.FC = () => {
                 )}
               </div>
 
-              <div className="rounded-lg border border-white/10 bg-black/15 px-2.5 py-2 text-[11px] text-white/70">
+              <div className="rounded-lg border border-white/10 bg-black/15 px-2.5 py-2 text-xs text-white/70">
                 {executionNextTask ? (
                   <span>
                     Próximo: <span className="text-mystic-gold">{executionNextTask.name}</span>
@@ -2916,7 +2953,7 @@ export const Ciclos: React.FC = () => {
 
                           setSequenceDraftDaysOfWeek(nextDays);
                         }}
-                        className={`px-2 py-1 rounded-md text-[11px] border transition-colors ${
+                        className={`px-2 py-1 rounded-md text-xs border transition-colors ${
                           active
                             ? 'bg-mystic-gold/20 border-mystic-gold/50 text-mystic-gold'
                             : 'bg-white/5 border-white/15 text-white/60 hover:bg-white/10'
@@ -2985,7 +3022,7 @@ export const Ciclos: React.FC = () => {
                       <div className="flex items-center justify-between gap-2">
                         <div>
                           <p className="text-sm">{habit?.name || 'Ciclo removido'}</p>
-                      <p className="text-[11px] text-white/50">Posição {membership.position + 1}</p>
+                      <p className="text-xs text-white/50">Posição {membership.position + 1}</p>
                         </div>
                         <div className="flex items-center gap-1">
                           <Button

@@ -2,6 +2,11 @@ import { toast } from 'sonner';
 import { operationalDateKey, dateToInput } from '@/lib/temporal/recurrence';
 import { TaskCompletionFeedback } from '@/components/rewards/TaskCompletionFeedback';
 import { RitualShowcase } from '@/components/rituals/RitualShowcase';
+import { CenaRituais } from '@/components/rituals/CenaRituais';
+import { BuscaRituais } from '@/components/rituals/BuscaRituais';
+import { EstadoVazioRitual } from '@/components/rituals/EstadoVazioRitual';
+import { CelebracaoRitual } from '@/components/rituals/CelebracaoRitual';
+import { Contagem } from '@/components/motion/Contagem';
 import '@/components/rituals/rituals.css';
 import { ritualView } from '@/components/quests/quest-navigation';
 import { ActivityGuide } from '@/components/quests/ActivityGuide';
@@ -23,7 +28,7 @@ import {
   AREAS,
 } from '@/constants';
 import { Input } from '@/components/ui/input';
-import { Vazio, MarcaElemento, Medidor } from '@/components/elemental/blocos';
+import { MarcaElemento, Medidor } from '@/components/elemental/blocos';
 import { CycleSigil } from '@/components/cycles/CycleSigil';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -590,16 +595,16 @@ export const Rituais: React.FC = () => {
         setFilterElement(null);
         setActiveTab(task?.isCompleted ? 'completed' : 'pending');
       }} />}
-      {showQuestList && <>
+      {showQuestList && <CenaRituais>
       {/* Cabeçalho */}
-      <header className="ds-cabecalho">
+      <header className="ds-cabecalho rit-cabecalho">
         <h1>Rituais</h1>
         <p>Suas tarefas pontuais, para realizar no seu ritmo.</p>
         <div className="ds-cabecalho-acao">
           <button
             type="button"
-            className="ds-botao"
-            data-tipo="secundario"
+            className="ds-botao rit-novo"
+            data-tipo="primario"
             onClick={() => { setQuickElement(filterElement ?? 'terra'); setShowQuickCreate(true); }}
           >
             <ArcaneIcon name="criar" size={18} />
@@ -610,41 +615,8 @@ export const Rituais: React.FC = () => {
 
       <ActivityGuide />
 
-      {/* Busca e filtro numa linha de 48 */}
-      <div className="flex items-center gap-2 mb-4">
-        <label className="ds-campo flex-1" data-tipo="busca">
-          <span className="sr-only">Buscar ritual</span>
-          <ArcaneIcon name="buscar" size={18} />
-          <Input
-            aria-label="Buscar ritual"
-            placeholder="Buscar ritual..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </label>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button type="button" className="ds-botao" data-icone="" data-tipo="fantasma" aria-label="Filtrar rituais por elemento">
-              <ArcaneIcon name="filtrar" size={20} />
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="ds-menu">
-            <DropdownMenuItem onClick={() => setFilterElement(null)}>
-              Todos os elementos
-            </DropdownMenuItem>
-            {Object.values(ELEMENTS).map((element) => (
-              <DropdownMenuItem 
-                key={element.id} 
-                onClick={() => setFilterElement(element.id)}
-              >
-                <ElementIcon element={element.id} />
-                {element.name}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {/* Busca e filtro: uma só superfície de vidro */}
+      <BuscaRituais busca={searchQuery} aoBuscar={setSearchQuery} filtro={filterElement} aoFiltrar={setFilterElement} />
 
       {/* Filtro ativo */}
       <AnimatePresence>
@@ -653,9 +625,9 @@ export const Rituais: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="mb-4"
+            className="rit-chip-linha"
           >
-            <button type="button" className="ritual-filter-chip" onClick={() => setFilterElement(null)} aria-label={`Remover filtro de ${ELEMENTS[filterElement].name}`}>
+            <button type="button" className="ritual-filter-chip" data-element={filterElement} onClick={() => setFilterElement(null)} aria-label={`Remover filtro de ${ELEMENTS[filterElement].name}`}>
               <ElementIcon element={filterElement} /> {ELEMENTS[filterElement].name} <ArcaneIcon name="fechar" size={16} />
             </button>
           </motion.div>
@@ -664,19 +636,20 @@ export const Rituais: React.FC = () => {
 
       {/* Abas: Pendentes (com Selados recolhido no fim) e Feitos (concluídos direto, sem recolher) */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="ds-abas h-auto w-full justify-start">
+        <TabsList className="ds-abas rit-abas h-auto w-full justify-start" data-ativa={activeTab}>
+          <span className="rit-abas-indicador" aria-hidden="true" />
           <TabsTrigger value="pending">
-            Pendentes <span>{pendingCount}</span>
+            Pendentes <span className="rit-contador"><Contagem valor={pendingCount} beat="settle" /></span>
           </TabsTrigger>
           <TabsTrigger value="completed">
-            Feitos <span>{completedCount}</span>
+            Feitos <span className="rit-contador"><Contagem valor={completedCount} beat="settle" /></span>
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
           <AnimatePresence mode="popLayout">
             {filteredTasks.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 rit-lista">
                 {filteredTasks.map((task) => (
                   <TaskCard 
                     key={task.id} 
@@ -766,7 +739,7 @@ export const Rituais: React.FC = () => {
         <TabsContent value="completed">
           <AnimatePresence mode="popLayout">
             {filteredTasks.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-3 rit-lista">
                 {filteredTasks.map((task) => (
                   <TaskCard 
                     key={task.id} 
@@ -797,7 +770,7 @@ export const Rituais: React.FC = () => {
           customSubareas={customSubareas}
         />
       </details>
-      </>}
+      </CenaRituais>}
 
       {/* Timer Modal */}
       <Dialog open={showTimer} onOpenChange={open => {
@@ -836,10 +809,7 @@ export const Rituais: React.FC = () => {
             exit={{ opacity: 0 }}
             className="fixed bottom-24 left-4 right-4 z-50"
           >
-            <div className="ds-altar text-center" role="status">
-              <p className="font-mystic"><ArcaneIcon name="conquista" /> Ritual completado!</p>
-              <p className="ds-nota mx-auto">+{earnedPoints} pontos ganhos</p>
-            </div>
+            <CelebracaoRitual elemento={tasks.find((task) => task.id === completedTaskId)?.elementId ?? 'terra'} pontos={earnedPoints} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -1984,17 +1954,7 @@ interface EmptyStateProps {
 }
 
 const EmptyState: React.FC<EmptyStateProps> = ({ type, onCreate, filtered, onClear }) => (
-  <Vazio
-    titulo={filtered ? 'Nenhum ritual encontrado' : type === 'pending' ? 'Nenhum ritual pendente' : 'Nenhum ritual concluído'}
-    texto={filtered ? 'Tente outro nome ou remova o filtro de elemento.' : type === 'pending'
-      ? 'Adicione uma tarefa para dar o próximo passo.'
-      : 'Complete seus rituais para vê-los aqui.'}
-    acao={filtered
-      ? <button type="button" className="ds-botao" data-tipo="secundario" onClick={onClear}>Limpar busca e filtros</button>
-      : type === 'pending' && onCreate
-        ? <button type="button" className="ds-botao" data-tipo="secundario" onClick={onCreate}><ArcaneIcon name="criar" size={18} />Novo ritual</button>
-        : undefined}
-  />
+  <EstadoVazioRitual tipo={type} filtrado={filtered} aoLimpar={onClear} aoCriar={onCreate} />
 );
 
 /** Explicit selection, independent of optional life-area categorization. */

@@ -1,0 +1,239 @@
+/*
+ * Ciclos, UAU pass. Same language as the Sanctuary and Pillars:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by the page; gold until the week has a leader);
+ *  - ONE real pane of glass, the calendar panel (.ds-glass-float), with that light behind it, a
+ *    one-pixel rim that catches the finger and a light inside that follows it;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve");
+ *  - everything else is the same material without the blur (.ds-pane).
+ *
+ * Loaded after ciclos.css, so where the two meet this one wins. Every time is a
+ * --ds-duration-* token or a multiple of one; only transform, opacity, scale,
+ * translate and stroke dashes move (the sliding bar also animates its width, a
+ * two-pixel strip with nothing inside it).
+ */
+
+.cycles-workspace {
+  position: relative;
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: #d6b66f;
+  /* Film grain as an image, so a gradient this dark does not band. One tile, reused by every pane. */
+  --ciclos-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+}
+
+/* ---------- The room: a light from above in the week's colour ---------- */
+.cycles-workspace::before {
+  content: '';
+  position: absolute;
+  inset: -8px -20px auto;
+  height: 620px;
+  pointer-events: none;
+  background:
+    var(--ciclos-grao),
+    radial-gradient(ellipse 78% 40% at 50% 30%, color-mix(in srgb, var(--semana-aura) 17%, transparent), transparent 72%),
+    radial-gradient(ellipse 100% 24% at 50% 0, rgb(var(--el-gold) / .08), transparent 70%);
+  -webkit-mask-image: linear-gradient(#000 70%, transparent);
+  mask-image: linear-gradient(#000 70%, transparent);
+  /* Depth: the light leans away from the finger (--par-x and --par-y run from -1 to 1). */
+  translate: calc(var(--par-x, 0) * -10px) calc(var(--par-y, 0) * -4px);
+}
+/* What sits in the lit part stays above the light. */
+.cycles-workspace > :is(.cycles-header, .cycle-placar, .cycle-day-altar, .cycle-sky-links) { position: relative; }
+
+/* ---------- Rhythm: 16px inside a group, 32px between sections ---------- */
+.cycles-workspace .cycles-header { margin: 8px 0 20px; }
+.cycles-workspace .cycles-emblem {
+  border-color: color-mix(in srgb, var(--semana-acento) 45%, transparent);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--semana-aura) 34%, transparent), inset 0 1px 0 rgb(255 255 255 / .12);
+}
+.cycles-workspace .cycles-heading small { font-variant-numeric: tabular-nums; }
+.cycles-workspace .cycle-placar { margin-block-end: var(--ds-ritmo-cabeca); }
+.cycles-workspace .cycle-day-altar { position: relative; margin-block-end: var(--ds-ritmo-cabeca); }
+.cycles-workspace .cycle-sky-links { margin: 0 0 var(--ds-ritmo-secao); }
+.cycles-workspace .cycle-xp-recovery { margin: 0 0 var(--ds-ritmo-secao); }
+.cycles-workspace .cycles-view-switch { margin-bottom: var(--ds-ritmo-secao); }
+
+/* ---------- The one pane of glass: the calendar panel ---------- */
+/* Light behind the pane, so the blur has something to bend. Every light ends inside the box. */
+.cycle-day-luz {
+  position: absolute;
+  inset: -40px -20px -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 30% 34% at 28% 30%, color-mix(in srgb, var(--semana-aura) 38%, transparent), transparent 100%),
+    radial-gradient(ellipse 26% 30% at 74% 70%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse 34% 18% at 60% 14%, color-mix(in srgb, var(--semana-acento) 22%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+}
+/*
+ * The pane itself is the system's own glass recipe (.ds-glass-float, on the
+ * markup), so this sheet declares no blur of its own: it only dresses the glass
+ * with a clearer fill, the specular edge and the grain.
+ */
+.cycles-workspace .cycle-day-panel {
+  isolation: isolate;
+  margin-bottom: 0;
+  border: 1px solid rgb(255 255 255 / 10%);
+  background:
+    var(--ciclos-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+
+/*
+ * The rim: one pixel of light around a pane, brightest where the finger is. At
+ * rest it sits at the top edge, which is where a sheet of glass catches a lamp.
+ * The mask keeps only the border of the gradient. The panel clips its own
+ * content, so its rim sits just inside the border instead of over it.
+ */
+:is(.cycle-day-panel, .cycle-placar)::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.cycle-day-panel::before { inset: 0; }
+/* The light inside the pane, under its content. */
+:is(.cycle-day-panel, .cycle-placar)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+:is(.cycle-day-panel, .cycle-placar)[data-luz-acesa]::before,
+:is(.cycle-day-panel, .cycle-placar)[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* Someone who asked the system for less transparency gets a pane that is nearly solid, so the blur has nothing left to show. */
+@media (prefers-reduced-transparency: reduce) {
+  .cycles-workspace .cycle-day-panel { background: rgb(var(--el-surface) / 96%); }
+  .cycle-day-luz { display: none; }
+}
+
+/* ---------- The cycle cards: same rest, plus a light that follows the finger ---------- */
+/* An inner layer and not a pseudo-element: the card's own ::before and ::after belong to its rune. */
+.cycles-workspace .cycle-routine-card { isolation: isolate; }
+.cycle-luz {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(260px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--cyc-acento, var(--semana-acento)) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.cycle-routine-card[data-luz-acesa] > .cycle-luz { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* Touching a seal: it gives under the finger and comes back past the mark. */
+.cycles-workspace .cycle-task-checkbox { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cycles-workspace .cycle-task-checkbox:active { scale: .82; transition-duration: var(--ds-duration-press); }
+
+/* Every pressable thing of this screen answers with the same spring. */
+.cycles-workspace :is(.cycle-execution-actions button, .cycle-primary, .cycle-date-arrow, .cycle-empty button) { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.cycles-workspace :is(.cycle-execution-actions button, .cycle-primary, .cycle-date-arrow, .cycle-empty button):active:not(:disabled) { scale: .955; transition-duration: var(--ds-duration-press); }
+
+/* Small targets still on this screen reach the 44px of a thumb. */
+.cycles-workspace .cycle-sequence-card-actions > button { min-width: 44px; min-height: 44px; }
+.cycles-workspace .cycle-sequence-card-actions { gap: 0; }
+
+/* ---------- The sliding bar of the tabs (Rotina / Sequências, Todos / Pendentes / Feitos) ---------- */
+.aba-grupo { position: relative; --aba-baixo: 0px; }
+.aba-indicador {
+  position: absolute;
+  inset-block-end: var(--aba-baixo);
+  inset-inline-start: 0;
+  inline-size: var(--aba-w, 0px);
+  block-size: 2px;
+  border-radius: 2px;
+  background: rgb(var(--el-gold));
+  box-shadow: 0 0 10px rgb(var(--el-gold) / .55);
+  translate: var(--aba-x, 0px) 0;
+  opacity: 0;
+  pointer-events: none;
+  /* The spring of the system: the bar passes its mark and comes back. */
+  transition:
+    translate var(--ds-duration-settle) var(--ds-ease-conjure),
+    inline-size var(--ds-duration-settle) var(--ds-ease-conjure),
+    opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.cycle-quick-status.aba-grupo { --aba-baixo: -1px; }
+.aba-grupo[data-pronto='true'] > .aba-indicador { opacity: 1; }
+/* Once the bar is measured it draws the underline; the button hands its own over. */
+.cycles-workspace .aba-grupo[data-pronto='true'] > button[aria-pressed='true'] { border-bottom-color: transparent; }
+.cycles-workspace .aba-grupo > button { transition: color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cycles-workspace .aba-grupo > button:active { scale: .95; transition-duration: var(--ds-duration-press); }
+.cycles-workspace .aba-grupo > button > span { font-variant-numeric: tabular-nums; }
+
+/* ---------- Empty states that invite ---------- */
+.cycles-workspace :is(.cycle-empty, .cycle-welcome-showcase, .cycle-filter-empty) {
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0, color-mix(in srgb, var(--semana-aura) 14%, transparent), transparent 70%),
+    var(--ds-surface-sunken);
+}
+/* The four triangles light up one after another, each in its own element's colour. */
+.cycles-workspace .cycle-empty-diamond > .cycle-sigil { opacity: .4; animation: ciclos-acende calc(var(--ds-duration-conjure) * 8) var(--ds-ease) infinite; }
+.cycles-workspace .cycle-empty-diamond > .cycle-sigil[data-element='fogo'] { color: var(--cyc-ac-fogo); }
+.cycles-workspace .cycle-empty-diamond > .cycle-sigil[data-element='ar'] { color: var(--cyc-ac-ar); animation-delay: calc(var(--ds-duration-conjure) * -6); }
+.cycles-workspace .cycle-empty-diamond > .cycle-sigil[data-element='terra'] { color: var(--cyc-ac-terra); animation-delay: calc(var(--ds-duration-conjure) * -4); }
+.cycles-workspace .cycle-empty-diamond > .cycle-sigil[data-element='agua'] { color: var(--cyc-ac-agua); animation-delay: calc(var(--ds-duration-conjure) * -2); }
+@keyframes ciclos-acende { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
+
+/* ---------- The arrival, once per opening of the app ---------- */
+/*
+ * The light comes up, the header lands, the scoreboard, the glass lifts over
+ * its glow, the days rise one after another, the Moon and the Season, and
+ * last the list (its cards are staged by the page, which knows the day). Only
+ * transform, opacity and translate move. `backwards`, never `both`: once an
+ * element has landed it goes back to its own rules, and the Reel keeps writing
+ * its own transform and opacity on every frame, so those are left alone and
+ * its cards rise on `translate`, a property of their own.
+ */
+.cycles-workspace[data-entrada='plena']::before { animation: ciclos-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycles-emblem { animation: ciclos-surgir var(--ds-duration-settle) var(--ds-ease-conjure) var(--ds-stagger) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycles-heading > div { animation: ciclos-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycles-header .cycle-primary { animation: ciclos-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 4) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycle-placar { animation: ciclos-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 5) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycle-day-luz { animation: ciclos-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycle-day-panel { animation: ciclos-subir var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycle-day-panel .reel-momentos { animation: ciclos-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-duration-settle) / 2) backwards; }
+.cycles-workspace[data-entrada='plena'] .cycle-day-panel .reel-cartao { animation: ciclos-erguer var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-duration-settle) / 2 + var(--ds-stagger) * var(--n, 0)) backwards; }
+.cycle-day-panel .reel-cartao:nth-child(2) { --n: 1; }
+.cycle-day-panel .reel-cartao:nth-child(3) { --n: 2; }
+.cycle-day-panel .reel-cartao:nth-child(4) { --n: 3; }
+.cycle-day-panel .reel-cartao:nth-child(5) { --n: 4; }
+.cycle-day-panel .reel-cartao:nth-child(6) { --n: 5; }
+.cycle-day-panel .reel-cartao:nth-child(7) { --n: 6; }
+.cycle-day-panel .reel-cartao:nth-child(8) { --n: 7; }
+.cycle-day-panel .reel-cartao:nth-child(n + 9) { --n: 8; }
+.cycles-workspace[data-entrada='plena'] .cycle-sky-links { animation: ciclos-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-duration-settle)) backwards; }
+.cycles-workspace[data-entrada='plena'] :is(.cycle-xp-recovery, .cycles-view-switch) { animation: ciclos-aparecer var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-conjure) backwards; }
+
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.cycles-workspace[data-entrada='breve'] :is(.cycles-header, .cycle-placar, .cycle-day-altar, .cycle-sky-links) { animation: ciclos-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+@keyframes ciclos-aparecer { from { opacity: 0; } }
+@keyframes ciclos-subir { from { opacity: 0; transform: translateY(14px); } }
+@keyframes ciclos-surgir { from { opacity: 0; transform: scale(.7); } }
+@keyframes ciclos-erguer { from { translate: 0 18px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cycles-workspace .cycle-empty-diamond > .cycle-sigil { animation: none; opacity: .8; }
+  .cycles-workspace::before, .cycle-day-luz { translate: none; }
+}
