@@ -9,7 +9,7 @@ const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractio
 export function ElementReading({ elementId, score, percentage }: { elementId: ElementId; score: number; percentage: number }) {
   const element = ELEMENTS[elementId];
   const [failed, setFailed] = useState(false);
-  return <details className="astrolabe-element" style={{ '--reading-color': element.color } as CSSProperties}>
+  return <details className="astrolabe-element ds-pane" data-luz style={{ '--reading-color': element.color } as CSSProperties}>
     <summary>
       <span className="astrolabe-element-art" aria-hidden="true">{failed ? <ElementIcon element={elementId} size={48} /> : <img src={`/sanctuary/elements/${elementId}-v1.webp`} alt="" width={88} height={88} loading="lazy" onError={() => setFailed(true)} />}</span>
       <span><strong>{element.name}</strong><span>{format(score)} pontos</span><small>{percentage}% do total elemental</small></span>

@@ -3,7 +3,9 @@ import { useTemporalView } from '@/components/temporal/useTemporalView';
 import { CommitmentForm, type CommitmentFormInput } from '@/components/temporal/TemporalEntryForms';
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarioDosDias } from '@/components/temporal/CalendarioDosDias';
+import { TituloDoPeriodo } from '@/components/temporal/TituloDoPeriodo';
 import { useAppStore } from '@/stores/appStore';
 import {
   addDays,
@@ -21,20 +23,13 @@ import {
 } from '@/lib/temporal';
 import type { TemporalCommitment } from '@/lib/temporal';
 import type { Commitment } from '@/types';
-import { WEEKDAYS_SHORT, getMoonPhase, getMeteorShowerPeak, getZodiacIngress, getZodiacIngresses, getZodiacSign } from '@/constants';
+import { WEEKDAYS_SHORT, getZodiacIngresses } from '@/constants';
 import { TemporalLayout } from '@/pages/temporal/TemporalLayout';
 import { DayDetailsDialog } from '@/components/temporal/DayDetailsDialog';
 import {
   isGoogleCalendarIntegrationEnabled,
   listGoogleCalendarEventsCache,
 } from '@/services/googleCalendarIntegration';
-
-const getCommitmentDots = (count: number): number[] => {
-  if (count <= 0) return [];
-  if (count === 1) return [1];
-  if (count === 2) return [1, 2];
-  return [1, 2, 3];
-};
 
 type ZodiacIngressEntry = {
   date: Date;
@@ -48,6 +43,7 @@ const ZODIAC_PLANETS = ['Todos', 'Sol', 'Lua', 'Mercúrio', 'Vênus', 'Marte', '
 export const TemporalCalendarPage: React.FC = () => {
   const { anchorDate, selectedDayStamp, setAnchorDate, setSelectedDayStamp, returnTo } = useTemporalView('calendar');
   const { weekStartsOn } = useWeekStartsOnPreference();
+  const chaveDoMes = `${anchorDate.getFullYear()}-${String(anchorDate.getMonth() + 1).padStart(2, '0')}`;
   const [selectedIngressPlanet, setSelectedIngressPlanet] = useState('Todos');
   const [showCommitmentForm, setShowCommitmentForm] = useState(false);
   const [editingCommitmentId, setEditingCommitmentId] = useState<string | null>(null);
@@ -242,160 +238,86 @@ export const TemporalCalendarPage: React.FC = () => {
       title="Temporal - Calendário"
       subtitle="Escolha um dia para ver sua rotina, seus compromissos e seus registros."
     >
-      <div className="temporal-period-controls">
-        <button
-          type="button"
-          aria-label="Mês anterior" onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronLeft className="h-4 w-4" />
+      <div className="temporal-period-controls" aria-label="Escolher mês">
+        <button type="button" aria-label="Mês anterior" onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))}>
+          <ChevronLeft size={20} aria-hidden="true" />
         </button>
-        <p className="text-sm font-medium text-white capitalize">
-          {anchorDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-        </p>
-        <button
-          type="button"
-          aria-label="Próximo mês" onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronRight className="h-4 w-4" />
+        <div><TituloDoPeriodo chave={chaveDoMes}>{anchorDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}</TituloDoPeriodo></div>
+        <button type="button" aria-label="Próximo mês" onClick={() => setAnchorDate((current) => new Date(current.getFullYear(), current.getMonth() + 1, 1))}>
+          <ChevronRight size={20} aria-hidden="true" />
         </button>
       </div>
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
-        <div className="mb-2 grid grid-cols-7 gap-1">
-          {Array.from({ length: 7 }, (_, index) => WEEKDAYS_SHORT[(index + weekStartsOn) % 7]).map((label) => (
-            <p key={label} className="text-center text-xs uppercase tracking-[0.14em] text-white/55">
-              {label}
-            </p>
-          ))}
-        </div>
-
-        <div className="space-y-1">
-          {weeks.map((week, rowIndex) => (
-            <div key={rowIndex} className="grid grid-cols-7 gap-1">
-              {week.map((date) => {
-                const stamp = toDayStamp(date);
-                if (stamp == null) return null;
-                const day = daysByStamp.get(stamp);
-                const isCurrentMonth = date.getMonth() === anchorDate.getMonth();
-                const dots = getCommitmentDots(day?.commitmentsCount ?? 0);
-                const moonPhase = getMoonPhase(date);
-                const meteorPeak = getMeteorShowerPeak(date);
-                const zodiacIngress = getZodiacIngress(date);
-                const zodiacSign = getZodiacSign(date);
-
-                return (
-                  <button
-                    type="button"
-                    key={stamp}
-                    onClick={() => setSelectedDayStamp(stamp)}
-                    aria-label={`${date.toLocaleDateString('pt-BR', { dateStyle: 'full' })}. ${day?.commitmentsCount ?? 0} compromissos. ${day?.totalCompleted ?? 0} concluídos.`}
-                    aria-current={stamp === toDayStamp(new Date()) ? 'date' : undefined}
-                    className={`min-h-[72px] rounded-lg border p-1.5 ${
-                      isCurrentMonth ? 'border-white/15 bg-black/20' : 'border-white/5 bg-black/10'
-                    } text-left transition-colors hover:border-mystic-gold/40`}
-                  >
-                    <p className={`text-right text-xs ${isCurrentMonth ? 'text-white/80' : 'text-white/35'}`}>
-                      {date.getDate()}
-                    </p>
-
-                    <div
-                      className="mt-1 flex justify-center gap-1"
-                      title={
-                        `${moonPhase.name} • Signo: ${zodiacSign.name}` +
-                        (meteorPeak ? ` • ${meteorPeak.name}` : '') +
-                        (zodiacIngress ? ` • ${zodiacIngress.name}` : '')
-                      }
-                      aria-label={
-                        `${moonPhase.name}. Signo: ${zodiacSign.name}.` +
-                        (meteorPeak ? ` ${meteorPeak.name}.` : '') +
-                        (zodiacIngress ? ` ${zodiacIngress.name}.` : '')
-                      }
-                    >
-                      <span className={`text-sm ${isCurrentMonth ? 'opacity-95' : 'opacity-50'}`}>{moonPhase.icon}</span>
-                      {meteorPeak ? (
-                        <span className={`text-sm ${isCurrentMonth ? 'opacity-95' : 'opacity-50'}`}>{meteorPeak.icon}</span>
-                      ) : null}
-                      {zodiacIngress ? (
-                        <span className={`text-sm ${isCurrentMonth ? 'opacity-95' : 'opacity-50'}`}>{zodiacIngress.icon}</span>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-center gap-1">
-                      {dots.map((dot) => (
-                        <span key={`${stamp}-${dot}`} className="h-1.5 w-1.5 rounded-full bg-mystic-gold/90" />
-                      ))}
-                    </div>
-
-                    <p className="mt-2 text-center text-[length:var(--ds-text-micro)] text-white/55">
-                      {day?.totalCompleted ?? 0} feitos
-                    </p>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <details className="temporal-section">
-        <summary>Contexto celeste do mês</summary>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white/60">Entradas de signo no mês</h3>
-            <p className="mt-1 text-xs text-white/45">Filtre as entradas pelo planeta em trânsito.</p>
+      <div className="temporal-vidro">
+        <div className="temporal-vidro-luz" aria-hidden="true" />
+        <section className="temporal-calendario ds-pane" data-luz aria-label="Calendário do mês">
+          <div className="temporal-cal-semana" aria-hidden="true">
+            {Array.from({ length: 7 }, (_, index) => WEEKDAYS_SHORT[(index + weekStartsOn) % 7]).map((label) => (
+              <p key={label}>{label}</p>
+            ))}
           </div>
-          <label className="flex items-center gap-2 text-xs text-white/60">
+
+          <CalendarioDosDias weeks={weeks} daysByStamp={daysByStamp} anchorDate={anchorDate} selectedDayStamp={selectedDayStamp} onSelect={setSelectedDayStamp} chave={chaveDoMes} />
+          <p className="temporal-legenda"><i className="temporal-marca-agenda" aria-hidden="true" /> compromissos <i className="temporal-marca-elemento" data-element="fogo" aria-hidden="true" /><i className="temporal-marca-elemento" data-element="agua" aria-hidden="true" /><i className="temporal-marca-elemento" data-element="ar" aria-hidden="true" /><i className="temporal-marca-elemento" data-element="terra" aria-hidden="true" /> feitos, na cor do elemento</p>
+        </section>
+      </div>
+
+      <details className="temporal-section temporal-gaveta ds-pane">
+        <summary>Contexto celeste do mês</summary>
+        <div className="temporal-painel-topo">
+          <div>
+            <h3 className="temporal-painel-titulo">Entradas de signo no mês</h3>
+            <p className="temporal-nota">Filtre as entradas pelo planeta em trânsito.</p>
+          </div>
+          <label className="temporal-filtro">
             <span>Planeta</span>
             <select
               value={selectedIngressPlanet}
               onChange={(event) => setSelectedIngressPlanet(event.target.value)}
-              className="rounded-lg border border-white/15 bg-black/30 px-3 py-2 text-sm text-white outline-none focus:border-mystic-gold/60"
             >
               {ZODIAC_PLANETS.map((planet) => (
-                <option key={planet} value={planet} className="bg-slate-900 text-white">
+                <option key={planet} value={planet}>
                   {planet}
                 </option>
               ))}
             </select>
           </label>
         </div>
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="temporal-lista-cartoes">
           {filteredZodiacIngresses.length === 0 ? (
-            <p className="text-sm text-white/60">
+            <p className="temporal-vazio-texto">
               {zodiacIngressesInMonth.length === 0
                 ? 'Sem entradas de signo mapeadas neste mês.'
                 : `Nenhuma entrada de ${selectedIngressPlanet} neste mês.`}
             </p>
           ) : (
             filteredZodiacIngresses.map((entry) => (
-              <article key={entry.date.toISOString()} className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm text-white">{entry.icon} {entry.name}</p>
-                  <span className="rounded-full border border-mystic-gold/30 px-2 py-0.5 text-[length:var(--ds-text-micro)] uppercase tracking-[0.12em] text-mystic-gold/80">
+              <article key={entry.date.toISOString()} className="temporal-cartao">
+                <div className="temporal-cartao-linha">
+                  <p>{entry.icon} {entry.name}</p>
+                  <span className="temporal-etiqueta">
                     {entry.planet}
                   </span>
                 </div>
-                <p className="text-xs text-white/60">{entry.date.toLocaleDateString('pt-BR')}</p>
+                <p className="temporal-nota">{entry.date.toLocaleDateString('pt-BR')}</p>
               </article>
             ))
           )}
         </div>
       </details>
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="temporal-painel ds-pane">
+        <div className="temporal-painel-topo">
           <div>
-            <h3 className="text-sm uppercase tracking-[0.2em] text-white/60">Compromissos do mês</h3>
-            <p className="mt-1 text-xs text-white/45">Compromissos independentes de treinos, hábitos e ciclos.</p>
+            <h3 className="temporal-painel-titulo">Compromissos do mês</h3>
+            <p className="temporal-nota">Compromissos independentes de treinos, hábitos e ciclos.</p>
           </div>
           <DialogTrigger asChild><button
             type="button"
             onClick={() => { setEditingCommitmentId(null); setShowCommitmentForm(true); }}
-            className="temporal-action rounded-lg border border-mystic-gold/40 px-3 py-2 text-sm text-mystic-gold hover:bg-mystic-gold/10"
+            className="temporal-action"
           >
-            Novo compromisso
+            <CalendarPlus size={18} aria-hidden="true" />Novo compromisso
           </button></DialogTrigger>
         </div>
 
@@ -406,26 +328,26 @@ export const TemporalCalendarPage: React.FC = () => {
           <CommitmentForm key={editingCommitmentId ?? 'new'} initial={commitments.find(item => item.id === editingCommitmentId)} initialDate={selectedDayStamp ? new Date(selectedDayStamp) : anchorDate} onSave={handleCommitmentSubmit} onCancel={() => setShowCommitmentForm(false)} />
         </DialogContent>
 
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="temporal-lista-cartoes">
           {ownMonthCommitments.length === 0 ? (
-            <p className="text-sm text-white/60">Nenhum compromisso próprio neste mês.</p>
+            <div className="temporal-vazio temporal-vazio-largo"><span className="temporal-vazio-selo" aria-hidden="true"><CalendarPlus size={22} /></span><p className="temporal-vazio-texto">Nenhum compromisso próprio neste mês.</p></div>
           ) : (
             ownMonthCommitments.map((item) => {
               const source = commitments.find((commitment) => commitment.id === item.sourceId);
               return (
-                <article key={item.id} className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
+                <article key={item.id} className="temporal-cartao">
                   <div className="temporal-commitment-row">
                     <div>
-                      <p className="text-sm text-white">{item.title}</p>
-                      <p className="text-xs text-white/60">
+                      <p className="temporal-cartao-titulo">{item.title}</p>
+                      <p className="temporal-nota">
                         {source?.recurrence === 'ONCE' ? 'Data: ' : 'A partir de '}{operationalDate(source?.date)?.toLocaleDateString('pt-BR') ?? 'data não disponível'} • {source?.recurrence === 'ONCE' ? 'uma vez' : 'recorrente'}
                         {source?.recurrence !== 'ONCE' && ` · ${selectedMonthCommitments.filter(occurrence => occurrence.sourceType === 'commitment' && occurrence.sourceId === item.sourceId).length} ocorrências neste mês`}
                       </p>
                     </div>
                     {source ? (
                       <div className="temporal-commitment-actions">
-                        <button type="button" onClick={() => startEditingCommitment(source)} className="rounded-md border border-white/15 px-2 py-1 text-xs text-white/70 hover:bg-white/10">Editar</button>
-                        <button type="button" onClick={() => setPendingDeleteId(source.id)} className="rounded-md border border-red-400/30 px-2 py-1 text-xs text-red-300 hover:bg-red-400/10">Excluir</button>
+                        <button type="button" onClick={() => startEditingCommitment(source)} className="temporal-botao-fantasma">Editar</button>
+                        <button type="button" onClick={() => setPendingDeleteId(source.id)} className="temporal-botao-fantasma" data-perigo>Excluir</button>
                       </div>
                     ) : null}
                   </div>
@@ -440,16 +362,16 @@ export const TemporalCalendarPage: React.FC = () => {
         </div>
       </section>
 
-      <details className="temporal-section">
+      <details className="temporal-section temporal-gaveta ds-pane">
         <summary>Outros prazos e eventos do mês</summary>
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="temporal-lista-cartoes">
           {selectedMonthCommitments.filter(item => item.sourceType !== 'commitment').length === 0 ? (
-            <p className="text-sm text-white/60">Nenhum outro prazo encontrado para este mês.</p>
+            <p className="temporal-vazio-texto">Nenhum outro prazo encontrado para este mês.</p>
           ) : (
             selectedMonthCommitments.filter(item => item.sourceType !== 'commitment').map((item) => (
-              <article key={item.id} className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
-                <p className="text-sm text-white">{item.title}</p>
-                <p className="text-xs text-white/60">
+              <article key={item.id} className="temporal-cartao">
+                <p className="temporal-cartao-titulo">{item.title}</p>
+                <p className="temporal-nota">
                   {item.date.toLocaleDateString('pt-BR')} • {item.kind === 'due' ? 'vencimento' : 'recorrente'}
                 </p>
               </article>

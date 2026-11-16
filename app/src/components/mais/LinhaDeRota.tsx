@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import type { AppRoute } from '@/lib/app-routes';
 import type { ElementId } from '@/types';
 import { ArcaneIcon, ROUTE_ICONS } from '@/components/elemental/ArcaneIcon';
+import { Destacado } from './destaque';
 import './inscricao.css';
 
 /** normal: a vista; acesa: a busca respondeu; adormecida: a busca recuou a linha; latente: so aparece quando a busca a acende. */
@@ -27,10 +28,14 @@ export interface LinhaDeRotaProps {
   primeira?: boolean;
   /** Chamado depois do toque; quem chama fecha a folha. */
   aoNavegar?: (rota: LinhaDeRotaProps['rota']) => void;
+  /** O que a pessoa digitou: o trecho achado no nome e na descricao ganha destaque. */
+  busca?: string;
+  /** Posicao entre as respostas (0, 1, 2...): a cascata de entrada da busca. */
+  ordem?: number;
 }
 
 /** Uma pagina como <Link>: sigilo do elemento, nome, descricao de uma linha e a assinatura do elemento ao toque. */
-export function LinhaDeRota({ rota, elemento, estado = 'normal', atual = false, primeira = false, aoNavegar }: LinhaDeRotaProps) {
+export function LinhaDeRota({ rota, elemento, estado = 'normal', atual = false, primeira = false, aoNavegar, busca, ordem }: LinhaDeRotaProps) {
   const [tocado, setTocado] = useState(false);
   const [ponto, setPonto] = useState<{ x: number; y: number } | null>(null);
   const relogio = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -62,7 +67,10 @@ export function LinhaDeRota({ rota, elemento, estado = 'normal', atual = false, 
       data-latente={estado === 'latente' || undefined}
       data-primeira={primeira || undefined}
       data-tocado={tocado || undefined}
-      style={ponto ? ({ '--x': `${ponto.x}px`, '--y': `${ponto.y}px` } as CSSProperties) : undefined}
+      style={{
+        ...(ponto ? { '--x': `${ponto.x}px`, '--y': `${ponto.y}px` } : null),
+        ...(acesa && ordem !== undefined ? { '--k': Math.min(ordem, 8) } : null),
+      } as CSSProperties}
       inert={oculta}
       aria-hidden={oculta || undefined}
     >
@@ -79,8 +87,8 @@ export function LinhaDeRota({ rota, elemento, estado = 'normal', atual = false, 
         >
           <ArcaneIcon name={ROUTE_ICONS[rota.id] ?? 'santuario'} size={28} className="ins-sigilo" ativo={acesa || atual} />
           <span className="ins-texto">
-            <span className="ins-nome">{nomeDaRota(rota)}</span>
-            <span className="ins-descricao">{rota.description}</span>
+            <span className="ins-nome"><Destacado texto={nomeDaRota(rota)} busca={acesa ? busca : undefined} /></span>
+            <span className="ins-descricao"><Destacado texto={rota.description} busca={acesa ? busca : undefined} /></span>
           </span>
           <span className="ins-fim">
             {atual ? (

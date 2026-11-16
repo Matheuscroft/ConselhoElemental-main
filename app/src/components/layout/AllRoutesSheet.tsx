@@ -58,8 +58,9 @@ export const AllRoutesSheet: React.FC<AllRoutesSheetProps> = ({ open, onOpenChan
         side="bottom"
         style={viewport ? { top: viewport.top, height: viewport.height, bottom: 'auto' } : undefined}
         onOpenAutoFocus={event => event.preventDefault()}
-        className={cn('all-routes-sheet h-[min(92dvh,52rem)] max-h-[calc(100dvh_-_env(safe-area-inset-top))] gap-0 overflow-hidden rounded-t-3xl p-0 border-0')}
+        className={cn('all-routes-sheet ds-glass-float h-[min(92dvh,52rem)] max-h-[calc(100dvh_-_env(safe-area-inset-top))] gap-0 overflow-hidden rounded-t-3xl p-0 border-0')}
         data-variant={variant}
+        data-luz=""
       >
         <SheetTitle className="sr-only">Todas as páginas</SheetTitle>
         <SheetDescription className="sr-only">Encontre o que você quer fazer e abra qualquer página do app.</SheetDescription>

@@ -83,6 +83,13 @@ export function RosaElemental({ ativo, contagens, acesos, compacta = false, redu
         </div>
         <svg className="rosa-svg" viewBox="0 0 120 120" width="120" height="120" aria-hidden="true" focusable="false">
           <circle className="rosa-anel" cx="60" cy="60" r="56" fill="none" strokeWidth="1" />
+          {/* A bússola gira devagar: um anel pontilhado e quatro pontas de ouro entre os triângulos. */}
+          <g className="rosa-giro">
+            <circle className="rosa-pontos" cx="60" cy="60" r="50" fill="none" strokeWidth="1" />
+            {[45, 135, 225, 315].map((grau) => (
+              <polygon key={grau} className="rosa-ponta" points="60,6.5 62,10.5 60,14.5 58,10.5" transform={`rotate(${grau} 60 60)`} />
+            ))}
+          </g>
           {ORDEM.map((elemento, i) => {
             const [cx, cy] = CENTRO[elemento];
             const forma = FORMA[elemento];

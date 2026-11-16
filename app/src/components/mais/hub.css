@@ -1,11 +1,12 @@
 /*
  * Hub da folha "Todas as páginas" (frente H4): a linha da rosa, a busca, os
- * atalhos, "Há pouco" e o rodapé. Fundo opaco, sem vidro, sem canvas.
+ * atalhos, "Há pouco" e o rodapé. O vidro é da folha (.ds-glass-float, no
+ * AllRoutesSheet); o hub é transparente. Sem canvas. A passada UAU vive em hub-uau.css.
  * Movimento só por tokens (--ds-duration-*, --ds-ease*, --ds-stagger).
  * Depende de elemental-blocos.css (ds-campo, ds-grupo, ds-nota, ds-elo, --elem-*)
  * e de rosa-elemental.css / inscricao.css.
  */
-.hub { display: flex; flex-direction: column; height: 100%; min-height: 0; min-width: 0; background: rgb(var(--el-surface)); color: rgb(var(--el-text)); }
+.hub { position: relative; isolation: isolate; display: flex; flex-direction: column; height: 100%; min-height: 0; min-width: 0; background: transparent; color: rgb(var(--el-text)); }
 
 /* ---------- Alça: o gesto de descer mora aqui e na linha da rosa ---------- */
 .hub-alca { flex: 0 0 20px; display: grid; place-items: center; touch-action: none; cursor: grab; }
@@ -94,7 +95,7 @@
 .hub-pouco ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .hub-pouco-link {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px; max-width: 100%; padding-inline: 12px; box-sizing: border-box;
-  border: 1px solid rgb(var(--el-muted) / .18); border-radius: var(--ds-raio-controle);
+  border-radius: var(--ds-raio-controle);
   font-size: var(--ds-text-small); line-height: 1.2; color: rgb(var(--el-text)); text-decoration: none;
 }
 .hub-pouco-link > svg { flex: 0 0 18px; width: 18px; height: 18px; color: var(--elem-acento); }

@@ -4,7 +4,8 @@
  */
 import React from 'react';
 import { AppLayout } from '@/components/layout';
-import { PageAtlas } from '@/components/elemental/PageAtlas';
+import { CenaDaTela } from '@/components/mais/CenaDaTela';
+import { MapaDeRunas } from '@/components/mais/MapaDeRunas';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import '@/components/elemental/page-atlas.css';
 import { useAppStore } from '@/stores/appStore';
@@ -28,22 +29,24 @@ export const Mapa: React.FC = () => {
 
   return (
     <AppLayout>
-      <header className="page-atlas-heading"><span><ArcaneIcon name="mapa" size={32} /></span><div><h1>Mapa de páginas</h1><p>Encontre seu próximo passo. Busque uma atividade ou abra uma categoria.</p></div></header>
-      <PageAtlas routes={APP_ROUTES} liveStatus={liveStatus} />
+      <CenaDaTela tela="mapa">
+        <header className="mapa-cabeca"><span className="mapa-emblema"><ArcaneIcon name="mapa" size={32} /></span><div><h1>Mapa de páginas</h1><p>Encontre seu próximo passo. Busque uma atividade ou abra uma categoria.</p></div></header>
+        <MapaDeRunas routes={APP_ROUTES} liveStatus={liveStatus} />
 
-      <details className="elemental-internal-routes">
-        <summary>Onde encontro os detalhes de cada atividade?</summary>
-        <div className="page-atlas-internal">
-          <ul className="space-y-2.5">
-            {INTERNAL_ROUTES.map((route) => (
-              <li key={route.pattern}>
-                <p className="text-sm text-white">{route.label}</p>
-                <p className="text-sm text-white/60">Abre a partir de: {route.opensFrom}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </details>
+        <details className="elemental-internal-routes">
+          <summary>Onde encontro os detalhes de cada atividade?</summary>
+          <div className="page-atlas-internal">
+            <ul className="space-y-2.5">
+              {INTERNAL_ROUTES.map((route) => (
+                <li key={route.pattern}>
+                  <p className="text-sm text-white">{route.label}</p>
+                  <p className="text-sm text-white/60">Abre a partir de: {route.opensFrom}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </details>
+      </CenaDaTela>
     </AppLayout>
   );
 };

@@ -1,0 +1,274 @@
+/*
+ * Lua e Estações, UAU pass. Same language as the other scenes (mais/cena-da-tela.css
+ * gives the light of the week, the grain, the finger's rim and the keyframes):
+ *
+ *  - ONE real pane of glass per screen (.ds-glass-float on the markup, so this
+ *    sheet declares no blur of its own): over the lower edge of the Moon, and
+ *    over the weather of the season, each with its own light behind it;
+ *  - the Moon is the protagonist: its sphere, a halo that follows how much of
+ *    it is lit, stars that fade as the Moon fills, two slow rings and a line
+ *    that draws the month;
+ *  - the season is a scene: its sky, sun and weather (the canvas of the Season
+ *    button of Ciclos, whose own stylesheet ceu-dos-ciclos.css is loaded for
+ *    it) and a wheel of the year with today on it;
+ *  - an arrival once per opening of the app (data-entrada="plena" on the
+ *    scene), and only a fade when coming back (data-entrada="breve").
+ *
+ * This file only adds classes of its own (lua-*, est-*): the two buttons of
+ * Ciclos keep reading ceu-dos-ciclos.css exactly as before. Every time is a
+ * --ds-duration-* token or a multiple of one; only transform, opacity, scale,
+ * translate and stroke dashes move.
+ */
+
+/* The screens' children keep one rhythm; the light of the scene is out of the flow. */
+:is(.lua-cena, .est-cena) > :not(.cena-luz) + :not(.cena-luz) { margin-top: var(--ds-ritmo-secao); }
+
+/* Heading rhythm inside the scenes (the temporal stylesheet gives these a margin of their own). */
+.lua-painel .lunar-description, .lua-painel .lunar-update { margin: 0; }
+.lua-painel .temporal-eyebrow, .est-painel .temporal-eyebrow { margin: 0 0 4px; }
+
+/* ======================================================================== */
+/* Moon                                                                      */
+/* ======================================================================== */
+
+.lua-palco { position: relative; min-width: 0; }
+.lua-ceu { position: relative; width: 100%; max-width: 360px; margin-inline: auto; padding-top: 8px; }
+
+/* Stars: fewer as the Moon fills (--lua-estrelas), faded at the edges so the sky has no frame. */
+.lua-estrelas {
+  position: absolute;
+  inset: -12px -16px 0;
+  opacity: var(--lua-estrelas, 1);
+  -webkit-mask-image: radial-gradient(ellipse 62% 64% at 50% 48%, #000 28%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 64% at 50% 48%, #000 28%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -14px) calc(var(--par-y, 0) * -8px);
+  pointer-events: none;
+}
+.lua-estrela {
+  position: absolute;
+  border-radius: 50%;
+  background: rgb(226 236 255);
+  box-shadow: 0 0 4px rgb(196 214 255 / .8);
+  opacity: .25;
+  animation: lua-cintila calc(var(--ds-duration-conjure) * var(--e-ciclo, 5)) ease-in-out calc(var(--ds-duration-conjure) * var(--e-atraso, 0) * -1) infinite;
+}
+@keyframes lua-cintila { 0%, 100% { opacity: .15; } 50% { opacity: .95; } }
+
+/* Halo and rings share the box of the sphere (78% of the sky, centred, square). */
+.lua-halo, .lua-aneis { position: absolute; left: 11%; right: 11%; top: 8px; aspect-ratio: 1; pointer-events: none; }
+.lua-halo {
+  scale: 1.3;
+  background: radial-gradient(circle, rgb(196 210 240 / calc(var(--lua-halo, .3) * .6)) 0, rgb(120 150 220 / calc(var(--lua-halo, .3) * .22)) 34%, transparent 62%);
+  translate: calc(var(--par-x, 0) * -10px) calc(var(--par-y, 0) * -6px);
+  animation: lua-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite;
+}
+@keyframes lua-respira { 0%, 100% { opacity: .78; scale: 1.26; } 50% { opacity: 1; scale: 1.38; } }
+.lua-aneis { translate: calc(var(--par-x, 0) * -4px) calc(var(--par-y, 0) * -3px); }
+.lua-anel {
+  position: absolute;
+  inset: 2%;
+  border: 1px dashed rgb(var(--el-gold) / .26);
+  border-radius: 50%;
+  animation: lua-gira calc(var(--ds-duration-conjure) * 60) linear infinite;
+}
+.lua-anel::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: rgb(var(--el-gold));
+  box-shadow: 0 0 10px rgb(var(--el-gold) / .8);
+}
+.lua-anel-contra { inset: -8%; border-style: solid; border-color: rgb(196 210 240 / .12); animation-direction: reverse; }
+.lua-anel-contra::after { background: rgb(226 236 255); box-shadow: 0 0 10px rgb(196 214 255 / .8); }
+@keyframes lua-gira { to { transform: rotate(360deg); } }
+
+/* The real sphere. Its status line is for a reader, not for the picture. */
+.lua-esfera { position: relative; z-index: 1; width: 78%; margin-inline: auto; translate: calc(var(--par-x, 0) * 5px) calc(var(--par-y, 0) * 3px); }
+.lua-esfera .celestial-render-status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* The one pane of glass, lifted over the lower edge of the Moon. */
+.lua-vidro { z-index: 2; margin-top: -64px; }
+.lua-painel,
+.est-painel {
+  display: grid;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--cena-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+.lua-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; min-width: 0; }
+.lua-nome { min-width: 0; }
+.lua-palco h3, .est-painel h3 { margin: 0; font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-title); line-height: 1.2; overflow-wrap: anywhere; }
+.lua-pct { flex: 0 0 auto; margin: 0; text-align: right; }
+.lua-pct-numero { display: block; font-family: var(--ds-font-heading); font-size: var(--ds-fluid-display); line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 38%, transparent); }
+.lua-pct-numero small { margin-left: 2px; font-size: var(--ds-text-lead); text-shadow: none; color: rgb(var(--el-muted)); }
+.lua-pct-rotulo { display: block; margin-top: 4px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.lua-fatos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 14px 0; border-block: 1px solid var(--ds-fio); }
+.lua-fatos dt { margin-bottom: 6px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.lua-fatos dd { margin: 0; font-size: var(--ds-text-lead); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.lua-fatos small { margin-left: 5px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.lua-proxima { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 14px; padding: 12px; border: var(--ds-edge); border-radius: var(--ds-raio-runa); background: rgb(var(--el-canvas) / 42%); }
+.lua-proxima .celestial-moon-disc { width: 44px; height: 44px; }
+.lua-proxima > div { display: grid; gap: 2px; min-width: 0; }
+.lua-proxima span { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.lua-proxima strong { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-text-lead); line-height: 1.3; }
+.lua-proxima time { font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-gold)); font-variant-numeric: tabular-nums; }
+
+/* ---------- The month as a line that draws itself ---------- */
+.lua-trilho { container-type: inline-size; position: relative; padding-block: 4px; }
+.lua-fases { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.lua-fase { display: grid; justify-items: center; align-content: start; min-width: 0; }
+.lua-fase .celestial-moon-disc { width: min(100%, 44px); height: auto; aspect-ratio: 1; opacity: .62; transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), opacity var(--ds-duration-feedback) var(--ds-ease); }
+.lua-fase[data-atual] .celestial-moon-disc { opacity: 1; scale: 1.22; }
+.lua-fase-nome { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.lua-linha, .lua-agora-trilho { position: absolute; left: 6.25%; right: 6.25%; top: calc(min(44px, 12.5cqi) / 2 + 4px); }
+.lua-linha { height: 2px; margin-top: -1px; border-radius: var(--ds-raio-controle); background: rgb(var(--el-muted) / .28); }
+.lua-linha-feita { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, rgb(var(--el-gold) / .4), rgb(var(--el-gold))); box-shadow: 0 0 10px rgb(var(--el-gold) / .5); transform-origin: left center; transform: scaleX(var(--pos, 0)); }
+.lua-agora-trilho { height: 0; container-type: inline-size; }
+.lua-agora {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: rgb(var(--el-gold));
+  box-shadow: 0 0 0 4px rgb(var(--el-gold) / .22), 0 0 16px rgb(var(--el-gold) / .8);
+  translate: calc(var(--pos, 0) * 100cqi) 0;
+}
+.lua-agora::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgb(var(--el-gold) / .7);
+  border-radius: 50%;
+  animation: lua-onda calc(var(--ds-duration-conjure) * 3) ease-out infinite;
+}
+@keyframes lua-onda { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
+@container (min-width: 560px) {
+  .lua-fase-nome { position: static; width: auto; height: auto; margin-top: 10px; overflow: visible; clip-path: none; white-space: normal; text-align: center; font-size: var(--ds-text-micro); line-height: 1.3; color: rgb(var(--el-muted)); }
+  .lua-fase[data-atual] .lua-fase-nome { color: rgb(var(--el-gold)); }
+}
+
+/* ---------- The next four quarters ---------- */
+.lua-proximas { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-ritmo-lista); margin: 0; padding: 0; list-style: none; }
+.lua-quarto { position: relative; display: grid; gap: 6px; padding: 14px 12px; min-width: 0; border-radius: var(--ds-raio-runa); background: linear-gradient(180deg, rgb(255 255 255 / 5%), transparent 50%), var(--ds-surface-raised); }
+.lua-quarto .celestial-moon-disc { width: 44px; height: 44px; margin-bottom: 8px; }
+.lua-quarto span { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.lua-quarto[data-primeiro] span { color: rgb(var(--el-gold)); }
+.lua-quarto h4 { margin: 0; font-size: var(--ds-text-small); font-weight: 500; line-height: 1.3; }
+.lua-quarto time { display: block; font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-gold)); font-variant-numeric: tabular-nums; }
+@container (min-width: 640px) { .lua-proximas { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.lua-proximas-secao { container-type: inline-size; min-width: 0; }
+
+/* ======================================================================== */
+/* Seasons                                                                   */
+/* ======================================================================== */
+
+.est-palco { position: relative; display: grid; min-width: 0; }
+.est-ceu { grid-area: 1 / 1; position: relative; min-height: 360px; border-radius: var(--ds-raio-runa); overflow: clip; background: rgb(var(--ceu-topo)); box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%); }
+/* The glass floats in the middle of the landscape: sky and sun above it, the horizon below it, the weather behind it. */
+.est-vidro { grid-area: 1 / 1; align-self: end; z-index: 1; margin: 150px 12px 84px; }
+.est-painel { background: var(--cena-grao), linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent), rgb(var(--ceu-vidro) / 52%); }
+.est-painel h3 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 24px rgb(var(--ceu-cor) / .4); }
+.est-titulo { margin: 0; font-size: var(--ds-text-lead); line-height: 1.4; color: rgb(var(--ceu-cor)); }
+.est-proxima { margin: 0; font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-text)); max-width: 52ch; }
+.est-dias { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--ds-fio); }
+.est-dias-numero { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-fluid-display); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(var(--ceu-cor)); text-shadow: 0 0 22px rgb(var(--ceu-cor) / .45); }
+.est-dias-numero small { font-family: var(--ds-font-body); font-size: var(--ds-text-small); text-shadow: none; color: rgb(var(--el-text)); }
+.est-dias-fio { display: grid; gap: 8px; }
+.est-dias-fio > span:first-child { font-size: var(--ds-text-micro); color: rgb(var(--el-text)); font-variant-numeric: tabular-nums; }
+.est-barra { display: block; height: 4px; border-radius: var(--ds-raio-controle); background: rgb(var(--el-muted) / .3); overflow: hidden; }
+.est-barra-feita { display: block; height: 100%; background: linear-gradient(90deg, rgb(var(--ceu-cor) / .5), rgb(var(--ceu-cor))); box-shadow: 0 0 10px rgb(var(--ceu-cor) / .6); transform-origin: left center; transform: scaleX(var(--est-progresso, 0)); }
+.est-painel .temporal-select { color: rgb(var(--el-text)); }
+
+/* ---------- The wheel of the year ---------- */
+.est-roda { display: grid; place-items: center; }
+.est-roda-corpo { position: relative; width: min(100%, 300px); aspect-ratio: 1; }
+.est-roda-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.est-roda-fio { stroke: rgb(var(--el-muted) / .2); stroke-width: 1; }
+.est-roda-giro { transform-origin: 120px 120px; animation: lua-gira calc(var(--ds-duration-conjure) * 50) linear infinite; }
+.est-roda-pontos { stroke: rgb(var(--el-gold) / .32); stroke-width: 1; stroke-dasharray: 1 5; stroke-linecap: round; }
+.est-roda-arco { stroke: rgb(var(--cor)); stroke-width: 16; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; opacity: .36; }
+.est-roda-estacao[data-atual] .est-roda-arco { opacity: 1; stroke-width: 18; }
+.est-roda-icone { stroke: rgb(var(--el-canvas)); opacity: .7; }
+.est-roda-marca { fill: rgb(var(--el-gold)); stroke: rgb(var(--el-canvas)); stroke-width: 2; }
+.est-roda-pulso { fill: rgb(var(--el-gold) / .3); transform-box: fill-box; transform-origin: center; animation: lua-onda calc(var(--ds-duration-conjure) * 3) ease-out infinite; }
+.est-roda-centro { position: absolute; inset: 22%; display: grid; place-content: center; justify-items: center; gap: 2px; text-align: center; }
+.est-roda-centro span { font-size: var(--ds-text-micro); line-height: 1.3; color: rgb(var(--el-muted)); }
+.est-roda-centro strong { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-display); line-height: 1; font-variant-numeric: tabular-nums; color: rgb(var(--ceu-cor)); text-shadow: 0 0 22px rgb(var(--ceu-cor) / .45); }
+
+/* ======================================================================== */
+/* The arrival, once per opening of the app                                  */
+/* ======================================================================== */
+/*
+ * The light comes up, the Moon (or the sky) rises, the halo blooms, the glass
+ * lifts over its glow, the numbers count, the line draws the month (or the
+ * wheel its four arcs), then the cards. `backwards`, never `both`: once an
+ * element has landed it goes back to its own rules.
+ */
+.cena[data-entrada="plena"] .lua-estrelas { animation: cena-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-stagger) backwards; }
+.cena[data-entrada="plena"] .lua-esfera { animation: lua-nasce var(--ds-duration-conjure) var(--ds-ease-conjure) var(--ds-stagger) backwards; }
+.cena[data-entrada="plena"] .lua-halo { animation: lua-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite, lua-floresce var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.cena[data-entrada="plena"] .lua-aneis { animation: cena-aparecer var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 3) backwards; }
+.cena[data-entrada="plena"] .lua-painel { animation: cena-subir var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cena[data-entrada="plena"] .lua-ciclo > .temporal-section-heading { animation: cena-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-duration-settle)) backwards; }
+.cena[data-entrada="plena"] .lua-fase { animation: cena-surgir var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--cena-base) + var(--n, 0) * var(--ds-stagger)) backwards; }
+.cena[data-entrada="plena"] .lua-linha-feita { animation: lua-traca var(--ds-duration-conjure) var(--ds-ease) calc(var(--cena-base) + var(--ds-stagger)) backwards; }
+.cena[data-entrada="plena"] .lua-agora { animation: lua-viaja var(--ds-duration-conjure) var(--ds-ease) calc(var(--cena-base) + var(--ds-stagger)) backwards; }
+.cena[data-entrada="plena"] .lua-quarto { animation: cena-erguer var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--cena-base) + var(--ds-duration-reveal) + var(--n, 0) * var(--ds-stagger)) backwards; }
+.cena:is(.lua-cena, .est-cena)[data-entrada="plena"] > :is(.temporal-note, .temporal-journey-link, .temporal-source) { animation: cena-aparecer var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-conjure) backwards; }
+
+.cena[data-entrada="plena"] .est-ceu { animation: cena-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.cena[data-entrada="plena"] .est-painel { animation: cena-subir var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cena[data-entrada="plena"] .est-barra-feita { animation: lua-traca var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-duration-settle)) backwards; }
+.cena[data-entrada="plena"] .est-roda-arco { animation: est-traca var(--ds-duration-conjure) var(--ds-ease) calc(var(--cena-base) + var(--i, 0) * var(--ds-stagger) * 2) backwards; }
+.cena[data-entrada="plena"] .est-roda-icone { animation: cena-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--cena-base) + var(--ds-duration-settle)) backwards; }
+.cena[data-entrada="plena"] .est-roda-hoje { animation: cena-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--cena-base) + var(--ds-duration-conjure)) backwards; }
+.cena[data-entrada="plena"] .est-roda-centro { animation: cena-surgir var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--cena-base) + var(--ds-stagger)) backwards; }
+.cena[data-entrada="plena"] .season-explorer { animation: cena-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--cena-base) + var(--ds-duration-reveal)) backwards; }
+
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.cena[data-entrada="breve"] :is(.lua-palco, .lua-ciclo, .lua-proximas-secao, .est-palco, .est-roda-secao, .est-explorar) { animation: cena-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+.lua-fase:nth-child(1) { --n: 0; } .lua-fase:nth-child(2) { --n: 1; } .lua-fase:nth-child(3) { --n: 2; } .lua-fase:nth-child(4) { --n: 3; }
+.lua-fase:nth-child(5) { --n: 4; } .lua-fase:nth-child(6) { --n: 5; } .lua-fase:nth-child(7) { --n: 6; } .lua-fase:nth-child(8) { --n: 7; }
+.lua-quarto:nth-child(1) { --n: 0; } .lua-quarto:nth-child(2) { --n: 1; } .lua-quarto:nth-child(3) { --n: 2; } .lua-quarto:nth-child(4) { --n: 3; }
+
+@keyframes lua-nasce { from { opacity: 0; transform: translateY(28px) scale(.88); } }
+@keyframes lua-floresce { from { opacity: 0; scale: .6; } }
+@keyframes lua-traca { from { transform: scaleX(0); } }
+@keyframes lua-viaja { from { opacity: 0; translate: 0 0; } }
+@keyframes est-traca { from { stroke-dashoffset: 1; } }
+
+/* ---------- Reduced motion: the same end, without the way ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .lua-estrela { animation: none; opacity: .55; }
+  .lua-halo { animation: none; scale: 1.3; translate: none; }
+  .lua-anel, .lua-agora::after, .est-roda-giro, .est-roda-pulso { animation: none; }
+  .lua-agora::after { opacity: .5; }
+  .lua-estrelas, .lua-aneis, .lua-esfera { translate: none; }
+  .lua-fase .celestial-moon-disc { transition: none; }
+  .cena[data-entrada="plena"] :is(.lua-estrelas, .lua-esfera, .lua-aneis, .lua-painel, .lua-ciclo > .temporal-section-heading, .lua-fase, .lua-linha-feita, .lua-agora, .lua-quarto) { animation: none; }
+  .cena[data-entrada="plena"] .lua-halo { animation: none; }
+  .cena:is(.lua-cena, .est-cena)[data-entrada="plena"] > :is(.temporal-note, .temporal-journey-link, .temporal-source) { animation: none; }
+  .cena[data-entrada="plena"] :is(.est-ceu, .est-painel, .est-barra-feita, .est-roda-arco, .est-roda-icone, .est-roda-hoje, .est-roda-centro, .season-explorer) { animation: none; }
+  .cena[data-entrada="breve"] :is(.lua-palco, .lua-ciclo, .lua-proximas-secao, .est-palco, .est-roda-secao, .est-explorar) { animation: none; }
+}
+
+/* Someone who asked the system for less transparency gets panes that are nearly solid, so the blur has nothing left to show. */
+@media (prefers-reduced-transparency: reduce) {
+  .lua-painel { background: rgb(var(--el-surface) / 96%); }
+  .est-painel { background: rgb(var(--ceu-vidro) / 96%); }
+}

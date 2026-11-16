@@ -1,0 +1,359 @@
+/*
+ * Astrolábio, UAU pass. Same language as the Sanctuary, Pillars, Cycles,
+ * Rituals and Journeys:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by CenaAstrolabio; gold until the week has a leader);
+ *  - ONE real pane of glass (.ds-glass-float, so this sheet declares no blur of
+ *    its own): the central panel, holding a living astrolabe, with that light
+ *    behind it, a one-pixel rim that catches the finger and a light inside
+ *    that follows it;
+ *  - the astrolabe: a ring of degrees and four planets that turn slowly, the
+ *    twelve signs burning as much as their element weighs in the balance, the
+ *    Sun where it really is; the signs ignite one after another in the arrival;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve");
+ *  - everything else is the same material without the blur.
+ *
+ * Loaded after astrolabio.css, so where the two meet this one wins. Every time
+ * is a --ds-duration-* token or a multiple of one; only transform, opacity,
+ * scale, translate, clip and stroke dashes move.
+ */
+
+.ast-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --ast-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+}
+
+/* ---------- The light behind the heading ---------- */
+.ast-luz {
+  position: absolute;
+  inset: -24px 8px auto 8px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--ast-grao),
+    radial-gradient(ellipse 48% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 44%, rgb(var(--el-gold) / .16), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--semana-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Heading ---------- */
+.ast-cena .astrolabe-heading h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 34%, transparent); }
+.ast-cena .astrolabe-seal {
+  background: radial-gradient(circle, color-mix(in srgb, var(--semana-aura) 26%, transparent), rgb(var(--el-gold) / .05) 70%);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--semana-aura) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / .14);
+}
+.ast-cena h2 { text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 22%, transparent); }
+.ast-cena .astrolabe-heading > a, .ast-cena .astrolabe-completions > a { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.ast-cena .astrolabe-heading > a:active, .ast-cena .astrolabe-completions > a:active { scale: .95; transition-duration: var(--ds-duration-press); }
+
+/* ---------- The one pane of glass: recipe on the markup, dressing here ---------- */
+.ast-resumo { position: relative; margin-top: 16px; }
+.ast-resumo-luz {
+  position: absolute;
+  inset: -32px -8px -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+}
+.ast-cena .ast-painel {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: grid;
+  gap: 18px;
+  padding: 20px 16px 18px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--ast-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+/* The rim: one pixel of light, brightest where the finger is; at rest it sits at the top edge. */
+.ast-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the glass, under its content. */
+.ast-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.ast-painel[data-luz-acesa]::before, .ast-painel[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+.ast-legenda { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 20px; margin: 0; text-align: center; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.ast-legenda strong { font-weight: 500; color: rgb(var(--el-text)); }
+.ast-cena .ast-painel dl { margin: 0; border: 0; border-radius: 0; background: none; overflow: visible; border-top: 1px solid rgb(255 255 255 / 10%); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ast-cena .ast-painel dl > div { border: 0; padding: 18px 14px; }
+.ast-cena .ast-painel dl > div:nth-child(odd) { border-right: 1px solid rgb(var(--el-muted) / .15); }
+.ast-cena .ast-painel dl > div:nth-child(-n+2) { border-bottom: 1px solid rgb(var(--el-muted) / .15); }
+.ast-cena .ast-painel dd { text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 38%, transparent); }
+.ast-cena .ast-painel dd small { text-shadow: none; }
+.ast-numero { white-space: nowrap; font-variant-numeric: tabular-nums; }
+@media (min-width: 768px) {
+  .ast-cena .ast-painel { grid-template-columns: minmax(0, 340px) minmax(0, 1fr); column-gap: 32px; align-items: center; padding: 24px; }
+  .ast-cena .ast-painel > .ast-roda { grid-row: span 2; }
+  .ast-cena .ast-painel > .ast-legenda { align-self: end; }
+  .ast-cena .ast-painel > dl { align-self: start; }
+}
+
+/* ---------- The astrolabe ---------- */
+.ast-roda {
+  position: relative;
+  width: min(100%, 340px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  translate: calc(var(--par-x, 0) * 4px) calc(var(--par-y, 0) * 3px);
+}
+.ast-roda-halo {
+  position: absolute;
+  inset: -6%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--semana-aura) 34%, transparent) 0, color-mix(in srgb, var(--semana-aura) 10%, transparent) 46%, transparent 70%);
+  animation: ast-respirar calc(var(--ds-duration-conjure) * 6) ease-in-out infinite alternate;
+}
+.ast-camada { position: absolute; inset: 0; pointer-events: none; }
+.ast-camada > svg { display: block; width: 100%; height: 100%; fill: none; overflow: visible; }
+.ast-fio { stroke: rgb(var(--el-gold) / .5); stroke-width: .6; }
+.ast-marca { stroke: rgb(var(--el-gold) / .42); stroke-width: .5; stroke-linecap: round; }
+.ast-marca-longa { stroke: rgb(var(--el-gold) / .9); stroke-width: .9; }
+.ast-sol-fatia { opacity: .28; animation: ast-pulso calc(var(--ds-duration-conjure) * 4) ease-in-out infinite alternate; }
+.ast-gira { animation: ast-girar calc(var(--ds-duration-conjure) * var(--ciclo, 120)) linear infinite; }
+.ast-graus { --ciclo: 120; }
+.ast-camada[data-camada="orbita"]:nth-of-type(even) > .ast-gira { animation-direction: reverse; }
+.ast-planeta { filter: drop-shadow(0 0 4px var(--cor)); }
+.ast-orbita-trilho { stroke: color-mix(in srgb, var(--cor) 42%, transparent); stroke-width: .5; stroke-dasharray: 1.5 2.5; }
+.ast-signo {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 14%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  font-size: var(--ds-text-lead);
+  line-height: 1;
+  font-variant-emoji: text;
+  color: var(--cor);
+  opacity: var(--brilho, .3);
+  text-shadow: 0 0 calc(var(--brilho, .3) * 16px) var(--cor);
+}
+.ast-signo[data-sol] { opacity: 1; scale: 1.2; text-shadow: 0 0 18px var(--cor), 0 0 4px var(--cor); }
+.ast-signo[data-sol]::before { content: ''; position: absolute; inset: 6%; border-radius: 50%; border: 1px solid var(--cor); animation: ast-pulso calc(var(--ds-duration-conjure) * 3) ease-in-out infinite alternate; }
+.ast-centro {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  width: 20%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--cor) 60%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--cor) 38%, transparent), color-mix(in srgb, var(--cor) 8%, transparent) 70%, transparent);
+  box-shadow: 0 0 32px color-mix(in srgb, var(--cor) 45%, transparent), inset 0 1px 0 rgb(255 255 255 / .25);
+  pointer-events: none;
+}
+.ast-centro-raios {
+  position: absolute;
+  inset: -34%;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--cor) 55%, transparent) 0 3deg, transparent 3deg 15deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 56%, #000 64%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 56%, #000 64%, transparent 100%);
+  animation: ast-girar calc(var(--ds-duration-conjure) * 60) linear infinite reverse;
+}
+.ast-centro-glifo { position: relative; font-size: var(--ds-text-display); line-height: 1; font-variant-emoji: text; color: var(--cor); text-shadow: 0 0 14px var(--cor); }
+@keyframes ast-girar { to { transform: rotate(1turn); } }
+@keyframes ast-respirar { from { scale: .96; opacity: .8; } to { scale: 1.04; opacity: 1; } }
+@keyframes ast-pulso { from { opacity: .16; } to { opacity: .5; } }
+
+/* ---------- Tabs: the marker slides on a spring ---------- */
+.ast-cena .astrolabe-tabs [role="tablist"] {
+  position: relative;
+  border-radius: var(--ds-raio-runa);
+  background: var(--ds-surface-raised);
+  border: var(--ds-edge);
+  box-shadow: var(--ds-rim);
+}
+.ast-cena .astrolabe-tabs [role="tablist"]::before {
+  content: '';
+  position: absolute;
+  inset: 5px auto 5px 5px;
+  width: calc((100% - 10px) / 3);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-gold) / .12);
+  box-shadow: inset 0 0 0 1px rgb(var(--el-gold) / .35), 0 0 22px rgb(var(--el-gold) / .12);
+  transition: translate var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.ast-cena .astrolabe-tabs [role="tablist"]:has(> :nth-child(2)[data-state="active"])::before { translate: 100% 0; }
+.ast-cena .astrolabe-tabs [role="tablist"]:has(> :nth-child(3)[data-state="active"])::before { translate: 200% 0; }
+.ast-cena .astrolabe-tabs [role="tab"] { position: relative; z-index: 1; border-radius: var(--ds-raio-controle); transition: color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.ast-cena .astrolabe-tabs [role="tab"]:active { scale: .96; transition-duration: var(--ds-duration-press); }
+.ast-cena .astrolabe-tabs [role="tab"][data-state="active"] { background: transparent; border-color: transparent; box-shadow: none; }
+.ast-cena .astrolabe-tabs [role="tabpanel"][data-state="active"] { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+
+/* ---------- Panels ---------- */
+.ast-cena .astrolabe-panel { padding: 24px; border: var(--ds-edge); border-radius: var(--ds-raio-runa); background: var(--ds-surface-raised); box-shadow: var(--ds-rim), var(--ds-lift-near); }
+.ast-cena .astrolabe-period {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  border-radius: var(--ds-raio-runa);
+}
+.ast-cena .astrolabe-period::before {
+  content: '';
+  position: absolute;
+  inset: 4px auto 4px 4px;
+  width: calc((100% - 16px) / 3);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-gold) / .16);
+  box-shadow: inset 0 -2px rgb(var(--el-gold));
+  transition: translate var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.ast-cena .astrolabe-period:has(> :nth-child(2)[aria-pressed="true"])::before { translate: calc(100% + 4px) 0; }
+.ast-cena .astrolabe-period:has(> :nth-child(3)[aria-pressed="true"])::before { translate: calc(200% + 8px) 0; }
+.ast-cena .astrolabe-period button { position: relative; border-radius: var(--ds-raio-controle); transition: color var(--ds-duration-feedback) var(--ds-ease); }
+.ast-cena .astrolabe-period button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+/* The line is drawn from the left, as if the days were being walked. */
+.ast-cena .astrolabe-chart { animation: ast-revelar calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) backwards; }
+@keyframes ast-revelar { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0); } }
+.ast-cena .astrolabe-table-scroll, .ast-cena .astrolabe-records { border-radius: var(--ds-raio-controle); }
+.ast-cena .astrolabe-donut { filter: drop-shadow(0 0 16px color-mix(in srgb, var(--semana-aura) 26%, transparent)); animation: ast-desvelar var(--ds-duration-conjure) var(--ds-ease-conjure) backwards; }
+.ast-cena .astrolabe-legend > div { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+.ast-cena .astrolabe-legend > div:nth-child(2) { animation-delay: calc(var(--ds-stagger) * 2); }
+.ast-cena .astrolabe-legend > div:nth-child(3) { animation-delay: calc(var(--ds-stagger) * 4); }
+.ast-cena .astrolabe-legend > div:nth-child(4) { animation-delay: calc(var(--ds-stagger) * 6); }
+
+/* ---------- Elements: cards that light up in their own colour when opened ---------- */
+.ast-cena .astrolabe-element {
+  position: relative;
+  isolation: isolate;
+  border: var(--ds-edge);
+  border-radius: var(--ds-raio-runa);
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  transition: border-color var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.ast-cena .astrolabe-element[open] { border-color: color-mix(in srgb, var(--reading-color) 55%, transparent); box-shadow: var(--ds-rim), 0 10px 34px color-mix(in srgb, var(--reading-color) 16%, transparent); }
+.ast-cena .astrolabe-element::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--reading-color) 18%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.ast-cena .astrolabe-element[data-luz-acesa]::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.ast-cena .astrolabe-element summary { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.ast-cena .astrolabe-element summary:active { scale: .985; transition-duration: var(--ds-duration-press); }
+.ast-cena .astrolabe-element summary > svg { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.ast-cena .astrolabe-element-art img { filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--reading-color) 40%, transparent)); }
+.ast-cena .astrolabe-element[open] .astrolabe-element-art img { animation: ast-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out infinite alternate; }
+.ast-cena .astrolabe-element[open] .astrolabe-element-detail { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+.ast-cena .astrolabe-meter, .ast-cena .astrolabe-task-meter { border-radius: var(--ds-raio-controle); }
+.ast-cena .astrolabe-meter > span { transform-origin: left center; box-shadow: 0 0 10px color-mix(in srgb, var(--reading-color) 60%, transparent); border-radius: inherit; }
+.ast-cena .astrolabe-element[open] .astrolabe-meter > span { animation: ast-encher var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.ast-cena .astrolabe-elements > .astrolabe-element { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+.ast-cena .astrolabe-elements > :nth-child(2) { animation-delay: calc(var(--ds-stagger) * 2); }
+.ast-cena .astrolabe-elements > :nth-child(3) { animation-delay: calc(var(--ds-stagger) * 4); }
+.ast-cena .astrolabe-elements > :nth-child(4) { animation-delay: calc(var(--ds-stagger) * 6); }
+
+/* ---------- Completions per element ---------- */
+.ast-cena .astrolabe-task-meter > span { transform-origin: left center; border-radius: inherit; box-shadow: 0 0 8px rgb(var(--el-gold) / .25); }
+.ast-cena[data-entrada="plena"] .astrolabe-completions li { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 18) backwards; }
+.ast-cena[data-entrada="plena"] .astrolabe-completions li:nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 20); }
+.ast-cena[data-entrada="plena"] .astrolabe-completions li:nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 22); }
+.ast-cena[data-entrada="plena"] .astrolabe-completions li:nth-child(4) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 24); }
+.ast-cena[data-entrada="plena"] .astrolabe-task-meter > span { animation: ast-encher var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) backwards; }
+@keyframes ast-encher { from { transform: scaleX(0); } }
+@keyframes ast-flutuar { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+@keyframes ast-subir { from { opacity: 0; transform: translateY(14px); } }
+@keyframes ast-aparecer { from { opacity: 0; } }
+@keyframes ast-desvelar { from { opacity: 0; transform: rotate(-70deg) scale(.82); } }
+@keyframes ast-acender { from { opacity: 0; scale: .4; } }
+@keyframes ast-selar { from { opacity: 0; scale: .5; } }
+
+/* ---------- Empty states: four runes, each in its own light ---------- */
+.ast-vazio { position: relative; isolation: isolate; overflow: clip; }
+.ast-vazio-runas { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin-bottom: 4px; }
+.ast-vazio-runa {
+  position: relative;
+  display: block;
+  color: var(--elem-acento);
+  animation: ast-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ordem) * var(--ds-duration-reveal) * -1) infinite alternate;
+}
+.ast-vazio-runa:is(:nth-child(2), :nth-child(3)) { margin-bottom: 12px; }
+.ast-vazio-runa::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), transparent 68%); }
+.ast-vazio-runa > svg { position: relative; filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--elem-aura) 40%, transparent)); }
+.ast-vazio h3 { text-wrap: balance; }
+.ast-cena .astrolabe-empty, .ast-cena .astrolabe-balance-empty { border-radius: var(--ds-raio-runa); background: radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura) 14%, transparent), transparent 100%); }
+.ast-cena .astrolabe-balance-empty { padding: 24px 0; }
+
+/* ---------- Arrival of the scene, once per opening of the app ---------- */
+.ast-cena[data-entrada="plena"] .ast-luz { animation: ast-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.ast-cena[data-entrada="plena"] .astrolabe-heading > * { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.ast-cena[data-entrada="plena"] .astrolabe-heading > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.ast-cena[data-entrada="plena"] .astrolabe-heading > :nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4); }
+.ast-cena[data-entrada="plena"] .astrolabe-overview > :is(h2, p) { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 5) backwards; }
+.ast-cena[data-entrada="plena"] .ast-resumo { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+/* The wheel ignites in order: the degrees turn in, the ring settles, the signs light one after another, then the planets and the Sun. */
+.ast-cena[data-entrada="plena"] .ast-camada[data-camada="graus"] { animation: ast-desvelar calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 7) backwards; }
+.ast-cena[data-entrada="plena"] .ast-camada[data-camada="anel"] { animation: ast-aparecer var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards; }
+.ast-cena[data-entrada="plena"] .ast-signo { animation: ast-acender var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * (9 + var(--i, 0))) backwards; }
+.ast-cena[data-entrada="plena"] .ast-camada[data-camada="orbita"] { animation: ast-aparecer var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * (22 + var(--i, 0) * 2)) backwards; }
+.ast-cena[data-entrada="plena"] .ast-centro { animation: ast-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 20) backwards; }
+.ast-cena[data-entrada="plena"] .ast-painel dl { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 12) backwards; }
+.ast-cena[data-entrada="plena"] .astrolabe-tabs { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 14) backwards; }
+.ast-cena[data-entrada="plena"] .astrolabe-completions { animation: ast-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 16) backwards; }
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.ast-cena[data-entrada="breve"] :is(.astrolabe-heading, .ast-resumo) { animation: ast-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* ---------- System preferences ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .ast-cena .ast-painel { background: rgb(var(--el-surface) / 96%); }
+  .ast-resumo-luz, .ast-luz, .ast-roda-halo { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ast-luz, .ast-resumo-luz, .ast-roda { translate: none; }
+  .ast-cena *, .ast-cena *::before, .ast-cena *::after { animation: none !important; }
+  .ast-painel::before, .ast-painel::after, .ast-cena .astrolabe-tabs [role="tablist"]::before, .ast-cena .astrolabe-period::before,
+  .ast-cena .astrolabe-tabs [role="tab"], .ast-cena .astrolabe-element, .ast-cena .astrolabe-element::before,
+  .ast-cena .astrolabe-element summary, .ast-cena .astrolabe-element summary > svg,
+  .ast-cena .astrolabe-heading > a, .ast-cena .astrolabe-completions > a { transition: none; }
+}

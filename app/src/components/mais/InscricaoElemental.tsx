@@ -11,6 +11,8 @@ export interface ItemDaInscricao {
   rota: Rota;
   estado: EstadoDaLinha;
   primeira?: boolean;
+  /** Posicao entre as respostas da busca, para a cascata. */
+  ordem?: number;
   /** So o Temporal: estado de cada subportal por id ("temporal-mes"). Sem isso, acompanham a linha. */
   subportais?: Partial<Record<string, EstadoDaLinha>>;
 }
@@ -25,6 +27,8 @@ export interface InscricaoElementalProps {
   /** Id da rota aberta agora (ex.: "lua"), ou nulo. */
   abertoAtual?: string | null;
   aoNavegar?: LinhaDeRotaProps['aoNavegar'];
+  /** O que a pessoa digitou, para marcar o trecho achado. */
+  busca?: string;
 }
 
 /** Os subportais de texto do Temporal; os caminhos vem de APP_ROUTES pelos ids. */
@@ -75,7 +79,7 @@ function Subportais({ item, abertoAtual, aoNavegar }: { item: ItemDaInscricao; a
 }
 
 /** Uma inscricao da folha "Todas as páginas": um elemento, seu verbo, e as rotas dele. */
-export function InscricaoElemental({ elemento, verbo, linha, rotas, contagem, abertoAtual = null, aoNavegar }: InscricaoElementalProps) {
+export function InscricaoElemental({ elemento, verbo, linha, rotas, contagem, abertoAtual = null, aoNavegar, busca }: InscricaoElementalProps) {
   const idTitulo = `mais-inscricao-${elemento}-titulo`;
   const vazia = !rotas.some((item) => visivel(item.estado) || (item.rota.id === 'temporal' && SUBPORTAIS.some((sub) => visivel(estadoDoSubportal(item, sub.id)))));
   const inicio = rotas.findIndex((item) => visivel(item.estado));
@@ -100,6 +104,8 @@ export function InscricaoElemental({ elemento, verbo, linha, rotas, contagem, ab
               atual={abertoAtual === item.rota.id}
               primeira={item.primeira}
               aoNavegar={aoNavegar}
+              busca={busca}
+              ordem={item.ordem}
             />
             {item.rota.id === 'temporal' ? <Subportais item={item} abertoAtual={abertoAtual} aoNavegar={aoNavegar} /> : null}
           </li>

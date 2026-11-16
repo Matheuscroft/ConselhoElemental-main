@@ -71,3 +71,13 @@
 .rosa[data-reduzido="true"] .rosa-agulha { transition: none; }
 .rosa[data-reduzido="true"] .rosa-entrada,
 .rosa[data-reduzido="true"] .rosa-nucleo { animation: none; }
+
+/* ---------- A bússola gira devagar (UAU): só transform; uma volta a cada 36 s ---------- */
+.rosa-giro { transform-origin: 60px 60px; animation: rosa-gira calc(var(--ds-duration-conjure) * 50) linear infinite; }
+.rosa-pontos { stroke: rgb(var(--el-gold) / .34); stroke-dasharray: 1 5; stroke-linecap: round; }
+.rosa-ponta { fill: rgb(var(--el-gold) / .7); }
+@keyframes rosa-gira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .rosa-giro { animation: none; }
+}
+.rosa[data-reduzido="true"] .rosa-giro { animation: none; }

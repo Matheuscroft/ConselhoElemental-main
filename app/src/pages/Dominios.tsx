@@ -14,8 +14,11 @@ import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CenaDominios } from '@/components/dominios/CenaDominios';
+import { ResumoDominios } from '@/components/dominios/ResumoDominios';
 import '@/styles/elemental-design-system.css';
 import '@/components/domains/domains.css';
+import '@/components/dominios/dominios-uau.css';
 
 export function Dominios() {
   const accountId = useAppStore(state => state.currentAccountId);
@@ -111,10 +114,12 @@ function DomainsWorkspace() {
 
   const searchedAreas = visibleAreas.filter(area => `${area.name} ${area.description}`.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR')));
   const counts = Object.fromEntries(elementOrder.map(id => [id, getOrderedAreasForElement(id).length])) as Record<ElementId, number>;
-  return <div className="elemental-system domains-workspace">
+  const linkedCount = allAreas.filter(area => activeAreaSet.has(area.id)).length;
+  return <CenaDominios tela="lista">
     <header className="domains-heading"><span className="domains-heading-rune"><ArcaneIcon name="dominios" size={36} /></span><div><h1>Domínios</h1><p>Organize as áreas que fazem parte da sua vida.</p></div>
       <Button ref={createButtonRef} className="elemental-action" onClick={() => { resetCreateForm(); setShowCreateModal(true); }}><Plus size={19} />Nova área</Button>
     </header>
+    <ResumoDominios total={allAreas.length} vinculadas={linkedCount} personalizadas={customAreas.length} />
     <nav className="domain-section-nav" aria-label="Atalhos de Domínios"><DomainSectionJump target="domains-areas-heading">Ir às áreas</DomainSectionJump><button type="button" onClick={() => { focusDomainSection('domains-areas-heading'); document.getElementById('domains-area-search')?.focus({ preventScroll: true }); }}><Search size={16} aria-hidden="true" />Buscar uma área</button></nav>
     <section aria-labelledby="domains-elements-heading"><div className="domains-section-heading"><h2 id="domains-elements-heading" tabIndex={-1}>Quatro elementos, seus caminhos</h2><button type="button" aria-pressed={selectedElement === null} onClick={() => setSelectedElement(null)}>Todos os elementos</button></div>
       <DomainElementRail selected={selectedElement} counts={counts} onSelect={setSelectedElement} />
@@ -140,5 +145,5 @@ function DomainsWorkspace() {
         <div className="domain-form-actions"><Button type="button" className="elemental-action elemental-action-secondary" onClick={() => setShowCreateModal(false)}>Cancelar</Button><Button type="submit" className="elemental-action">Criar área</Button></div>
       </form>
     </DialogContent></Dialog>
-  </div>;
+  </CenaDominios>;
 }

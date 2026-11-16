@@ -1,0 +1,354 @@
+/*
+ * Domínios and the detail of an area, UAU pass. Same language as the Sanctuary,
+ * Pillars, Cycles, Rituals and Journeys:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by CenaDominios; gold until the week has a leader);
+ *  - ONE real pane of glass per screen (.ds-glass-float, so this sheet declares
+ *    no blur of its own): the summary on the list, the area's cover on the
+ *    detail, each with a light behind it, a one-pixel rim that catches the
+ *    finger and a light inside that follows it;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve");
+ *  - areas as runes whose ring draws the share of points, subareas as sigils
+ *    that arrive on a spring; everything else is the same material, no blur.
+ *
+ * Loaded after domains.css, so where the two meet this one wins. Every time is
+ * a --ds-duration-* token or a multiple of one; only transform, opacity, scale,
+ * translate and stroke dashes move.
+ */
+
+.dom-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --dom-base: calc(var(--ds-duration-press) * 0);
+  --dom-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+}
+/* While the arrival plays, the lower sections wait for the heading and the pane. */
+.dom-cena[data-entrada="plena"][data-abrindo="true"] { --dom-base: calc(var(--ds-duration-conjure) + var(--ds-stagger) * 4); }
+
+/* ---------- The light behind the heading ---------- */
+.dom-luz {
+  position: absolute;
+  inset: -24px 8px auto 8px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--dom-grao),
+    radial-gradient(ellipse 48% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 44%, rgb(var(--el-gold) / .16), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--semana-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Heading and actions ---------- */
+.dom-cena .domains-heading h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 34%, transparent); }
+.dom-cena .domains-heading-rune {
+  border-radius: 50% 50% 12px 12px;
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--semana-aura) 26%, transparent), rgb(var(--el-gold) / .05) 70%);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--semana-aura) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / .14);
+}
+.dom-cena .domains-heading .elemental-action {
+  position: relative;
+  overflow: hidden;
+  min-height: 52px;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.dom-cena .domains-heading .elemental-action:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+/* One pass of light over the main action, after the scene has arrived. */
+.dom-cena[data-entrada="plena"] .domains-heading .elemental-action::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .5) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: dom-lampejo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) both;
+}
+@keyframes dom-lampejo { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+.dom-cena h2 { text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 22%, transparent); }
+.dom-cena .domain-section-nav { margin: 0 0 var(--ds-ritmo-secao); }
+.dom-cena .domain-section-nav :is(button, .domain-section-jump), .dom-cena .domain-section-jump {
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.dom-cena :is(.domain-section-nav button, .domain-section-jump):active { scale: .95; transition-duration: var(--ds-duration-press); }
+
+/* ---------- The one pane of glass: recipe on the markup, dressing here ---------- */
+.dom-resumo { position: relative; margin: 0 0 var(--ds-ritmo-secao); }
+.dom-resumo-luz, .dom-showcase-luz {
+  position: absolute;
+  inset: -32px -8px -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+}
+.dom-cena .dom-painel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--dom-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+.dom-resumo .dom-painel { display: grid; gap: 16px; padding: 18px 16px; }
+/* The rim: one pixel of light, brightest where the finger is; at rest it sits at the top edge. */
+.dom-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the glass, under its content. */
+.dom-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.dom-painel[data-luz-acesa]::before, .dom-painel[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.dom-resumo .ds-cifra { font-size: var(--ds-fluid-display); text-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 38%, transparent); }
+.dom-resumo .ds-cifra > small { text-shadow: none; }
+.dom-resumo .ds-medidor { --medidor-cor: var(--semana-acento); }
+.dom-numero { white-space: nowrap; }
+.dom-cena .dom-resumo .ds-medidor[data-forma="fio"] { overflow: visible; border-radius: var(--ds-raio-controle); }
+.dom-cena .dom-resumo .ds-medidor[data-forma="fio"]::after {
+  border-radius: inherit;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--medidor-cor) 52%, transparent), var(--medidor-cor));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--medidor-cor) 60%, transparent);
+  transition: transform var(--ds-duration-conjure) var(--ds-ease);
+}
+.dom-cena .dom-resumo .ds-medidor[data-forma="fio"][data-conquista]::after { background: rgb(var(--el-gold)); box-shadow: 0 0 12px rgb(var(--el-gold) / .6); }
+
+/* ---------- The four elements: a rail that lights up where it opens ---------- */
+.dom-cena .domain-rail-card {
+  border-radius: var(--ds-raio-runa);
+  transition: flex-grow var(--ds-duration-reveal) var(--ds-ease), border-color var(--ds-duration-feedback), box-shadow var(--ds-duration-settle) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.dom-cena .domain-rail-card:active { scale: .97; transition-duration: var(--ds-duration-reveal), var(--ds-duration-feedback), var(--ds-duration-settle), var(--ds-duration-press); }
+.dom-cena .domain-rail-card[data-open="true"] { box-shadow: 0 0 38px rgb(var(--domain-tint) / .26), inset 0 1px 0 rgb(255 255 255 / .12); }
+.dom-cena .domain-rail-art img { filter: drop-shadow(0 8px 18px rgb(var(--domain-tint) / .3)); }
+.dom-cena .domain-rail-card[data-open="true"] .domain-rail-art img { animation: dom-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out infinite alternate; }
+@keyframes dom-flutuar { from { transform: translateY(0); } to { transform: translateY(-8px); } }
+.dom-cena .domains-section-heading > button[aria-pressed="true"] { border-radius: var(--ds-raio-controle); }
+
+/* ---------- The segmented control: the marker slides ---------- */
+.dom-cena .domains-mode {
+  position: relative;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 4px;
+  border-radius: var(--ds-raio-runa);
+}
+.dom-cena .domains-mode::before {
+  content: '';
+  position: absolute;
+  inset: 4px auto 4px 4px;
+  width: calc((100% - 12px) / 2);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-gold) / .13);
+  box-shadow: inset 0 -2px rgb(var(--el-gold));
+  transition: translate var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.dom-cena .domains-mode:has(> :nth-child(2)[aria-pressed="true"])::before { translate: calc(100% + 4px) 0; }
+.dom-cena .domains-mode button { position: relative; border-radius: var(--ds-raio-controle); transition: color var(--ds-duration-feedback) var(--ds-ease); }
+.dom-cena .domains-mode button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+.dom-cena .domains-search { border-radius: var(--ds-raio-controle); }
+
+/* ---------- The catalogue: each area a rune whose ring draws its share ---------- */
+.dom-cena .domain-catalogue-group {
+  border-radius: var(--ds-raio-runa);
+  transition: border-color var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.dom-cena .domain-catalogue-group[data-open="true"] { box-shadow: 0 10px 34px color-mix(in srgb, var(--catalogue-accent) 14%, transparent); }
+.dom-cena .domain-catalogue-heading > svg:first-child { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--catalogue-accent) 45%, transparent)); }
+.dom-cena .domain-catalogue-tools button { border-radius: var(--ds-raio-controle); }
+.dom-cena .domain-catalogue-link > .dom-runa { flex: 0 0 48px; width: 48px; height: 48px; }
+.dom-runa { position: relative; display: grid; place-items: center; color: var(--catalogue-accent); transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.dom-runa > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); fill: none; }
+.dom-runa-trilho { stroke: color-mix(in srgb, var(--catalogue-accent) 20%, transparent); stroke-width: 2; }
+.dom-runa-arco { stroke: var(--catalogue-accent); stroke-width: 2.6; stroke-linecap: round; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--catalogue-accent) 70%, transparent)); }
+.dom-runa-centro { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--catalogue-accent) 16%, transparent), transparent 72%); }
+.dom-cena .domain-catalogue-link:active .dom-runa { scale: .9; transition-duration: var(--ds-duration-press); }
+.dom-cena .domain-catalogue-link > svg:last-child { transition: translate var(--ds-duration-settle) var(--ds-ease-conjure); }
+@media (hover: hover) {
+  .dom-cena .domain-catalogue-link:hover > svg:last-child { translate: 3px -3px; }
+  .dom-cena .domain-catalogue-link:hover .dom-runa { scale: 1.06; }
+}
+/* The ring draws when its group opens, a step apart, like the sigils of the detail. */
+.dom-cena .domain-catalogue-group[data-open="true"] .dom-runa-arco { animation: dom-desenhar var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)) backwards; }
+.dom-cena .domain-catalogue-group[data-open="true"] .dom-runa-centro { animation: dom-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)) backwards; }
+.dom-cena .domain-catalogue-group[data-open="true"] .domain-catalogue-row { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--i, 0) * var(--ds-stagger)) backwards; }
+@keyframes dom-desenhar { from { stroke-dasharray: 0 100; } }
+@keyframes dom-selar { from { opacity: 0; scale: .4; } }
+
+/* ---------- The detail: the cover as the pane ---------- */
+.dom-showcase-cena { position: relative; max-width: 800px; margin: 0 auto; }
+.dom-showcase-cena > .domain-showcase { max-width: none; margin: 0; }
+.dom-cena .domain-showcase { border-radius: var(--ds-raio-runa); border-color: rgb(var(--domain-tint) / .3); }
+.dom-cena .domain-showcase-cover { background: radial-gradient(ellipse at 65% 30%, rgb(var(--domain-tint) / .22), transparent 78%); }
+.dom-cena .domain-showcase-title { background: linear-gradient(transparent, rgb(var(--el-canvas) / .62) 72%); }
+.dom-cena .domain-showcase-title h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px rgb(var(--domain-tint) / .45); }
+.dom-cena .domain-showcase-art { translate: calc(var(--par-x, 0) * 10px) calc(var(--par-y, 0) * 6px); }
+.dom-cena .domain-showcase-art img { filter: drop-shadow(0 10px 22px rgb(var(--domain-tint) / .4)); animation: dom-flutuar calc(var(--ds-duration-conjure) * 6) ease-in-out infinite alternate; }
+/* The orbit turns slowly, with one small planet on it. */
+.dom-cena .domain-showcase-orbit { animation: dom-girar calc(var(--ds-duration-conjure) * 50) linear infinite; }
+.dom-cena .domain-showcase-orbit::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: calc(50% - 5px);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--domain-tint));
+  box-shadow: 0 0 16px rgb(var(--domain-tint) / .9);
+}
+@keyframes dom-girar { to { transform: rotate(1turn); } }
+.dom-cena .domain-showcase-toggle { transition: background-color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.dom-cena .domain-showcase-toggle:active { scale: .98; transition-duration: var(--ds-duration-press); }
+.dom-cena .domain-showcase-toggle svg { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.dom-cena .domain-showcase-detail dd { text-shadow: 0 0 18px rgb(var(--domain-tint) / .35); }
+.dom-cena .domain-area-navigator { border-radius: var(--ds-raio-runa); background: var(--ds-surface-raised); border-color: rgb(255 255 255 / 9%); box-shadow: var(--ds-rim); }
+.dom-cena .domain-area-navigator select { border-radius: var(--ds-raio-controle); }
+.dom-cena .domain-neighbors a { min-height: 48px; transition: translate var(--ds-duration-settle) var(--ds-ease-conjure); }
+@media (hover: hover) {
+  .dom-cena .domain-neighbors a:first-child:hover { translate: -3px 0; }
+  .dom-cena .domain-neighbors a:last-child:hover { translate: 3px 0; }
+}
+
+/* ---------- Subareas: sigils that arrive on a spring ---------- */
+.dom-cena .domain-subarea {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--ds-raio-runa);
+  border-color: rgb(255 255 255 / 9%);
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  transition: border-color var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+  animation: dom-mola var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--dom-base) + min(var(--i, 0), 8) * var(--ds-stagger)) backwards;
+}
+.dom-cena[data-entrada="breve"] .domain-subarea { animation: dom-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.dom-cena .domain-subarea[data-ativa] { border-color: color-mix(in srgb, var(--elem-acento) 34%, transparent); box-shadow: var(--ds-rim), 0 10px 30px color-mix(in srgb, var(--elem-aura) 10%, transparent); }
+.dom-cena .domain-subarea:active { scale: .985; transition-duration: var(--ds-duration-press); }
+/* The finger's light, inside the card and under its content. */
+.dom-cena .domain-subarea::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--elem-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.dom-cena .domain-subarea[data-luz-acesa]::before { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+@keyframes dom-mola { from { opacity: 0; transform: translateY(26px) scale(.94); } }
+@keyframes dom-aparecer { from { opacity: 0; } }
+@keyframes dom-subir { from { opacity: 0; transform: translateY(14px); } }
+
+.dom-sigilo { position: relative; display: grid; place-items: center; flex: 0 0 auto; color: var(--elem-acento); }
+.dom-sigilo > svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: currentColor; overflow: visible; }
+.dom-sigilo-anel { stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 2 4; opacity: .5; transition: stroke-dasharray var(--ds-duration-settle) var(--ds-ease), opacity var(--ds-duration-settle) var(--ds-ease); }
+.dom-sigilo-marcas { opacity: .6; stroke-width: 1.6; stroke-linecap: round; transform-box: view-box; transform-origin: 50% 50%; }
+.dom-sigilo-centro { position: relative; display: grid; place-items: center; opacity: .6; transition: opacity var(--ds-duration-settle) var(--ds-ease); }
+.dom-sigilo[data-ativo] { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--elem-aura) 45%, transparent)); }
+.dom-sigilo[data-ativo] .dom-sigilo-anel { stroke-dasharray: 100 100; opacity: 1; }
+.dom-sigilo[data-ativo] .dom-sigilo-marcas { opacity: 1; }
+/* A touched card turns its sigil once; nothing keeps spinning at rest. */
+.dom-cena .domain-subarea[data-luz-acesa] .dom-sigilo[data-ativo] .dom-sigilo-marcas { animation: dom-girar var(--ds-duration-conjure) var(--ds-ease); }
+.dom-sigilo[data-ativo] .dom-sigilo-centro { opacity: 1; }
+.dom-cena[data-entrada="plena"] .dom-sigilo[data-ativo] .dom-sigilo-anel { animation: dom-desenhar var(--ds-duration-conjure) var(--ds-ease) calc(var(--dom-base) + min(var(--i, 0), 8) * var(--ds-stagger) + var(--ds-duration-reveal)) backwards; }
+.dom-cena[data-entrada="plena"] .domain-subarea .dom-sigilo-centro { animation: dom-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--dom-base) + min(var(--i, 0), 8) * var(--ds-stagger) + var(--ds-duration-reveal)) backwards; }
+.dom-cena .domain-subarea dd { text-shadow: 0 0 16px color-mix(in srgb, var(--elem-aura) 30%, transparent); }
+.dom-cena .domain-subarea-actions button, .dom-cena .domain-module-link { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.dom-cena .domain-subarea-actions button:active { scale: .94; transition-duration: var(--ds-duration-press); }
+.dom-cena .domain-module-link > svg { transition: translate var(--ds-duration-settle) var(--ds-ease-conjure); }
+@media (hover: hover) { .dom-cena .domain-module-link:hover > svg { translate: 3px -3px; } }
+
+/* ---------- Empty states: four runes, each in its own light ---------- */
+.dom-vazio {
+  position: relative;
+  isolation: isolate;
+  gap: 12px;
+  overflow: clip;
+  border-radius: var(--ds-raio-runa);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura, rgb(var(--el-gold))) 16%, transparent), transparent 100%),
+    var(--ds-surface-sunken);
+}
+.dom-vazio-runas { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin-bottom: 4px; }
+.dom-vazio-runa {
+  position: relative;
+  display: block;
+  color: var(--elem-acento);
+  animation: dom-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ordem) * var(--ds-duration-reveal) * -1) infinite alternate;
+}
+.dom-vazio-runa:is(:nth-child(2), :nth-child(3)) { margin-bottom: 12px; }
+.dom-vazio-runa::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), transparent 68%); }
+.dom-vazio-runa > svg { position: relative; filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--elem-aura) 40%, transparent)); }
+.dom-vazio h3 { text-wrap: balance; }
+
+/* ---------- Dialogs keep the system's radius ---------- */
+.domain-dialog { border-radius: var(--ds-raio-runa); }
+.domain-element-picker label > span, .domain-form-preview { border-radius: var(--ds-raio-controle); }
+
+/* ---------- Arrival of the scene, once per opening of the app ---------- */
+.dom-cena[data-entrada="plena"] .dom-luz { animation: dom-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.dom-cena[data-entrada="plena"] .domains-heading > * { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.dom-cena[data-entrada="plena"] .domains-heading > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.dom-cena[data-entrada="plena"] .domains-heading > :nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4); }
+.dom-cena[data-entrada="plena"] .dom-resumo { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+.dom-cena[data-entrada="plena"] .domain-section-nav { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards; }
+.dom-cena[data-entrada="plena"][data-tela="lista"] > section { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 10) backwards; }
+.dom-cena[data-entrada="plena"] .domain-rail-card { animation: dom-chegar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 10) backwards; }
+.dom-cena[data-entrada="plena"] .domain-rail-card:nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 12); }
+.dom-cena[data-entrada="plena"] .domain-rail-card:nth-child(3) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 14); }
+.dom-cena[data-entrada="plena"] .domain-rail-card:nth-child(4) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 16); }
+.dom-cena[data-entrada="plena"][data-tela="detalhe"] .domains-back { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.dom-cena[data-entrada="plena"][data-tela="detalhe"] .dom-showcase-cena { animation: dom-mola var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 3) backwards; }
+.dom-cena[data-entrada="plena"][data-tela="detalhe"] .domain-area-navigator { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 7) backwards; }
+.dom-cena[data-entrada="plena"][data-tela="detalhe"] .domains-library { animation: dom-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 9) backwards; }
+@keyframes dom-chegar { from { opacity: 0; transform: translateY(18px) scale(.94); } }
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.dom-cena[data-entrada="breve"] :is(.domains-heading, .dom-resumo, .dom-showcase-cena) { animation: dom-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* ---------- System preferences ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .dom-cena .dom-painel { background: rgb(var(--el-surface) / 96%); }
+  .dom-resumo-luz, .dom-showcase-luz, .dom-luz { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dom-luz, .dom-resumo-luz, .dom-showcase-luz, .dom-cena .domain-showcase-art { translate: none; }
+  .dom-cena *, .dom-cena *::before, .dom-cena *::after { animation: none !important; }
+  .dom-painel::before, .dom-painel::after, .dom-cena .domains-mode::before,
+  .dom-cena .domain-subarea, .dom-cena .domain-subarea::before, .dom-runa,
+  .dom-cena .domain-rail-card, .dom-cena .domain-showcase-toggle, .dom-cena .domain-showcase-toggle svg,
+  .dom-cena .domain-neighbors a, .dom-cena .domain-catalogue-link > svg:last-child,
+  .dom-sigilo-anel, .dom-sigilo-centro, .dom-cena .domains-heading .elemental-action { transition: none; }
+}

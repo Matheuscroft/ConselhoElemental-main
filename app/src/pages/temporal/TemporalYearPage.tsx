@@ -8,7 +8,12 @@ import { useTemporalView } from '@/components/temporal/useTemporalView';
 import { temporalActivityHref } from '@/components/temporal/TemporalDayAgenda';
 import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
 import { MonthShowcase } from '@/components/temporal/MonthShowcase';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapaDoAno } from '@/components/temporal/MapaDoAno';
+import { useDirecao } from '@/components/temporal/useDirecao';
+import { TituloDoPeriodo } from '@/components/temporal/TituloDoPeriodo';
+import { calor } from '@/components/temporal/elementos-dos-dias';
+import { Contagem } from '@/components/motion/Contagem';
+import { ChevronLeft, ChevronRight, CalendarHeart } from 'lucide-react';
 import { useAppStore } from '@/stores/appStore';
 import {
   buildTemporalCommitments,
@@ -20,7 +25,6 @@ import {
 } from '@/lib/temporal';
 import { TemporalLayout } from '@/pages/temporal/TemporalLayout';
 
-const cardClass = 'temporal-stat';
 const ANNUAL_ENTRY_MARKER = '[ANUAL_ENTRY]';
 const LEGACY_ANNUAL_TASK_MARKER = '[ANUAL_TASK]';
 const ANNUAL_CATEGORY_PREFIX = '[ANUAL_CATEGORY:';
@@ -98,6 +102,7 @@ export const TemporalYearPage: React.FC = () => {
   const { anchorDate, setAnchorDate, returnTo } = useTemporalView('year');
   const year = anchorDate.getFullYear();
   const setYear = (next: number) => setAnchorDate(new Date(next, 0, 1));
+  const direcao = useDirecao(String(year));
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [annualMessage, setAnnualMessage] = useState('');
   const addHabit = useAppStore((state) => state.addHabit);
@@ -139,6 +144,8 @@ export const TemporalYearPage: React.FC = () => {
       };
     });
   }, [events, snapshot, year]);
+
+  const maiorMes = useMemo(() => months.reduce((mais, { metrics }) => Math.max(mais, metrics.totals.totalCompleted), 0), [months]);
 
   const recurrenceGroups = useMemo(() => {
     const yearly: string[] = [];
@@ -200,54 +207,40 @@ export const TemporalYearPage: React.FC = () => {
       subtitle="Acompanhe seus meses e guarde as datas que importam."
       className="temporal-year"
     >
-      <div className="temporal-year-selector">
-        <button
-          type="button"
-          aria-label="Ano anterior"
-          onClick={() => setYear(year - 1)}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronLeft className="h-4 w-4" />
-        </button>
-        <div><p className="temporal-year-number">{year}</p><button type="button" onClick={() => setYear(new Date().getFullYear())} className="temporal-year-today">Voltar ao ano atual</button></div>
-        <button
-          type="button"
-          aria-label="Próximo ano"
-          onClick={() => setYear(year + 1)}
-          className="rounded-lg border border-white/20 p-2 text-white/80 hover:bg-white/10"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
+      <div className="temporal-vidro">
+        <div className="temporal-vidro-luz" aria-hidden="true" />
+        <section className="temporal-ano-heroi ds-glass-float" data-luz aria-label={`Resumo de ${year}`}>
+          <div className="temporal-year-selector">
+            <button type="button" aria-label="Ano anterior" onClick={() => setYear(year - 1)} className="temporal-icon-button">
+              <ChevronLeft size={20} aria-hidden="true" />
+            </button>
+            <div>
+              <TituloDoPeriodo como="p" chave={String(year)} className="temporal-year-number">{year}</TituloDoPeriodo>
+              <button type="button" onClick={() => setYear(new Date().getFullYear())} className="temporal-year-today">Voltar ao ano atual</button>
+            </div>
+            <button type="button" aria-label="Próximo ano" onClick={() => setYear(year + 1)} className="temporal-icon-button">
+              <ChevronRight size={20} aria-hidden="true" />
+            </button>
+          </div>
+
+          <p role="status" className="temporal-entry-status">{annualMessage}</p>
+          <div className="temporal-year-stats">
+            <article className="temporal-stat"><p>Concluído</p><p><Contagem valor={yearMetrics.totals.totalCompleted} /></p></article>
+            <article className="temporal-stat"><p>Compromissos</p><p><Contagem valor={yearMetrics.totals.commitments} /></p></article>
+            <article className="temporal-stat"><p>Pontos</p><p><Contagem valor={yearMetrics.totals.score} formatar={(valor) => valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} /></p></article>
+            <article className="temporal-stat"><p>Dias ativos</p><p><Contagem valor={yearMetrics.totals.activeDays} /></p></article>
+            <article className="temporal-stat"><p>Média mensal</p><p><Contagem valor={Math.round(yearMetrics.totals.score / 12)} /></p></article>
+          </div>
+        </section>
       </div>
 
-      <p role="status" className="temporal-entry-status">{annualMessage}</p>
-      <div className="temporal-year-stats">
-        <article className={cardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Concluído</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{yearMetrics.totals.totalCompleted}</p>
-        </article>
-        <article className={cardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Compromissos</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{yearMetrics.totals.commitments}</p>
-        </article>
-        <article className={cardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Pontos</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{yearMetrics.totals.score}</p>
-        </article>
-        <article className={cardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Dias ativos</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{yearMetrics.totals.activeDays}</p>
-        </article>
-        <article className={cardClass}>
-          <p className="text-xs uppercase tracking-[0.16em] text-white/55">Média mensal</p>
-          <p className="mt-2 text-2xl font-semibold text-white">{Math.round(yearMetrics.totals.score / 12)}</p>
-        </article>
-      </div>
+      <MapaDoAno ano={year} direcao={direcao} returnTo={returnTo} atual={year === now.getFullYear() ? now.getMonth() : null}
+        meses={months.map(({ monthDate, metrics }) => ({ data: monthDate, concluidos: metrics.totals.totalCompleted, compromissos: metrics.totals.commitments }))} />
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <section className="temporal-painel ds-pane">
         <h3 className="temporal-section-title">Tarefas anuais e aniversários</h3>
 
-        <div className="mt-3 flex justify-end">
+        <div className="temporal-painel-acoes">
           <DialogTrigger asChild><button
             type="button"
             onClick={openCreateModal}
@@ -258,35 +251,34 @@ export const TemporalYearPage: React.FC = () => {
           </button></DialogTrigger>
         </div>
 
-        {annualAgenda.length > 0 && <ul className="mt-3 space-y-2" aria-label={`Agenda anual de ${year}`}>
+        {annualAgenda.length > 0 && <ul className="temporal-lista-cartoes" aria-label={`Agenda anual de ${year}`}>
           {annualAgenda.map(item => {
             const habit = item.sourceType === 'habit' ? habits.find(habit => habit.id === item.sourceId) : undefined;
             const commitment = item.sourceType === 'commitment' ? commitments.find(commitment => commitment.id === item.sourceId) : undefined;
             const notes = habit?.description || commitment?.description;
             const until = operationalDate(habit?.recurrenceConfig.until || commitment?.untilDate);
-            return <li key={item.id} className="rounded-xl border border-white/15 bg-black/15 p-3">
-              <p className="text-sm text-white">{item.title}</p>
-              <p className="mt-1 text-sm text-white/65">{item.date.toLocaleDateString('pt-BR')} · {habit ? 'Ciclo anual' : 'Lembrete anual'}</p>
-              {until && <p className="mt-1 text-sm text-white/65">Repete até {until.toLocaleDateString('pt-BR')}</p>}
-              {notes && <p className="mt-2 whitespace-pre-wrap break-words text-sm text-white/70">{notes}</p>}
-              {habit && <Link className="inline-flex min-h-12 items-center text-sm text-mystic-gold underline" to={temporalActivityHref(item)!} state={{ temporalReturn: returnTo }}>Abrir ciclo nesta data</Link>}
+            return <li key={item.id} className="temporal-cartao">
+              <p className="temporal-cartao-titulo">{item.title}</p>
+              <p className="temporal-nota">{item.date.toLocaleDateString('pt-BR')} · {habit ? 'Ciclo anual' : 'Lembrete anual'}</p>
+              {until && <p className="temporal-nota">Repete até {until.toLocaleDateString('pt-BR')}</p>}
+              {notes && <p className="temporal-nota temporal-nota-livre">{notes}</p>}
+              {habit && <Link className="temporal-link-ouro" to={temporalActivityHref(item)!} state={{ temporalReturn: returnTo }}>Abrir ciclo nesta data</Link>}
             </li>;
           })}
         </ul>}
-        <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-2">
+        <div className="temporal-lista-cartoes">
           {annualTasks.length === 0 && annualAgenda.length === 0 ? (
-            <div className="md:col-span-2">
-              <div className="flex min-h-[160px] flex-col items-center justify-center rounded-2xl border border-dashed border-white/20 bg-black/20 px-6 py-8 text-center">
-                <p className="text-lg font-semibold text-white">Nenhuma entrada anual cadastrada para {year}</p>
-                <p className="mt-2 text-sm text-white/65">Crie ciclos anuais e lembretes de aniversário para organizar o ano.</p>
-                <button
-                  type="button"
-                  onClick={openCreateModal}
-                  className="temporal-action mt-5"
-                >
-                  Criar primeira entrada
-                </button>
-              </div>
+            <div className="temporal-vazio temporal-vazio-largo">
+              <span className="temporal-vazio-selo" aria-hidden="true"><CalendarHeart size={22} /></span>
+              <p className="temporal-vazio-titulo">Nenhuma entrada anual cadastrada para {year}</p>
+              <p className="temporal-vazio-texto">Crie ciclos anuais e lembretes de aniversário para organizar o ano.</p>
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="temporal-action"
+              >
+                Criar primeira entrada
+              </button>
             </div>
           ) : (
             annualTasks.map((task) => {
@@ -294,33 +286,33 @@ export const TemporalYearPage: React.FC = () => {
               const parsed = parseAnnualEntry(task.description);
 
               return (
-                <article key={task.id} className="rounded-xl border border-white/10 bg-black/15 px-3 py-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className={`text-sm ${task.isCompleted ? 'text-white/55 line-through' : 'text-white'}`}>
+                <article key={task.id} className="temporal-cartao">
+                  <div className="temporal-cartao-linha">
+                    <p className="temporal-cartao-titulo" data-feito={task.isCompleted}>
                       {parsed.category === 'birthday' ? 'Aniversário: ' : ''}
                       {task.title}
                     </p>
                     <button
                       type="button"
                       onClick={() => (task.isCompleted ? uncompleteTask(task.id) : completeTask(task.id))}
-                      className="annual-entry-action rounded-md border border-white/15 px-3 py-2 text-xs text-white/80 hover:bg-white/10"
+                      className="annual-entry-action temporal-botao-fantasma"
                     >
                       {task.isCompleted ? 'Reabrir' : 'Concluir'}
                     </button>
                   </div>
 
-                  <p className="mt-1 text-xs text-white/60">
+                  <p className="temporal-nota">
                     {plannedDate
                       ? `Data configurada: ${plannedDate.toLocaleDateString('pt-BR')}`
                       : 'Data configurada: não definida'}
                   </p>
 
-                  <p className="mt-1 text-xs text-white/60">
+                  <p className="temporal-nota">
                     Registro anterior: a repetição ainda não está configurada como Ciclo. Histórico preservado.
                   </p>
 
                   {parsed.notes ? (
-                    <p className="mt-1 whitespace-pre-line text-xs text-white/65">{parsed.notes}</p>
+                    <p className="temporal-nota temporal-nota-livre">{parsed.notes}</p>
                   ) : null}
                 </article>
               );
@@ -335,28 +327,19 @@ export const TemporalYearPage: React.FC = () => {
           <AnnualEntryForm initialDate={new Date(year, now.getMonth(), Math.min(now.getDate(), new Date(year, now.getMonth() + 1, 0).getDate()))} onSave={handleCreateAnnualTask} onCancel={() => setIsCreateModalOpen(false)} />
         </DialogContent>
 
-      <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <section className="temporal-painel ds-pane">
         <h3 className="temporal-section-title">O ritmo dos seus hábitos</h3>
-        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-          <div className="rounded-xl border border-white/10 bg-black/15 p-3">
-            <p className="text-sm text-white">Anuais</p>
-            <p className="mt-1 text-xs text-white/70">{recurrenceGroups.yearly.length} atividades</p>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-black/15 p-3">
-            <p className="text-sm text-white">Mensais</p>
-            <p className="mt-1 text-xs text-white/70">{recurrenceGroups.monthly.length} atividades</p>
-          </div>
-          <div className="rounded-xl border border-white/10 bg-black/15 p-3">
-            <p className="text-sm text-white">Semanais</p>
-            <p className="mt-1 text-xs text-white/70">{recurrenceGroups.weekly.length} atividades</p>
-          </div>
+        <div className="temporal-ritmo">
+          <div className="temporal-ritmo-item"><p>Anuais</p><p><Contagem valor={recurrenceGroups.yearly.length} /> atividades</p></div>
+          <div className="temporal-ritmo-item"><p>Mensais</p><p><Contagem valor={recurrenceGroups.monthly.length} /> atividades</p></div>
+          <div className="temporal-ritmo-item"><p>Semanais</p><p><Contagem valor={recurrenceGroups.weekly.length} /> atividades</p></div>
         </div>
       </section>
 
       <section className="temporal-section" aria-labelledby="year-months-title">
         <div className="temporal-section-heading"><h3 id="year-months-title">Seus doze capítulos</h3><span>Abra um mês para explorar seus registros</span></div>
-        <div className="temporal-month-grid">
-          {months.map(({ monthDate, metrics }) => <MonthShowcase returnTo={returnTo} key={`${year}-${monthDate.getMonth()}`} date={monthDate} completed={metrics.totals.totalCompleted} commitments={metrics.totals.commitments} score={metrics.totals.score} current={year === now.getFullYear() && monthDate.getMonth() === now.getMonth()} />)}
+        <div className="temporal-month-grid" key={year} data-direcao={direcao}>
+          {months.map(({ monthDate, metrics }) => <MonthShowcase returnTo={returnTo} key={`${year}-${monthDate.getMonth()}`} calor={calor(metrics.totals.totalCompleted, maiorMes)} ordem={monthDate.getMonth()} date={monthDate} completed={metrics.totals.totalCompleted} commitments={metrics.totals.commitments} score={metrics.totals.score} current={year === now.getFullYear() && monthDate.getMonth() === now.getMonth()} />)}
         </div>
       </section>
     </TemporalLayout>

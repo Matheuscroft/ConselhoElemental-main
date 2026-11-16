@@ -1,0 +1,312 @@
+/*
+ * Cassino Arcano, UAU pass. Same language as the Sanctuary, Pillars, Cycles,
+ * Rituals and Journeys:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by CenaCassino; gold until the week has a leader),
+ *    which takes the colour of the chosen element the moment the wheel names one;
+ *  - ONE real pane of glass (.ds-glass-float, so this sheet declares no blur of
+ *    its own): the arena that holds the wheel, with that light behind it, a
+ *    one-pixel rim that catches the finger and a light inside that follows it;
+ *  - the wheel: a marquee of lights around the rim that turns while it spins, a
+ *    pointer that flicks against the pegs, a long deceleration that settles on
+ *    a spring (the curve lives in tempos-cassino.ts), then the winning sector
+ *    burns while the others dim, and rings and sparks leave the centre in the
+ *    element's colour;
+ *  - an arrival once per opening of the app (data-entrada="plena"), and only a
+ *    short fade when coming back (data-entrada="breve").
+ *
+ * Loaded after destiny.css, so where the two meet this one wins. Every time is a
+ * --ds-duration-* token or a multiple of one; only transform, opacity, scale,
+ * translate, rotate and stroke dashes move.
+ */
+
+.cas-cena {
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: rgb(var(--el-gold));
+  --cas-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+  position: relative;
+  isolation: isolate;
+}
+
+/* ---------- The light behind the heading ---------- */
+.cas-luz {
+  position: absolute;
+  inset: -24px 8px auto 8px;
+  height: 320px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    var(--cas-grao),
+    radial-gradient(ellipse 48% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    radial-gradient(ellipse 36% 40% at 70% 44%, rgb(var(--el-gold) / .16), transparent 100%),
+    radial-gradient(ellipse 44% 26% at 52% 10%, color-mix(in srgb, var(--semana-acento) 18%, transparent), transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse 62% 66% at 50% 42%, #000 34%, transparent 100%);
+  translate: calc(var(--par-x, 0) * -6px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Heading ---------- */
+.cas-cena .destiny-heading h1 { font-size: var(--ds-fluid-display); letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 34%, transparent); }
+.cas-cena .destiny-seal {
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--semana-aura) 26%, transparent), rgb(var(--el-gold) / .05) 70%);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--semana-aura) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / .14);
+}
+.cas-cena .destiny-free { border-radius: var(--ds-raio-controle); border: 1px solid rgb(var(--el-gold) / .16); }
+
+/* ---------- The one pane of glass: recipe on the markup, dressing here ---------- */
+.cas-palco { position: relative; margin: 8px 0 var(--ds-ritmo-secao, 32px); }
+.cas-palco-luz {
+  position: absolute;
+  inset: -32px -8px -24px;
+  pointer-events: none;
+  opacity: .8;
+  background:
+    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
+    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
+  transition: opacity var(--ds-duration-settle) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease);
+}
+.cas-palco[data-giro="true"] .cas-palco-luz, .cas-palco[data-revelado] .cas-palco-luz { opacity: 1; scale: 1.05; }
+.cas-cena .cas-painel {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding: 20px 16px 22px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: var(--ds-raio-runa);
+  background:
+    var(--cas-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+/* The rim: one pixel of light, brightest where the finger is; at rest it sits at the top edge. */
+.cas-painel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the glass, under its content. */
+.cas-painel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.cas-painel[data-luz-acesa]::before, .cas-painel[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* ---------- The wheel ---------- */
+.cas-roda { position: relative; display: flow-root; margin: 4px 0 20px; }
+.cas-roda .destiny-wheel-stage { margin: 0 auto; }
+.cas-cena .destiny-wheel-stage::before { border-color: color-mix(in srgb, var(--semana-acento) 40%, transparent); box-shadow: 0 0 45px color-mix(in srgb, var(--semana-aura) 20%, transparent); transition: box-shadow var(--ds-duration-settle) var(--ds-ease); }
+.cas-cena .destiny-wheel-stage[data-spinning="true"]::before { box-shadow: 0 0 60px color-mix(in srgb, var(--semana-aura) 42%, transparent); }
+/* A marquee of lights around the rim: still at rest, turning while the wheel spins. */
+.cas-cena .destiny-wheel-stage::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: repeating-conic-gradient(from -3deg, color-mix(in srgb, var(--semana-acento) 70%, white) 0 6deg, transparent 6deg 15deg);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%, #000 98%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 92%, #000 93%, #000 98%, transparent 100%);
+  opacity: .55;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.cas-cena .destiny-wheel-stage[data-spinning="true"]::after { opacity: 1; animation: cas-girar calc(var(--ds-duration-conjure) * 4) linear infinite; }
+.cas-palco[data-revelado] .destiny-wheel-stage::after { opacity: 1; animation: cas-piscar var(--ds-duration-reveal) ease-in-out 6 alternate; }
+.cas-cena .destiny-wheel-rim { border-color: color-mix(in srgb, rgb(var(--el-gold)) 80%, white); box-shadow: inset 0 0 24px #000, 0 0 36px color-mix(in srgb, var(--semana-aura) 24%, transparent); }
+.cas-cena .destiny-wheel-center {
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--semana-acento) 22%, #0d131c), #0d131c 72%);
+  box-shadow: 0 4px 18px #0008, 0 0 24px color-mix(in srgb, var(--semana-aura) 28%, transparent), inset 0 1px 0 rgb(255 255 255 / .16);
+}
+.cas-cena .destiny-wheel-stage[data-spinning="true"] .destiny-wheel-center { animation: cas-pulso var(--ds-duration-settle) ease-in-out infinite alternate; }
+/* The pointer flicks against the pegs while the wheel runs. */
+.cas-cena .destiny-wheel-stage[data-spinning="true"] .destiny-pointer { transform-origin: 50% 0; animation: cas-tic var(--ds-duration-press) ease-in-out infinite alternate; }
+/* The winner burns, the others step back. */
+.destiny-slice { transition: opacity var(--ds-duration-settle) var(--ds-ease); }
+.destiny-slice[data-esmaecido] { opacity: .36; }
+.destiny-slice[data-vencedor] path { filter: brightness(1.4) saturate(1.2); stroke: #fff; stroke-width: 2; }
+@keyframes cas-girar { to { transform: rotate(1turn); } }
+@keyframes cas-piscar { from { opacity: .35; } to { opacity: 1; } }
+@keyframes cas-pulso { from { scale: 1; } to { scale: 1.07; } }
+@keyframes cas-tic { from { rotate: -10deg; } to { rotate: 8deg; } }
+
+/* ---------- Rings and sparks leave the centre in the chosen element's colour ---------- */
+.cas-faiscas { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.cas-faiscas-anel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  border: 2px solid var(--elem-aura);
+  box-shadow: 0 0 24px var(--elem-aura), inset 0 0 24px color-mix(in srgb, var(--elem-aura) 50%, transparent);
+  animation: cas-anel calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both;
+}
+.cas-faiscas-anel[data-eco] { border-width: 1px; animation-delay: var(--ds-duration-reveal); }
+.cas-faiscas i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  border-radius: 50%;
+  background: var(--elem-aura);
+  box-shadow: 0 0 10px var(--elem-aura);
+  animation: cas-faisca calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both;
+}
+@keyframes cas-anel { from { opacity: .95; scale: .4; } to { opacity: 0; scale: 2.3; } }
+@keyframes cas-faisca {
+  from { opacity: 1; transform: rotate(var(--giro)) translateY(calc(var(--alcance) * -60px)) scale(1); }
+  to { opacity: 0; transform: rotate(var(--giro)) translateY(calc(var(--alcance) * -190px)) scale(.2); }
+}
+
+/* ---------- Count, actions ---------- */
+.cas-cena .destiny-count { text-shadow: 0 0 18px color-mix(in srgb, var(--semana-aura) 30%, transparent); }
+.cas-cena .destiny-spin {
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--semana-aura) 28%, transparent), inset 0 1px 0 rgb(255 255 255 / .5);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.cas-cena .destiny-spin:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+/* One pass of light over the main action, after the scene has arrived. */
+.cas-cena[data-entrada="plena"] .destiny-spin::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .5) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: cas-lampejo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) * 2) both;
+}
+@keyframes cas-lampejo { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+.cas-cena .destiny-spin > svg { transition: rotate var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cas-cena .destiny-spin:not(:disabled):active > svg { rotate: 120deg; }
+.cas-cena .destiny-skip { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.cas-cena .destiny-skip:active { transform: scale(.95); transition-duration: var(--ds-duration-press); }
+
+/* ---------- The result: it arrives on a spring, in the element's light ---------- */
+.cas-cena .destiny-result {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--ds-raio-runa);
+  background:
+    radial-gradient(ellipse at 0 0, color-mix(in srgb, var(--destiny-accent) 20%, transparent), transparent 80%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), 0 16px 48px color-mix(in srgb, var(--destiny-accent) 22%, transparent);
+  animation: cas-folha var(--ds-duration-settle) var(--ds-ease-conjure) backwards;
+}
+.cas-cena .destiny-result h2 { font-size: var(--ds-fluid-title); text-shadow: 0 0 24px color-mix(in srgb, var(--destiny-accent) 45%, transparent); }
+.cas-cena .destiny-result-cover img { filter: drop-shadow(0 8px 20px color-mix(in srgb, var(--destiny-accent) 55%, transparent)); animation: cas-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out infinite alternate; }
+.cas-cena .destiny-open {
+  position: relative;
+  overflow: hidden;
+  border-color: color-mix(in srgb, var(--destiny-accent) 70%, transparent);
+  background: color-mix(in srgb, var(--destiny-accent) 14%, transparent);
+  color: var(--destiny-accent);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.cas-cena .destiny-open:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.cas-cena .destiny-open > svg { transition: translate var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cas-cena .destiny-open::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / .28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: cas-lampejo var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-settle) both;
+}
+@media (hover: hover) {
+  .cas-cena .destiny-open:hover { background: color-mix(in srgb, var(--destiny-accent) 22%, transparent); }
+  .cas-cena .destiny-open:hover > svg { translate: 3px -3px; }
+}
+@keyframes cas-folha { from { opacity: 0; scale: .88; translate: 0 30px; } }
+@keyframes cas-flutuar { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+@keyframes cas-aparecer { from { opacity: 0; } }
+@keyframes cas-subir { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- Settings: the same material, without the blur ---------- */
+.cas-cena .destiny-settings { border: var(--ds-edge); border-radius: var(--ds-raio-runa); background: var(--ds-surface-raised); box-shadow: var(--ds-rim); }
+.cas-cena .destiny-types span { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease); }
+.cas-cena .destiny-types label:active span { scale: .95; transition-duration: var(--ds-duration-press); }
+.cas-cena .destiny-types input:checked + span { box-shadow: 0 0 18px rgb(var(--el-gold) / .18), inset 0 1px 0 rgb(255 255 255 / .08); }
+.cas-cena .destiny-options { border-radius: var(--ds-raio-controle); }
+.cas-cena .destiny-options summary > svg { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cas-cena .destiny-options[open] > ol { animation: cas-subir var(--ds-duration-settle) var(--ds-ease) backwards; }
+
+/* ---------- Empty state: four runes, each in its own light ---------- */
+.cas-vazio {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 80% 60% at 50% 0, color-mix(in srgb, var(--semana-aura) 14%, transparent), transparent 100%);
+}
+.cas-vazio-runas { display: flex; align-items: flex-end; justify-content: center; gap: 2px; margin-bottom: 4px; }
+.cas-vazio-runa {
+  position: relative;
+  display: block;
+  color: var(--elem-acento);
+  animation: cas-flutuar calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ordem) * var(--ds-duration-reveal) * -1) infinite alternate;
+}
+.cas-vazio-runa:is(:nth-child(2), :nth-child(3)) { margin-bottom: 12px; }
+.cas-vazio-runa::before { content: ''; position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--elem-aura) 30%, transparent), transparent 68%); }
+.cas-vazio-runa > svg { position: relative; filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--elem-aura) 40%, transparent)); }
+.cas-vazio h2 { text-wrap: balance; }
+.cas-cena .destiny-empty a { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.cas-cena .destiny-empty a:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+
+/* ---------- Arrival of the scene, once per opening of the app ---------- */
+.cas-cena[data-entrada="plena"] .cas-luz { animation: cas-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.cas-cena[data-entrada="plena"] .destiny-heading > * { animation: cas-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.cas-cena[data-entrada="plena"] .destiny-heading > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
+.cas-cena[data-entrada="plena"] .destiny-free { animation: cas-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.cas-cena[data-entrada="plena"] .cas-palco { animation: cas-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
+/* The wheel wakes: it turns in from a quarter-turn behind, growing into place on a spring. */
+.cas-cena[data-entrada="plena"] .destiny-wheel-rim { animation: cas-despertar calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards; }
+.cas-cena[data-entrada="plena"][data-abrindo="true"] .destiny-wheel-center { animation: cas-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 14) backwards; }
+.cas-cena[data-entrada="plena"] .destiny-settings { animation: cas-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 12) backwards; }
+@keyframes cas-despertar { from { opacity: 0; scale: .72; rotate: -110deg; } }
+@keyframes cas-selar { from { opacity: 0; scale: .5; } }
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.cas-cena[data-entrada="breve"] :is(.destiny-heading, .cas-palco) { animation: cas-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* ---------- System preferences ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  .cas-cena .cas-painel { background: rgb(var(--el-surface) / 96%); }
+  .cas-palco-luz, .cas-luz { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cas-luz, .cas-palco-luz { translate: none; }
+  .cas-cena *, .cas-cena *::before, .cas-cena *::after { animation: none !important; }
+  .cas-faiscas { display: none; }
+  .cas-painel::before, .cas-painel::after, .cas-palco-luz, .destiny-slice,
+  .cas-cena .destiny-wheel-stage::before, .cas-cena .destiny-wheel-stage::after,
+  .cas-cena .destiny-spin, .cas-cena .destiny-spin > svg, .cas-cena .destiny-skip,
+  .cas-cena .destiny-open, .cas-cena .destiny-open > svg, .cas-cena .destiny-types span,
+  .cas-cena .destiny-options summary > svg, .cas-cena .destiny-empty a { transition: none; }
+}

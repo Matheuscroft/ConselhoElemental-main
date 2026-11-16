@@ -7,6 +7,7 @@ import { PreferenciasDeSom } from '@/components/feedback/PreferenciasDeSom';
 import { ArcaneIcon, ROUTE_ICONS } from '@/components/elemental/ArcaneIcon';
 import { Vazio } from '@/components/elemental/blocos/Vazio';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
+import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import {
   ELEMENTOS_DA_ROSA, INSCRICOES, PORTAIS, ROTAS_POR_ELEMENTO, ehLatente, ehSubportal, elementoDaRota, elementoDoCaminho,
   conjurar, rotaPorId, type Portal,
@@ -17,7 +18,9 @@ import { InscricaoElemental, type ItemDaInscricao } from './InscricaoElemental';
 import { nomeDaRota, type EstadoDaLinha, type LinhaDeRotaProps } from './LinhaDeRota';
 import { useEspiaoDeElemento, lerDuracao } from './useEspiaoDeElemento';
 import { useArrastoDaFolha } from './useArrastoDaFolha';
+import { useEntradaDaTela, useLuzDaSemana } from './useCenaDaTela';
 import './hub.css';
+import './hub-uau.css';
 
 export interface HubMagicoProps {
   /** Caminho da página aberta (useLocation().pathname). */
@@ -60,6 +63,7 @@ function PortalDeAtalho({ portal, indice, atual, aoNavegar }: { portal: Portal; 
       to={rota.path}
       className="hub-portal"
       data-element={portal.elemento}
+      data-luz=""
       data-tocado={tocado || undefined}
       style={{ ['--i' as string]: indice }}
       aria-current={atual ? 'page' : undefined}
@@ -83,6 +87,9 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
   const tituloInterno = useRef<HTMLHeadingElement>(null);
   const tituloRef = titleRef ?? tituloInterno;
   const focoNoCorpo = useRef(false);
+  // Staged once per opening of the app; every later opening is the short rise. The week's leader lights the sheet.
+  const { entrada } = useEntradaDaTela('hub');
+  const luzDaSemana = useLuzDaSemana();
 
   const rotaAtual = rotaDoCaminho(pathname);
   const idAtual = rotaAtual?.id ?? null;
@@ -98,6 +105,9 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
   const semResposta = buscando && conj.primeira === null;
   const agulha: ElementId = buscando && conj.primeira ? (elementoDaRota(conj.primeira.id) ?? ativo) : ativo;
   const acesos = buscando ? ELEMENTOS_DA_ROSA.filter((elemento) => conj.contagemPorElemento[elemento] > 0) : undefined;
+
+  useParalaxe(raizRef, !reduzido);
+  useLuzDoToque(raizRef);
 
   const espiao = useEspiaoDeElemento({ raiz: corpoRef, ativo: !buscando, aoMudar: setAtivo });
 
@@ -182,12 +192,16 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
   };
 
   const inscricoes = ELEMENTOS_DA_ROSA.map((elemento) => {
+    const ordemDaResposta = (id: string) => {
+      const posicao = conj.acesas.findIndex((rota) => rota.id === id);
+      return posicao < 0 ? undefined : posicao;
+    };
     const itens: ItemDaInscricao[] = ROTAS_POR_ELEMENTO[elemento]
       .filter((id) => !ehSubportal(id))
       .flatMap((id) => {
         const rota = rotaPorId(id);
         if (!rota) return [];
-        const item: ItemDaInscricao = { rota, estado: estadoDe(id), primeira: conj.primeira?.id === id || undefined };
+        const item: ItemDaInscricao = { rota, estado: estadoDe(id), primeira: conj.primeira?.id === id || undefined, ordem: ordemDaResposta(id) };
         if (id === 'temporal') {
           item.subportais = Object.fromEntries(
             ROTAS_POR_ELEMENTO[elemento].filter(ehSubportal).map((sub) => [sub, estadoDe(sub)] as const),
@@ -204,7 +218,8 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
   const mostraPouco = !buscando && recentes.length >= 2;
 
   return (
-    <div className="hub" ref={raizRef} data-buscando={buscando || undefined}>
+    <div className="hub" ref={raizRef} data-buscando={buscando || undefined} data-entrada={entrada} style={luzDaSemana}>
+      <div className="hub-luz" aria-hidden="true" />
       <div className="hub-alca" aria-hidden="true" {...arrasto.alca}><span /></div>
 
       <div className="hub-rosa-linha" {...arrasto.rosa}>
@@ -285,7 +300,7 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
                 if (!rota) return null;
                 return (
                   <li key={id}>
-                    <Link to={rota.path} className="hub-pouco-link" data-element={elementoDaRota(id)} onClick={() => onNavegar?.(rota.path)}>
+                    <Link to={rota.path} className="hub-pouco-link ds-pane" data-luz="" data-element={elementoDaRota(id)} onClick={() => onNavegar?.(rota.path)}>
                       <ArcaneIcon name={ROUTE_ICONS[id] ?? 'santuario'} size={18} />
                       <span>{nomeDaRota(rota)}</span>
                     </Link>
@@ -324,6 +339,7 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
               contagem={conj.contagemPorElemento[elemento]}
               abertoAtual={idAtual}
               aoNavegar={aoNavegar}
+              busca={buscando ? textoBusca : undefined}
             />
           ))}
         </div>

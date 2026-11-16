@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowUpRight, Plus, Search, Trash2 } from 'lucide-react';
 import { DomainAreaNavigator, DomainSectionJump } from '@/components/domains/DomainNavigation';
@@ -12,8 +12,11 @@ import { AREAS, ELEMENTS } from '@/constants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { CenaDominios } from '@/components/dominios/CenaDominios';
+import { SigiloSubarea } from '@/components/dominios/SigiloSubarea';
 import '@/styles/elemental-design-system.css';
 import '@/components/domains/domains.css';
+import '@/components/dominios/dominios-uau.css';
 
 export function DominioDetalhe() {
   const { areaId } = useParams<{ areaId: string }>();
@@ -128,7 +131,7 @@ function DomainWorkspace({ areaId }: { areaId?: string }) {
   };
 
 
-  if (!area) return <div className="elemental-system domains-workspace"><DomainEmpty title="Área não encontrada"><p>Essa área não existe ou foi removida.</p><Link className="elemental-action elemental-action-secondary" to={backHref}>Voltar para Domínios</Link></DomainEmpty></div>;
+  if (!area) return <CenaDominios tela="detalhe"><DomainEmpty title="Área não encontrada"><p>Essa área não existe ou foi removida.</p><Link className="elemental-action elemental-action-secondary" to={backHref}>Voltar para Domínios</Link></DomainEmpty></CenaDominios>;
 
   const element = ELEMENTS[area.elementId];
   const areaTaskCount = tasks.filter((task) => task.areaPrimaryId === area.id).length;
@@ -146,7 +149,7 @@ function DomainWorkspace({ areaId }: { areaId?: string }) {
 
   const searchedSubareas = visibleSubareas.filter(subarea => subarea.name.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR')));
   const removal = subareas.find(subarea => subarea.id === removeId && subarea.isCustom);
-  return <div className="elemental-system domains-workspace">
+  return <CenaDominios tela="detalhe">
     <nav id="domain-detail-start" tabIndex={-1} className="domains-back" aria-label="Navegação da área"><Link to={backHref}><ArrowLeft size={18} aria-hidden="true" />Voltar às áreas</Link><DomainSectionJump target="domain-subareas-heading">Ir às subáreas</DomainSectionJump></nav>
     <DomainShowcase area={area} taskCount={areaTaskCount} habitCount={areaHabitCount} subareaCount={subareas.length} />
     <DomainAreaNavigator areas={allAreas} current={area} returnSearch={returnSearch} onSelect={id => navigate(`/dominios/${id}`, { state: { domainsReturnSearch: returnSearch } })} />
@@ -154,7 +157,7 @@ function DomainWorkspace({ areaId }: { areaId?: string }) {
       <div className="domains-toolbar"><div className="domains-mode" role="group" aria-label="Vínculo das subáreas"><button type="button" aria-pressed={listMode === 'active'} onClick={() => setListMode('active')}>Vinculadas ({subareas.filter(subarea => activeSubareaSet.has(subarea.id)).length})</button><button type="button" aria-pressed={listMode === 'inactive'} onClick={() => setListMode('inactive')}>Desvinculadas ({subareas.filter(subarea => !activeSubareaSet.has(subarea.id)).length})</button></div><div className="domains-search"><Search size={18} aria-hidden="true" /><Input type="search" aria-label="Buscar subárea" placeholder="Buscar subárea…" value={search} onChange={event => setSearch(event.target.value)} /></div></div>
       {search && <div className="domain-filter-summary"><span>Busca: {search}</span><button type="button" onClick={() => setSearch('')}>Limpar busca</button></div>}
       <p className="domains-result" role="status">{searchedSubareas.length} {searchedSubareas.length === 1 ? 'subárea encontrada' : 'subáreas encontradas'}</p>
-      <div className="domains-subarea-grid">{searchedSubareas.map(subarea => {
+      <div className="domains-subarea-grid">{searchedSubareas.map((subarea, position) => {
         const isYogaSubarea = subarea.id === 'sub-saude-yoga';
         const isCalisteniaSubarea = subarea.id === 'sub-saude-calistenia';
         const dedicatedPath = isYogaSubarea ? '/dominios/yoga' : isCalisteniaSubarea ? '/dominios/calistenia' : null;
@@ -164,7 +167,7 @@ function DomainWorkspace({ areaId }: { areaId?: string }) {
           task.subareaSecondaryId2 === subarea.id
         ).length;
         const linkedHabitCount = habits.filter((habit) => habit.subareaId === subarea.id).length;
-        return <article className="domain-subarea" key={subarea.id}><div className="domain-subarea-heading"><ElementIcon element={area.elementId} size={25} /><div><h3>{subarea.name}</h3><small>{subarea.isCustom ? 'Subárea personalizada' : element.name}</small></div></div>
+        return <article className="domain-subarea" key={subarea.id} data-luz data-ativa={activeSubareaSet.has(subarea.id) ? '' : undefined} data-element={area.elementId} style={{ '--i': position } as CSSProperties}><div className="domain-subarea-heading"><SigiloSubarea elemento={area.elementId} nome={subarea.name} ativo={activeSubareaSet.has(subarea.id)} /><div><h3>{subarea.name}</h3><small>{subarea.isCustom ? 'Subárea personalizada' : element.name}</small></div></div>
           <dl><div><dt>Rituais</dt><dd>{linkedTaskCount}</dd></div><div><dt>Ciclos</dt><dd>{linkedHabitCount}</dd></div></dl>
           {dedicatedPath && <Link className="domain-module-link" to={dedicatedPath}>Abrir {isYogaSubarea ? 'Yoga' : 'Calistenia'}<ArrowUpRight size={18} aria-hidden="true" /></Link>}
           <div className="domain-subarea-actions"><button type="button" onClick={() => handleToggleSubarea(subarea.id)} aria-label={`${activeSubareaSet.has(subarea.id) ? 'Desvincular' : 'Vincular'} ${subarea.name}`}>{activeSubareaSet.has(subarea.id) ? 'Desvincular' : 'Vincular subárea'}</button>{subarea.isCustom && <button type="button" className="domain-delete" aria-label={`Remover ${subarea.name}`} onClick={() => setRemoveId(subarea.id)}><Trash2 size={18} aria-hidden="true" /></button>}</div>
@@ -179,5 +182,5 @@ function DomainWorkspace({ areaId }: { areaId?: string }) {
       <div className="domain-form-actions"><Button type="button" className="elemental-action elemental-action-secondary" onClick={() => setShowCreateModal(false)}>Cancelar</Button><Button type="submit" className="elemental-action">Criar subárea</Button></div>
     </form></DialogContent></Dialog>
     <Dialog open={!!removal} onOpenChange={open => { if (!open) setRemoveId(null); }}><DialogContent onCloseAutoFocus={event => { event.preventDefault(); createButtonRef.current?.focus(); }} className="elemental-system domain-dialog" aria-labelledby="subarea-remove-title" aria-describedby="subarea-remove-description"><DialogHeader><DialogTitle id="subarea-remove-title">Remover subárea personalizada?</DialogTitle><DialogDescription id="subarea-remove-description">Confira o nome antes de remover esta subárea de {area.name}.</DialogDescription></DialogHeader><p className="domain-removal-name">{removal?.name}</p><div className="domain-form-actions"><Button className="elemental-action elemental-action-secondary" onClick={() => setRemoveId(null)}>Cancelar</Button><Button className="elemental-action domain-danger" onClick={() => { if (!removal) return; removeCustomSubarea(area.id, removal.id); setRemoveId(null); }}>Remover subárea</Button></div></DialogContent></Dialog>
-  </div>;
+  </CenaDominios>;
 }

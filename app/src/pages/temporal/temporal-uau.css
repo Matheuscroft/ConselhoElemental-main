@@ -1,0 +1,623 @@
+/*
+ * Temporal (Semana, Mês, Ano, Calendário), UAU pass. Same language as the
+ * Sanctuary, Pillars and Ciclos:
+ *
+ *  - a room lit by the element that leads the person's week (--semana-aura and
+ *    --semana-acento, written by CenaTemporal; gold until the week has a leader);
+ *  - ONE real pane of glass per screen, always the system's own recipe
+ *    (.ds-glass-float, on the markup), with that light behind it, a one-pixel
+ *    rim that catches the finger and a light inside that follows it. This sheet
+ *    declares no blur of its own: it only dresses the glass. Month and Ano wear
+ *    it on their panel, Semana on the day in focus, Calendário on the day's
+ *    dialog (the pane that already floats there);
+ *  - an arrival once per opening of the app (data-entrada="plena") and only a
+ *    short fade after that (data-entrada="breve"), because every view is its
+ *    own route and this room is born again on each tab;
+ *  - everything else is the same material without the blur (.ds-pane).
+ *
+ * Loaded after temporal-elemental.css, so where the two meet this one wins.
+ * Every time is a --ds-duration-* token or a multiple of one; only transform,
+ * translate, scale, opacity and stroke dashes move (the sliding thumb also
+ * animates its width, a hollow strip with nothing inside it).
+ */
+
+.temporal-surface {
+  position: relative;
+  isolation: isolate;
+  --semana-acento: rgb(var(--el-gold));
+  --semana-aura: #d6b66f;
+}
+:is(.temporal-surface, .temporal-day-dialog) {
+  /* Film grain as an image, so a gradient this dark does not band. */
+  --temporal-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
+}
+
+/* ---------- The room: a light from above in the week's colour ---------- */
+.temporal-surface::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0 auto;
+  z-index: -1;
+  height: 560px;
+  pointer-events: none;
+  background:
+    var(--temporal-grao),
+    radial-gradient(ellipse 78% 40% at 50% 28%, color-mix(in srgb, var(--semana-aura) 17%, transparent), transparent 72%),
+    radial-gradient(ellipse 100% 24% at 50% 0, rgb(var(--el-gold) / .08), transparent 70%);
+  -webkit-mask-image: linear-gradient(#000 70%, transparent);
+  mask-image: linear-gradient(#000 70%, transparent);
+  /* Depth: the light leans away from the finger (--par-x and --par-y run from -1 to 1). */
+  translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -4px);
+}
+
+/* ---------- Header: the title over the light, then the view selector ---------- */
+.temporal-header { border-bottom: 0; padding-bottom: 4px; }
+.temporal-header-row { padding-bottom: 16px; }
+.temporal-header h2 { font-size: var(--ds-fluid-display); line-height: var(--ds-leading-tight); margin-bottom: 8px; }
+.temporal-eyebrow { letter-spacing: .08em; text-shadow: 0 0 18px color-mix(in srgb, var(--semana-aura) 55%, transparent); }
+
+/* ---------- The view selector: a track with one lit thumb that slides ---------- */
+.temporal-navigation {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0;
+  padding: 4px;
+  border: var(--ds-edge);
+  border-radius: 16px;
+  background: var(--ds-surface-sunken);
+  box-shadow: inset 0 1px 6px rgb(0 0 0 / 28%);
+}
+.temporal-navigation > a {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 0;
+  padding-inline: 4px;
+  border-radius: 12px;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  text-align: center;
+  transition: color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.temporal-navigation > a:hover { color: rgb(var(--el-text)); background: transparent; }
+.temporal-navigation > a:active { scale: .95; transition-duration: var(--ds-duration-press); }
+.temporal-navigation > a[aria-current='page'] { color: rgb(var(--el-gold)); background: transparent; border-bottom-color: transparent; }
+.temporal-aba-marca {
+  position: absolute;
+  inset-block: 4px;
+  inset-inline-start: 0;
+  z-index: 0;
+  inline-size: var(--aba-w, 0px);
+  border: 1px solid rgb(var(--el-gold) / .42);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgb(var(--el-gold) / .26), rgb(var(--el-gold) / .09));
+  box-shadow: 0 0 20px color-mix(in srgb, var(--semana-aura) 30%, transparent), inset 0 1px 0 rgb(255 255 255 / 16%);
+  translate: var(--aba-x, 0px) 0;
+  opacity: 0;
+  pointer-events: none;
+  /* The spring of the system: the thumb passes its mark and comes back. */
+  transition:
+    translate var(--ds-duration-settle) var(--ds-ease-conjure),
+    inline-size var(--ds-duration-settle) var(--ds-ease-conjure),
+    opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.temporal-navigation[data-pronto='true'] > .temporal-aba-marca { opacity: 1; }
+
+/* The sky is a neighbour of the time, not one of its views. */
+.temporal-ceu { display: flex; gap: 8px; margin-top: 8px; }
+.temporal-ceu > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 14px;
+  border: 1px solid var(--ds-fio);
+  border-radius: 12px;
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.temporal-ceu > a:hover { color: rgb(var(--el-text)); }
+.temporal-ceu > a:active { scale: .95; transition-duration: var(--ds-duration-press); }
+.temporal-ceu > a[aria-current='page'] { color: rgb(var(--el-gold)); border-color: rgb(var(--el-gold) / .5); background: rgb(var(--el-gold) / .08); }
+
+/* ---------- Period controls: two round keys and a title that turns with the period ---------- */
+.temporal-period-controls > button {
+  border-radius: 50%;
+  border-color: var(--ds-fio);
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  color: rgb(var(--el-gold));
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.temporal-period-controls > button:hover { border-color: rgb(var(--el-gold) / .5); }
+.temporal-period-controls > button:active { scale: .9; transition-duration: var(--ds-duration-press); }
+.temporal-period-controls > div { overflow: hidden; }
+.temporal-period-controls strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: var(--ds-leading-snug); }
+.temporal-period-controls strong::first-letter { text-transform: uppercase; }
+.temporal-periodo { display: block; font-variant-numeric: tabular-nums; }
+
+.temporal-action {
+  gap: 8px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgb(var(--el-gold)), color-mix(in srgb, rgb(var(--el-gold)) 82%, #000));
+  box-shadow: 0 6px 18px rgb(var(--el-gold) / .2), inset 0 1px 0 rgb(255 255 255 / 28%);
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-feedback) var(--ds-ease);
+}
+.temporal-action:active { scale: .95; transition-duration: var(--ds-duration-press); }
+.temporal-week-options select { border-radius: 12px; font-size: var(--ds-text-small); }
+
+/* ---------- The one pane of glass of each screen ---------- */
+.temporal-vidro { position: relative; }
+/* Light behind the pane, so the blur has something to bend. Every light ends inside the box. */
+.temporal-vidro-luz {
+  position: absolute;
+  inset: -40px 0 -24px;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 30% 34% at 26% 30%, color-mix(in srgb, var(--semana-aura) 36%, transparent), transparent 100%),
+    radial-gradient(ellipse 26% 30% at 76% 70%, rgb(var(--el-gold) / .22), transparent 100%),
+    radial-gradient(ellipse 34% 18% at 58% 12%, color-mix(in srgb, var(--semana-acento) 22%, transparent), transparent 100%);
+  translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -6px);
+}
+:is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi) {
+  position: relative;
+  isolation: isolate;
+  margin: 0;
+  padding: 16px 12px;
+  border: 1px solid rgb(255 255 255 / 10%);
+  border-radius: 16px;
+  background:
+    var(--temporal-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), rgb(255 255 255 / 2%) 36%, transparent),
+    rgb(var(--el-surface) / 44%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+.temporal-selected-day, .temporal-ano-heroi { padding: 20px 16px; overflow: clip; }
+.temporal-month-picker { padding-inline: 8px; overflow-x: auto; scrollbar-width: none; }
+.temporal-month-picker::-webkit-scrollbar { display: none; }
+
+/*
+ * The rim: one pixel of light around a pane, brightest where the finger is. At
+ * rest it sits at the top edge, which is where a sheet of glass catches a lamp.
+ * The mask keeps only the border of the gradient.
+ */
+:is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi, .temporal-calendario)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(190px circle at var(--luz-x, 50%) var(--luz-y, 0px), rgb(255 255 255 / .8), color-mix(in srgb, var(--semana-acento) 60%, transparent) 36%, transparent 72%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: .38;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The light inside the pane, under its content. */
+:is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi, .temporal-calendario)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(280px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+:is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi, .temporal-calendario)[data-luz-acesa]::before,
+:is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi, .temporal-calendario)[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+
+/* The calendar's own panel is the same material without the blur: its glass is the day's dialog. */
+.temporal-calendario {
+  position: relative;
+  isolation: isolate;
+  padding: 12px 10px;
+  border-radius: 16px;
+  background:
+    var(--temporal-grao),
+    linear-gradient(180deg, rgb(255 255 255 / 6%), transparent 40%),
+    var(--ds-surface-raised);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.temporal-calendario::-webkit-scrollbar { display: none; }
+
+/* ---------- Semana: the days as runes with a ring that draws itself ---------- */
+.temporal-week-days { gap: 6px; padding-block: 4px; }
+.temporal-week-days > button {
+  position: relative;
+  isolation: isolate;
+  min-height: 108px;
+  padding: 8px 2px 10px;
+  gap: 4px;
+  border-color: var(--ds-fio);
+  border-radius: 16px;
+  background: var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.temporal-week-days > button:active { scale: .94; transition-duration: var(--ds-duration-press); }
+.temporal-week-days > button > span:first-child { text-transform: capitalize; letter-spacing: .04em; }
+.temporal-runa-anel { position: relative; display: grid; place-items: center; inline-size: 40px; block-size: 40px; }
+.temporal-runa-anel svg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.temporal-runa-anel circle { fill: none; stroke-width: 3; }
+.temporal-anel-trilha { stroke: rgb(var(--el-muted) / .22); }
+.temporal-anel-arco {
+  stroke: var(--semana-acento);
+  stroke-linecap: round;
+  stroke-dasharray: calc(var(--parte, 0) * 100) 100;
+  transform-box: view-box;
+  transform-origin: 20px 20px;
+  rotate: -90deg;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--semana-aura) 70%, transparent));
+}
+.temporal-week-days .temporal-runa-anel strong { position: relative; font-family: var(--ds-font-heading); font-size: var(--ds-text-small); font-weight: 500; line-height: 1; color: rgb(var(--el-text)); }
+.temporal-week-days > button > small { min-block-size: 1.2em; font-size: var(--ds-text-micro); line-height: 1.2; font-variant-numeric: tabular-nums; }
+/* Today: a lamp is lit behind the rune. */
+.temporal-week-days > button[aria-current='date'] {
+  border-color: rgb(var(--el-gold) / .55);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 22%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), 0 0 26px color-mix(in srgb, var(--semana-aura) 26%, transparent);
+}
+.temporal-week-days > button[aria-current='date'] > span:first-child { color: rgb(var(--el-gold)); }
+.temporal-week-days > button[aria-current='date'] .temporal-anel-trilha { stroke: rgb(var(--el-gold) / .45); }
+/* The day in focus: lifted, and lit from within by the week's colour. */
+.temporal-week-days > button[aria-pressed='true'] {
+  scale: 1.04;
+  color: rgb(var(--el-text));
+  border-color: color-mix(in srgb, var(--semana-acento) 70%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--semana-acento) 20%, transparent), transparent 80%),
+    rgb(var(--el-surface) / 80%);
+  box-shadow: var(--ds-rim), var(--ds-lift-near), 0 0 24px color-mix(in srgb, var(--semana-aura) 32%, transparent);
+}
+.temporal-week-days > button[aria-pressed='true']:active { scale: 1; }
+
+.temporal-legenda { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-block: 12px 0; font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); }
+.temporal-month-picker > .temporal-legenda { margin-bottom: 0; }
+
+/* The day in focus, in glass. */
+.temporal-selected-day { border-top: 1px solid rgb(255 255 255 / 10%); }
+.temporal-selected-day > .temporal-troca > header { margin-bottom: 16px; }
+.temporal-selected-day > .temporal-troca > header p { letter-spacing: .08em; text-transform: uppercase; }
+.temporal-selected-day h3 { font-size: var(--ds-text-title); line-height: var(--ds-leading-snug); }
+.temporal-selected-day h3::first-letter { text-transform: uppercase; }
+.temporal-troca { animation: temporal-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* The agenda: each line is a small pane that lights under the finger. */
+.temporal-agenda-list { display: grid; gap: 8px; }
+.temporal-agenda-list > li {
+  position: relative;
+  isolation: isolate;
+  padding-inline: 12px;
+  border: 1px solid var(--ds-fio);
+  border-radius: 12px;
+  background: rgb(var(--el-canvas) / 38%);
+  box-shadow: var(--ds-rim);
+  animation: temporal-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * var(--i, 0)) backwards;
+}
+.temporal-agenda-list > li + li { border-top: 1px solid var(--ds-fio); }
+.temporal-agenda-list > li::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(220px circle at var(--luz-x, 50%) var(--luz-y, 0px), color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 70%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.temporal-agenda-list > li[data-luz-acesa]::after { opacity: 1; transition-duration: var(--ds-duration-feedback); }
+.temporal-agenda-list :is(a, li > div) { padding-inline: 0; gap: 12px; }
+.temporal-agenda-list :is(a, li > div) > span { flex: 1; }
+.temporal-agenda-list a { transition: scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.temporal-agenda-list a:active { scale: .985; transition-duration: var(--ds-duration-press); }
+.temporal-agenda-list a:hover { background: transparent; }
+.temporal-agenda-list > li > .temporal-reminder { margin: 0 0 12px; }
+.temporal-agenda-marca { flex: 0 0 8px; inline-size: 8px; block-size: 8px; border-radius: 50%; background: rgb(var(--el-gold)); box-shadow: 0 0 10px rgb(var(--el-gold) / .6); }
+.temporal-agenda-marca[data-fonte='habit'], .temporal-agenda-marca[data-fonte='sequence'], .temporal-agenda-marca[data-fonte='feito'] { background: var(--semana-acento); box-shadow: 0 0 10px color-mix(in srgb, var(--semana-aura) 70%, transparent); }
+.temporal-agenda-marca[data-fonte='google'], .temporal-agenda-marca[data-fonte='commitment'] { background: rgb(var(--el-muted)); box-shadow: none; }
+.temporal-agenda-routine { min-height: 44px; }
+
+/* ---------- Empty states that invite ---------- */
+.temporal-vazio {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 20px 16px;
+  text-align: center;
+  border: 1px dashed rgb(var(--el-gold) / .3);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse 80% 70% at 50% 0, color-mix(in srgb, var(--semana-aura) 14%, transparent), transparent 70%),
+    var(--ds-surface-sunken);
+}
+.temporal-vazio-largo { grid-column: 1 / -1; padding-block: 28px; }
+.temporal-vazio-selo, .temporal-destaque > .temporal-vazio-selo {
+  display: grid;
+  place-items: center;
+  flex: 0 0 44px;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 1px solid rgb(var(--el-gold) / .42);
+  border-radius: 50%;
+  color: rgb(var(--el-gold));
+  background: radial-gradient(circle, rgb(var(--el-gold) / .22), transparent 75%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--semana-aura) 28%, transparent);
+  animation: temporal-respira calc(var(--ds-duration-conjure) * 6) var(--ds-ease) infinite;
+}
+.temporal-vazio-titulo { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); line-height: var(--ds-leading-snug); color: rgb(var(--el-text)); }
+.temporal-vazio-texto, .temporal-vazio .temporal-agenda-empty { margin: 0; max-width: 44ch; font-size: var(--ds-text-small); line-height: 1.7; color: rgb(var(--el-muted)); }
+.temporal-vazio .temporal-action { margin-top: 8px; }
+
+/* ---------- Resumos ---------- */
+.temporal-week-summary { padding: 0 16px; border: var(--ds-edge); border-radius: 16px; background: var(--ds-surface-raised); box-shadow: var(--ds-rim); }
+.temporal-week-summary > summary { min-height: 52px; }
+.temporal-week-summary > summary > svg { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+.temporal-week-summary dl { padding-bottom: 16px; }
+.temporal-week-summary dd { font-family: var(--ds-font-heading); font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+
+/* ---------- Mês: a grid whose days carry light and element ---------- */
+.temporal-month-picker > p:first-child { margin-bottom: 12px; font-size: var(--ds-text-micro); line-height: 1.6; }
+.temporal-month-weekdays, .temporal-month-days { gap: 4px; }
+.temporal-month-weekdays > span { letter-spacing: .04em; text-transform: uppercase; }
+.temporal-month-days > button {
+  position: relative;
+  isolation: isolate;
+  min-height: 56px;
+  padding: 6px 2px;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 55%, rgb(var(--el-gold) / calc(var(--calor, 0) * .42)), transparent 78%),
+    rgb(var(--el-canvas) / 30%);
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.temporal-month-days > button:active { scale: .92; transition-duration: var(--ds-duration-press); }
+.temporal-month-days strong { font-size: var(--ds-text-small); color: rgb(var(--el-text)); }
+.temporal-month-days > button[aria-current='date'] { border-color: rgb(var(--el-gold) / .6); }
+.temporal-month-days > button[aria-current='date'] strong { color: rgb(var(--el-gold)); }
+.temporal-month-days > button[aria-pressed='true'] {
+  scale: 1.06;
+  border-color: color-mix(in srgb, var(--semana-acento) 75%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--semana-acento) 26%, transparent), transparent 90%),
+    rgb(var(--el-surface) / 85%);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--semana-aura) 34%, transparent), inset 0 1px 0 rgb(255 255 255 / 16%);
+}
+.temporal-month-days > button[aria-pressed='true']:active { scale: 1; }
+
+/* Marks under a day: a ring for what is on the agenda, a dot in each element's own colour for what was finished. */
+.temporal-marcas { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 3px; min-block-size: 6px; font-style: normal; }
+.temporal-marca-agenda, .temporal-marca-elemento { display: inline-block; flex: 0 0 auto; inline-size: 6px; block-size: 6px; border-radius: 50%; }
+.temporal-marca-agenda { box-sizing: border-box; border: 1.5px solid rgb(var(--el-gold)); }
+.temporal-marca-elemento { background: var(--marca, rgb(var(--el-gold))); box-shadow: 0 0 6px color-mix(in srgb, var(--marca, #d5b66f) 70%, transparent); }
+.temporal-marca-elemento[data-element='fogo'] { --marca: var(--element-fogo); }
+.temporal-marca-elemento[data-element='agua'] { --marca: var(--element-agua); }
+.temporal-marca-elemento[data-element='ar'] { --marca: var(--element-ar); }
+.temporal-marca-elemento[data-element='terra'] { --marca: var(--element-terra); }
+.temporal-legenda .temporal-marca-agenda, .temporal-legenda .temporal-marca-elemento { margin-inline: 1px; }
+
+.temporal-destaque {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: var(--ds-edge);
+  border-radius: 16px;
+  background: radial-gradient(ellipse 90% 140% at 0 50%, color-mix(in srgb, var(--semana-aura) 12%, transparent), transparent 70%), var(--ds-surface-raised);
+  box-shadow: var(--ds-rim);
+}
+.temporal-destaque[data-vazio] { border-style: dashed; border-color: rgb(var(--el-gold) / .3); }
+.temporal-destaque h3 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: var(--ds-leading-snug); }
+.temporal-destaque p { margin: 4px 0 0; font-size: var(--ds-text-small); line-height: 1.6; color: rgb(var(--el-muted)); }
+
+/* ---------- Ano: a hero in glass and a map of twelve lamps ---------- */
+.temporal-ano-heroi .temporal-year-selector { padding: 0 0 8px; }
+.temporal-year-number { font-size: var(--ds-text-hero); line-height: var(--ds-leading-tight); font-variant-numeric: tabular-nums; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 45%, transparent); }
+.temporal-year-today { border-radius: 12px; }
+.temporal-ano-heroi .temporal-entry-status { text-align: center; }
+.temporal-ano-heroi .temporal-year-stats { padding: 16px 0 0; border-block: 0; border-top: 1px solid var(--ds-fio); gap: 16px 12px; }
+.temporal-stat > p:last-child { font-family: var(--ds-font-heading); font-size: var(--ds-text-title); font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+
+.temporal-mapa-grade { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.temporal-mapa-mes {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 2px;
+  min-height: 72px;
+  padding: 8px 2px;
+  border: 1px solid color-mix(in srgb, rgb(var(--el-gold)) calc(var(--calor, 0) * 60% + 8%), transparent);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 60%, rgb(var(--el-gold) / calc(var(--calor, 0) * .5)), transparent 80%),
+    var(--ds-surface-raised);
+  box-shadow: var(--ds-rim), 0 0 calc(var(--calor, 0) * 22px) rgb(var(--el-gold) / calc(var(--calor, 0) * .4));
+  color: rgb(var(--el-muted));
+  text-align: center;
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.temporal-mapa-mes:active { scale: .94; transition-duration: var(--ds-duration-press); }
+.temporal-mapa-mes > span { font-size: var(--ds-text-micro); letter-spacing: .06em; text-transform: uppercase; }
+.temporal-mapa-mes > strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.temporal-mapa-mes[data-acesa='false'] > strong { color: rgb(var(--el-muted) / .7); }
+.temporal-mapa-mes[data-current='true'] { border-color: rgb(var(--el-gold)); outline: 1px solid rgb(var(--el-gold) / .35); outline-offset: 2px; }
+
+.temporal-month-showcase { box-shadow: var(--ds-rim), 0 0 calc(var(--calor, 0) * 24px) rgb(var(--el-gold) / calc(var(--calor, 0) * .3)); border-radius: 16px; background: var(--ds-surface-raised); }
+.temporal-month-showcase .elemental-showcase-art { background: radial-gradient(circle, rgb(var(--el-gold) / calc(.12 + var(--calor, 0) * .5)), transparent 72%); border-radius: 50%; border: 0; }
+.temporal-month-showcase summary { min-height: 88px; }
+.temporal-month-showcase .elemental-showcase-art { flex-basis: 48px; height: 48px; }
+.temporal-month-showcase .elemental-showcase-heading strong { font-size: var(--ds-text-lead); }
+.temporal-month-showcase .elemental-showcase-art span { font-size: var(--ds-text-lead); color: rgb(var(--el-gold)); }
+.temporal-month-showcase .elemental-showcase-chevron { transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+.temporal-month-showcase .elemental-showcase-content { animation: temporal-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.temporal-month-open { border-radius: 12px; }
+
+/* ---------- Panels, cards, small controls (Ano and Calendário) ---------- */
+.temporal-painel { padding: 16px; border-radius: 16px; }
+.temporal-painel-topo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.temporal-painel-titulo { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: var(--ds-leading-snug); }
+.temporal-painel-acoes { display: flex; justify-content: flex-end; margin-top: 12px; }
+.temporal-lista-cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.temporal-cartao { padding: 12px 14px; border: 1px solid var(--ds-fio); border-radius: 12px; background: rgb(var(--el-canvas) / 38%); box-shadow: var(--ds-rim); }
+.temporal-cartao-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.temporal-cartao-titulo { margin: 0; font-size: var(--ds-text-body); line-height: 1.5; color: rgb(var(--el-text)); overflow-wrap: anywhere; }
+.temporal-cartao-titulo[data-feito='true'] { color: rgb(var(--el-muted)); text-decoration: line-through; }
+.temporal-nota { margin: 4px 0 0; font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); overflow-wrap: anywhere; }
+.temporal-nota-livre { white-space: pre-wrap; }
+.temporal-etiqueta { padding: 2px 10px; border: 1px solid rgb(var(--el-gold) / .35); border-radius: 12px; font-size: var(--ds-text-micro); text-transform: uppercase; letter-spacing: .08em; color: rgb(var(--el-gold)); }
+.temporal-filtro { display: flex; align-items: center; gap: 8px; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.temporal-filtro select { min-height: 44px; padding: 8px 12px; border: 1px solid rgb(var(--el-muted) / .3); border-radius: 12px; background: rgb(var(--el-canvas) / 60%); color: rgb(var(--el-text)); font-size: var(--ds-text-small); }
+.temporal-botao-fantasma { min-width: 44px; min-height: 44px; padding: 8px 14px; border: 1px solid var(--ds-fio); border-radius: 12px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-micro); transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease); }
+.temporal-botao-fantasma:hover { border-color: rgb(var(--el-gold) / .5); }
+.temporal-botao-fantasma:active { scale: .95; transition-duration: var(--ds-duration-press); }
+.temporal-botao-fantasma[data-perigo] { color: #fda4af; border-color: #fda4af55; }
+.temporal-link-ouro { display: inline-flex; align-items: center; min-height: 48px; font-size: var(--ds-text-small); color: rgb(var(--el-gold)); text-decoration: underline; text-underline-offset: 3px; }
+.temporal-ritmo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.temporal-ritmo-item { padding: 12px; border: 1px solid var(--ds-fio); border-radius: 12px; background: rgb(var(--el-canvas) / 38%); }
+.temporal-ritmo-item > p:first-child { margin: 0; font-size: var(--ds-text-small); color: rgb(var(--el-text)); }
+.temporal-ritmo-item > p:last-child { margin: 4px 0 0; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); }
+.temporal-gaveta { padding: 0 16px; border-radius: 16px; }
+.temporal-gaveta > summary { display: flex; align-items: center; min-height: 52px; cursor: pointer; color: rgb(var(--el-gold)); font-size: var(--ds-text-small); }
+.temporal-gaveta[open] { padding-bottom: 16px; }
+
+/* ---------- Calendário: the month with moon, sign and meteors in each day ---------- */
+.temporal-cal-semana, .temporal-cal-linha { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; min-width: 322px; }
+.temporal-cal-semana > p { margin: 0; }
+.temporal-cal-semana { padding-bottom: 8px; text-align: center; font-size: var(--ds-text-micro); letter-spacing: .04em; text-transform: uppercase; color: rgb(var(--el-muted)); }
+.temporal-cal-dias { display: grid; gap: 4px; }
+.temporal-cal-dia {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-height: 76px;
+  min-width: 0;
+  padding: 6px 2px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 50% 70%, rgb(var(--el-gold) / calc(var(--calor, 0) * .4)), transparent 78%),
+    rgb(var(--el-canvas) / 32%);
+  color: rgb(var(--el-text));
+  text-align: center;
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.temporal-cal-dia:hover { border-color: rgb(var(--el-gold) / .4); }
+.temporal-cal-dia:active { scale: .94; transition-duration: var(--ds-duration-press); }
+.temporal-cal-dia > strong { font-size: var(--ds-text-small); font-weight: 500; }
+.temporal-cal-dia[data-fora='true'] { opacity: .45; }
+.temporal-cal-dia[aria-current='date'] { border-color: rgb(var(--el-gold) / .6); box-shadow: 0 0 18px color-mix(in srgb, var(--semana-aura) 26%, transparent); }
+.temporal-cal-dia[aria-current='date'] > strong { color: rgb(var(--el-gold)); }
+.temporal-cal-dia[aria-pressed='true'] { border-color: color-mix(in srgb, var(--semana-acento) 75%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 90%), rgb(var(--el-surface) / 85%); }
+.temporal-cal-ceu { display: flex; justify-content: center; gap: 2px; font-size: var(--ds-text-small); line-height: 1.2; }
+
+/* ---------- The day's dialog: the one glass of Calendário (and the day of Mês), lit by the week ---------- */
+.temporal-day-dialog {
+  border-radius: 16px;
+  border-color: rgb(255 255 255 / 12%);
+  background:
+    var(--temporal-grao),
+    radial-gradient(ellipse 90% 30% at 50% 0, color-mix(in srgb, var(--semana-aura, #d6b66f) 24%, transparent), transparent 100%),
+    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 30%),
+    var(--ds-surface-float);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%), inset 0 -1px 0 rgb(0 0 0 / 32%), var(--ds-lift);
+}
+.temporal-day-dialog [data-slot='dialog-title'] { font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: var(--ds-leading-snug); }
+.temporal-day-dialog > button[data-slot='dialog-close'] { inline-size: 44px; block-size: 44px; display: grid; place-items: center; top: 4px; right: 4px; border-radius: 50%; }
+
+/* ---------- The turn of the page: a period moves and its content slides the way it went ---------- */
+[data-direcao='adiante'] { animation: temporal-adiante var(--ds-duration-settle) var(--ds-ease) backwards; }
+[data-direcao='atras'] { animation: temporal-atras var(--ds-duration-settle) var(--ds-ease) backwards; }
+@keyframes temporal-adiante { from { opacity: 0; translate: 12px 0; } }
+@keyframes temporal-atras { from { opacity: 0; translate: -12px 0; } }
+
+/* ---------- The arrival, once per opening of the app ---------- */
+/*
+ * The light comes up, the title lands, the selector, then each block of the
+ * screen rises a step after the last; the days, the lamps and the rings light up
+ * in a cascade. Only transform, opacity, translate and stroke dashes move.
+ * `backwards`, never `both`: once an element has landed it goes back to its own
+ * rules.
+ */
+.temporal-surface[data-entrada='plena']::before { animation: temporal-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-back { animation: temporal-aparecer var(--ds-duration-settle) var(--ds-ease) backwards; }
+.temporal-surface[data-entrada='plena'] :is(.temporal-eyebrow, .temporal-header h2, .temporal-header h2 + p) { animation: temporal-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-navigation { animation: temporal-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 4) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-ceu { animation: temporal-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 5) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-corpo > * { animation: temporal-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * var(--n, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-vidro-luz { animation: temporal-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }
+.temporal-corpo > :nth-child(2) { --n: 1; }
+.temporal-corpo > :nth-child(3) { --n: 2; }
+.temporal-corpo > :nth-child(4) { --n: 3; }
+.temporal-corpo > :nth-child(5) { --n: 4; }
+.temporal-corpo > :nth-child(6) { --n: 5; }
+.temporal-corpo > :nth-child(n + 7) { --n: 6; }
+
+/* The days, the lamps and the rings: a cascade on arrival and whenever the period changes. */
+.temporal-surface[data-entrada='plena'] .temporal-week-days > button,
+.temporal-week-days[data-direcao] > button { animation: temporal-erguer var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * var(--i, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-month-days > button,
+.temporal-month-days[data-direcao] > button { animation: temporal-erguer var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * var(--linha, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-cal-linha,
+.temporal-cal-dias[data-direcao] .temporal-cal-linha { animation: temporal-erguer var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * var(--linha, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-mapa-mes,
+.temporal-mapa-grade[data-direcao] .temporal-mapa-mes { animation: temporal-acender var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * var(--i, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-month-showcase,
+.temporal-month-grid[data-direcao] .temporal-month-showcase { animation: temporal-acender var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * var(--i, 0)) backwards; }
+.temporal-surface[data-entrada='plena'] .temporal-anel-arco,
+.temporal-week-days[data-direcao] .temporal-anel-arco { animation: temporal-tracar var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * var(--i, 0)) backwards; }
+
+/* Coming back from another screen: the scene is already known, so it only fades in. */
+.temporal-surface[data-entrada='breve'] .temporal-corpo { animation: temporal-aparecer var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+@keyframes temporal-aparecer { from { opacity: 0; } }
+@keyframes temporal-subir { from { opacity: 0; transform: translateY(14px); } }
+@keyframes temporal-erguer { from { opacity: 0; translate: 0 10px; } }
+@keyframes temporal-acender { from { opacity: .2; filter: saturate(0); } }
+@keyframes temporal-tracar { from { stroke-dasharray: 0 100; } }
+@keyframes temporal-respira { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 700px) {
+  .temporal-navigation { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .temporal-ritmo { grid-template-columns: minmax(0, 1fr); }
+  .temporal-ano-heroi .temporal-year-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 359px) {
+  .temporal-navigation > a { font-size: var(--ds-text-micro); }
+  .temporal-mapa-grade { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- Less transparency: a pane that is nearly solid, so the blur has nothing left to show ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  :is(.temporal-month-picker, .temporal-selected-day, .temporal-ano-heroi) { background: rgb(var(--el-surface) / 96%); }
+  .temporal-day-dialog { background: rgb(var(--el-surface) / 98%); }
+  .temporal-vidro-luz { display: none; }
+}
+
+/* ---------- Less motion: everything lands where it belongs, with nothing travelling ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .temporal-surface::before, .temporal-vidro-luz { translate: none; }
+  .temporal-surface::before, .temporal-surface :is(*, [data-direcao]), .temporal-day-dialog * { animation: none !important; }
+}

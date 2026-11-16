@@ -2,9 +2,10 @@ import { RevealPanel } from '@/components/motion/RevealPanel';
 import { useId, useState, type CSSProperties } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight, Check, ChevronDown } from 'lucide-react';
-import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ELEMENTS, type ElementId } from '@/constants';
 import type { Area } from '@/types';
+import { RunasVaziasDominios } from '@/components/dominios/RunasVaziasDominios';
 
 export const DOMAIN_ELEMENTS: ElementId[] = ['terra', 'fogo', 'agua', 'ar'];
 const TINTS = { terra: '151 192 144', fogo: '245 162 109', agua: '125 207 229', ar: '197 223 229' };
@@ -42,7 +43,9 @@ export function DomainAreaCard({ area, score, taskCount, active, onToggle, retur
 export function DomainShowcase({ area, taskCount, habitCount, subareaCount }: { area: Area; taskCount: number; habitCount: number; subareaCount: number }) {
   const [open, setOpen] = useState(false);
   const id = useId();
-  return <section className="domain-showcase" style={tint(area.elementId)} aria-label={`Resumo de ${area.name}`}>
+  // The one real pane of glass of the detail (`.ds-glass-float`, no blur of its own), lit from behind by the area's element.
+  return <div className="dom-showcase-cena" data-element={area.elementId}><span className="dom-showcase-luz" aria-hidden="true" />
+  <section className="domain-showcase dom-painel ds-glass-float" data-luz style={tint(area.elementId)} aria-label={`Resumo de ${area.name}`}>
     <div className="domain-showcase-cover"><span className="domain-showcase-orbit" aria-hidden="true" /><span className="domain-showcase-art" aria-hidden="true"><DomainArt element={area.elementId} /></span>
       <div className="domain-showcase-title"><p><ElementIcon element={area.elementId} size={20} />{ELEMENTS[area.elementId].name}{area.isCustom ? ' · Área personalizada' : ''}</p><h1>{area.name}</h1></div>
     </div>
@@ -51,7 +54,7 @@ export function DomainShowcase({ area, taskCount, habitCount, subareaCount }: { 
       <p>{area.description || `Um espaço de ${ELEMENTS[area.elementId].name} para organizar suas atividades e subáreas.`}</p>
       <dl><div><dt>Rituais na área</dt><dd>{taskCount}</dd></div><div><dt>Ciclos na área</dt><dd>{habitCount}</dd></div><div><dt>Subáreas</dt><dd>{subareaCount}</dd></div></dl>
     </div></RevealPanel>
-  </section>;
+  </section></div>;
 }
 
 export function DomainElementPicker({ value, onChange }: { value: ElementId; onChange: (id: ElementId) => void }) {
@@ -60,5 +63,5 @@ export function DomainElementPicker({ value, onChange }: { value: ElementId; onC
 }
 
 export function DomainEmpty({ title, children }: { title: string; children: React.ReactNode }) {
-  return <div className="domain-empty"><ArcaneIcon name="dominios" size={36} /><h3>{title}</h3>{children}</div>;
+  return <div className="domain-empty dom-vazio"><RunasVaziasDominios /><h3>{title}</h3>{children}</div>;
 }

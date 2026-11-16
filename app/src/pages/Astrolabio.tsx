@@ -5,6 +5,11 @@ import { recordedHistorySeries } from '@/components/grimorio/recorded-history-se
 import { useLiveDate } from '@/components/temporal/celestial/useLiveDate';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementReading, RecordedDaysTable } from '@/components/astrolabio/AstrolabioReadings';
+import { CenaAstrolabio } from '@/components/astrolabio/CenaAstrolabio';
+import { NumeroAstrolabio } from '@/components/astrolabio/NumeroAstrolabio';
+import { RodaAstrolabio } from '@/components/astrolabio/RodaAstrolabio';
+import { VazioAstrolabio } from '@/components/astrolabio/RunasVaziasAstrolabio';
+import { zodiacProfileAt } from '@/lib/sanctuary/zodiac';
 import { AppLayout } from '@/components/layout';
 import { useAppStore } from '@/stores/appStore';
 import { ELEMENTS, type ElementId } from '@/constants';
@@ -12,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from 'recharts';
 import '@/styles/elemental-design-system.css';
 import '@/components/astrolabio/astrolabio.css';
+import '@/components/astrolabio/astrolabio-uau.css';
 
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 const tooltipStyle = { backgroundColor: 'rgb(var(--el-surface))', border: '1px solid rgb(var(--el-gold) / .3)', borderRadius: '12px', color: 'rgb(var(--el-text))' };
@@ -36,8 +42,10 @@ function AstrolabioWorkspace() {
   });
   const hasScores = pieData.some(entry => entry.value > 0);
   const maxTasks = Math.max(1, ...taskByElement.map(entry => entry.count));
+  const sol = useMemo(() => zodiacProfileAt(now), [now]);
+  const destaque = hasScores ? elementScores.reduce((lider, score) => (score.percentage > lider.percentage ? score : lider)) : null;
 
-  return <div className="elemental-system astrolabe-workspace">
+  return <CenaAstrolabio>
     <header className="astrolabe-heading"><span className="astrolabe-seal" aria-hidden="true"><ArcaneIcon name="astrolabio" size={38} /></span>
       <div><h1>Astrolábio</h1><p>Observe sua constância e o equilíbrio dos elementos.</p></div>
       <Link to="/grimorio#grimoire-history">Abrir histórico<ArcaneIcon name="arquivo" size={18} /></Link>
@@ -45,18 +53,26 @@ function AstrolabioWorkspace() {
 
     <section className="astrolabe-overview" aria-labelledby="astrolabe-overview-title">
       <h2 id="astrolabe-overview-title">Seu panorama atual</h2><p>Totais atuais da sua jornada, sem filtro de período.</p>
-      <dl>
-        <div><dt><ArcaneIcon name="ritual" size={21} />Rituais</dt><dd>{tasks.length}<small>{tasks.filter(t => t.isCompleted).length} concluídos</small></dd></div>
-        <div><dt><ArcaneIcon name="conquista" size={21} />Pontuação</dt><dd>{format(user.totalScore)}<small>pontos totais</small></dd></div>
-        <div><dt><ArcaneIcon name="ciclo" size={21} />Ciclos</dt><dd>{habits.length}<small>hábitos cadastrados</small></dd></div>
-        <div><dt><ElementIcon element="fogo" size={21} />Constância</dt><dd>{user.streak}<small>{user.streak === 1 ? 'dia de streak registrado' : 'dias de streak registrados'}</small></dd></div>
-      </dl>
+      {/* The one real pane of glass of the screen (.ds-glass-float, no blur of its own), lit from behind by the week's element. */}
+      <div className="ast-resumo">
+        <span className="ast-resumo-luz" aria-hidden="true" />
+        <div className="ast-painel ds-glass-float" data-luz>
+          <RodaAstrolabio pontuacoes={elementScores} sol={sol} />
+          <p className="ast-legenda"><span>Sol em <strong>{sol.name}</strong></span><span>{destaque ? <>Em destaque: <strong>{ELEMENTS[destaque.elementId].name}</strong></> : 'A roda acende com a primeira pontuação'}</span></p>
+          <dl>
+            <div><dt><ArcaneIcon name="ritual" size={21} />Rituais</dt><dd><NumeroAstrolabio valor={tasks.length} /><small>{tasks.filter(t => t.isCompleted).length} concluídos</small></dd></div>
+            <div><dt><ArcaneIcon name="conquista" size={21} />Pontuação</dt><dd><span className="ast-numero">{format(user.totalScore)}</span><small>pontos totais</small></dd></div>
+            <div><dt><ArcaneIcon name="ciclo" size={21} />Ciclos</dt><dd><NumeroAstrolabio valor={habits.length} /><small>hábitos cadastrados</small></dd></div>
+            <div><dt><ElementIcon element="fogo" size={21} />Constância</dt><dd><NumeroAstrolabio valor={user.streak} /><small>{user.streak === 1 ? 'dia de streak registrado' : 'dias de streak registrados'}</small></dd></div>
+          </dl>
+        </div>
+      </div>
     </section>
 
     <Tabs defaultValue="evolution" className="astrolabe-tabs">
       <TabsList aria-label="Leituras do Astrolábio"><TabsTrigger value="evolution">Evolução</TabsTrigger><TabsTrigger value="distribution">Equilíbrio</TabsTrigger><TabsTrigger value="elements">Elementos</TabsTrigger></TabsList>
       <TabsContent value="evolution">
-        <section className="astrolabe-panel" aria-labelledby="astrolabe-evolution-title">
+        <section className="astrolabe-panel ds-pane" aria-labelledby="astrolabe-evolution-title">
           <div className="astrolabe-panel-heading"><div><h2 id="astrolabe-evolution-title">Seu ritmo ao longo dos dias</h2><p>Pontuação registrada por dia</p></div>
             <div className="astrolabe-period" role="group" aria-label="Período da evolução">{(['week', 'month', 'year'] as const).map(range => <button key={range} type="button" aria-pressed={timeRange === range} onClick={() => setTimeRange(range)}>{range === 'week' ? '7 dias' : range === 'month' ? '30 dias' : '365 dias'}</button>)}</div>
           </div>
@@ -65,21 +81,21 @@ function AstrolabioWorkspace() {
             <div className="astrolabe-chart" role="img" aria-label="Gráfico de pontuação diária. Valores completos na tabela a seguir.">
               <ResponsiveContainer width="100%" height="100%"><LineChart data={historyData} margin={{ left: -20, right: 16, top: 16, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 6" stroke="rgb(var(--el-muted) / .12)" vertical={false} />
-                <XAxis dataKey="date" tick={{ fill: 'rgb(var(--el-muted))', fontSize: 11 }} stroke="rgb(var(--el-muted) / .3)" minTickGap={28} />
-                <YAxis tick={{ fill: 'rgb(var(--el-muted))', fontSize: 11 }} stroke="rgb(var(--el-muted) / .3)" />
+                <XAxis dataKey="date" tick={{ fill: 'rgb(var(--el-muted))', fontSize: 12 }} stroke="rgb(var(--el-muted) / .3)" minTickGap={28} />
+                <YAxis tick={{ fill: 'rgb(var(--el-muted))', fontSize: 12 }} stroke="rgb(var(--el-muted) / .3)" />
                 <Tooltip contentStyle={tooltipStyle} />
                 <Line type="linear" name="Pontos registrados" dataKey="points" stroke="rgb(var(--el-gold))" strokeWidth={2.5} dot={false} activeDot={{ r: 5 }} isAnimationActive={false} />
               </LineChart></ResponsiveContainer>
             </div><RecordedDaysTable days={historyData} />
-          </> : <div className="astrolabe-empty"><ArcaneIcon name="calendario" size={38} /><h3>Seu ritmo ainda vai aparecer aqui</h3><p>Não há pontuações com data registrada neste período. Consulte outro intervalo ou acompanhe suas atividades.</p><Link to="/rituais" className="elemental-action elemental-action-secondary">Ver meus Rituais</Link></div>}
+          </> : <VazioAstrolabio className="astrolabe-empty" titulo="Seu ritmo ainda vai aparecer aqui"><p>Não há pontuações com data registrada neste período. Consulte outro intervalo ou acompanhe suas atividades.</p><Link to="/rituais" className="elemental-action elemental-action-secondary">Ver meus Rituais</Link></VazioAstrolabio>}
           <p className="astrolabe-note">O período filtra apenas esta evolução. O gráfico usa os registros disponíveis; não reconstrói pontuações antigas ausentes.</p>
         </section>
       </TabsContent>
       <TabsContent value="distribution">
-        <section className="astrolabe-panel" aria-labelledby="astrolabe-distribution-title"><h2 id="astrolabe-distribution-title">Seu equilíbrio elemental</h2><p className="astrolabe-note">Distribuição atual dos pontos. Não é uma meta nem uma distribuição histórica por período.</p>
+        <section className="astrolabe-panel ds-pane" aria-labelledby="astrolabe-distribution-title"><h2 id="astrolabe-distribution-title">Seu equilíbrio elemental</h2><p className="astrolabe-note">Distribuição atual dos pontos. Não é uma meta nem uma distribuição histórica por período.</p>
           <div className="astrolabe-balance">
             {hasScores ? <div className="astrolabe-donut" aria-hidden="true"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={pieData} cx="50%" cy="50%" innerRadius={68} outerRadius={90} paddingAngle={3} dataKey="value" isAnimationActive={false}>{pieData.map(entry => <Cell key={entry.name} fill={entry.color} />)}</Pie><Tooltip contentStyle={tooltipStyle} /></PieChart></ResponsiveContainer></div>
-              : <div className="astrolabe-balance-empty"><ArcaneIcon name="dominios" size={52} /><p>A distribuição aparece quando houver pontuação elemental.</p></div>}
+              : <VazioAstrolabio className="astrolabe-balance-empty"><p>A distribuição aparece quando houver pontuação elemental.</p></VazioAstrolabio>}
             <dl className="astrolabe-legend">{elementScores.map(score => <div key={score.elementId}><dt><ElementIcon element={score.elementId} size={22} />{ELEMENTS[score.elementId].name}</dt><dd>{format(score.score)} pts <small>{score.percentage}%</small></dd></div>)}</dl>
           </div>
         </section>
@@ -91,5 +107,5 @@ function AstrolabioWorkspace() {
       <ul>{taskByElement.map(entry => <li key={entry.elementId}><ElementIcon element={entry.elementId} size={22} /><span>{entry.element}</span><strong>{entry.count}</strong><span className="astrolabe-task-meter" aria-hidden="true"><span style={{ width: `${entry.count / maxTasks * 100}%`, backgroundColor: entry.color }} /></span></li>)}</ul>
       <Link to="/rituais">Consultar Rituais<ArcaneIcon name="ritual" size={18} /></Link>
     </section>
-  </div>;
+  </CenaAstrolabio>;
 }
