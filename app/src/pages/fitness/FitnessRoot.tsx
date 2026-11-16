@@ -1,6 +1,6 @@
 import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import { FITNESS_ICONS, FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CalendarDays, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,7 +9,10 @@ import { useAppStore } from '@/stores/appStore';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
 import { getWorkoutPresentation, getExercisePresentation } from '@/lib/workout/workout-focus';
-import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessHeader, FitnessPageShell, FitnessListRow, SectionHeader } from '@/components/fitness-kit';
+import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, FitnessHeader, FitnessPageShell, FitnessListRow } from '@/components/fitness-kit';
+import { ModalidadeHeroi } from '@/components/fitness-kit/modalidade-heroi';
+import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
+import type { ElementoId } from '@/lib/design/palette';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SavedWorkoutLibrary } from '@/components/workout/SavedWorkoutLibrary';
@@ -17,7 +20,7 @@ import { NativeTemplateDialog } from '@/components/workout/NativeTemplateDialog'
 import { WorkoutSequenceLibrary } from '@/components/workout/WorkoutSequenceLibrary';
 import { MuscleExerciseCatalog } from '@/components/workout/MuscleExerciseCatalog';
 import { MakeCycleModal } from '@/components/workout/MakeCycleModal';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { DialogoAlerta } from '@/components/fitness-kit/dialogo-alerta';
 import { ExerciseDetailSheet } from '@/components/workout/ExerciseDetailSheet';
 import { WorkoutHistory } from './WorkoutHistory';
 import { HealthDashboard } from './HealthDashboard';
@@ -39,7 +42,7 @@ const modalities = [
   { id: 'strength', label: 'Musculação', icon: FITNESS_ICONS.strength },
 ] satisfies (CategoryOption & { id: WorkoutExerciseCategory })[];
 
-function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalog: Exercise[] }) {
+function TemplateCard({ template, catalog, element, index = 0 }: { template: WorkoutTemplate; catalog: Exercise[]; element?: ElementoId; index?: number }) {
   const [params, setParams] = useSearchParams();
   const [editing, setEditing] = useState(params.get('edit') === template.id);
   const [confirmDelete, setConfirmDelete] = useState(params.get('delete') === template.id);
@@ -59,7 +62,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
   const reward = previewReward(template.id);
   const series = template.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
   const focus = getWorkoutPresentation(template, catalog);
-  return <FitnessCard className="space-y-4 p-5">
+  return <FitnessCard luz data-element={element} style={{ '--i': index + 3 } as CSSProperties} className="mo-cartao space-y-4 p-5">
     <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary"><FitnessGlyph name={focus.icon} size={28} label={focus.label} /></span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
     {reward && <div className="space-y-2"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
     {template.scheduledAt && <p className="text-sm text-fitness-muted">Planejado para {new Date(template.scheduledAt).toLocaleDateString('pt-BR')}</p>}
@@ -88,7 +91,7 @@ function TemplateCard({ template, catalog }: { template: WorkoutTemplate; catalo
       <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm" onClick={() => setEditing(true)}><Pencil size={16} />Editar</FitnessButton>
       <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm text-fitness-red" onClick={() => setConfirmDelete(true)}><Trash2 size={16} />Excluir</FitnessButton>
     </div>
-    <AlertDialog open={confirmDelete} onOpenChange={setConfirmDelete}><AlertDialogContent className="border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Excluir este treino?</AlertDialogTitle><AlertDialogDescription>“{template.name}” será removido da biblioteca e das sequências que o utilizam. Sessões em andamento e o histórico de treinos realizados serão preservados.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Manter treino</AlertDialogCancel><AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={() => { deleteTemplate(template.id); toast.success('Treino excluído da biblioteca.'); }}>Excluir treino</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <DialogoAlerta open={confirmDelete} onOpenChange={setConfirmDelete} titulo="Excluir este treino?" descricao={`“${template.name}” será removido da biblioteca e das sequências que o utilizam. Sessões em andamento e o histórico de treinos realizados serão preservados.`} cancelar="Manter treino" confirmar="Excluir treino" onConfirm={() => { deleteTemplate(template.id); toast.success('Treino excluído da biblioteca.'); }} />
     {editing && <NativeTemplateDialog template={template} catalog={catalog} modality={template.modality} onClose={() => setEditing(false)} />}
 
     <div className="grid grid-cols-2 gap-2">
@@ -124,6 +127,7 @@ function FitnessLibraryRoot() {
   const legacyActive = useWorkoutStore.getState().getActiveSession();
   const createButtonRef = useRef<HTMLButtonElement>(null);
   const modalitiesHeadingRef = useRef<HTMLHeadingElement>(null);
+  const catalogHeadingRef = useRef<HTMLHeadingElement>(null);
   const [createVisible, setCreateVisible] = useState(false);
   useEffect(() => {
     const node = createButtonRef.current;
@@ -185,18 +189,31 @@ function FitnessLibraryRoot() {
               <FitnessCategoryGrid options={availableModalities} selectedId={null} ariaLabel="Modalidades de exercício físico" onSelect={(id) => updateParam('modalidade', id)} />
             </section>
           </>}
-          {modality && <div className="space-y-3">
-            <p className="text-center text-sm text-fitness-muted">{modality?.label ?? 'Escolha uma modalidade'} · {selectedCatalog.length} exercícios disponíveis</p>
-            <FitnessButton ref={createButtonRef} className="w-full" disabled={!modality} onClick={() => { setPresetId(undefined); setCreateOpen(true); }}>Montar treino</FitnessButton>
-          </div>}
+          {modality && <ModalidadeHeroi ref={createButtonRef} id={modality.id} label={modality.label} icon={modality.icon} exercicios={selectedCatalog.length} treinos={selectedTemplates.length} onCriar={() => { setPresetId(undefined); setCreateOpen(true); }} />}
           {modality && <>
-            <section className="space-y-4"><SectionHeader title="Meus treinos" />
-              {selectedTemplates.map((template) => <TemplateCard key={template.id} template={template} catalog={selectedCatalog} />)}
-              {!selectedTemplates.length && <p className="text-sm text-fitness-muted">Monte seu primeiro treino com os exercícios desta modalidade.</p>}
+            <section aria-labelledby="fitness-modality-templates" className="mo-secao space-y-4" style={{ '--i': 2 } as CSSProperties}>
+              <div className="tr-meus-cab"><h2 id="fitness-modality-templates" className="tr-secao-titulo">Meus treinos <span className="tr-meus-contagem">{selectedTemplates.length}</span></h2></div>
+              {selectedTemplates.map((template, index) => <TemplateCard key={template.id} template={template} catalog={selectedCatalog} element={elementoDaModalidade(modality.id)} index={index} />)}
+              {!selectedTemplates.length && <FitnessEmptyState
+                icon={<modality.icon className="h-7 w-7" strokeWidth={1.55} />}
+                title={`Seu primeiro treino de ${modality.label}`}
+                message="Escolha exercícios desta modalidade e monte um treino só seu. Cada série que você fizer fica selada para você."
+                action={<FitnessButton size="md" variant="secondary" className="w-full max-w-xs" onClick={() => {
+                  catalogHeadingRef.current?.focus({ preventScroll: true });
+                  catalogHeadingRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+                }}>Explorar o catálogo</FitnessButton>}
+              />}
             </section>
-            <section className="space-y-4"><SectionHeader title="Catálogo" subtitle={`Exercícios de ${modality.label}`} /><MuscleExerciseCatalog key={modality.id} icon={CATEGORY_ICONS[modality.id]} exercises={selectedCatalog} onSelect={setDetail} /></section>
+            <section aria-labelledby="fitness-modality-catalog" className="mo-secao space-y-4" style={{ '--i': 2 } as CSSProperties}>
+              <div>
+                <h2 id="fitness-modality-catalog" ref={catalogHeadingRef} tabIndex={-1} className="tr-secao-titulo scroll-mt-6 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary">Catálogo</h2>
+                <p className="tr-secao-subtitulo">Exercícios de {modality.label}</p>
+              </div>
+              <MuscleExerciseCatalog key={modality.id} icon={CATEGORY_ICONS[modality.id]} element={elementoDaModalidade(modality.id)} exercises={selectedCatalog} onSelect={setDetail} />
+            </section>
           </>}
           <WorkoutSequenceLibrary modality={modality?.id} />
+          {modality && <div className="mo-respiro" aria-hidden="true" />}
         </TabsContent>
         <FitnessEmbeddedContext.Provider value>
           <TabsContent value="history" className="mt-6"><WorkoutHistory /></TabsContent>

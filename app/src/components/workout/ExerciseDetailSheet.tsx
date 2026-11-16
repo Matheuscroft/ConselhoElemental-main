@@ -1,6 +1,8 @@
 import React from 'react';
-import { AlertCircle, Lightbulb, ListChecks, Plus, Wind } from 'lucide-react';
+import { AlertCircle, Lightbulb, ListChecks, Plus, Repeat2, Timer, Wind } from 'lucide-react';
 import './exercise-detail.css';
+import '@/components/fitness-kit/modalidade-uau.css';
+import { FichaPassos, FichaSigilo, elementoDaFicha } from '@/components/fitness-kit/modalidade-ficha';
 import { MuscleBars } from '@/components/fitness-kit/MuscleBars';
 import { FitnessButton } from '@/components/fitness-kit/FitnessButton';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
@@ -106,9 +108,10 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({exercis
   const family = exercise.family?.trim();
   const subtitle = family && family.toLocaleLowerCase('pt-BR') !== category.toLocaleLowerCase('pt-BR') ? `${category} · ${family}` : category;
   return <Sheet open={open} onOpenChange={onOpenChange}>
-    <SheetContent side="bottom" className="fitness-exercise-detail" closeLabel="Fechar ficha do exercício">
-      <header className="fitness-exercise-detail-header">
-        <span className="fitness-exercise-symbol"><Icon size={32} aria-hidden="true" /></span>
+    <SheetContent side="bottom" className="fitness-exercise-detail mo-ficha" data-element={elementoDaFicha(exercise.category)} closeLabel="Fechar ficha do exercício">
+      <header className="fitness-exercise-detail-header mo-ficha-cabeca">
+        <span className="mo-ficha-luz" aria-hidden="true" />
+        <FichaSigilo icon={Icon} category={exercise.category} muscle={exercise.primaryMuscles?.[0]} />
         <div className="min-w-0"><p className="fitness-exercise-eyebrow">{subtitle}</p><SheetTitle className="fitness-exercise-title">{exercise.name}</SheetTitle>
           {exercise.nameAlternate && <p className="fitness-exercise-alternate">{exercise.nameAlternate}</p>}
         </div>
@@ -117,9 +120,9 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({exercis
       <div className="fitness-exercise-detail-body">
         {(exercise.description || exercise.focus) && <p className="fitness-exercise-description">{exercise.description || exercise.focus}</p>}
         {exercise.focus && exercise.description && exercise.focus !== exercise.description && <p className="fitness-exercise-focus">Foco: {exercise.focus}</p>}
-        <div className="fitness-exercise-tags"><span>{LEVEL_LABELS[exercise.level]}</span><span>{exercise.measureMode === 'duration' ? 'Registro por tempo' : 'Registro por repetições'}</span>{exercise.durationLabel && <span>{exercise.durationLabel}</span>}</div>
-        {exercise.instructions.length > 0 && <section className="fitness-exercise-instructions"><h3><ListChecks size={18} aria-hidden="true" />{getInstructionsLabel(exercise.source)}</h3><ol>{exercise.instructions.map((instruction,index)=><li key={`${index}-${instruction}`}><span aria-hidden="true">{index+1}</span><p>{instruction}</p></li>)}</ol></section>}
-        {exercise.breathing && <section><h3><Wind size={18} aria-hidden="true" />Respiração</h3><p className="fitness-exercise-description">{exercise.breathing}</p></section>}
+        <div className="fitness-exercise-tags"><span data-nivel={exercise.level}>{LEVEL_LABELS[exercise.level]}</span><span>{exercise.measureMode === 'duration' ? <Timer size={14} aria-hidden="true" /> : <Repeat2 size={14} aria-hidden="true" />}{exercise.measureMode === 'duration' ? 'Registro por tempo' : 'Registro por repetições'}</span>{exercise.durationLabel && <span>{exercise.durationLabel}</span>}</div>
+        {exercise.instructions.length > 0 && <FichaPassos titulo={getInstructionsLabel(exercise.source)} icone={<ListChecks size={18} aria-hidden="true" />} passos={exercise.instructions} />}
+        {exercise.breathing && <section className="mo-respiracao"><h3><Wind size={18} aria-hidden="true" />Respiração</h3><p className="fitness-exercise-description">{exercise.breathing}</p></section>}
         {exercise.benefits.length > 0 && <details><summary><Lightbulb size={17} aria-hidden="true" />Benefícios</summary><ul>{exercise.benefits.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
         {exercise.variations.length > 0 && <details><summary>Variações</summary><ul>{exercise.variations.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
         {exercise.contraindications.length > 0 && <details className="fitness-exercise-cautions"><summary><AlertCircle size={17} aria-hidden="true" />Cuidados e contraindicações</summary><ul>{exercise.contraindications.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}

@@ -1,9 +1,9 @@
 import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import { FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
-import { useId, useMemo, useState } from 'react';
-import { ArrowUp, ChevronDown, Grid2X2, Plus, Trash2, X } from 'lucide-react';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FitnessButton, FitnessCard, VideoExercisePlayer } from '@/components/fitness-kit';
+import { useId, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { ArrowUp, Check, ChevronDown, Grid2X2, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { VideoExercisePlayer } from '@/components/fitness-kit';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { Exercise, PlannedExercise, UUIDv4, WorkoutExerciseCategory, WorkoutSet, WorkoutTemplate, Workout } from '@/types/workout';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
@@ -13,7 +13,13 @@ import { FitnessIntegerField } from './FitnessIntegerField';
 import { MUSCLE_REGIONS } from '@/constants/muscle-regions';
 import { getExercisePresentation } from '@/lib/workout/workout-focus';
 import './create-workout.css';
-import { CATEGORY_LABELS } from '@/lib/workout';
+import { Contagem } from '@/components/motion/Contagem';
+import { DialogoCabeca } from '@/components/fitness-kit/dialogo-cabeca';
+import { DialogoEsforco } from '@/components/fitness-kit/dialogo-esforco';
+import { useLuzDoDialogo } from '@/components/fitness-kit/dialogo-luz';
+import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
+import '@/components/fitness-kit/dialogo-uau.css';
+import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
 import { CustomExerciseFields } from './CustomExerciseFields';
 import { resolveExerciseMedia, validExerciseMediaUrl } from '@/lib/workout/exercise-media';
 
@@ -86,12 +92,27 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
     setCollapsedSeries((current) => new Set([...current, ...plan.sets.map((series) => series.id)]));
   };
 
+
+  const titleId = useId();
+  const catalogRef = useRef<HTMLElement>(null);
+  const ligarLuz = useLuzDoDialogo();
+  const elemento = elementoDaModalidade(modality);
+  const SigiloModalidade = CATEGORY_ICONS[modality] ?? CATEGORY_ICONS.mixed;
+  const editing = Boolean(template || legacyWorkout);
+  const totalSeries = plans.reduce((sum, plan) => sum + plan.sets.length, 0);
+  const toggle = (set: Set<string>, id: string) => { const next = new Set(set); if (next.has(id)) next.delete(id); else next.add(id); return next; };
+  const irAoCatalogo = () => {
+    const reduzido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    catalogRef.current?.scrollIntoView({ block: 'start', behavior: reduzido ? 'auto' : 'smooth' });
+  };
+
   return <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
-    <DialogContent
-      className="workout-builder" showCloseButton={false}
-    >
-      <DialogHeader className="workout-builder-header"><div><DialogTitle className="workout-builder-title">{template || legacyWorkout ? 'Editar treino' : 'Criar treino'}</DialogTitle><DialogDescription>Escolha os exercícios e configure cada série. O treino fica salvo na sua biblioteca.</DialogDescription></div><DialogClose className="workout-builder-close" aria-label="Fechar criação de treino"><X size={20} /></DialogClose></DialogHeader>
-      <form id={formId} className="workout-builder-body space-y-5" onSubmit={(event) => {
+    <DialogContent ref={ligarLuz} data-luz="" data-element={elemento} aria-labelledby={titleId} showCloseButton={false} overlayClassName="dialogo-veu" className="dialogo-treino dg-montador ds-glass-float">
+      <DialogoCabeca icone={SigiloModalidade} fechar="Fechar criação de treino" sobretitulo={<><span className="sr-only">Modalidade: </span>{CATEGORY_LABELS[modality]}</>}>
+        <DialogTitle id={titleId} className="dg-titulo">{editing ? 'Editar treino' : 'Criar treino'}</DialogTitle>
+        <DialogDescription className="dg-descricao">Escolha os exercícios e configure cada série. O treino fica salvo na sua biblioteca.</DialogDescription>
+      </DialogoCabeca>
+      <form id={formId} className="dg-corpo" onSubmit={(event) => {
         event.preventDefault();
         if (!plans.length) { setError('Adicione pelo menos um exercício.'); return; }
         if (plans.some((plan) => !validExerciseMediaUrl(plan.imageUrl) || !validExerciseMediaUrl(plan.videoUrl))) { setError('Use uma URL http/https ou um caminho de arquivo do app para a mídia.'); return; }
@@ -111,50 +132,92 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
         if (!saved) { setError('Confira o nome e use valores inteiros positivos nas repetições e nos segundos.'); return; }
         onClose();
       }}>
-        <label className="block space-y-2 text-sm">Nome do treino<input required value={name} onChange={(event) => setName(event.target.value)} className={field} placeholder="Ex.: Força e equilíbrio" maxLength={100} /></label>
-        <p className="text-sm text-fitness-muted">Modalidade: <span className="font-medium text-fitness-text">{CATEGORY_LABELS[modality]}</span></p>
-        <label className="block space-y-2 text-sm">Data (opcional)<input type="date" className={field} value={scheduledDate} onChange={(event) => setScheduledDate(event.target.value)} /></label>
-        <fieldset className="space-y-3"><legend className="mb-2 font-semibold">Seu treino</legend>
-          {plans.length === 0 && <p className="text-sm text-fitness-muted">Escolha no catálogo abaixo ou crie um exercício próprio.</p>}
-          {plans.map((plan, index) => <FitnessCard key={plan.id} className="space-y-4 p-4">
-            <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 font-medium"><button type="button" aria-expanded={!collapsedExercises.has(plan.id)} aria-controls={`exercise-series-${plan.id}`} className="flex min-h-11 w-full items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary" onClick={() => setCollapsedExercises((current) => { const next = new Set(current); if (next.has(plan.id)) next.delete(plan.id); else next.add(plan.id); return next; })}><ChevronDown size={18} className={`shrink-0 transition-transform ${collapsedExercises.has(plan.id) ? '-rotate-90' : ''}`} /><span className="min-w-0 break-words">{plan.exerciseNameSnapshot}<span className="mt-1 block text-xs font-normal text-fitness-muted">{plan.sets.length} séries</span></span></button></h3>
-              <button type="button" disabled={index === 0} className="grid h-11 w-11 place-items-center rounded-full hover:bg-white/5 disabled:opacity-30" aria-label={`Mover ${plan.exerciseNameSnapshot} para cima`} onClick={() => setPlans((current) => { const next = [...current]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })}><ArrowUp size={18} /></button>
-              <button type="button" className="grid h-11 w-11 place-items-center rounded-full text-fitness-muted hover:text-fitness-red" aria-label={`Remover ${plan.exerciseNameSnapshot}`} onClick={() => setPlans((current) => current.filter((item) => item.id !== plan.id))}><Trash2 size={18} /></button>
-            </div>
-            <VideoExercisePlayer key={`${plan.id}-${plan.imageUrl}-${plan.videoUrl}`} title={plan.exerciseNameSnapshot} {...resolveExerciseMedia(plan, catalog.find((exercise) => exercise.id === plan.exerciseId), useWorkoutStore.getState().getExerciseById(catalog.find((exercise) => exercise.id === plan.exerciseId)?.legacyId ?? ''))} />
-            <details className="rounded-xl border border-white/10 p-3"><summary className="min-h-11 cursor-pointer text-sm text-fitness-primary">Imagem, vídeo e observações</summary><div className="mt-3 space-y-3">
-              <label className="block text-xs text-fitness-muted">URL da imagem (opcional)<input className={field} defaultValue={plan.imageUrl ?? ''} placeholder="https://.../imagem.jpg" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, imageUrl: event.target.value.trim() || undefined } : item))} /></label>
-              <label className="block text-xs text-fitness-muted">URL direta do vídeo (opcional)<input className={field} defaultValue={plan.videoUrl ?? ''} placeholder="https://.../video.mp4" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, videoUrl: event.target.value.trim() || undefined } : item))} /></label>
-              <label className="block text-xs text-fitness-muted">Observações<textarea className="w-full rounded-xl border border-white/10 bg-fitness-canvas p-3 text-base" value={plan.notes ?? ''} onChange={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, notes: event.target.value } : item))} /></label>
-            </div></details>
-            <div id={`exercise-series-${plan.id}`} hidden={collapsedExercises.has(plan.id)} className="space-y-4" onInvalidCapture={(event) => { if (!collapsedExercises.has(plan.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedExercises((current) => { const next = new Set(current); next.delete(plan.id); return next; }); requestAnimationFrame(() => input.focus()); }}>
-            {plan.sets.map((series) => <div key={series.id} className="space-y-2 rounded-xl bg-fitness-canvas/50 p-3">
-              <div className="flex items-center gap-2"><button type="button" aria-expanded={!collapsedSeries.has(series.id)} aria-controls={`series-fields-${series.id}`} className="flex min-h-11 min-w-0 flex-1 items-center gap-2 rounded-lg text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary" onClick={() => setCollapsedSeries((current) => { const next = new Set(current); if (next.has(series.id)) next.delete(series.id); else next.add(series.id); return next; })}><ChevronDown size={15} className={`shrink-0 text-fitness-muted transition-transform ${collapsedSeries.has(series.id) ? '-rotate-90' : ''}`} /><span className="min-w-0 space-y-1"><span className="block text-sm font-medium">Série {series.setNumber}</span>{collapsedSeries.has(series.id) && <span className="flex flex-wrap items-center gap-1.5 text-xs"><span className="rounded-md bg-fitness-primary/10 px-2 py-0.5 text-fitness-primary">{series.measureMode === 'reps' ? `${series.targetReps ?? '—'} reps` : `${series.targetDurationSeconds ?? '—'}s`}</span>{(series.targetLoadKg ?? 0) > 0 && <span className="text-fitness-muted">{series.targetLoadKg?.toLocaleString('pt-BR')} kg ·</span>}<span className="text-fitness-muted">{series.restSeconds ?? 0}s pausa</span>{series.loadFactor === 1.5 && <span className="rounded-md bg-emerald-400/10 px-1.5 py-0.5 text-emerald-300">PR</span>}{series.loadFactor === 0.8 && <span className="text-fitness-muted">Leve</span>}</span>}</span></button><button type="button" disabled={plan.sets.length === 1} aria-label={`Remover série ${series.setNumber} de ${plan.exerciseNameSnapshot}`} className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-fitness-muted disabled:opacity-30" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: item.sets.filter((set) => set.id !== series.id).map((set, i) => ({ ...set, setNumber: i + 1 })) }))}><Trash2 size={15} /></button></div>
-              <div id={`series-fields-${series.id}`} hidden={collapsedSeries.has(series.id)} onInvalidCapture={(event) => { if (!collapsedSeries.has(series.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedSeries((current) => { const next = new Set(current); next.delete(series.id); return next; }); requestAnimationFrame(() => input.focus()); }}><div className="grid grid-cols-2 gap-3">
-                {series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={series.targetReps} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'reps' ? { ...set, targetReps: value } : set)} /> : <FitnessDurationField seconds={series.targetDurationSeconds} minutes={['running', 'swimming', 'cycling', 'martial_arts'].includes(modality)} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'duration' ? { ...set, targetDurationSeconds: value } : set)} />}
-                {!timedActivity && <label className="space-y-1 text-xs text-fitness-muted">Carga (kg)<input type="number" min="0" step="0.1" required className={field} value={series.targetLoadKg ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, targetLoadKg: Number(event.target.value) }))} /></label>}
-                <label className={`${timedActivity ? '' : 'col-span-2'} space-y-1 text-xs text-fitness-muted`}>Descanso (segundos)<input type="number" min="0" step="1" required className={field} value={series.restSeconds ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, restSeconds: Number(event.target.value) }))} /></label>
-                <label className="col-span-2 space-y-1 text-xs text-fitness-muted">Fator de carga da série<select className={field} value={series.loadFactor ?? 1} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, loadFactor: Number(event.target.value) as 0.8 | 1 | 1.5 }))}><option value="0.8">Leve (×0,8)</option><option value="1">Manutenção (×1,0)</option><option value="1.5">Progressão / PR (×1,5)</option></select></label>
-              </div></div>
-            </div>)}
-            <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: [...item.sets, { ...structuredClone(item.sets[item.sets.length - 1]), id: newId(), setNumber: item.sets.length + 1 }] }))}><Plus size={16} />Adicionar série</FitnessButton>
-            </div>
-          </FitnessCard>)}
-        </fieldset>
-        <details className="rounded-2xl border border-white/10 p-4" onInvalidCapture={(event) => { event.currentTarget.open = true; }}><summary className="min-h-11 cursor-pointer font-medium text-fitness-primary">Esforço e estimativa · {estimatedMinutes} min</summary><div className="mt-3 space-y-4">
-        <label className="block space-y-2 text-sm">Esforço do treino<select className={field} value={effortLevel} onChange={(event) => setEffortLevel(Number(event.target.value))}><option value={1}>1 · Muito leve</option><option value={2}>2 · Leve</option><option value={3}>3 · Moderado</option><option value={4}>4 · Intenso</option><option value={5}>5 · Muito intenso</option></select><span className="block text-xs text-fitness-muted">Esforço do treino inteiro. É diferente da intensidade de cada série e influencia o custo de Prana.</span></label>
-        <label className="block space-y-2 text-sm">Duração estimada (minutos)<input type="number" min="0" step="1" value={estimatedMinutes} onChange={(event) => setManualMinutes(event.target.value === '' ? null : event.target.value)} className={field} /><span className="block text-xs text-fitness-muted">{manualMinutes === null ? 'Calculada pelas séries, descansos e transições.' : `Ajuste manual ativo. Estimativa automática: ${automaticMinutes} min.`} A recompensa final usa o tempo real.</span></label>
-        {manualMinutes !== null && <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => setManualMinutes(null)}>Usar estimativa automática</FitnessButton>}
-        {!legacyWorkout && <div className="space-y-2 rounded-2xl border border-white/10 bg-fitness-canvas/50 p-4 text-fitness-text"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="text-xs">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos nas séries · esforço {effortLevel}. A projeção usa {reward.estimatedDurationMinutes} min planejados; o ganho é consolidado por sessão.</p></div>}
-        {legacyWorkout && <div className="rounded-2xl bg-fitness-primary/10 p-4 text-sm text-fitness-text-soft">{plans.length} exercícios · {plans.reduce((sum, plan) => sum + plan.sets.length, 0)} séries · {estimatedMinutes} min planejados. A recompensa será apresentada ao concluir a sessão.</div>}
-</div></details>
-        <section className="space-y-3"><h3 className="font-sans text-lg font-semibold">Adicionar do catálogo</h3>{catalog.some((exercise) => exercise.primaryMuscles?.length) && <div role="group" aria-label="Filtrar exercícios por região muscular" className="flex flex-wrap gap-1.5"><button type="button" title="Todos os exercícios" aria-label="Todos os exercícios" aria-pressed={!muscleFilter} onClick={() => setMuscleFilter(null)} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${!muscleFilter ? 'border-fitness-primary bg-fitness-primary/15 text-fitness-primary' : 'border-white/10 text-fitness-muted'}`}><Grid2X2 size={18} aria-hidden="true" /><span className="text-xs">Todos</span></button>{MUSCLE_REGIONS.map((region) => <button key={region.id} type="button" title={region.label} aria-label={`Filtrar por ${region.label}`} aria-pressed={muscleFilter === region.id} onClick={() => setMuscleFilter((current) => current === region.id ? null : region.id)} className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 text-[rgb(var(--el-gold))] outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary ${muscleFilter === region.id ? 'border-fitness-primary bg-fitness-primary/15' : 'border-white/10 bg-fitness-surface'}`}><FitnessGlyph name={region.icon} size={28} /><span className="text-xs">{region.label}</span></button>)}</div>}<label className="block"><span className="sr-only">Buscar exercícios</span><input className={field} placeholder="Buscar exercício" value={search} onChange={(event) => setSearch(event.target.value)} /></label>
-          <div className="max-h-52 space-y-2 overflow-y-auto">{matches.map((exercise) => { const focus = getExercisePresentation(exercise.id, catalog); return <button type="button" key={exercise.id} disabled={plans.some((plan) => plan.exerciseId === exercise.id)} className="flex min-h-12 w-full items-center justify-between rounded-xl bg-fitness-surface px-4 text-left text-sm disabled:opacity-40" onClick={() => addExercise(exercise)}><span className="min-w-0 flex-1 break-words">{focus && <FitnessGlyph name={focus.icon} size={24} label={focus.label} className="mr-2 inline-block align-middle text-[rgb(var(--el-gold))]" />}{exercise.name}</span><Plus size={16} className="ml-2 shrink-0" /></button>; })}{matches.length === 0 && <p className="py-3 text-sm text-fitness-muted">Nenhum exercício encontrado nesta modalidade.</p>}</div>
+        <section className="dg-secao dg-dados" aria-label="Dados do treino">
+          <label className="dg-campo"><span className="dg-rotulo">Nome do treino</span><input required value={name} onChange={(event) => setName(event.target.value)} className={field} placeholder="Ex.: Força e equilíbrio" maxLength={100} autoComplete="off" enterKeyHint="done" /></label>
+          <label className="dg-campo"><span className="dg-rotulo">Data (opcional)</span><input type="date" className={field} value={scheduledDate} onChange={(event) => setScheduledDate(event.target.value)} /></label>
         </section>
-        {customOpen ? <CustomExerciseFields modality={modality} proposedName={search} onCancel={() => setCustomOpen(false)} onAdded={(exercise) => { addExercise(exercise); setSearch(''); setCustomOpen(false); }} /> : <FitnessButton variant="secondary" size="md" className="w-full" onClick={() => setCustomOpen(true)}><Plus size={16} />Criar exercício</FitnessButton>}
-        {error && <p role="alert" className="text-sm text-fitness-coral">{error}</p>}
+
+        <section className="dg-secao" aria-labelledby={`${formId}-treino`}>
+          <div className="dg-secao-cab"><h3 id={`${formId}-treino`} className="dg-secao-titulo">Seu treino</h3><span className="dg-secao-meta">{plans.length} {plans.length === 1 ? 'exercício' : 'exercícios'} · {totalSeries} {totalSeries === 1 ? 'série' : 'séries'}</span></div>
+          {plans.length === 0 && <div className="dg-vazio">
+            <span className="dg-vazio-sigilo" aria-hidden="true"><SigiloModalidade size={28} strokeWidth={1.55} /></span>
+            <p className="dg-vazio-titulo">Seu treino começa aqui</p>
+            <p className="dg-vazio-texto">Escolha um exercício no catálogo ou crie um exercício próprio. Cada um entra como uma runa, na ordem em que você o adiciona.</p>
+            <button type="button" className="dg-btn" data-tipo="secundario" onClick={irAoCatalogo}><Plus size={16} aria-hidden="true" />Ver o catálogo</button>
+          </div>}
+          <ol className="dg-lista" aria-label="Exercícios do treino">
+            {plans.map((plan, index) => <li key={plan.id} className="dg-exercicio ds-pane" style={{ '--i': Math.min(index, 8) } as CSSProperties}>
+              <div className="dg-exercicio-cab">
+                <span className="dg-ordem" aria-hidden="true">{index + 1}</span>
+                <h4 className="dg-exercicio-titulo"><button type="button" aria-expanded={!collapsedExercises.has(plan.id)} aria-controls={`exercise-series-${plan.id}`} className="dg-exercicio-alterna" onClick={() => setCollapsedExercises((current) => toggle(current, plan.id))}><ChevronDown size={18} aria-hidden="true" className="dg-seta" data-aberto={!collapsedExercises.has(plan.id) || undefined} /><span className="dg-exercicio-nome">{plan.exerciseNameSnapshot}<small>{plan.sets.length} {plan.sets.length === 1 ? 'série' : 'séries'}</small></span></button></h4>
+                <button type="button" disabled={index === 0} className="dg-icone" aria-label={`Mover ${plan.exerciseNameSnapshot} para cima`} onClick={() => setPlans((current) => { const next = [...current]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })}><ArrowUp size={18} aria-hidden="true" /></button>
+                <button type="button" className="dg-icone" data-tipo="perigo" aria-label={`Remover ${plan.exerciseNameSnapshot}`} onClick={() => setPlans((current) => current.filter((item) => item.id !== plan.id))}><Trash2 size={18} aria-hidden="true" /></button>
+              </div>
+              <VideoExercisePlayer key={`${plan.id}-${plan.imageUrl}-${plan.videoUrl}`} title={plan.exerciseNameSnapshot} {...resolveExerciseMedia(plan, catalog.find((exercise) => exercise.id === plan.exerciseId), useWorkoutStore.getState().getExerciseById(catalog.find((exercise) => exercise.id === plan.exerciseId)?.legacyId ?? ''))} />
+              <details className="dg-grupo"><summary>Imagem, vídeo e observações<ChevronDown size={16} aria-hidden="true" /></summary><div className="dg-grupo-corpo">
+                <label className="dg-campo"><span className="dg-rotulo">URL da imagem (opcional)</span><input className={field} defaultValue={plan.imageUrl ?? ''} placeholder="https://.../imagem.jpg" inputMode="url" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, imageUrl: event.target.value.trim() || undefined } : item))} /></label>
+                <label className="dg-campo"><span className="dg-rotulo">URL direta do vídeo (opcional)</span><input className={field} defaultValue={plan.videoUrl ?? ''} placeholder="https://.../video.mp4" inputMode="url" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, videoUrl: event.target.value.trim() || undefined } : item))} /></label>
+                <label className="dg-campo"><span className="dg-rotulo">Observações</span><textarea className={field} rows={3} value={plan.notes ?? ''} onChange={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, notes: event.target.value } : item))} /></label>
+              </div></details>
+              <div id={`exercise-series-${plan.id}`} hidden={collapsedExercises.has(plan.id)} className="dg-series" onInvalidCapture={(event) => { if (!collapsedExercises.has(plan.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedExercises((current) => { const next = new Set(current); next.delete(plan.id); return next; }); requestAnimationFrame(() => input.focus()); }}>
+                {plan.sets.map((series) => <div key={series.id} className="dg-serie">
+                  <div className="dg-serie-cab">
+                    <button type="button" aria-expanded={!collapsedSeries.has(series.id)} aria-controls={`series-fields-${series.id}`} className="dg-serie-alterna" onClick={() => setCollapsedSeries((current) => toggle(current, series.id))}>
+                      <span className="dg-serie-selo" aria-hidden="true">{series.setNumber}</span>
+                      <span className="dg-serie-texto"><span className="dg-serie-nome">Série {series.setNumber}</span>{collapsedSeries.has(series.id) && <span className="dg-serie-chips"><span className="dg-chip-valor">{series.measureMode === 'reps' ? `${series.targetReps ?? '—'} reps` : `${series.targetDurationSeconds ?? '—'}s`}</span>{(series.targetLoadKg ?? 0) > 0 && <span>{series.targetLoadKg?.toLocaleString('pt-BR')} kg</span>}<span>{series.restSeconds ?? 0}s de pausa</span>{series.loadFactor === 1.5 && <span className="dg-chip-pr">PR</span>}{series.loadFactor === 0.8 && <span>Leve</span>}</span>}</span>
+                      <ChevronDown size={16} aria-hidden="true" className="dg-seta" data-aberto={!collapsedSeries.has(series.id) || undefined} />
+                    </button>
+                    <button type="button" disabled={plan.sets.length === 1} aria-label={`Remover série ${series.setNumber} de ${plan.exerciseNameSnapshot}`} className="dg-icone" data-tipo="perigo" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: item.sets.filter((set) => set.id !== series.id).map((set, i) => ({ ...set, setNumber: i + 1 })) }))}><Trash2 size={16} aria-hidden="true" /></button>
+                  </div>
+                  <div id={`series-fields-${series.id}`} hidden={collapsedSeries.has(series.id)} onInvalidCapture={(event) => { if (!collapsedSeries.has(series.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedSeries((current) => { const next = new Set(current); next.delete(series.id); return next; }); requestAnimationFrame(() => input.focus()); }}><div className="dg-serie-campos">
+                    {series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={series.targetReps} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'reps' ? { ...set, targetReps: value } : set)} /> : <FitnessDurationField seconds={series.targetDurationSeconds} minutes={timedActivity} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'duration' ? { ...set, targetDurationSeconds: value } : set)} />}
+                    {!timedActivity && <label className="dg-campo"><span className="dg-rotulo">Carga (kg)</span><input type="number" inputMode="decimal" min="0" step="0.1" required className={field} value={series.targetLoadKg ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, targetLoadKg: Number(event.target.value) }))} /></label>}
+                    <label className="dg-campo" data-larga={timedActivity ? undefined : ''}><span className="dg-rotulo">Descanso (segundos)</span><input type="number" inputMode="numeric" min="0" step="1" required className={field} value={series.restSeconds ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, restSeconds: Number(event.target.value) }))} /></label>
+                    <label className="dg-campo" data-larga=""><span className="dg-rotulo">Fator de carga da série</span><select className={field} value={series.loadFactor ?? 1} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, loadFactor: Number(event.target.value) as 0.8 | 1 | 1.5 }))}><option value="0.8">Leve (×0,8)</option><option value="1">Manutenção (×1,0)</option><option value="1.5">Progressão / PR (×1,5)</option></select></label>
+                  </div></div>
+                </div>)}
+                <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: [...item.sets, { ...structuredClone(item.sets[item.sets.length - 1]), id: newId(), setNumber: item.sets.length + 1 }] }))}><Plus size={16} aria-hidden="true" />Adicionar série</button>
+              </div>
+            </li>)}
+          </ol>
+        </section>
+
+        <details className="dg-painel" onInvalidCapture={(event) => { event.currentTarget.open = true; }}>
+          <summary><SlidersHorizontal size={18} aria-hidden="true" /><span className="dg-painel-titulo">Esforço e estimativa</span><span className="dg-painel-valor">{estimatedMinutes} min</span><ChevronDown size={18} aria-hidden="true" className="dg-seta" /></summary>
+          <div className="dg-painel-corpo">
+            <DialogoEsforco value={effortLevel} onChange={setEffortLevel} />
+            <p className="dg-nota">Esforço do treino inteiro. É diferente da intensidade de cada série e influencia o custo de Prana.</p>
+            <label className="dg-campo"><span className="dg-rotulo">Duração estimada (minutos)</span>
+              <span className="dg-caixa"><input type="number" inputMode="numeric" min="0" step="1" value={estimatedMinutes} onChange={(event) => setManualMinutes(event.target.value === '' ? null : event.target.value)} className={field} /><span className="dg-unidade" aria-hidden="true">min</span></span>
+              <span className="dg-nota">{manualMinutes === null ? 'Calculada pelas séries, descansos e transições.' : `Ajuste manual ativo. Estimativa automática: ${automaticMinutes} min.`} A recompensa final usa o tempo real.</span>
+            </label>
+            {manualMinutes !== null && <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setManualMinutes(null)}>Usar estimativa automática</button>}
+            {!legacyWorkout && <div className="dg-projecao"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="dg-nota">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos nas séries · esforço {effortLevel}. A projeção usa {reward.estimatedDurationMinutes} min planejados; o ganho é consolidado por sessão.</p></div>}
+            {legacyWorkout && <p className="dg-projecao dg-nota">{plans.length} exercícios · {totalSeries} séries · {estimatedMinutes} min planejados. A recompensa será apresentada ao concluir a sessão.</p>}
+          </div>
+        </details>
+
+        <section ref={catalogRef} className="dg-secao dg-catalogo-secao" aria-labelledby={`${formId}-catalogo`}>
+          <div className="dg-secao-cab"><h3 id={`${formId}-catalogo`} className="dg-secao-titulo">Adicionar do catálogo</h3><span className="dg-secao-meta">{matches.length} {matches.length === 1 ? 'opção' : 'opções'}</span></div>
+          {catalog.some((exercise) => exercise.primaryMuscles?.length) && <div role="group" aria-label="Filtrar exercícios por região muscular" className="dg-chips">
+            <button type="button" title="Todos os exercícios" aria-label="Todos os exercícios" aria-pressed={!muscleFilter} onClick={() => setMuscleFilter(null)} className="dg-chip"><Grid2X2 size={18} aria-hidden="true" /><span>Todos</span></button>
+            {MUSCLE_REGIONS.map((region) => <button key={region.id} type="button" title={region.label} aria-label={`Filtrar por ${region.label}`} aria-pressed={muscleFilter === region.id} onClick={() => setMuscleFilter((current) => current === region.id ? null : region.id)} className="dg-chip"><FitnessGlyph name={region.icon} size={24} /><span>{region.label}</span></button>)}
+          </div>}
+          <label className="dg-campo" data-tipo="busca"><span className="sr-only">Buscar exercícios</span><Search size={18} aria-hidden="true" /><input className={field} placeholder="Buscar exercício" value={search} onChange={(event) => setSearch(event.target.value)} enterKeyHint="search" autoComplete="off" /></label>
+          <div className="dg-catalogo">{matches.map((exercise) => { const focus = getExercisePresentation(exercise.id, catalog); const added = plans.some((plan) => plan.exerciseId === exercise.id); return <button type="button" key={exercise.id} disabled={added} className="dg-item" data-adicionado={added || undefined} onClick={() => addExercise(exercise)}>
+            <span className="dg-item-icone">{focus && <FitnessGlyph name={focus.icon} size={24} label={focus.label} />}</span>
+            <span className="dg-item-nome">{exercise.name}</span>
+            <span className="dg-item-acao" aria-hidden="true">{added ? <Check size={16} /> : <Plus size={16} />}</span>
+          </button>; })}{matches.length === 0 && <p className="dg-sem-resultado">Nenhum exercício encontrado nesta modalidade.</p>}</div>
+          {customOpen ? <CustomExerciseFields modality={modality} proposedName={search} onCancel={() => setCustomOpen(false)} onAdded={(exercise) => { addExercise(exercise); setSearch(''); setCustomOpen(false); }} /> : <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setCustomOpen(true)}><Plus size={16} aria-hidden="true" />Criar exercício</button>}
+        </section>
       </form>
-      <footer className="workout-builder-footer"><p>{plans.length} exercícios · {estimatedMinutes} min planejados</p><div><button type="button" className="workout-builder-cancel" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className="workout-builder-submit" disabled={!plans.length || !name.trim()}>Salvar treino</button></div></footer>
+      <footer className="dg-pe">
+        {error && <p role="alert" className="dg-erro">{error}</p>}
+        <p className="dg-resumo"><span className="sr-only">{plans.length} {plans.length === 1 ? 'exercício' : 'exercícios'} · {safeMinutes} min planejados</span>
+          <span aria-hidden="true"><Contagem valor={plans.length} formatar={(valor) => String(Math.round(valor))} className="dg-resumo-numero" /> {plans.length === 1 ? 'exercício' : 'exercícios'} · <Contagem valor={safeMinutes} formatar={(valor) => String(Math.round(valor))} className="dg-resumo-numero" /> min planejados</span></p>
+        <div className="dg-pe-acoes"><button type="button" className="dg-btn" data-tipo="fantasma" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className="dg-btn" data-tipo="primario" disabled={!plans.length || !name.trim()}>Salvar treino</button></div>
+      </footer>
     </DialogContent>
   </Dialog>;
 }

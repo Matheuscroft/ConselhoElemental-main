@@ -5,7 +5,13 @@ import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
-import { Vazio } from '@/components/elemental/blocos';
+import { ElementoCena } from '@/components/elemento/ElementoCena';
+import { ElementoCabecalho } from '@/components/elemento/ElementoCabecalho';
+import { ElementoPortais } from '@/components/elemento/ElementoPortais';
+import { ElementoAbas } from '@/components/elemento/ElementoAbas';
+import { ElementoBusca } from '@/components/elemento/ElementoBusca';
+import { ElementoRuna } from '@/components/elemento/ElementoRuna';
+import { ElementoVazio } from '@/components/elemento/ElementoVazio';
 import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { ACENTO, AURA } from '@/lib/design/palette';
 import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
@@ -18,6 +24,7 @@ import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanct
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
 import './elemental-preview.css';
+import '@/components/elemento/elemento-uau.css';
 import { AnelXp } from '@/components/sanctuary/AnelXp';
 
 /** The aura costs a shader and three.js, so it arrives after the page does. */
@@ -273,40 +280,53 @@ function ElementComposition({ id }: { id: ElementId }) {
   const scores = getAreaScores();
   const elementScore = getElementScores().find((entry) => entry.elementId === id);
   const points = elementScore?.score ?? 0;
-  return <div className="ep-element-page" data-element={id}>
-    <section className="ds-cabecalho ep-element-hero" aria-labelledby="ep-title">
-      <h1 id="ep-title">{element.name}</h1>
-      <p>{element.description}.</p>
-      <ul className="ds-cifras ep-element-facts">
-        <li className="ds-cifra">{format(points)}<small>pontos registrados</small></li>
-        <li className="ds-cifra">{areas.length}<small>áreas para explorar</small></li>
-        <li className="ds-cifra">{format(elementScore?.percentage ?? 0)}%<small>dos pontos totais</small></li>
-      </ul>
-    </section>
-    <nav className="ds-abas ep-element-switcher" data-element={id} aria-label="Trocar elemento">{ORDER.map((item) => <Link key={item} to={elementHref(item)} aria-current={item === id ? 'page' : undefined}><ElementSigil id={item} /><span>{ELEMENTS[item].name}</span></Link>)}</nav>
-    <section className="ep-areas" aria-labelledby="ep-areas-title">
-      <div className="ds-secao ep-area-toolbar"><h2 id="ep-areas-title">Suas áreas de vida</h2></div>
-      <p className="ds-nota ep-area-hint">Abra uma área para ver seus caminhos.</p>
-      <label className="ds-campo ep-search" data-tipo="busca"><span className="sr-only">Buscar áreas de {element.name}</span><ArcaneIcon name="buscar" size={18} /><input type="search" name="elemental-area-search" autoComplete="off" spellCheck={false} placeholder="Buscar uma área…" value={query} onChange={(event) => updateFilters({ query: event.target.value })} /></label>
-      <div className="ds-abas ep-area-filters" data-tom="filtro" role="group" aria-label="Filtrar áreas de vida">
+  // Each rune's ring is its share of the strongest area of this element.
+  const strongest = Math.max(0, ...areas.map((area) => scores.find((entry) => entry.areaId === area.id)?.score ?? 0));
+  const searching = query.trim().length > 0;
+  // The scene stays mounted while the person moves between elements: the light, the colour and the art
+  // change in place. Only the list of areas is replaced, so it arrives again, element by element.
+  return <ElementoCena id={id}>
+    <ElementoCabecalho nome={element.name} lema={element.description} pontos={points} areas={areas.length} percentual={elementScore?.percentage ?? 0} />
+    <ElementoPortais id={id} />
+    <section className="elemento-areas" aria-labelledby="ep-areas-title">
+      <div className="elemento-areas-cabeca">
+        <h2 id="ep-areas-title">Suas áreas de vida</h2>
+        <p className="ds-nota">Abra uma área para ver seus caminhos.</p>
+      </div>
+      <ElementoBusca nomeDoElemento={element.name} valor={query} aoMudar={(value) => updateFilters({ query: value })} />
+      <ElementoAbas className="elemento-filtros" role="group" aria-label="Filtrar áreas de vida">
         <button type="button" aria-pressed={!activeOnly} onClick={() => updateFilters({ activeOnly: false })}>Todas as áreas <span>{areas.length}</span></button>
         <button type="button" aria-pressed={activeOnly} onClick={() => updateFilters({ activeOnly: true })}>Minhas áreas ativas <span>{activeCount}</span></button>
-      </div>
-      <p className="ds-nota ep-count" role="status">{filtered.length} de {areas.length} áreas{activeOnly ? ', só as áreas ativas' : ''}</p>
-      <div className="ep-area-grid">{filtered.map((area) => {
+      </ElementoAbas>
+      <p className="ds-nota elemento-contagem" role="status">{filtered.length} de {areas.length} áreas{activeOnly ? ', só as áreas ativas' : ''}</p>
+      <div className="elemento-lista" key={id}>{filtered.map((area, ordem) => {
         const score = scores.find((entry) => entry.areaId === area.id);
-        const active = selectedAreas.includes(area.id);
-        const saude = area.id === 'area-saude';
-        return <details className="ds-runa ep-area-card" data-forma="vitrine" data-element={id} key={area.id}>
-          <summary className="ds-runa-cabeca"><span className="ds-runa-arte ep-area-mark"><ElementSigil id={id} /></span><span className="ds-runa-titulo ep-area-name">{area.name}<small className="ds-meta">{active ? 'Área ativa' : 'Disponível para explorar'}</small></span><ArcaneIcon className="ds-runa-chevron" name="chevron" size={16} /></summary>
-          <div className="ds-runa-conteudo ep-area-content"><p className="ds-nota">{area.description || `Uma área da sua jornada em ${element.name}.`}</p><div className="ds-meta"><span>{format(score?.score ?? 0)} pontos registrados</span><span>{score?.taskCount ?? 0} rituais</span></div>
-            <div className="ds-runa-pe">{saude ? <Link className="ds-botao" data-tipo="fantasma" to={`/dominios/${encodeURIComponent(area.id)}`}>Ver subáreas de exercício físico</Link> : <span />}<Link className="ds-botao" data-tipo="secundario" to={saude ? '/treinos' : `/dominios/${encodeURIComponent(area.id)}`}>{saude ? 'Abrir treinos' : 'Explorar área'}</Link></div></div>
-        </details>;
+        return <ElementoRuna
+          key={area.id}
+          elemento={id}
+          nomeDoElemento={element.name}
+          areaId={area.id}
+          nome={area.name}
+          descricao={area.description}
+          ativa={selectedAreas.includes(area.id)}
+          pontos={score?.score ?? 0}
+          rituais={score?.taskCount ?? 0}
+          fracao={strongest > 0 ? (score?.score ?? 0) / strongest : 0}
+          ordem={ordem}
+        />;
       })}</div>
-      {filtered.length === 0 && <Vazio compacto titulo={query.trim() ? 'Nenhuma área encontrada' : 'Nenhuma área ativa'} texto={query.trim() ? `Nada para “${query}”${activeOnly ? ' entre as áreas ativas' : ''}.` : 'Você ainda não ativou áreas deste elemento.'} acao={<button type="button" onClick={() => updateFilters({ query: '', activeOnly: false })}>Mostrar todas as áreas</button>} />}
-      <Link to="/dominios" className="ds-elo ep-manage">Gerenciar áreas ativas e personalizadas</Link>
+      {filtered.length === 0 && <ElementoVazio
+        elemento={id}
+        titulo={searching ? 'Nenhuma área encontrada' : 'Nenhuma área ativa'}
+        texto={searching ? `Nada para “${query}”${activeOnly ? ' entre as áreas ativas' : ''}.` : `Você ainda não ativou áreas de ${element.name}. Explore as disponíveis e escolha por onde começar.`}
+        acoes={<>
+          <button type="button" className="ds-botao" data-tipo="secundario" onClick={() => updateFilters({ query: '', activeOnly: false })}>Mostrar todas as áreas</button>
+          {searching ? null : <Link to="/dominios" className="ds-elo">Ativar áreas em Domínios</Link>}
+        </>}
+      />}
+      <Link to="/dominios" className="ds-elo elemento-gerenciar">Gerenciar áreas ativas e personalizadas</Link>
     </section>
-  </div>;
+  </ElementoCena>;
 }
 
 export default function ElementalPreview() {
@@ -343,7 +363,7 @@ export default function ElementalPreview() {
     <a className="ep-skip" href="#ep-main">Ir para o conteúdo</a>
     <TopBar lugar="santuario" />
     <main id="ep-main" ref={mainRef} tabIndex={-1} className="ep-main" aria-label={id ? `Elemento ${ELEMENTS[id].name}` : requested ? 'Elemento não encontrado' : 'Santuário'}>
-      {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /></section> : id ? <ElementComposition key={id} id={id} /> : <SanctuaryComposition />}
+      {requested && !id ? <section className="ep-not-found"><h1 id="ep-title">Elemento não encontrado</h1><p>Escolha um dos quatro elementos para continuar sua jornada.</p><ElementDirectory /></section> : id ? <ElementComposition id={id} /> : <SanctuaryComposition />}
     </main>
     <MobileBottomNav />
     {/* The Sanctuary already ends on "Todos os caminhos", which goes to the same map. */}
