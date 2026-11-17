@@ -1,0 +1,77 @@
+/*
+ * The constellation of the four elements: orbs that pass in front of the mage,
+ * a card for the one at the front, and the gestures that turn them.
+ * Depth, back to front: the stage and the body (100), the WebGL canvas (110),
+ * the links and their names (120), the hint (130).
+ */
+
+.ep-orbit { touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; cursor: grab; }
+
+/* The canvas that draws the orbs follows the same parallax as the links, so both stay on the same spot. */
+.ep-orbes-gl { position: absolute; inset: 0 -18px; width: calc(100% + 36px); height: 100%; z-index: 110; pointer-events: none; visibility: hidden; translate: calc(var(--par-x, 0) * 9px) calc(var(--par-y, 0) * 5px); }
+.ep-orbit[data-gl="true"] .ep-orbes-gl { visibility: visible; }
+/* Hidden and not removed: the link keeps its place and its touch target, and a failed canvas just shows the art again. */
+.ep-orbit[data-gl="true"] .ep-magic { visibility: hidden; }
+.ep-cena[data-entrada="plena"] .ep-orbes-gl { animation: ep-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-conjure) backwards; }
+
+/* The light of the orb in front settles on the body, within its silhouette: a gradient, no blur. */
+.ep-corpo-tinge {
+  position: absolute; inset: 0; pointer-events: none; opacity: .5; mix-blend-mode: screen;
+  background: radial-gradient(ellipse 72% 34% at 50% 82%, color-mix(in srgb, var(--element-accent) 70%, transparent), transparent 72%);
+  -webkit-mask: url("/sanctuary/elemental-body-v1.png") center / contain no-repeat;
+  mask: url("/sanctuary/elemental-body-v1.png") center / contain no-repeat;
+  animation: ep-aparecer var(--ds-duration-settle) var(--ds-ease) backwards;
+}
+
+/* The front orb is named a little larger, and the ones behind stay quiet but readable. */
+.ep-orbit-position[data-frente] .ep-portal-name { font-size: var(--ds-text-small); border-color: color-mix(in srgb, var(--element-accent) 62%, transparent); }
+.ep-portal-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--element-accent); box-shadow: 0 0 8px var(--element-accent); }
+
+/* An element with rituals waiting today breathes slowly: an invitation, not an alarm. */
+.ep-orbit-position[data-pendente] .ep-magic-aura { animation: ep-convite calc(var(--ds-duration-conjure) * 5) ease-in-out infinite; background: radial-gradient(circle, color-mix(in srgb, var(--element-accent) 44%, transparent), transparent 72%); }
+@keyframes ep-convite {
+  0%, 100% { opacity: calc(.35 + var(--carga, 0) * .25); transform: scale(.96); }
+  50% { opacity: 1; transform: scale(1.22); }
+}
+
+/* Said once per opening of the app, gone with the first gesture. */
+.ep-gesto-dica {
+  position: absolute; left: 50%; bottom: 2%; z-index: 130; translate: -50% 0; margin: 0;
+  display: inline-flex; align-items: center; gap: 8px; min-height: 28px; padding: 2px 14px; border-radius: 12px;
+  color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); pointer-events: none; white-space: nowrap;
+  animation: ep-aparecer var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-conjure) * 3) backwards;
+}
+.ep-gesto-dica span { display: inline-block; color: rgb(var(--el-gold)); animation: ep-dica-aceno calc(var(--ds-duration-conjure) * 2) ease-in-out infinite; }
+.ep-gesto-dica span:last-child { animation-direction: reverse; }
+@keyframes ep-dica-aceno { 0%, 100% { translate: 0 0; } 50% { translate: -4px 0; } }
+
+/* The card of the focused element. */
+.ep-foco.ds-pane {
+  position: relative; z-index: 1; max-width: 440px; min-height: 104px; margin: 6px auto 0; padding: 12px 14px; text-align: left; border-radius: 16px;
+  border-color: color-mix(in srgb, var(--element-accent) 38%, transparent);
+  background: radial-gradient(ellipse 90% 140% at 0 0, color-mix(in srgb, var(--element-accent) 14%, transparent), transparent 70%), var(--ds-surface-raised);
+}
+.ep-foco-corpo { animation: ep-foco-entra var(--ds-duration-settle) var(--ds-ease-conjure) backwards; }
+@keyframes ep-foco-entra { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.ep-foco-topo { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; align-items: center; gap: 12px; }
+.ep-foco-anel { width: 48px; height: 48px; rotate: -90deg; overflow: visible; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--element-accent) 45%, transparent)); }
+.ep-foco-anel circle { fill: none; stroke-width: 3; }
+.ep-foco-trilho { stroke: color-mix(in srgb, var(--element-accent) 22%, transparent); }
+.ep-foco-fio { stroke: var(--element-accent); stroke-linecap: round; animation: ep-foco-desenhar calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) backwards; }
+@keyframes ep-foco-desenhar { from { stroke-dasharray: 0 1; } }
+.ep-foco-texto { min-width: 0; }
+.ep-foco-texto p { margin: 0; }
+.ep-foco-nome { color: var(--element-accent); font-family: Cinzel, Georgia, serif; font-size: var(--ds-text-lead); letter-spacing: .08em; text-transform: uppercase; line-height: 1.2; }
+.ep-foco-nivel { margin-top: 2px !important; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); font-variant-numeric: tabular-nums; }
+.ep-foco-entrar { min-height: 44px; padding-inline: 14px; gap: 6px; white-space: nowrap; }
+.ep-foco-base { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; margin-top: 10px; }
+.ep-foco-vertentes { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.ep-foco-vertentes li { display: inline-flex; align-items: center; min-height: 24px; max-width: 100%; padding: 2px 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid color-mix(in srgb, var(--element-accent) 30%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--element-accent) 10%, transparent); color: rgb(var(--el-text)); font-size: var(--ds-text-micro); }
+.ep-foco-vertentes .ep-foco-mais { color: var(--element-accent); font-variant-numeric: tabular-nums; }
+.ep-foco-pendencia { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--element-accent); font-size: var(--ds-text-micro); }
+.ep-foco-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--element-accent); box-shadow: 0 0 8px var(--element-accent); animation: ep-ponto calc(var(--ds-duration-conjure) * 3) ease-in-out infinite; }
+@keyframes ep-ponto { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ep-foco-corpo, .ep-foco-fio, .ep-foco-ponto, .ep-gesto-dica, .ep-gesto-dica span, .ep-corpo-tinge, .ep-orbit-position[data-pendente] .ep-magic-aura, .ep-orbes-gl { animation: none; }
+}

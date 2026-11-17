@@ -2,7 +2,7 @@ import { QuestNextSteps } from '@/components/quests/QuestNextSteps';
 import { TopBar } from '@/components/layout/TopBar';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { SanctuaryRituals } from '@/components/elemental/SanctuaryRituals';
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementoCena } from '@/components/elemento/ElementoCena';
@@ -16,22 +16,16 @@ import { AREAS, ELEMENTS, type ElementId } from '@/constants';
 import { ACENTO, AURA } from '@/lib/design/palette';
 import { conclusoesDoApp, elementoDaSemana } from '@/lib/momentos/elemento-da-semana';
 import { Contagem } from '@/components/motion/Contagem';
-import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
+import { useLuzDoToque } from '@/components/sanctuary/useCenaViva';
 import { useAppStore } from '@/stores/appStore';
-import { createMaterialEffect } from '@/components/elemental/material-effects';
 import { ELEMENT_ORDER as ORDER, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
-import { auraScale, useZodiacPreference, type ZodiacModality } from '@/lib/sanctuary/zodiac';
+import { useZodiacPreference } from '@/lib/sanctuary/zodiac';
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
 import './elemental-preview.css';
 import '@/components/elemento/elemento-uau.css';
-import { AnelXp } from '@/components/sanctuary/AnelXp';
-
-/** The aura costs a shader and three.js, so it arrives after the page does. */
-const AuraElemental = lazy(() => import('@/components/sanctuary/AuraElemental'));
-
-/** Before anyone gives a birth date the aura still burns, in the app's gold. */
-const AURA_SEM_SIGNO = { colour: '#d6b66f', modality: 'fixo' as ZodiacModality };
+import { AURA_SEM_SIGNO, Constelacao, ElementSigil } from '@/components/sanctuary/Constelacao';
+import '@/components/sanctuary/constelacao.css';
 
 /**
  * The whole entrance plays once per time the app is opened. Coming back to the
@@ -42,149 +36,6 @@ let cenaJaVista = false;
 
 const ACCENTS = ACENTO;
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
-
-function ElementMagic({ id, animated = false }: { id: ElementId; animated?: boolean }) {
-  const [failed, setFailed] = useState(false);
-  return <span className={`ep-magic ep-magic-${id}`} aria-hidden="true">
-    <span className="ep-magic-aura" />
-    {failed ? <ElementSigil id={id} className="ep-magic-fallback" /> : <>
-      <img className="ep-magic-image" src={`/sanctuary/elements/${id}-v1.webp`} alt="" width={1254} height={1254} draggable={false} decoding="async" onError={() => setFailed(true)} />
-      {animated && <canvas className="ep-material-canvas" data-element-effect={id} width={192} height={192} />}
-    </>}
-  </span>;
-}
-
-function ElementSigil({ id, className }: { id: ElementId; className?: string }) {
-  const down = id === 'agua' || id === 'terra';
-  return <svg className={className} viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-    <path d={down ? 'M7 10H41L24 39Z' : 'M24 8L41 37H7Z'} strokeLinejoin="round" />
-    {(id === 'terra' || id === 'ar') && <path d={down ? 'M8 20H40' : 'M8 27H40'} />}
-  </svg>;
-}
-
-function orbitStyle(index: number, phase: number): CSSProperties {
-  const angle = -Math.PI * .75 + index * Math.PI / 2 + phase;
-  const depth = Math.sin(angle);
-  const scale = 1 / (1 - depth * .16);
-  return {
-    '--orbit-x': Math.cos(angle) * scale,
-    '--orbit-y': (depth - Math.cos(angle) * .45) * scale,
-    '--orbit-scale': scale,
-    '--orbit-opacity': .8 + (depth + 1) * .1,
-    // The body sits at 100: rear portals really pass behind its silhouette.
-    zIndex: Math.round(depth * 90) + 100,
-  } as CSSProperties;
-}
-
-function paintOrbit(orbit: HTMLDivElement, phase: number) {
-  orbit.querySelectorAll<HTMLElement>('.ep-orbit-position').forEach((position, index) => {
-    const style = orbitStyle(index, phase);
-    Object.entries(style).forEach(([key, value]) => {
-      if (key === 'zIndex') position.style.zIndex = String(value);
-      else position.style.setProperty(key, String(value));
-    });
-  });
-}
-
-function ElementalOrbit({ fracao }: { fracao: number }) {
-  const orbitRef = useRef<HTMLDivElement>(null);
-  const phase = useRef(0);
-  const materialTime = useRef(0);
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  // The aura is the person's: their sign gives it colour, their level its reach.
-  const { profile: perfil } = useZodiacPreference();
-  const { getLevelProgress } = useAppStore();
-  const nivel = getLevelProgress().level;
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(media.matches);
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  }, []);
-
-  useEffect(() => {
-    const orbit = orbitRef.current;
-    if (!orbit) return;
-    if (reducedMotion) return;
-    const surfaces = [...orbit.querySelectorAll<HTMLCanvasElement>('[data-element-effect]')].flatMap((canvas) => {
-      const id = ORDER.find((element) => element === canvas.dataset.elementEffect);
-      const surface = id && createMaterialEffect(canvas, id, canvas.parentElement?.querySelector('img') ?? null);
-      return surface ? [surface] : [];
-    });
-    const resizeObserver = new ResizeObserver(() => {
-      surfaces.forEach((surface) => { surface.resize(); surface.paint(materialTime.current); });
-    });
-    orbit.querySelectorAll('[data-element-effect]').forEach((canvas) => resizeObserver.observe(canvas));
-    let frame = 0;
-    let previous: number | undefined;
-    let visible = false;
-    const tick = (now: number) => {
-      // Keep the phase when paused; never catch up after a hidden tab or long frame.
-      const delta = previous === undefined ? 0 : Math.min(now - previous, 64);
-      materialTime.current += delta / 1000;
-      if (!hovered && !focused) phase.current = (phase.current + delta / 48000 * Math.PI * 2) % (Math.PI * 2);
-      previous = now;
-      if (!hovered && !focused) paintOrbit(orbit, phase.current);
-      surfaces.forEach((surface) => surface.paint(materialTime.current));
-      frame = requestAnimationFrame(tick);
-    };
-    const sync = () => {
-      cancelAnimationFrame(frame);
-      previous = undefined;
-      orbit.dataset.motionPaused = String(!visible || document.hidden);
-      if (visible && !document.hidden) frame = requestAnimationFrame(tick);
-    };
-    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); });
-    observer.observe(orbit);
-    document.addEventListener('visibilitychange', sync);
-    return () => {
-      cancelAnimationFrame(frame);
-      observer.disconnect();
-      resizeObserver.disconnect();
-      document.removeEventListener('visibilitychange', sync);
-    };
-  }, [hovered, focused, reducedMotion]);
-
-  // Depth: the scene leans a few pixels toward the finger, or with the phone.
-  useParalaxe(orbitRef, !reducedMotion);
-
-  return <div className="ep-character-section">
-    <div ref={orbitRef} className="ep-orbit" data-motion-paused={reducedMotion} aria-label="Personagem e portais elementais"
-      onPointerLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
-      onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}>
-      <div className="ep-orbit-track ep-orbit-track-outer" aria-hidden="true" />
-      <div className="ep-orbit-track ep-orbit-track-inner" aria-hidden="true" />
-      <div className="ep-chao" aria-hidden="true" />
-      <AnelXp fracao={fracao} />
-      <div className="ep-avatar-stage">
-        <div className="ep-avatar-halo" aria-hidden="true" />
-        <Suspense fallback={null}>
-          <AuraElemental
-            colour={perfil?.colour ?? AURA_SEM_SIGNO.colour}
-            modality={perfil?.modality ?? AURA_SEM_SIGNO.modality}
-            scale={auraScale(nivel)}
-            reducedMotion={reducedMotion}
-          />
-        </Suspense>
-        <img className="ep-elemental-body" src="/sanctuary/elemental-body-v1.png" width={913} height={1723} alt="Personagem elemental com vestes escuras, detalhes dourados e cristal luminoso" draggable={false} />
-      </div>
-      <nav className="ep-portals" aria-label="Escolha um elemento">{ORDER.map((id, index) => {
-        return <div key={id} className="ep-orbit-position" style={{ '--element-accent': ACCENTS[id], '--ordem': index, ...orbitStyle(index, 0) } as CSSProperties}>
-          <Link id={`ep-entry-${id}`} to={elementHref(id)} className="ep-portal"
-            onPointerEnter={(event) => { if (event.pointerType === 'mouse') setHovered(true); }}
-            onPointerLeave={() => setHovered(false)}>
-            <ElementMagic id={id} animated /><span className="ep-portal-name">{ELEMENTS[id].name}</span>
-          </Link>
-        </div>;
-      })}</nav>
-    </div>
-  </div>;
-}
 
 function ElementDirectory() {
   return <nav className="ep-element-directory" aria-label="Acesso direto aos quatro elementos">
@@ -246,7 +97,7 @@ function SanctuaryComposition() {
     {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
     <div ref={cenaRef} className="ep-cena" data-entrada={entrada} style={luzDaSemana}>
       <section className="ep-sanctuary" aria-labelledby="ep-title">
-        <div className="ep-character-navigation"><ElementalOrbit fracao={level.progressFraction} /></div>
+        <div className="ep-character-navigation"><Constelacao fracao={level.progressFraction} /></div>
         <div className="ep-identity">
           <h1 id="ep-title">{user.name || 'Mago Iniciante'}</h1>
           <p className="ep-level-line"><span className="ep-nivel-selo">Nível <Contagem valor={level.level} /></span></p>
