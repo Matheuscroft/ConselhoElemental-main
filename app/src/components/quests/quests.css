@@ -154,14 +154,12 @@
 @media(prefers-reduced-motion:reduce) {
   .quest-step-detail { animation: none; }
   .quest-step:is(:hover,:active) .quest-step-stone { transform: none; }
-  .quest-primary,.quest-secondary,.quest-text-button,.quest-step-chevron,.quest-home-card,.quest-step-stone,.quest-step-stone::after { transition: none; }
+  .quest-primary,.quest-secondary,.quest-text-button,.quest-step-chevron,.quest-step-stone,.quest-step-stone::after { transition: none; }
 }
 
-.quest-dialog>[data-slot=dialog-close],.quest-timer-dialog>[data-slot=dialog-close] { width: 44px; height: 44px; display: grid; place-items: center; top: 10px; right: 10px; }
-.quest-timer-dialog [data-slot=dialog-header] { padding-inline: 24px; }
-.quest-timer-dialog :is(button,a):focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
+.quest-dialog>[data-slot=dialog-close] { width: 44px; height: 44px; display: grid; place-items: center; top: 10px; right: 10px; }
 @media(prefers-reduced-motion:reduce) {
-  .quest-dialog,.quest-timer-dialog { animation: none !important; }
+  .quest-dialog { animation: none !important; }
 }
 
 /* Elemental gestures answer selection once; nothing runs continuously. */
@@ -216,29 +214,9 @@
 
 /* R12-C: catalog navigation and composition share the trail identity. */
 .quest-catalog { max-width: 960px; margin-inline: auto; }
-.quest-catalog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; margin-bottom: var(--ds-ritmo-cabeca); }
-.quest-catalog-heading>div { min-width: 0; }
-.quest-catalog-heading h1 { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-title); line-height: 1.3; }
-.quest-catalog-heading p { max-width: 52ch; color: var(--quest-muted); font-size: var(--ds-text-small); line-height: 1.6; margin: 8px 0; }
-.quest-catalog-heading>div>span { font-size: var(--ds-text-micro); color: var(--quest-muted); }
 .quest-catalog-actions { display: grid; gap: 8px; flex-shrink: 0; }
-.quest-catalog-guide { display: flex; align-items: flex-start; gap: 16px; padding: 20px; border-left: 2px solid rgb(var(--el-gold) / .5); background: rgb(var(--el-surface) / .65); border-radius: 0 var(--ds-raio-runa) var(--ds-raio-runa) 0; margin-bottom: 24px; }
-.quest-catalog-guide>svg { color: var(--quest-gold); margin-top: 3px; }
-.quest-catalog-guide strong { font-weight: 500; line-height: 1.5; }
-.quest-catalog-guide p { color: var(--quest-muted); font-size: var(--ds-text-small); line-height: 1.65; margin: 6px 0; }
-.quest-catalog-guide span { color: var(--quest-muted); font-size: var(--ds-text-micro); }
-/* Layout only: o visual das abas vem de .ds-abas. */
-.quest-catalog-tabs { height: auto; gap: 24px; }
-.quest-catalog-tabs [role=tab] { min-width: 0; min-height: 44px; gap: 6px; white-space: normal; }
-.quest-catalog-tabs svg { flex-shrink: 0; }
 .quest-catalog-card { display: grid; gap: 2px; }
-.quest-catalog-open { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px; color: rgb(var(--el-gold) / .8); border-radius: var(--ds-raio-controle); font-size: var(--ds-text-small); transition: background-color var(--ds-duration-feedback) var(--ds-ease); }
-.quest-catalog-open>span { margin-left: auto; }
-@media (hover:hover) { .quest-catalog-open:hover { background: rgb(var(--el-gold) / .08); } }
 .quest-catalog :is(button,a,input):focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
-.quest-catalog-summary .glass-card { padding: 18px 10px; box-shadow: none; }
-.quest-catalog-summary .glass-card>div:first-child { color: var(--quest-gold); overflow-wrap: anywhere; }
-.quest-catalog-summary .glass-card>div:last-child { font-size: var(--ds-text-micro); color: var(--quest-muted); }
 .quest-catalog-rune { width: fit-content; color: var(--quest-gold); margin: 0 auto 16px; padding: 12px; border: 1px solid rgb(var(--el-gold) / .3); border-radius: var(--ds-raio-runa); background: rgb(var(--el-gold) / .06); }
 .quest-catalog-detail [data-slot=dialog-header] { padding-right: 24px; }
 .quest-catalog-detail [data-slot=dialog-title] { overflow-wrap: anywhere; }
@@ -255,18 +233,11 @@
 .quest-dialog:has(.quest-form-footer) { scroll-padding-bottom: 100px; }
 .quest-form-footer { position: sticky; bottom: -24px; display: grid; grid-template-columns: 1fr 1.4fr; background: rgb(var(--el-canvas)); border-top: 1px solid rgb(var(--el-muted) / .15); padding-top: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); z-index: 1; }
 @media(max-width:600px) {
-  .quest-catalog-heading { flex-direction: column; gap: 16px; }
   .quest-catalog-actions { width: 100%; grid-template-columns: 1fr; }
-  .quest-catalog-open { padding-inline: 12px; }
   .quest-form-footer { bottom: -20px; }
 }
-@media(prefers-reduced-motion:reduce) { .quest-catalog-open { transition: none; } }
 
 /* Vocabulary and task-first entry, aligned with the existing domain. */
-.ritual-list-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: var(--ds-ritmo-cabeca); }
-.ritual-list-heading h1 { font-family: var(--ds-font-heading); font-weight: 500; font-size: var(--ds-fluid-title); line-height: 1.3; }
-.ritual-list-heading p { color: rgb(var(--el-muted)); font-size: var(--ds-text-small); line-height: 1.6; margin-top: 8px; max-width: 52ch; }
-.ritual-list-heading>button { min-height: 48px; flex-shrink: 0; }
 /* Guia: .ds-grupo[data-tom=guia] com .ds-linha navegaveis (o chevron aponta para a direita). */
 .activity-guide { margin-bottom: 20px; }
 .activity-guide nav { display: grid; gap: 0; padding-bottom: 8px; }
@@ -276,13 +247,6 @@
 :is(.activity-guide,.quest-chapter) .ds-linha-chevron { transform: rotate(-90deg); }
 details.activity-guide > summary > svg { transform: rotate(-90deg); }
 details.activity-guide[open] > summary > svg { transform: none; }
-.ritual-evolution { border-block: 1px solid var(--ds-fio); margin: 0 0 22px; }
-.ritual-evolution>summary { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 14px 0; cursor: pointer; color: rgb(var(--el-gold) / .8); font-size: var(--ds-text-small); list-style: none; }
-.ritual-evolution>summary::-webkit-details-marker { display: none; }
-.ritual-evolution>summary::after { content: '+'; margin-left: auto; font-size: var(--ds-text-lead); }
-.ritual-evolution[open]>summary::after { content: '−'; }
-.ritual-evolution>summary:focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
-@media(max-width:600px) { .ritual-list-heading { flex-direction: column; gap: 14px; } }
 
 /* R15: capitulos como runas-vitrine (details.ds-runa) com ds-linha por atividade. */
 .quest-chapters { display: grid; gap: 12px; }
@@ -339,7 +303,7 @@ details.quest-chapter[open] > summary .ds-runa-chevron { transform: rotate(180de
 
 /* Catalogo de Jornadas e Grandes Obras (onda 2F): ritmo entre vitrines e acoes do cabecalho. */
 .quest-catalog-card + .quest-catalog-card { margin-top: var(--ds-ritmo-lista); }
-.quest-catalog-heading-acoes, .ds-cabecalho-acao.quest-catalog-actions { display: grid; gap: 8px; }
+.ds-cabecalho-acao.quest-catalog-actions { display: grid; gap: 8px; }
 .quest-catalog .ds-cifras { margin-bottom: 0; }
 .quest-catalog-detail .ds-cifras { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .quest-catalog-detail .ds-botao[href] { text-decoration: none; }

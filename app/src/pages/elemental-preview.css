@@ -67,7 +67,6 @@
 .ep-footer { max-width: 1168px; margin: auto; padding: 20px 40px calc(20px + env(safe-area-inset-bottom)); display: flex; justify-content: space-between; gap: 15px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); border-top: 1px solid var(--ds-fio); }
 .ep-skip { position: fixed; top: -100px; left: 20px; padding: 12px; background: var(--ds-surface-raised); z-index: 100; }
 .ep-skip:focus { top: 10px; }
-.ep-invalid { padding: 15px; border: 1px solid rgb(var(--el-gold)); font-size: var(--ds-text-micro); }
 .ep-character-navigation { min-width: 0; }
 .ep-element-directory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 20px; }
 .ep-element-directory a { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; border-bottom: 1px solid var(--ds-fio); color: var(--element-accent); font-size: var(--ds-text-micro); }
@@ -83,7 +82,6 @@
   .ep-main { padding-inline: 24px; }
   .ep-orbit { height: 380px; --orbit-radius-x: min(39%, calc(50% - 58px)); }
   .ep-portal { width: 76px; height: 76px; }
-  .ep-all-pages { display: none !important; }
 }
 @media (max-width: 600px) {
   .ep-character-navigation { width: 100%; }
@@ -95,7 +93,7 @@
   .ep-footer { padding-inline: 20px; font-size: var(--ds-text-micro); align-items: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .elemental-preview, .elemental-preview *, .elemental-preview *::before, .elemental-preview *::after, .ep-equipment-overlay { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .elemental-preview, .elemental-preview *, .elemental-preview *::before, .elemental-preview *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 
 /* Canonical Sanctuary: compact chrome, stable actions and existing account dialog. */
@@ -134,37 +132,6 @@
 
 /* Pagina do elemento. */
 .ep-element-page { padding-top: 12px; --element-accent: var(--elem-acento); }
-.ep-element-hero { padding-top: 8px; }
-.ep-element-hero > h1 { font-size: var(--ds-fluid-display); line-height: 1.15; overflow-wrap: anywhere; }
-.ep-element-hero .ds-cifras { margin-top: var(--ds-ritmo-cabeca); }
-.ep-element-hero .ds-cifra { color: var(--elem-acento); }
-.ep-element-switcher { margin-top: var(--ds-ritmo-secao); border-bottom: 1px solid var(--ds-fio); }
-.ep-element-switcher > a { gap: 8px; touch-action: manipulation; }
-.ep-element-switcher svg { width: 20px; height: 20px; }
-.ep-areas { padding-bottom: 42px; }
-.ep-areas .ds-secao { margin-top: 0; margin-bottom: 4px; }
-.ep-areas h2 { scroll-margin-top: calc(7rem + env(safe-area-inset-top)); }
-.ep-area-hint { margin-bottom: var(--ds-ritmo-cabeca); }
-.ep-search { width: 100%; }
-.ep-area-filters { margin-top: var(--ds-ritmo-cabeca); margin-bottom: 4px; }
-.ep-area-filters > button { gap: 8px; }
-.ep-count { margin: 8px 0 var(--ds-ritmo-cabeca); }
-.ep-area-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ds-ritmo-lista); align-items: start; }
-.ep-area-grid > .ds-runa + .ds-runa { margin-top: 0; }
-.ep-area-card > summary { list-style: none; cursor: pointer; }
-.ep-area-card > summary::-webkit-details-marker { display: none; }
-.ep-area-card > summary:focus-visible { outline-offset: -2px; border-radius: var(--ds-raio-runa); }
-.ep-area-mark { display: grid; place-items: center; color: var(--elem-acento); }
-.ep-area-mark svg { width: 32px; height: 32px; }
-.ep-area-name { display: grid; gap: 4px; align-content: center; padding-top: 0; }
-.ep-area-name small { font-family: var(--ds-font-body); font-weight: 400; }
-.ep-area-card[open] .ds-runa-chevron { transform: rotate(180deg); }
-.ep-area-content { display: grid; gap: 12px; }
-.ep-area-content .ds-runa-pe { flex-wrap: wrap; }
-.ep-manage { margin-top: var(--ds-ritmo-secao); }
-@media (max-width: 600px) {
-  .ep-area-grid { grid-template-columns: 1fr; }
-}
 
 /*
  * ---------- The living scene ----------

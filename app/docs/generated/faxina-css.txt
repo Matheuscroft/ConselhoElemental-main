@@ -1,0 +1,18 @@
+Faxina de CSS orfao - 17/11/2026
+Metodo: para cada classe, grep com limite de palavra em src/**/*.{ts,tsx,html} e tests/**; busca de montagem dinamica (`prefixo-${`, concatenacao, cn()). Sem nenhuma referencia, removida.
+
+src/components/fitness-kit/fitness-elemental.css (-68 linhas)
+  .fitness-region-grid, .fitness-filter-chip, .fitness-filter-reset, .fitness-catalog-{refinements,search,toolbar,groups,group,group-toggle,group-count,group-content,more,collapse}
+  (mantidos: .fitness-catalog em MuscleExerciseCatalog.tsx e a regra reduced-motion de .fitness-elemental-card)
+src/pages/elemental-preview.css (-34 linhas)
+  .ep-invalid, .ep-all-pages, .ep-equipment-overlay, .ep-element-hero, .ep-element-switcher, .ep-areas, .ep-area-*, .ep-search, .ep-count, .ep-manage
+src/pages/ciclos.css (-20 linhas)
+  .cycle-list-heading, .cycle-reorder-hint, .cycle-calendar-tools, .cycle-calendar-picker, .cycle-score-guidance, .cycle-insights-shortcut, .cycle-undo-action (so o :hover), .cycle-subitem-path, .cycle-completion-notice (com 1 backdrop-filter)
+  @keyframes cycle-quantity-arrive, cycle-check-draw (ficaram sem uso)
+src/components/quests/quests.css (-40 linhas)
+  .quest-home-card (so na lista de transition), .quest-timer-dialog, .quest-catalog-{heading,guide,tabs,open,summary}, .quest-catalog-heading-acoes, .ritual-list-heading, .ritual-evolution
+src/components/rituals/rituals.css (-2 linhas)
+  .ritual-page .ritual-list-heading, .ritual-page .ritual-evolution
+tests/design/superficie.test.mjs: TETO_VIDRO 14 -> 13
+
+Nao removido por duvida: .rdp-* (classes da biblioteca react-day-picker), .ep-magic-fogo/ar/terra (montadas em Constelacao.tsx), .tr-inicial e .fitness-catalog-group em treinos-uau.css (arquivo fora do escopo).

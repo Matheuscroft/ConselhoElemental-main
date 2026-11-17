@@ -45,7 +45,7 @@ test('every blur carries its prefixed twin, or it does nothing on an iPhone', ()
  * gradient mask reads the same for one. It only exists while a card is open,
  * so on a list of twenty journeys the runtime cost is a single blurred strip.
  */
-const TETO_VIDRO = 14;
+const TETO_VIDRO = 13;
 // 15 is a photograph of reality, not a goal: 11 declarations in .css plus four
 // Tailwind `backdrop-blur-*` classes that escaped the old guard. The four are
 // MobileBottomNav, Auth and the two VideoExercisePlayer. They should fall.
@@ -70,6 +70,7 @@ const TETO_VIDRO = 14;
 // 14 (16/11/2026): the Training module's UAU pass adds none (every screen reuses
 // `.ds-glass-float`) and removes the `backdrop-blur-md` on the video player's play
 // button, so the real count falls from 15 to 14 and the ceiling follows it down.
+// 13 (17/11/2026): CSS cleanup removed the orphan `.cycle-completion-notice` (no markup used it) and its blur.
 
 test('the app does not spread glass', () => {
   const total = todos.reduce((soma, [arquivo, texto]) => soma

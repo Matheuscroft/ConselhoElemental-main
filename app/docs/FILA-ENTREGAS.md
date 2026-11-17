@@ -1,3 +1,23 @@
+## FE-UAU-2 — passada UAU: foco, Corpo, Treinos, level up e Constelação — publicado na main; aceite pendente (17/11/2026)
+
+Continuação de FE-UAU-1. Detalhe por commit, arquivos e pontos em aberto em [CONTINUIDADE.md](CONTINUIDADE.md), seção "Passada UAU: lotes publicados na main de 16 a 17/11/2026". Pesquisa de origem: [plans/PESQUISA-UAU.md](plans/PESQUISA-UAU.md).
+
+Publicados na main (commits conferidos por `git log`; testes, build, CI e Vercel não reexecutados neste registro):
+- Cronômetro imersivo: `4587076`.
+- Páginas mortas de treino removidas, Corpo com evolução por medida, `Contagem` corrigida: `bbe3e13`.
+- Card/resumo de treino, Criar treino, notificação de ritual, Minha conta: `7f213c6`.
+- Level up e mini-celebração de conclusão: `1b4f682`.
+- Cabeçalho flutuante do Santuário: `86d8900`.
+- Constelação Elemental: `cc39f92`; órbita real: `ad713da`; capas das modalidades por IA: `ca0e374`.
+- Atletas ilustrados e animados (64 padrões): `18439db`.
+- Treinos etapa 3 (plano da semana, progressão, recordes): `0da7a73`.
+- Animações sem saltos e cerimônia única: `6edb7f1`.
+- Treino ativo compacto: `6dd6146`.
+
+Em aberto: contrato de backup das metas do Corpo com o Matheus; hábitos em rodízio fora do plano semanal; cartão de foco das esferas empurra o nome do mago ~105 px; validação em iPhone real (esferas 3D, level up, capas, animações); Opus e busca na web indisponíveis; `TETO_VIDRO` em 14 sem folga; `tests/backup/account-workspace-ui` instável sob carga.
+
+Aguardando o orquestrador: aceite dos lotes e decisão de Fábio sobre as pendências acima.
+
 ## FE-UAU-1 — passada UAU do Santuário — commitada localmente, não publicada (15/11/2026)
 
 Pedido de Fábio: UI/UX de alto padrão no Santuário, vidro real, fluidez e uma primeira abertura que impressione. Detalhe, arquivos, evidência e limites em [CONTINUIDADE.md](CONTINUIDADE.md), seção "Passada UAU do Santuário". Estado: commit `2db5167` no worktree `uau-santuario-cc1098`, aprovado visualmente por Fábio no navegador; sem publicação.

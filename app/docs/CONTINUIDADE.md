@@ -1,3 +1,30 @@
+## Passada UAU: lotes publicados na main de 16 a 17/11/2026 (4587076 a 6dd6146)
+
+Registro só documental, escrito em 17/11/2026 a partir de `git log`, `git show --stat` dos commits e `PESQUISA-UAU.md`. Não alterou código, testes, versão nem manifests; nada foi commitado por ele. Os commits abaixo estão na `main` (HEAD `6dd6146`). A publicação do `2db5167` (Santuário) e as passadas intermediárias de outras telas (`540cb9c` a `a3552db`, entre `118a048` e `4587076`) aparecem no log, mas não foram detalhadas aqui. Evidência de testes (`verify:release`, build) e de CI/Vercel destes lotes não foi reexecutada nem conferida neste registro. Aceite pendente do orquestrador.
+
+Lotes, em ordem, com o commit de origem:
+1. `4587076` (16/11): cronômetro reconstruído como modo de foco imersivo, com mini-player de vidro e cerimônia de término. Novos `src/components/foco/` (`FocoTimer`, `FocoCena`, `foco-cena.ts`, `FocoAnel`, `FocoCelebracao`, `foco-tempo.ts`, `foco.css`); toca `ElementalTimer`, `ActiveTimerBar`, `SanctuaryRituals`, `Ciclos.tsx`, `Rituais.tsx`, `QuestHub`.
+2. `bbe3e13` (16/11): remoção das páginas mortas de treino (`ActiveWorkout`, `WorkoutHub`, `WorkoutPreview`, `WorkoutSummary`, `WorkoutHistory`, `WorkoutInsights`, `WorkoutWeekly` e o kit antigo `components/fitness/`, 31 arquivos, 2700 remoções); Corpo com evolução por medida (`lib/fitness/corpo-evolucao.ts`, `tests/fitness/corpo-evolucao.test.mjs`); correção da `Contagem` (`lib/motion/contagem.ts`: valor final exato e decimais; teste em `tests/motion/contagem.test.mjs`).
+3. `7f213c6` (16/11): card e resumo de treino, diálogo Criar treino (`NativeTemplateDialog`, `dialogo-criar-uau.css`), notificação de conclusão de ritual (`RewardNotice`, `RewardSummary`) e painel Minha conta (`AccountConnectionCard`, `TopBar`).
+4. `1b4f682` (16/11): level up com anel de XP aos pés do mago, partículas 3D e explosão no novo nível (`cerimonia/ascensao-cena.ts`, `ascensao-shaders.ts`, `CerimoniaDeNivel.tsx`), linha do tempo em `lib/cerimonia/nivel.ts` (teste `tests/cerimonia/linha-do-tempo.test.mjs`); mini-celebração universal de conclusão em `NoticiaElemental` e `ProvedorDeProgresso`.
+5. `86d8900` (16/11): cabeçalho flutuante do Santuário em uma linha sobre a cena, anel de XP no selo de nível, barra que condensa em pílula de vidro ao rolar (`ElementalTopBar`, `HudRecursos`, `elemental-topbar.css`).
+6. `cc39f92` (16/11): Constelação Elemental, as quatro esferas como shaders WebGL passando diante do mago, com cartão de foco, arraste com inércia e encaixe e fallback 2D (`components/sanctuary/Constelacao.tsx`, `orbes-*.ts`, `constelacao-*.ts`; testes `constelacao` e `orbes-medidor`). `ad713da` (17/11): órbita de verdade, esferas atrás do corpo desenhadas sob o mago e as da frente sobre ele, em WebGL e no 2D. `ca0e374` (17/11): capas das sete modalidades geradas por IA, `public/fitness/capas/*.webp`, no fundo do herói e nos cartões de explorar (`modalidade-capa.ts`, teste `modalidade-capa`).
+7. `18439db` (17/11): atletas ilustrados e animados para os exercícios, 64 padrões de movimento (`fitness-kit/figura-*.ts`, `FiguraExercicio.tsx`), classificador `lib/workout/exercise-motion.ts`, destaque de músculos (`exercise-muscles.ts`), ficha do exercício redesenhada (`ExerciseDetailSheet`, `ficha-uau.css`); cinco testes novos em `tests/workout/`.
+8. `0da7a73` (17/11): etapa 3 de Treinos. `lib/workout/progressao.ts` (plano da semana, progressão por exercício, recordes; `tests/workout/progressao.test.mjs`), `plano-semana`/`plano-dia`, sugestão de progressão no treino ativo, recordes no resumo, na ficha e na aba histórico.
+9. `6edb7f1` (17/11): correção dos saltos das animações (sombra do chão suave, ângulo do pé contínuo, soluções de cotovelo por IK contínuas) com teste de continuidade sobre todos os padrões (`tests/workout/figura-continuidade.test.mjs`); remoção da cerimônia de nível antiga duplicada no Santuário (`ElementalPreview.tsx`), ficando uma só.
+10. `6dd6146` (17/11): treino ativo compacto. A primeira tela mostra a série atual, demonstração em miniatura com a dica de progressão, passos de mais e menos e seletor de esforço compacto (`progressao-ativo.tsx`, `ActiveFitnessSession.tsx`).
+
+Pontos em aberto:
+- Metas do Corpo precisam de contrato de backup com o Matheus; o frontend não decide.
+- Hábitos em rodízio ficam fora do plano semanal de Treinos.
+- O cartão de foco das esferas empurra o nome do mago cerca de 105 px (reportado, sem correção).
+- Validação em iPhone real pendente: esferas 3D, level up, capas e animações. Nada disso foi visto em Safari/WebKit ou aparelho real, e a refração SVG segue exclusiva do Chrome (ver `PESQUISA-UAU.md`).
+- Opus e busca na web indisponíveis nesta sessão; decisões visuais novas ficam sem Líder de design.
+- `TETO_VIDRO` está em 14, sem folga (`tests/design/superficie.test.mjs`); qualquer vidro novo exige decisão do orquestrador.
+- O teste `tests/backup/account-workspace-ui` é instável sob carga; falha intermitente, não investigada neste registro.
+
+Só local, não commitar: `app/src/App.tsx`, `app/vite.config.ts`, `app/src/main.qa.tsx`, `app/src/lib/dev/`, `app/tests/dev/`, `app/node_modules`.
+
 ## Passada UAU do Santuário — commitada localmente, não publicada (15/11/2026)
 
 Ponto de retomada: worktree `.claude/worktrees/uau-santuario-cc1098`, branch `claude/uau-santuario-cc1098`, commit `2db5167` sobre `118a048` (igual a `origin/main` nesta data). Aprovada visualmente por Fábio no navegador em 15/11/2026. Não publicada: falta o ok dele para empurrar à `main`. Pesquisa de origem: `PESQUISA-UAU.md` (worktree `intelligent-raman-e0c6bf`, não versionada).

@@ -1,6 +1,5 @@
 /* Rituais: elemental covers, quiet controls and details revealed on demand. */
 .ritual-page { max-width: 960px; margin-inline: auto; }
-.ritual-page .ritual-list-heading { padding-block: 12px 4px; }
 .ritual-filter-chip { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 14px; border: 1px solid color-mix(in srgb, var(--elem-acento, rgb(var(--el-gold))) 45%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--elem-acento, rgb(var(--el-gold))) 10%, transparent); color: var(--elem-acento, rgb(var(--el-gold))); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
 .ritual-filter-chip:active { transform: scale(.95); transition-duration: var(--ds-duration-press); }
 .ritual-showcase-shell { border-radius: var(--ds-raio-runa); }
@@ -33,7 +32,6 @@
 .ritual-showcase-actions>button:first-child:not(:last-child) { flex: 1; }
 .ritual-showcase:has(details[open]) { border-color: color-mix(in srgb, var(--elem-acento) 45%, transparent); }
 .ritual-page :is(button,a,input,summary):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: -3px; }
-.ritual-page .ritual-evolution { margin-top: 30px; }
 .ritual-page .score-elemental-showcase button.score-element-card { position: relative; align-content: start; justify-items: start; min-height: 122px; overflow: hidden; isolation: isolate; text-align: left; }
 .ritual-page .score-elemental-showcase .score-element-art { position: absolute; width: 56px; height: 56px; object-fit: contain; right: 8px; top: 8px; opacity: .55; z-index: -1; transition: opacity var(--ds-duration-feedback); }
 .ritual-page .score-elemental-showcase button[aria-pressed=true] { border-color: rgb(var(--el-gold) / .7); }
