@@ -442,10 +442,22 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: .92;
-  /* The art is the card: it only thins out behind the sigil and the name, never disappears. */
-  mask-image: radial-gradient(ellipse 62% 56% at 50% 46%, rgb(0 0 0 / 38%) 0%, rgb(0 0 0 / 70%) 62%, #000 100%);
-  -webkit-mask-image: radial-gradient(ellipse 62% 56% at 50% 46%, rgb(0 0 0 / 38%) 0%, rgb(0 0 0 / 70%) 62%, #000 100%);
+  opacity: 1;
+  object-position: 50% 38%;
 }
-.tr-runa-capa::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(var(--el-canvas) / 12%) 0%, rgb(var(--el-canvas) / 18%) 42%, rgb(var(--el-canvas) / 72%) 100%); }
+.tr-runa-capa::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(var(--el-canvas) / 8%) 0%, rgb(var(--el-canvas) / 0%) 46%, rgb(var(--el-canvas) / 78%) 100%); }
 .tr-runa-capa img[hidden] { display: none; }
+
+/* A card with cover art: the art is the card. The sigil becomes a small badge in the
+   corner and the name sits at the bottom, so the figure in the middle is never covered. */
+.tr-grade > .tr-runa:has(.tr-runa-capa) { justify-content: flex-end; padding-block-end: 12px; }
+.tr-grade > .tr-runa:has(.tr-runa-capa) .tr-sigilo {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  width: 40px;
+  height: 40px;
+  background: rgb(var(--el-canvas) / 62%);
+}
+.tr-grade > .tr-runa:has(.tr-runa-capa) .tr-sigilo::before { display: none; }
+.tr-grade > .tr-runa:has(.tr-runa-capa) .tr-runa-nome { text-shadow: 0 1px 6px rgb(0 0 0 / 80%); }
