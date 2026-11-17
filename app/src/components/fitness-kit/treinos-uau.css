@@ -435,3 +435,17 @@
   .tr-abas-indicador { border-color: Highlight; }
   .fitness-elemental .tr-abas > .tr-aba.tr-aba:is([data-state="active"], [aria-current="page"]) { outline: 2px solid Highlight; outline-offset: -2px; }
 }
+
+/* ---------- Capa da modalidade como fundo discreto da runa ---------- */
+.tr-runa-capa { position: absolute; inset: 0; z-index: -2; border-radius: inherit; overflow: clip; pointer-events: none; }
+.tr-runa-capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: .92;
+  /* The art is the card: it only thins out behind the sigil and the name, never disappears. */
+  mask-image: radial-gradient(ellipse 62% 56% at 50% 46%, rgb(0 0 0 / 38%) 0%, rgb(0 0 0 / 70%) 62%, #000 100%);
+  -webkit-mask-image: radial-gradient(ellipse 62% 56% at 50% 46%, rgb(0 0 0 / 38%) 0%, rgb(0 0 0 / 70%) 62%, #000 100%);
+}
+.tr-runa-capa::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(var(--el-canvas) / 12%) 0%, rgb(var(--el-canvas) / 18%) 42%, rgb(var(--el-canvas) / 72%) 100%); }
+.tr-runa-capa img[hidden] { display: none; }

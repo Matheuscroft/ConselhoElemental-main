@@ -6,6 +6,7 @@ import type { ElementoId } from '@/lib/design/palette';
 import { CATEGORY_DESCRIPTIONS } from '@/lib/workout/workout-labels';
 import type { WorkoutExerciseCategory } from '@/types/workout';
 import { FitnessButton } from './FitnessButton';
+import { capaDaModalidade } from './modalidade-capa';
 import { elementoDaModalidade } from './treinos-elementos';
 import './modalidade-uau.css';
 
@@ -55,7 +56,13 @@ export const ModalidadeHeroi = forwardRef<HTMLButtonElement, ModalidadeHeroiProp
   const descricao = DESCRICAO[id] ?? CATEGORY_DESCRIPTIONS[id as WorkoutExerciseCategory] ?? 'Exercícios, treinos e sequências.';
   const nExercicios = useChegada(exercicios);
   const nTreinos = useChegada(treinos);
-  return <section aria-label={`Modalidade ${label}`} className="mo-heroi ds-pane" data-element={elemento} data-luz="" style={{ '--i': 0 } as CSSProperties}>
+  const capa = capaDaModalidade(id);
+  const [capaFalhou, setCapaFalhou] = useState(false);
+  const comCapa = Boolean(capa) && !capaFalhou;
+  return <section aria-label={`Modalidade ${label}`} className="mo-heroi ds-pane" data-element={elemento} data-luz="" data-capa={comCapa ? '' : undefined} style={{ '--i': 0 } as CSSProperties}>
+    {comCapa && <span className="mo-heroi-capa" aria-hidden="true">
+      <img src={capa} alt="" aria-hidden="true" width={1152} height={648} loading="eager" decoding="async" onError={() => setCapaFalhou(true)} />
+    </span>}
     <span className="mo-luz-brilho" aria-hidden="true" />
     <span className="mo-luz-borda" aria-hidden="true" />
     <div className="mo-heroi-topo">
