@@ -71,17 +71,6 @@
   color: rgb(var(--el-muted));
   text-wrap: balance;
 }
-/* A thread of the week's light under the heading. */
-.tr-cabecalho-texto::after {
-  content: '';
-  display: block;
-  width: 44px;
-  height: 1px;
-  margin: 10px auto 0;
-  background: linear-gradient(90deg, transparent, var(--semana-acento, rgb(var(--el-gold))), transparent);
-  opacity: .8;
-}
-
 /* ---------- Seletor de secoes: vidro real, com a barra que desliza em mola ---------- */
 .fitness-elemental .tr-abas {
   --aba-i: 0;
