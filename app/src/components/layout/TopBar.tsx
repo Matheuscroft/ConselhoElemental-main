@@ -2,6 +2,7 @@ import { AccountConnectionContext } from '@/lib/backup/account-connection-contex
 import { AccountConnectionCard } from '@/components/backup/AccountConnectionCard';
 import { ChevronDown, ChevronRight, UserRound } from 'lucide-react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { MomentosCopia } from '@/components/momentos/MomentosCopia';
 import React from 'react';
 import { ElementalTopBar, AccountSeal } from './ElementalTopBar';
 import { AllRoutesSheet } from './AllRoutesSheet';
@@ -319,6 +320,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             ) : null}
           </div>
           </div></details>
+          <details className="acc-secao"><summary><span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="grimorio" size={22} /></span><span className="acc-rotulo">Meus momentos</span><ChevronDown className="acc-seta" size={18} aria-hidden="true" /></summary><div className="acc-secao-corpo"><MomentosCopia /></div></details>
           <button type="button" className="acc-secao acc-atalho" onClick={() => navigate('/grimorio')}>
             <span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="grimorio" size={22} /></span><span className="acc-rotulo">Abrir Grimório</span><ChevronRight className="acc-seta" size={18} aria-hidden="true" />
           </button>

@@ -163,3 +163,45 @@ export function enderecoTemporario(blob: Blob): { url: string; soltar: () => voi
   const url = URL.createObjectURL(blob);
   return { url, soltar: () => URL.revokeObjectURL(url) };
 }
+
+const lerComoEndereco = (blob: Blob): Promise<string> => new Promise((resolve, reject) => {
+  const leitor = new FileReader();
+  leitor.onload = () => resolve(String(leitor.result));
+  leitor.onerror = () => reject(leitor.error);
+  leitor.readAsDataURL(blob);
+});
+
+/** Every moment as the text of a moments file, or null when there is none to keep. */
+export async function exportarMomentos(): Promise<{ texto: string; total: number } | null> {
+  const { serializar } = await import('./momento-arquivo');
+  const dias = await listarDias();
+  const itens: { dia: DiaChave; imagem: string }[] = [];
+  for (const dia of dias) {
+    const momento = await lerMomento(dia);
+    if (momento) itens.push({ dia, imagem: await lerComoEndereco(momento.exibicao) });
+  }
+  return itens.length ? { texto: serializar(itens, new Date()), total: itens.length } : null;
+}
+
+export type ResultadoImportar =
+  | { readonly ok: true; readonly trazidos: number; readonly jaExistiam: number; readonly ignorados: number }
+  | { readonly ok: false; readonly motivo: 'invalido' | 'grande' | 'indisponivel' };
+
+/** Brings a moments file back. A day that already has a photograph is never overwritten. */
+export async function importarMomentos(arquivo: File): Promise<ResultadoImportar> {
+  if (!momentosDisponiveis()) return { ok: false, motivo: 'indisponivel' };
+  const { ler } = await import('./momento-arquivo');
+  const leitura = ler(await arquivo.text(), arquivo.size);
+  if (!leitura.ok) return leitura;
+  const existentes = new Set(await listarDias());
+  let trazidos = 0, jaExistiam = 0, ignorados = leitura.ignorados;
+  for (const item of leitura.itens) {
+    if (existentes.has(item.dia)) { jaExistiam += 1; continue; }
+    try {
+      const blob = await (await fetch(item.imagem)).blob();
+      const resultado = await salvarMomento(item.dia, new File([blob], `${item.dia}.webp`, { type: blob.type || 'image/webp' }));
+      if (resultado.ok) trazidos += 1; else ignorados += 1;
+    } catch { ignorados += 1; }
+  }
+  return { ok: true, trazidos, jaExistiam, ignorados };
+}

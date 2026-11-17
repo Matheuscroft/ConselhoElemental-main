@@ -1,0 +1,12 @@
+.momentos-copia { display: grid; gap: 12px; }
+.momentos-copia p { margin: 0; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); line-height: 1.5; }
+.momentos-copia__acoes { display: grid; gap: 8px; }
+.momentos-copia__acoes button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 44px; padding-inline: 14px;
+  border: 1px solid rgb(var(--el-gold) / .4); border-radius: 12px; background: rgb(var(--el-gold) / .1); color: rgb(var(--el-text));
+  font: 500 var(--ds-text-small)/1.2 Inter, system-ui, sans-serif;
+  transition: transform var(--ds-duration-press) var(--ds-ease);
+}
+.momentos-copia__acoes button:active { transform: scale(.97); }
+.momentos-copia__acoes button:disabled { opacity: .5; }
+.momentos-copia .momentos-copia__aviso { min-block-size: 1.5em; color: rgb(var(--el-text)); }
