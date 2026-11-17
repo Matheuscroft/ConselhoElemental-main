@@ -31,7 +31,7 @@ export const ANATOMY = {
 export const MOVEMENTS = {
   running: {head:[20,5,3], fill:'m17 10 5 2-4 7-5-3 4-6Z', line:'m17 11-6 2-3 5m12-5 5 3h4 M16 18l5 4 2 7m-10-11-4 7H3 M3 9h5M1 13h5'},
   swimming: {head:[24,12,3], fill:'m8 18 7-8 6 3-7 7-6-2Z', line:'m15 10-4-6-6 3 M3 23q3-3 6 0t6 0 6 0 6 0 M3 28q3-3 6 0t6 0 6 0 6 0'},
-  martial_arts: {head:[15,6,3], fill:'m13 10 4 1-1 8-4-1 1-8Z', line:'M13 11l-4 3 1-4m5 1 3 3 2-2 M14 19l7-2 7-3m0 0 2 2 M13 19l-1 5-1 5h3'},
+  martial_arts: {head:[16,6,3], fill:'m13 10 6 0-1 9-4 0-1-9Z', line:'M13 11l-3 4 3 2M19 11l3 4-3 2M14 19l-6 3-1 7M18 19l6 3 1 7M5 29h4m14 0h4'},
   cycling: {head:[19,5,2.5], fill:'m15 9 5 2-4 5-5-3 4-4Z', line:'m15 10-5 5 6 4-1 6m5-14 4 4h4 M8 25l6-10h7l4 10H8Zm6-10-2-3H9', circles:[[7,25,5],[25,25,5]]},
   strength: {fill:'M4 9h4v14H4V9Zm20 0h4v14h-4V9Z', line:'M8 16h16M1 13v6m30-6v6M11 7h10'},
   hypertrophy: {fill:'M5 23l3-7V9l4-2 3 3-4 3v4l6 1 6-4 5 4-2 7-9 4-9-2-3-4Z', line:'m8 18 4 3q4-6 9-1 M20 5h8m-4-4v8'},

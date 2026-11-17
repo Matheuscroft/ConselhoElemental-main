@@ -462,11 +462,10 @@
 .tr-grade > .tr-runa:has(.tr-runa-capa) .tr-sigilo::before { display: none; }
 .tr-grade > .tr-runa:has(.tr-runa-capa) .tr-runa-nome { text-shadow: 0 1px 6px rgb(0 0 0 / 80%); }
 
-/* The martial arts cover is darker than the others (a dark fighter in a dark ring). Lift
-   it the way the calisthenics art is lit: brighter, with more contrast, and an ember glow
-   behind the middle of the card. The art itself is unchanged. */
-.tr-runa-capa[data-modalidade="martial_arts"] img { filter: brightness(1.7) contrast(1.15) saturate(1.12); }
-.tr-runa-capa[data-modalidade="martial_arts"]::before {
-  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; mix-blend-mode: screen;
-  background: radial-gradient(ellipse 55% 60% at 50% 46%, rgb(255 138 54 / 38%), rgb(255 138 54 / 10%) 55%, transparent 72%);
-}
+/* The martial arts cover is darker than the others (a dark fighter in a dark ring). Lifted
+   in brightness and saturation (no overlay, which turned the middle grey), so the ring blazes and
+   the fighter reads as a warm dark shape against an ember-lit centre. The art is
+   unchanged. The yoga cover has a smaller ring than the rest, so it is scaled to fill the card
+   the same way. */
+.tr-runa-capa[data-modalidade="martial_arts"] img { filter: brightness(2.1) contrast(1.1) saturate(1.6); }
+.tr-runa-capa[data-modalidade="yoga"] img { transform: scale(1.5); transform-origin: 50% 52%; }
