@@ -58,8 +58,11 @@ function ElementMagic({ id, animated = false }: { id: ElementId; animated?: bool
 const MARGEM_GL = 18;
 
 function pintar(posicoes: readonly HTMLElement[], fase: number, largura: number) {
-  posicoes.forEach((posicao, indice) => {
+  posicoes.forEach((posicao) => {
+    const indice = Number(posicao.dataset.orbita);
     const g = geometria(indice, fase, largura);
+    // Behind the body: the name goes above the orb and quieter, so it never covers the face.
+    if (g.profundidade < 0) posicao.dataset.tras = ''; else delete posicao.dataset.tras;
     posicao.style.setProperty('--orbit-x', String(g.orbitaX));
     posicao.style.setProperty('--orbit-y', String(g.orbitaY));
     posicao.style.setProperty('--orbit-scale', String(g.escala));
@@ -119,7 +122,8 @@ interface Arrasto { id: number; x0: number; y0: number; x: number; t: number; at
 export function Constelacao({ fracao }: { fracao: number }) {
   const orbitRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const glRef = useRef<CenaOrbes | null>(null);
+  const canvasTrasRef = useRef<HTMLCanvasElement>(null);
+  const glRef = useRef<readonly CenaOrbes[]>([]);
   const [gl, setGl] = useState<'pendente' | 'ativo' | 'recuo'>('pendente');
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [foco, setFoco] = useState(0);
@@ -199,28 +203,33 @@ export function Constelacao({ fracao }: { fracao: number }) {
 
   // WebGL scene: dynamic, so the page never waits for it, and any failure is just the 2D art.
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const canvasTras = canvasTrasRef.current;
+    const canvasFrente = canvasRef.current;
+    if (!canvasTras || !canvasFrente) return;
     let vivo = true;
-    let cena: CenaOrbes | null = null;
+    let cenas: CenaOrbes[] = [];
     let observador: ResizeObserver | undefined;
     const recuar = () => {
-      cena?.parar();
-      cena = null;
-      glRef.current = null;
+      // Either layer giving up takes both: half an orbit would be worse than the 2D art.
+      cenas.forEach((c) => c.parar());
+      cenas = [];
+      glRef.current = [];
       if (vivo) setGl('recuo');
     };
     (async () => {
       try {
         const modulo = await import('@/components/sanctuary/orbes-cena');
         if (!vivo) return;
-        cena = modulo.criarCenaOrbes(canvas, { elementos: ORDER, reduzido: reducedMotion, aoDegradar: recuar });
-        if (!cena) { setGl('recuo'); return; }
-        glRef.current = cena;
+        const base = { elementos: ORDER, reduzido: reducedMotion, aoDegradar: recuar };
+        const tras = modulo.criarCenaOrbes(canvasTras, { ...base, camada: 'tras' });
+        const frente = tras && modulo.criarCenaOrbes(canvasFrente, { ...base, camada: 'frente' });
+        if (!tras || !frente) { tras?.parar(); setGl('recuo'); return; }
+        cenas = [tras, frente];
+        glRef.current = cenas;
         sujo.current = true;
         setGl('ativo');
-        observador = new ResizeObserver(() => { cena?.redimensionar(); sujo.current = true; });
-        observador.observe(canvas);
+        observador = new ResizeObserver(() => { cenas.forEach((c) => c.redimensionar()); sujo.current = true; });
+        observador.observe(canvasFrente);
       } catch {
         recuar();
       }
@@ -228,8 +237,8 @@ export function Constelacao({ fracao }: { fracao: number }) {
     return () => {
       vivo = false;
       observador?.disconnect();
-      cena?.parar();
-      glRef.current = null;
+      cenas.forEach((c) => c.parar());
+      glRef.current = [];
     };
   }, [reducedMotion]);
 
@@ -238,7 +247,7 @@ export function Constelacao({ fracao }: { fracao: number }) {
   useEffect(() => {
     const orbit = orbitRef.current;
     if (!orbit) return;
-    const posicoes = [...orbit.querySelectorAll<HTMLElement>('.ep-orbit-position')];
+    const posicoes = [...orbit.querySelectorAll<HTMLElement>('[data-orbita]')];
     const medir = () => { largura.current = orbit.clientWidth || 390; sujo.current = true; };
     medir();
 
@@ -282,14 +291,14 @@ export function Constelacao({ fracao }: { fracao: number }) {
       if (mexeu || sujo.current) pintar(posicoes, fase.current, largura.current);
       const naFrente = indiceDaFrente(fase.current);
       if (naFrente !== frente.current) { frente.current = naFrente; setFoco(naFrente); }
-      const cena = glRef.current;
-      if (cena) {
+      const cenas = glRef.current;
+      if (cenas.length) {
         if (!reduzido || sujo.current) {
           // The canvas is wider than the stage by MARGEM_GL on each side, so a halo at the edge is not cut.
           const w = largura.current;
           const estados = estadosDasOrbes(ORDER, fase.current, w, cargasRef.current, tocado.current >= 0 ? tocado.current : pairando.current)
             .map((e) => ({ ...e, x: (e.x * w + MARGEM_GL) / (w + 2 * MARGEM_GL), escala: e.escala * w / (w + 2 * MARGEM_GL) }));
-          cena.atualizar(estados, relogio);
+          for (const cena of cenas) cena.atualizar(estados, relogio);
         }
       } else if (superficies.length) superficies.forEach((s) => s.paint(relogio));
       sujo.current = false;
@@ -413,6 +422,7 @@ export function Constelacao({ fracao }: { fracao: number }) {
       <div className="ep-orbit-track ep-orbit-track-inner" aria-hidden="true" />
       <div className="ep-chao" aria-hidden="true" />
       <AnelXp fracao={fracao} />
+      <canvas ref={canvasTrasRef} className="ep-orbes-gl" data-camada="tras" aria-hidden="true" />
       <div className="ep-avatar-stage">
         <div className="ep-avatar-halo" aria-hidden="true" />
         <Suspense fallback={null}>
@@ -426,18 +436,24 @@ export function Constelacao({ fracao }: { fracao: number }) {
         <img className="ep-elemental-body" src="/sanctuary/elemental-body-v1.png" width={913} height={1723} alt="Personagem elemental com vestes escuras, detalhes dourados e cristal luminoso" draggable={false} />
         <div className="ep-corpo-tinge" key={emFoco} style={{ '--element-accent': ACENTO[emFoco] } as CSSProperties} aria-hidden="true" />
       </div>
-      <canvas ref={canvasRef} className="ep-orbes-gl" aria-hidden="true" />
+      <div className="ep-arte-2d" aria-hidden="true">{ORDER.map((id, index) => {
+        const g = geometria(index, FASE_FRENTE, 390);
+        return <div key={id} className="ep-arte-pos" data-orbita={index} data-pendente={(pendentes[id] ?? 0) > 0 ? '' : undefined}
+          style={{ '--element-accent': ACENTO[id], '--ordem': index, '--carga': cargas[index], '--orbit-x': g.orbitaX, '--orbit-y': g.orbitaY, '--orbit-scale': g.escala, '--orbit-opacity': g.opacidade, zIndex: g.z } as CSSProperties}>
+          <div className="ep-arte"><ElementMagic id={id} animated /></div>
+        </div>;
+      })}</div>
+      <canvas ref={canvasRef} className="ep-orbes-gl" data-camada="frente" aria-hidden="true" />
       <nav className="ep-portals" aria-label="Escolha um elemento" onKeyDown={aoTeclar}>{ORDER.map((id, index) => {
         const g = geometria(index, FASE_FRENTE, 390);
         const pendente = pendentes[id] ?? 0;
         const nome = ELEMENTS[id].name;
-        return <div key={id} className="ep-orbit-position" data-frente={index === foco ? '' : undefined} data-pendente={pendente > 0 ? '' : undefined}
+        return <div key={id} className="ep-orbit-position" data-orbita={index} data-frente={index === foco ? '' : undefined} data-pendente={pendente > 0 ? '' : undefined}
           style={{ '--element-accent': ACENTO[id], '--ordem': index, '--carga': cargas[index], '--orbit-x': g.orbitaX, '--orbit-y': g.orbitaY, '--orbit-scale': g.escala, '--orbit-opacity': g.opacidade, zIndex: g.z } as CSSProperties}>
           <Link id={`ep-entry-${id}`} to={elementHref(id)} className="ep-portal" draggable={false} data-indice={index}
             aria-label={`${nome}, nível ${niveis[id]}${pendente > 0 ? `, ${textoDePendentes(pendente)}` : ''}`}
             onPointerEnter={(evento) => { if (evento.pointerType === 'mouse') pairando.current = index; }}
             onPointerLeave={() => { pairando.current = -1; }}>
-            <ElementMagic id={id} animated />
             <span className="ep-portal-name">{nome}{pendente > 0 ? <span className="ep-portal-ponto" aria-hidden="true" /> : null}</span>
           </Link>
         </div>;

@@ -22,8 +22,13 @@ export interface OrbeEstado {
   readonly carga: number;
 }
 
+/** Which half of the orbit a scene draws: the orbs behind the body, the ones in front of it, or all (one canvas). */
+export type CamadaOrbes = 'tras' | 'frente' | 'todas';
+
 export interface CenaOrbesOpcoes {
   readonly elementos: readonly ElementoId[];
+  /** Two canvases make a real orbit: 'tras' sits under the body, 'frente' over it. Default 'todas'. */
+  readonly camada?: CamadaOrbes;
   /** Someone asked for less motion: draw still frames, no particles in motion. */
   readonly reduzido: boolean;
   /** Called once if the device cannot hold the frame rate; the page then falls back to the 2D art. */

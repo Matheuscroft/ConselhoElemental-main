@@ -1,17 +1,34 @@
 /*
  * The constellation of the four elements: orbs that pass in front of the mage,
  * a card for the one at the front, and the gestures that turn them.
- * Depth, back to front: the stage and the body (100), the WebGL canvas (110),
- * the links and their names (120), the hint (130).
+ * Depth inside .ep-orbit (isolated), back to front:
+ *   tracks and floor (.ep-chao, 0) < canvas of the orbs BEHIND (90)
+ *   < .ep-avatar-stage (100: its own halo, the aura, then the body PNG, then the tint)
+ *   < canvas of the orbs IN FRONT (110) < links and names (.ep-portals, 120) < hint (130).
+ * The back canvas sits under the whole stage, so the body (transparent PNG) occludes
+ * the sphere and its halo, and the stage's own glow washes over them: that is the
+ * depth. Both canvases get the same states each frame and draw an orb identically,
+ * so the swap at depth 0 (the far left or right of the orbit, outside the body) is invisible.
+ * In the 2D fallback .ep-arte-2d has no stacking context: each art takes the z-index of its
+ * depth (10..190) in the same space as the stage, so the back half also passes behind the body.
+ * The links (.ep-portals) stay on top of everything, invisible, as the touch targets.
  */
 
 .ep-orbit { touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; cursor: grab; }
 
 /* The canvas that draws the orbs follows the same parallax as the links, so both stay on the same spot. */
 .ep-orbes-gl { position: absolute; inset: 0 -18px; width: calc(100% + 36px); height: 100%; z-index: 110; pointer-events: none; visibility: hidden; translate: calc(var(--par-x, 0) * 9px) calc(var(--par-y, 0) * 5px); }
+.ep-orbes-gl[data-camada="tras"] { z-index: 90; }
 .ep-orbit[data-gl="true"] .ep-orbes-gl { visibility: visible; }
-/* Hidden and not removed: the link keeps its place and its touch target, and a failed canvas just shows the art again. */
-.ep-orbit[data-gl="true"] .ep-magic { visibility: hidden; }
+
+/* The 2D art lives beside the links, not inside them, so it can take its own depth. Same anchor and size as a link. */
+.ep-arte-2d { position: absolute; inset: 0; pointer-events: none; }
+.ep-arte-pos { position: absolute; inset: 0; transform: translate(calc(var(--orbit-x) * var(--orbit-radius-x)), calc(var(--orbit-y) * var(--orbit-radius-y))); translate: calc(var(--par-x, 0) * 9px) calc(var(--par-y, 0) * 5px); pointer-events: none; }
+.ep-arte { position: absolute; width: 96px; height: 96px; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(var(--orbit-scale)); color: var(--element-accent); }
+@media (max-width: 900px) { .ep-arte { width: 76px; height: 76px; } }
+/* With the WebGL scene running the art is hidden, never removed; a failed canvas just shows it again. */
+.ep-orbit[data-gl="true"] .ep-arte-2d { display: none; }
+.ep-cena[data-entrada="plena"] .ep-arte { animation: ep-conjurar var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-duration-conjure) + var(--ds-stagger) * 2 * var(--ordem, 0)) backwards; }
 .ep-cena[data-entrada="plena"] .ep-orbes-gl { animation: ep-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-conjure) backwards; }
 
 /* The light of the orb in front settles on the body, within its silhouette: a gradient, no blur. */
@@ -25,10 +42,12 @@
 
 /* The front orb is named a little larger, and the ones behind stay quiet but readable. */
 .ep-orbit-position[data-frente] .ep-portal-name { font-size: var(--ds-text-small); border-color: color-mix(in srgb, var(--element-accent) 62%, transparent); }
+/* Behind the body: the name goes above the orb (the face is below it) and quieter. */
+.ep-orbit-position[data-tras] .ep-portal-name { top: auto; bottom: calc(100% + 4px); transform-origin: 50% 100%; opacity: .5; }
 .ep-portal-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--element-accent); box-shadow: 0 0 8px var(--element-accent); }
 
 /* An element with rituals waiting today breathes slowly: an invitation, not an alarm. */
-.ep-orbit-position[data-pendente] .ep-magic-aura { animation: ep-convite calc(var(--ds-duration-conjure) * 5) ease-in-out infinite; background: radial-gradient(circle, color-mix(in srgb, var(--element-accent) 44%, transparent), transparent 72%); }
+.ep-arte-pos[data-pendente] .ep-magic-aura { animation: ep-convite calc(var(--ds-duration-conjure) * 5) ease-in-out infinite; background: radial-gradient(circle, color-mix(in srgb, var(--element-accent) 44%, transparent), transparent 72%); }
 @keyframes ep-convite {
   0%, 100% { opacity: calc(.35 + var(--carga, 0) * .25); transform: scale(.96); }
   50% { opacity: 1; transform: scale(1.22); }
@@ -73,5 +92,5 @@
 @keyframes ep-ponto { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ep-foco-corpo, .ep-foco-fio, .ep-foco-ponto, .ep-gesto-dica, .ep-gesto-dica span, .ep-corpo-tinge, .ep-orbit-position[data-pendente] .ep-magic-aura, .ep-orbes-gl { animation: none; }
+  .ep-foco-corpo, .ep-foco-fio, .ep-foco-ponto, .ep-gesto-dica, .ep-gesto-dica span, .ep-corpo-tinge, .ep-arte-pos[data-pendente] .ep-magic-aura, .ep-orbes-gl { animation: none; }
 }

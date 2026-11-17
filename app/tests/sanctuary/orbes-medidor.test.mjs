@@ -81,3 +81,29 @@ test('o foco aumenta a escala em até 8%', () => {
   assert.ok(Math.abs(m.escalaVisual(1, 1) - 1.08) < 1e-9);
   assert.ok(Math.abs(m.escalaVisual(1, 9) - 1.08) < 1e-9);
 });
+
+test('camadaDaOrbe parte a orbita em tras (< 0) e frente (>= 0)', () => {
+  assert.equal(m.camadaDaOrbe(-1), 'tras');
+  assert.equal(m.camadaDaOrbe(-0.0001), 'tras');
+  assert.equal(m.camadaDaOrbe(0), 'frente');
+  assert.equal(m.camadaDaOrbe(1), 'frente');
+});
+
+test('as camadas tras e frente juntas cobrem cada esfera exatamente uma vez', () => {
+  for (let p = -1; p <= 1.0001; p += 0.05) {
+    const tras = m.pertenceACamada('tras', p);
+    const frente = m.pertenceACamada('frente', p);
+    assert.equal(Number(tras) + Number(frente), 1, `profundidade ${p}`);
+    assert.equal(m.pertenceACamada('todas', p), true);
+  }
+});
+
+test('as sementes das particulas sao deterministicas e iguais nas duas camadas', () => {
+  const a = m.sementeDeterministica(42);
+  const b = m.sementeDeterministica(42);
+  for (let i = 0; i < 20; i += 1) {
+    const v = a();
+    assert.equal(v, b());
+    assert.ok(v >= 0 && v < 1);
+  }
+});

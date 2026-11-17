@@ -22,6 +22,8 @@ import {
   escalaVisual,
   limitar,
   ordenarPorProfundidade,
+  pertenceACamada,
+  sementeDeterministica,
   pixelRatioDasOrbes,
 } from './orbes-medidor';
 import {
@@ -112,6 +114,7 @@ export const criarCenaOrbes: CriarCenaOrbes = (canvas, opcoes) => {
   renderer.autoClear = true;
 
   const reduzido = opcoes.reduzido;
+  const camada = opcoes.camada ?? 'todas';
   let vivo = true;
   let degradado = false;
   let sujo = true;
@@ -147,7 +150,7 @@ export const criarCenaOrbes: CriarCenaOrbes = (canvas, opcoes) => {
   const textura0 = new DataTexture(new Uint8Array(4), 1, 1);
   textura0.needsUpdate = true;
 
-  elementos.forEach((elemento) => {
+  elementos.forEach((elemento, posicao) => {
     const { codigo, brilho } = ELEMENTO[elemento];
     const centro = { value: new Vector2(0, 0) };
     const arte = { value: 100 };
@@ -187,7 +190,9 @@ export const criarCenaOrbes: CriarCenaOrbes = (canvas, opcoes) => {
     const geoPontos = new BufferGeometry();
     geoPontos.setAttribute('position', new BufferAttribute(new Float32Array(n * 3), 3));
     const sementes = new Float32Array(n * 4);
-    for (let i = 0; i < sementes.length; i += 1) sementes[i] = Math.random();
+    // Same seeds in every layer: an orb that changes canvas at the edge of the orbit keeps its particles.
+    const aleatorio = sementeDeterministica(0x9e3779b1 + posicao * 7919);
+    for (let i = 0; i < sementes.length; i += 1) sementes[i] = aleatorio();
     geoPontos.setAttribute('aSeed', new BufferAttribute(sementes, 4));
     geometrias.push(geoPontos);
 
@@ -257,7 +262,7 @@ export const criarCenaOrbes: CriarCenaOrbes = (canvas, opcoes) => {
     let visiveis = 0;
     for (let i = 0; i < orbes.length; i += 1) {
       const orbe = orbes[i];
-      const ligado = presente[i] === 1;
+      const ligado = presente[i] === 1 && pertenceACamada(camada, ultimo[i * CAMPOS + 3]);
       orbe.halo.visible = ligado;
       orbe.esfera.visible = ligado;
       orbe.pontos.visible = ligado;
@@ -280,7 +285,8 @@ export const criarCenaOrbes: CriarCenaOrbes = (canvas, opcoes) => {
     if (!vivo || degradado) return;
     if (typeof document !== 'undefined' && document.hidden) return;
 
-    if (!reduzido && medidor.amostrar(segundos)) {
+    // Only the front layer is metered (or the single one): two canvases must not degrade the page twice.
+    if (!reduzido && camada !== 'tras' && medidor.amostrar(segundos)) {
       degradar();
       return;
     }

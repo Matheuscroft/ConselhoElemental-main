@@ -72,6 +72,28 @@ export function criarMedidor(): Medidor {
   };
 }
 
+/** The half of the orbit an orb belongs to: behind the body below zero depth, in front from zero up. */
+export function camadaDaOrbe(profundidade: number): 'tras' | 'frente' {
+  return profundidade < 0 ? 'tras' : 'frente';
+}
+
+/** Whether a scene set to `camada` draws an orb at this depth ('todas' draws every one). */
+export function pertenceACamada(camada: 'tras' | 'frente' | 'todas', profundidade: number): boolean {
+  return camada === 'todas' || camada === camadaDaOrbe(profundidade);
+}
+
+/** Deterministic 0..1 sequence (mulberry32): both layers must scatter the particles of an orb the same way. */
+export function sementeDeterministica(semente: number): () => number {
+  let a = semente >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 /** Orbs that sit behind are drawn first. Sorts `ordem` (indexes into `profundidade`) in place, stable, no allocation. */
 export function ordenarPorProfundidade(ordem: Int8Array | number[], profundidade: ArrayLike<number>, total: number): void {
   for (let i = 1; i < total; i += 1) {
