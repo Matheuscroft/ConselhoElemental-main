@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { sessionClockSeconds } from '@/lib/workout/session-clock';
-import { Check } from 'lucide-react';
+import { Check, Pause, Play } from 'lucide-react';
 import { toast } from 'sonner';
 import { ExerciseCard, FitnessHeader, FitnessPageShell } from '@/components/fitness-kit';
 import { MidiaDoExercicio } from '@/components/fitness-kit/midia-exercicio';
-import { TreinoAnel } from '@/components/fitness-kit/treino-anel';
 import { TreinoBarraAcao } from '@/components/fitness-kit/treino-barra';
 import { TreinoCena } from '@/components/fitness-kit/treino-cena';
 import { TreinoDescanso, useDescanso } from '@/components/fitness-kit/treino-descanso';
@@ -13,19 +12,20 @@ import { TreinoEstatisticas } from '@/components/fitness-kit/treino-estatisticas
 import '@/components/fitness-kit/treino-uau.css';
 import '@/components/fitness-kit/progressao-uau.css';
 import { ProgressaoSugestao } from '@/components/fitness-kit/progressao-sugestao';
+import { CampoNumerico, DemonstracaoCompacta, EsforcoChips } from '@/components/fitness-kit/progressao-ativo';
 import { historicoDoExercicio, sugestaoDeProgressao, type EntradaDeHistorico, type SugestaoDeProgressao } from '@/lib/workout/progressao';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { FitnessDurationField } from '@/components/workout/FitnessDurationField';
-import { FitnessIntegerField } from '@/components/workout/FitnessIntegerField';
 import { formatClock } from '@/lib/fitness-kit/format';
 import { coreLevelToDefaultPerceivedExertion } from '@/lib/core/native-workout-reward';
 import { resolveExerciseMedia } from '@/lib/workout/exercise-media';
 import type { ExecutedExercise, NativeWorkoutSession, WorkoutSet } from '@/types/workout';
 
 interface ProgressaoDaSerie { historico: EntradaDeHistorico[]; sugestao: SugestaoDeProgressao }
+interface DemoDaSerie { exercicio: Parameters<typeof DemonstracaoCompacta>[0]['exercicio']; aberta: boolean; onAlternar: () => void }
 
-function NativeSetRow({ exercise, series, defaultEffortLevel, progressao }: { exercise: ExecutedExercise; series: WorkoutSet; defaultEffortLevel: number; progressao?: ProgressaoDaSerie }) {
+function NativeSetRow({ exercise, series, defaultEffortLevel, progressao, demo }: { exercise: ExecutedExercise; series: WorkoutSet; defaultEffortLevel: number; progressao?: ProgressaoDaSerie; demo?: DemoDaSerie }) {
   const logSet = useWorkoutStore((state) => state.logSet);
   const [amount, setAmount] = useState(String(series.measureMode === 'reps' ? series.reps || series.targetReps || 0 : series.durationSeconds || series.targetDurationSeconds || 0));
   const [load, setLoad] = useState(String(series.loadKg ?? series.targetLoadKg ?? 0));
@@ -58,11 +58,13 @@ function NativeSetRow({ exercise, series, defaultEffortLevel, progressao }: { ex
     <p className="min-w-0 flex-1 text-base leading-snug text-fitness-text">Série {series.setNumber} · Concluída · {series.measureMode === 'reps' ? `${series.reps ?? 0} reps` : `${series.durationSeconds ?? 0}s`} · esforço {series.perceivedExertion ?? defaultRpe}/10</p>
     <button type="button" aria-label={`Desmarcar série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} className="fitness-set-receipt-seal shrink-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--el-gold))]" style={{ width: 48, height: 48 }} onClick={() => save(false)}><Check size={24} strokeWidth={2.75} /></button>
   </div>;
+  const sugestaoEl = progressao ? <ProgressaoSugestao chave={`${exercise.id}`} historico={progressao.historico} sugestao={progressao.sugestao} aplicada={aplicada} onUsar={usarSugestao} /> : null;
   return <div className="treino-serie">
     <div className="flex items-center justify-between gap-3"><span className="treino-serie-nome">Série {series.setNumber}</span><button type="button" aria-label={`${series.completed ? 'Desmarcar' : 'Concluir'} série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} aria-pressed={series.completed} className="treino-acao treino-acao--concluir !min-h-0 !p-0" style={{ width: 56, height: 56, borderRadius: '50%' }} onClick={() => { if (!save(!series.completed)) toast.error('Informe repetições ou segundos positivos e uma carga válida.'); }}><Check size={26} strokeWidth={2.75} /></button></div>
-    {progressao && <ProgressaoSugestao chave={`${exercise.id}`} historico={progressao.historico} sugestao={progressao.sugestao} aplicada={aplicada} onUsar={usarSugestao} />}
-    <div className="treino-serie-campos" data-colunas="2">{series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={amount === '' ? undefined : Number(amount)} onChange={(value) => { setAmount(value == null ? '' : String(value)); if (value != null) logSet(exercise.id, series.id, { reps: value }); }} /> : <FitnessDurationField seconds={amount === '' ? undefined : Number(amount)} minutes={['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '')} onChange={(value) => { setAmount(value == null ? '' : String(value)); if (value != null) logSet(exercise.id, series.id, { durationSeconds: value }); }} />}{['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '') ? <p className="treino-campo-leitura">Descanso: {series.restSeconds ?? 0}s</p> : <label className="treino-campo-rotulo">Carga (kg)<input aria-label={`Carga da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} inputMode="decimal" className={inputClass} value={load} onChange={(event) => { const next = event.target.value; if (!/^\d*[.,]?\d*$/.test(next)) return; setLoad(next); if (next !== '') logSet(exercise.id, series.id, { loadKg: Number(next.replace(',', '.')) }); }} onBlur={() => save()} /></label>}</div>
-    <label className="treino-campo-rotulo">Esforço percebido (1–10)<select name={`perceivedExertion-${series.id}`} autoComplete="off" aria-label={`Esforço percebido da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} className={inputClass} value={perceivedExertion} onChange={(event) => { const next = event.target.value; setPerceivedExertion(next); logSet(exercise.id, series.id, { perceivedExertion: Number(next) }); }}>{Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} · {value <= 2 ? 'Muito leve' : value <= 4 ? 'Leve' : value <= 6 ? 'Moderado' : value <= 8 ? 'Intenso' : 'Máximo'}</option>)}</select></label>
+    {sugestaoEl && (demo ? <DemonstracaoCompacta titulo={exercise.exerciseNameSnapshot} exercicio={demo.exercicio} aberta={demo.aberta} onAlternar={demo.onAlternar}>{sugestaoEl}</DemonstracaoCompacta> : sugestaoEl)}
+    {!sugestaoEl && demo && <DemonstracaoCompacta titulo={exercise.exerciseNameSnapshot} exercicio={demo.exercicio} aberta={demo.aberta} onAlternar={demo.onAlternar} />}
+    <div className="treino-serie-campos" data-colunas="2">{series.measureMode === 'reps' ? <CampoNumerico rotulo="Repetições" ariaLabel={`Repetições da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} valor={amount} passo={1} minimo={1} onMudar={(next) => { setAmount(next); if (next !== '') logSet(exercise.id, series.id, { reps: Number(next) }); }} /> : <FitnessDurationField seconds={amount === '' ? undefined : Number(amount)} minutes={['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '')} onChange={(value) => { setAmount(value == null ? '' : String(value)); if (value != null) logSet(exercise.id, series.id, { durationSeconds: value }); }} />}{['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '') ? <p className="treino-campo-leitura">Descanso: {series.restSeconds ?? 0}s</p> : <CampoNumerico rotulo="Carga (kg)" ariaLabel={`Carga da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} valor={load} passo={2.5} minimo={0} decimal onMudar={(next) => { setLoad(next); const n = Number(next.replace(',', '.')); if (next !== '' && Number.isFinite(n)) logSet(exercise.id, series.id, { loadKg: n }); }} onSair={() => save()} />}</div>
+    <EsforcoChips valor={perceivedExertion} rotuloAcessivel={`Esforço percebido da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}, de 1 a 10`} onMudar={(next) => { setPerceivedExertion(next); logSet(exercise.id, series.id, { perceivedExertion: Number(next) }); }} />
     {['running', 'swimming', 'cycling'].includes(exercise.modality ?? '') && <label className="treino-campo-rotulo">Distância deste bloco (metros, opcional)<input aria-label={`Distância da série ${series.setNumber}`} inputMode="decimal" className={inputClass} value={distance} onChange={event => { const next = event.target.value; if (!/^\d*[.,]?\d*$/.test(next)) return; setDistance(next); logSet(exercise.id, series.id, { distanceMeters: next ? Number(next.replace(',', '.')) : undefined }); }} /></label>}
     <label className="treino-campo-rotulo">O que você fez? (opcional)<textarea aria-label={`Descrição da série ${series.setNumber}`} maxLength={2000} rows={2} className="treino-campo mt-1" placeholder="Ex.: corrida leve, subida, técnica praticada…" value={notes} onChange={event => { setNotes(event.target.value); logSet(exercise.id, series.id, { activityNotes: event.target.value }); }} /></label>
     <p className="treino-ajuda">Descanso: {series.restSeconds ?? 0}s{series.completed ? ' · Concluída' : series.skipped ? ' · Pulada' : ''}</p>
@@ -88,6 +90,8 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
   const finishSession = useWorkoutStore((state) => state.finishSession);
   const discardNativeSession = useWorkoutStore((state) => state.discardNativeSession);
   const [expanded, setExpanded] = useState<string | null>(session.exerciseResults[0]?.id ?? null);
+  // Which exercises have their full demonstration open; kept for this session only, never persisted.
+  const [demosAbertas, setDemosAbertas] = useState<Record<string, boolean>>({});
   const [now, setNow] = useState(Date.now);
   const [confirm, setConfirm] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
@@ -122,29 +126,31 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
   };
   return <FitnessPageShell focused withFixedAction fixedActionHeight={actionHeight} showPageMap={false}>
     <TreinoCena>
-    <FitnessHeader title={session.nameSnapshot} subtitle={`${formatClock(sessionClockSeconds(session, now))} ${session.pausedAt ? '· pausado' : 'decorridos'}`} onBack={() => navigate('/fitness')} backLabel="Voltar à biblioteca mantendo o treino" />
-    <section className="treino-progresso ds-pane treino-entra" aria-label="Progresso da sessão">
-      <TreinoAnel valor={sets.length ? completed / sets.length : 0} tamanho={68} espessura={7} rotulo="Progresso do treino">{sets.length ? Math.round((completed / sets.length) * 100) : 0}%</TreinoAnel>
-      <div className="treino-progresso-texto"><span className="treino-progresso-numero">{completed} de {sets.length}</span><p className="treino-progresso-rotulo" aria-live="polite">séries concluídas</p></div>
-    </section>
-    <button type="button" className="treino-acao mt-3 w-full" onClick={togglePause}>{session.pausedAt ? 'Retomar relógio' : 'Pausar relógio'}</button>
-    <p className="mt-2 text-sm leading-snug text-fitness-muted">{session.pausedAt ? 'Interrupção pausada: este período não conta no treino.' : 'Descansos entre séries contam no tempo total. Pause apenas para interromper o treino.'}</p>
-    {doneSets.length > 0 && <TreinoEstatisticas denso metrics={[
-      { id: 'ativo', label: 'Tempo ativo registrado', value: activeMinutes.toLocaleString('pt-BR', { maximumFractionDigits: 1 }), unit: 'min' },
-      { id: 'distancia', label: 'Distância informada', value: distanceMeters > 0 ? (distanceMeters / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '—', unit: distanceMeters > 0 ? 'km' : undefined },
-    ]} />}
-    <div className="mt-5 space-y-4">{session.exerciseResults.slice().sort((a, b) => a.order - b.order).map((exercise) => {
+    <FitnessHeader title={session.nameSnapshot} subtitle={`${formatClock(sessionClockSeconds(session, now))} ${session.pausedAt ? '· pausado' : 'decorridos'}`} onBack={() => navigate('/fitness')} backLabel="Voltar à biblioteca mantendo o treino"
+      action={<button type="button" className="progressao-pausa" aria-pressed={!!session.pausedAt} aria-label={session.pausedAt ? 'Retomar relógio' : 'Pausar relógio'} aria-describedby="treino-pausa-ajuda" title={session.pausedAt ? 'Retomar relógio' : 'Pausar relógio'} onClick={togglePause}>{session.pausedAt ? <Play size={20} aria-hidden="true" /> : <Pause size={20} aria-hidden="true" />}</button>} />
+    <p id="treino-pausa-ajuda" className="progressao-sr">{session.pausedAt ? 'Interrupção pausada: este período não conta no treino.' : 'Descansos entre séries contam no tempo total. Pause apenas para interromper o treino.'}</p>
+    <div className="progressao-linha treino-entra" role="progressbar" aria-label="Progresso da sessão" aria-valuemin={0} aria-valuemax={sets.length} aria-valuenow={completed}>
+      <div className="progressao-linha-trilho"><span style={{ transform: `scaleX(${sets.length ? completed / sets.length : 0})` }} /></div>
+      <p className="progressao-linha-texto" aria-live="polite">{completed} de {sets.length} séries concluídas{session.pausedAt ? ' · relógio pausado, este período não conta' : ''}</p>
+    </div>
+    <div className="mt-3 space-y-4">{session.exerciseResults.slice().sort((a, b) => a.order - b.order).map((exercise) => {
       const done = exercise.sets.filter((series) => series.completed && !series.skipped).length;
       const definition = catalog.find((item) => item.id === exercise.exerciseId);
       const legacy = definition?.legacyId ? useWorkoutStore.getState().getExerciseById(definition.legacyId) : undefined;
       const media = resolveExerciseMedia(exercise, definition, legacy);
+      const midiaReal = Boolean(media.src || media.poster);
+      const exercicioMidia = definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality };
       const historico = historicoDoExercicio(nativeHistory, exercise.exerciseId);
       const repsPlanejadas = Math.max(0, ...exercise.sets.map((series) => series.targetReps ?? 0));
       const segundosPlanejados = Math.max(0, ...exercise.sets.map((series) => series.targetDurationSeconds ?? 0));
       const sugestao = sugestaoDeProgressao(historico, { repsMax: repsPlanejadas || undefined, segundos: segundosPlanejados || undefined });
       const seriePendente = exercise.sets.find((series) => !series.completed && !series.skipped);
-      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality }} />{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} progressao={series.id === seriePendente?.id ? { historico, sugestao } : undefined} />)}</ExerciseCard>;
+      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}>{midiaReal && <MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={exercicioMidia} />}{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} progressao={series.id === seriePendente?.id ? { historico, sugestao } : undefined} demo={series.id === seriePendente?.id && !midiaReal ? { exercicio: exercicioMidia, aberta: !!demosAbertas[exercise.id], onAlternar: () => setDemosAbertas((atual) => ({ ...atual, [exercise.id]: !atual[exercise.id] })) } : undefined} />)}</ExerciseCard>;
     })}</div>
+    {doneSets.length > 0 && <TreinoEstatisticas denso metrics={[
+      { id: 'ativo', label: 'Tempo ativo registrado', value: activeMinutes.toLocaleString('pt-BR', { maximumFractionDigits: 1 }), unit: 'min' },
+      { id: 'distancia', label: 'Distância informada', value: distanceMeters > 0 ? (distanceMeters / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '—', unit: distanceMeters > 0 ? 'km' : undefined },
+    ]} />}
     </TreinoCena>
     <AlertDialog open={confirm} onOpenChange={setConfirm}><AlertDialogContent className="fitness-dialog border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Finalizar com séries pendentes?</AlertDialogTitle><AlertDialogDescription>Somente as séries marcadas como concluídas entram no volume do treino.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Continuar treino</AlertDialogCancel><AlertDialogAction disabled={finishing} className="bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))]" onClick={(event) => { event.preventDefault(); finish(); }}>Confirmar finalização</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     <AlertDialog open={confirmDiscard} onOpenChange={setConfirmDiscard}><AlertDialogContent className="fitness-dialog border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Cancelar este treino?</AlertDialogTitle><AlertDialogDescription>A sessão será descartada sem salvar no histórico e sem gerar XP ou alterar Prana. Seu template continuará na biblioteca.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Continuar treino</AlertDialogCancel><AlertDialogAction className="bg-red-600 text-white hover:bg-red-700" onClick={() => { if (discardNativeSession(session.id)) { navigate('/fitness', { replace: true }); toast.success('Treino cancelado sem salvar.'); } else toast.error('Não foi possível cancelar esta sessão.'); }}>Descartar treino</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
