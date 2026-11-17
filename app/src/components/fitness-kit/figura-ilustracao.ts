@@ -300,12 +300,22 @@ export function ilustrar(p: PadraoDef, pose: Pose, sk: Esqueleto, pn: Pincel, se
   }
 }
 
-/** Sombra de contato elíptica no chão, sob o ponto mais baixo do corpo. */
+/**
+ * Contact shadow on the floor. It used to sit under the single lowest point, which
+ * hopped from one foot to the other (a jump of tens of pixels in one frame) in
+ * running, kicks and lunges. Now every point near the floor pulls the shadow
+ * toward itself with a smooth weight, so it glides, and it widens with the spread.
+ */
 export function sombraNoChao(pn: Pincel, sk: Esqueleto, chao: number): void {
-  let x = sk.peE.x, y = sk.peE.y;
-  for (const q of [sk.peD, sk.pontaE, sk.pontaD, sk.maoE, sk.maoD, sk.joelhoE, sk.joelhoD, sk.quadril]) {
-    if (q.y > y) { y = q.y; x = q.x; }
+  // Média ponderada contínua (peso cai com a altura do ponto): sem trocas de "ponto mais baixo".
+  const pontos = [sk.peE, sk.peD, sk.pontaE, sk.pontaD, sk.maoE, sk.maoD, sk.joelhoE, sk.joelhoD, sk.quadril];
+  let peso = 0.001, x = sk.quadril.x * 0.001, xx = sk.quadril.x * sk.quadril.x * 0.001;
+  for (const q of pontos) {
+    const w = Math.exp(-Math.max(0, chao - q.y) / 6);
+    peso += w; x += w * q.x; xx += w * q.x * q.x;
   }
-  const a = 9, b = 1.7, cy = chao + 0.4;
-  pn.p('sombra', `M${f2(x - a)} ${f2(cy)}A${a} ${b} 0 1 0 ${f2(x + a)} ${f2(cy)}A${a} ${b} 0 1 0 ${f2(x - a)} ${f2(cy)}Z`);
+  const cx = x / peso;
+  const dispersao = Math.sqrt(Math.max(0, xx / peso - cx * cx));
+  const a = 9 + Math.min(dispersao, 16) * 0.7, b = 1.7, cy = chao + 0.4;
+  pn.p('sombra', `M${f2(cx - a)} ${f2(cy)}A${a} ${b} 0 1 0 ${f2(cx + a)} ${f2(cy)}A${a} ${b} 0 1 0 ${f2(cx - a)} ${f2(cy)}Z`);
 }

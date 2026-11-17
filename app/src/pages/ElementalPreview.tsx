@@ -19,9 +19,6 @@ import { Contagem } from '@/components/motion/Contagem';
 import { useLuzDoToque } from '@/components/sanctuary/useCenaViva';
 import { useAppStore } from '@/stores/appStore';
 import { ELEMENT_ORDER as ORDER, elementHref, parseElement, previewRedirect, legacyElementHref, areaFilters, updateAreaFilters, matchesAreaName } from '@/components/elemental/navigation';
-import { useZodiacPreference } from '@/lib/sanctuary/zodiac';
-import { Cerimonia } from '@/components/cerimonia/Cerimonia';
-import type { Premio } from '@/lib/cerimonia/cerimonia';
 import './elemental-preview.css';
 import '@/components/elemento/elemento-uau.css';
 import { AURA_SEM_SIGNO, Constelacao, ElementSigil } from '@/components/sanctuary/Constelacao';
@@ -49,7 +46,6 @@ function SanctuaryComposition() {
   // Existing getters read several slices; subscribe to updates from both stores.
   const { user, currentAccountId, getLevelProgress, tasks, habits, actions } = useAppStore();
   const level = getLevelProgress();
-  const { profile: signo } = useZodiacPreference();
 
   // The light of the scene is the element leading the person's week, read from
   // what they already finished. Nothing is written and nothing is scored.
@@ -70,31 +66,7 @@ function SanctuaryComposition() {
   const temPendentes = tasks.some((task) => !task.isCompleted);
   const faltam = Math.max(0, level.xpToNextLevel - (level.xpTotal - level.xpAtLevelStart));
 
-  /**
-   * Levelling up is rare and earned, which is what a ceremony is for. A habit
-   * ticked keeps the small pop instead: three full screens every time would
-   * be a punishment by the second day.
-   *
-   * Adjusted during render, React's own recipe for state that follows a prop,
-   * so the ceremony opens on the same paint as the level it is marking.
-   */
-  const [nivelVisto, setNivelVisto] = useState(level.level);
-  const [premio, setPremio] = useState<Premio | null>(null);
-  if (nivelVisto !== level.level) {
-    const subiu = level.level > nivelVisto;
-    setNivelVisto(level.level);
-    if (subiu) {
-      setPremio({
-        elemento: signo?.element,
-        titulo: 'Você subiu de nível',
-        numero: { rotulo: 'Nível', de: nivelVisto, para: level.level },
-        destrave: { titulo: 'Próximo nível', detalhe: `${format(level.xpToNextLevel)} XP pela frente` },
-      });
-    }
-  }
-
   return <>
-    {premio ? <Cerimonia premio={premio} onFechar={() => setPremio(null)} /> : null}
     <div ref={cenaRef} className="ep-cena" data-entrada={entrada} style={luzDaSemana}>
       <section className="ep-sanctuary" aria-labelledby="ep-title">
         <div className="ep-character-navigation"><Constelacao fracao={level.progressFraction} /></div>

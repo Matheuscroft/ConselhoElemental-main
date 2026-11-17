@@ -7,8 +7,8 @@ const des = loadComponent('src/components/fitness-kit/figura-desenho.ts');
 const { PADROES, EXTRAS } = loadComponent('src/components/fitness-kit/figura-padroes.ts');
 const { CHAO, Y_CONTATO, PROPORCOES } = rig;
 
-// Padrões em que o pé sai do chão por natureza (máquina com os pés soltos).
-const PES_NO_AR = new Set(['leg-press', 'extensora', 'flexora', 'pedalada', 'luta-chute', 'condicionamento']);
+// Padrões em que o pé sai do chão por natureza (máquina com os pés soltos, pedal, chute, salto, e a entrada da luta de solo, em que as mãos tocam o chão antes dos calcanhares).
+const PES_NO_AR = new Set(['leg-press', 'extensora', 'flexora', 'pedalada', 'luta-chute', 'condicionamento', 'luta-solo']);
 const SEM_CHAO = (p) => p.chao === false || p.apoio === 'barra-acima';
 const ANGULO_PE = (id) => EXTRAS[id]?.anguloPe;
 

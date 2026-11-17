@@ -9,7 +9,7 @@ import type { Equipamento, Junta, PadraoDef, Pose, Quadro } from './figura-tipos
 import { PROPORCOES, Y_CONTATO, esqueletoDe } from './figura-rig';
 import { BICI, type PadraoExtra } from './figura-desenho';
 import {
-  DEG, RAD, ancorar, espelhados, ik, juntas, lerp, movimento, pernasEspelhadas, poseDeApoios, r2, ombroNaLinha,
+  DEG, RAD, ancorar, desenrolar, espelhados, ik, juntas, lerp, movimento, pernasEspelhadas, poseDeApoios, r2, ombroNaLinha,
   type Ancora, type Chave,
 } from './figura-padroes-forca';
 
@@ -98,7 +98,7 @@ const [bracoBike, antebracoBike] = ik(OMBRO_BIKE, { x: BICI.guidao.x + 0.5, y: B
 function pedal(u: number): Pose {
   const R = 6.5, th = u * 360;
   const tornozelo = (graus: number): [number, number] => [
-    BICI.bb.x + R * sen(graus) - 3.2, BICI.bb.y - R * cos(graus) - 3.4,
+    BICI.bb.x + R * sen(graus) - BICI.pedalParaTornozelo.x, BICI.bb.y - R * cos(graus) - BICI.pedalParaTornozelo.y,
   ];
   const [axE, ayE] = tornozelo(th), [axD, ayD] = tornozelo(th + 180);
   const [cE, kE] = ikPerna(QUADRIL_BIKE.x, QUADRIL_BIKE.y, axE, ayE);
@@ -118,27 +118,34 @@ const AGUA = 57;
 const NADO_X = 47;
 const ANCORA_NADO: Ancora = { x: 'quadril', y: 'quadril' };
 
-/** Braço do crawl: o ângulo só DIMINUI (de trás, por cima da água, à frente, e puxa por baixo); o cotovelo dobra na recuperação. */
-function bracoCrawl(graus: number, dobra: number): [number, number] {
+/**
+ * Braço do crawl, de dentro para fora: o ângulo só DIMINUI (de trás, por cima da água, à frente, e puxa por
+ * baixo). Na recuperação o cotovelo sobe na frente e a mão pende atrás dele; na puxada o cotovelo fica alto e
+ * o antebraço desce quase vertical; na entrada o braço estica.
+ */
+function bracoCrawl(graus: number, recuperacao: number, puxada: number): [number, number] {
   const m = ((graus % 360) + 360) % 360;
-  const recuperando = m >= 90 && m <= 270 ? Math.sin(((m - 90) / 180) * Math.PI) : 0;
-  return [graus, graus + dobra * recuperando + 8];
+  const sobre = m >= 90 && m <= 270 ? Math.sin(((m - 90) / 180) * Math.PI) : 0;
+  const sob = m > 270 || m < 90 ? Math.sin((((m + 90) % 360) / 180) * Math.PI) : 0;
+  return [graus, graus + recuperacao * sobre - puxada * sob + 6];
 }
 
 function crawl(u: number): Pose {
   const th = 270 - 360 * u;
-  const [bE, aE] = bracoCrawl(th, 62), [bD, aD] = bracoCrawl(th + 180, 62);
+  const [bE, aE] = bracoCrawl(th, 85, 38), [bD, aD] = bracoCrawl(th + 180, 85, 38);
   const batida = u * 360 * 3;
   const cE = -88 + 14 * sen(batida), cD = -88 - 14 * sen(batida);
+  // a cabeça gira para respirar quando o braço E passa por cima
+  const respira = Math.max(0, sen(u * 360 - 20));
   return ancorar(juntas({
-    t: 90, p: 104 - 4 * sen(u * 360), bE, aE, bD, aD, cE, kE: cE - 12, cD, kD: cD - 12,
+    t: 90, p: 106 - 40 * respira, bE, aE, bD, aD, cE, kE: cE - 12, cD, kD: cD - 12,
   }), ANCORA_NADO, NADO_X, 60.5 + 0.8 * sen(u * 720), 'lado');
 }
 padrao('nado-crawl', 'Nado crawl', 'lado', 'nenhum', 2, ciclo(24, crawl), { chao: false, modo: 'ciclo', extra: { agua: AGUA } });
 
 function costas(u: number): Pose {
   const th = 270 - 360 * u;
-  const [bE, aE] = bracoCrawl(th, 6), [bD, aD] = bracoCrawl(th + 180, 6);
+  const [bE, aE] = bracoCrawl(th, 10, 0), [bD, aD] = bracoCrawl(th + 180, 10, 0);
   const batida = u * 360 * 3;
   const cE = -90 + 12 * sen(batida), cD = -90 - 12 * sen(batida);
   return ancorar(juntas({
@@ -149,7 +156,7 @@ padrao('nado-costas', 'Nado costas', 'lado', 'nenhum', 2.2, ciclo(24, costas), {
 
 function borboleta(u: number): Pose {
   const th = 270 - 360 * u;
-  const [b, a] = bracoCrawl(th, 30);
+  const [b, a] = bracoCrawl(th, 40, 30);
   const onda = u * 720;
   const c = -86 + 22 * sen(onda - 70);
   return ancorar(juntas({
@@ -199,10 +206,10 @@ padrao('luta-chute', 'Chute frontal', 'lado', 'nenhum', 2.4, movimento({ x: 'peD
   { x: 46, a: { t: -14, p: 2, bE: 38, aE: 140, bD: 60, aD: 120, cE: 92, kE: 90, cD: -2, kD: -4 } },
 ], { passos: 5 }));
 
-/** Luta de solo: da base à entrada (nível baixo) e ao sprawl, de bruços sobre as mãos. */
-const BASE: Pose = ancorar(juntas({ t: 10, p: 8, bE: 30, aE: 155, bD: 24, aD: 165, cE: 22, kE: 4, cD: -22, kD: -34 }), { x: 'quadril', y: 'pes' }, 44, undefined, 'lado');
-const ENTRADA: Pose = ancorar(juntas({ t: 52, p: 40, bE: 70, aE: 100, bD: 62, aD: 92, cE: 62, kE: -10, cD: -40, kD: -70 }), { x: 'quadril', y: 'pes' }, 52, undefined, 'lado');
-const SPRAWL_A = { x: 12, y: Y_CONTATO - 3.6 };
+/** Luta de solo: da base à entrada (agacha, mãos no chão) e ao sprawl, de bruços sobre as mãos. */
+const BASE: Pose = ancorar(juntas({ t: 10, p: 8, bE: 30, aE: 155, bD: 24, aD: 165, cE: 22, kE: 4, cD: -22, kD: -34 }), { x: 'quadril', y: 'pes' }, 40, undefined, 'lado');
+const ENTRADA: Pose = ancorar(juntas({ t: 70, p: 50, bE: 18, aE: 8, bD: 12, aD: 4, cE: 112, kE: -34, cD: 100, kD: -44 }), { x: 'peE', y: 'pes' }, 44, undefined, 'lado');
+const SPRAWL_A = { x: 14, y: Y_CONTATO - 3.6 };
 const SPRAWL_S = ombroNaLinha(SPRAWL_A, 13);
 const SPRAWL: Pose = poseDeApoios(SPRAWL_A, SPRAWL_S, { x: SPRAWL_S.x + 3, y: Y_CONTATO }, 'tras', 70);
 function entre(a: Pose, b: Pose, u: number): Pose {
@@ -213,8 +220,11 @@ function entre(a: Pose, b: Pose, u: number): Pose {
 /** Apoia a pose no chão: o ponto mais baixo (pés ou mãos) volta a tocá-lo, para a mistura linear não afundar o corpo. */
 function apoiar(pose: Pose): Pose {
   const sk = esqueletoDe(pose, 'lado');
-  const baixo = Math.max(sk.peE.y, sk.peD.y, sk.pontaE.y, sk.pontaD.y, sk.maoE.y, sk.maoD.y);
-  return { raiz: { x: pose.raiz.x, y: r2(pose.raiz.y + (Y_CONTATO - baixo)) }, ang: pose.ang };
+  const pes = Math.max(sk.peE.y, sk.peD.y, sk.pontaE.y, sk.pontaD.y);
+  const maos = Math.max(sk.maoE.y, sk.maoD.y);
+  let dy = Y_CONTATO - pes;
+  if (maos + dy > Y_CONTATO) dy = Y_CONTATO - maos; // as mãos nunca afundam no chão
+  return { raiz: { x: pose.raiz.x, y: r2(pose.raiz.y + dy) }, ang: pose.ang };
 }
 function solo(): Quadro[] {
   const saida: Quadro[] = [];
@@ -224,17 +234,17 @@ function solo(): Quadro[] {
     for (let k = 0; k < passos; k++) saida.push({ t: (i * passos + k) / (trechos.length * passos), pose: apoiar(entre(a, b, k / passos)) });
   });
   saida.push({ t: 1, pose: SPRAWL });
-  return saida;
+  return desenrolar(saida);
 }
 padrao('luta-solo', 'Luta de solo: entrada e sprawl', 'lado', 'nenhum', 2.8, solo());
 
-/** Forma (kata): da postura com os punhos na cintura, ao bloqueio baixo e ao soco, em postura longa. */
-const KATA = { cE: 70, kE: -8, cD: -40, kD: -40 } as const;
+/** Forma (kata): postura longa; punhos na cintura, bloqueio baixo (gedan barai) e soco direto, o tronco alinhado. */
+const KATA = { cE: 72, kE: -8, cD: -42, kD: -42 } as const;
 padrao('luta-forma', 'Forma (kata): bloqueio e soco', 'lado', 'nenhum', 3, movimento(NO_CHAO_E, [
-  { x: 50, a: { t: 0, p: 0, bE: -14, aE: 150, bD: -14, aD: 150, ...KATA } },
-  { x: 50, a: { t: 4, p: 4, bE: 42, aE: 62, bD: -14, aD: 150, ...KATA } },
-  { x: 50, a: { t: 6, p: 6, bE: -14, aE: 150, bD: 90, aD: 90, ...KATA } },
-], { passos: 5 }));
+  { x: 50, a: { t: 2, p: 2, bE: -22, aE: 170, bD: -22, aD: 170, ...KATA } },
+  { x: 50, a: { t: 4, p: 3, bE: 62, aE: 66, bD: -22, aD: 170, ...KATA } },
+  { x: 50, a: { t: 8, p: 6, bE: -22, aE: 170, bD: 92, aD: 92, ...KATA } },
+], { passos: 6 }));
 
 /* ------------------------------------------------------------------ */
 /* Condicionamento                                                     */

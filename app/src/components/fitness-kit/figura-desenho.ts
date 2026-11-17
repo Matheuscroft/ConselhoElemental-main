@@ -66,6 +66,8 @@ export const BICI = {
   dianteira: { x: 68, y: 75 } as Pt,
   selim: { x: 41, y: 53 } as Pt,
   guidao: { x: 62, y: 50 } as Pt,
+  /** Do tornozelo ao pedal (o pé pisa um pouco à frente e abaixo do tornozelo). */
+  pedalParaTornozelo: { x: 3.2, y: 3.4 } as Pt,
 };
 
 /** Raio da anilha vista de lado (a barra apoiada no chão tem as mãos a este raio do chão). */
@@ -106,8 +108,8 @@ function maosMedias(sk: Esqueleto): Pt {
 
 function bicicleta(sk: Esqueleto, pn: Pincel): void {
   const { bb, roda, traseira, dianteira, selim, guidao } = BICI;
-  // Raios: giram com a manivela (relação de marcha de ~2,6 voltas da roda por volta do pedal).
-  const giro = Math.atan2(sk.peE.x - bb.x, bb.y - sk.peE.y) * 2.6;
+  // Raios: giram com a manivela (3 voltas da roda por volta do pedal: inteiro, para o ângulo não saltar quando o pedal passa de 180 para -180 graus).
+  const giro = Math.atan2(sk.peE.x + BICI.pedalParaTornozelo.x - bb.x, bb.y - (sk.peE.y + BICI.pedalParaTornozelo.y)) * 3;
   const rr = roda - 1.2;
   for (const c of [traseira, dianteira]) {
     pn.c('equip', 1.7, c.x, c.y, roda);

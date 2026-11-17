@@ -167,11 +167,31 @@ export function poseDeApoios(A: Pt, S: Pt, H: Pt, cotovelo: LadoDoCotovelo, pesc
   };
 }
 
+/**
+ * Desenrola os ângulos de uma sequência: cada junta fica a menos de 180 graus
+ * da mesma junta no quadro anterior (somando ou tirando voltas de 360). Sem isso,
+ * 176 e -176 (a mesma direção) são interpolados dando a volta inteira.
+ */
+export function desenrolar(quadros: Quadro[]): Quadro[] {
+  for (let i = 1; i < quadros.length; i++) {
+    const ant = quadros[i - 1].pose.ang;
+    const ang = { ...quadros[i].pose.ang };
+    for (const j of JUNTAS_LISTA) {
+      let v = ang[j];
+      while (v - ant[j] > 180) v -= 360;
+      while (v - ant[j] < -180) v += 360;
+      ang[j] = r2(v);
+    }
+    quadros[i] = { t: quadros[i].t, pose: { raiz: quadros[i].pose.raiz, ang } };
+  }
+  return quadros;
+}
+
 /** Amostra `n` poses de uma família contínua (parâmetro `u` de 0 a 1). */
 export function amostrar(n: number, f: (u: number) => Pose): Quadro[] {
   const saida: Quadro[] = [];
   for (let i = 0; i < n; i++) saida.push({ t: i / (n - 1), pose: f(i / (n - 1)) });
-  return saida;
+  return desenrolar(saida);
 }
 
 export const lerp = (a: number, b: number, u: number): number => a + (b - a) * u;

@@ -125,15 +125,16 @@ function pe(
     ponta.y = ay;
     return;
   }
-  const elevado = Y_CONTATO - ay;
-  if (elevado <= 0.5) {
-    ponta.x = ax + L; ponta.y = ay;
-  } else if (elevado < L * 0.98) {
-    ponta.x = ax + Math.sqrt(L * L - elevado * elevado); ponta.y = Y_CONTATO;
-  } else {
-    const s = (anguloPe ?? canelaGraus) * RAD;
-    ponta.x = ax + L * Math.cos(s); ponta.y = ay - L * Math.sin(s);
-  }
+  // O pé gira de forma CONTÍNUA com a altura do tornozelo `h`: chato no chão, depois pivotando na ponta
+  // (a ponta continua tocando o chão) e, quando o tornozelo sobe de vez, relaxado no ângulo da canela
+  // (ou de `anguloPe`). Nenhum limiar troca a pose de uma vez: só há misturas suaves.
+  const h = Y_CONTATO - ay;
+  const noChao = Math.asin(Math.min(Math.max(h / L, 0), 1)); // radianos abaixo da horizontal
+  const solto = -(anguloPe ?? canelaGraus) * RAD;
+  const k = Math.min(Math.max((h - 0.3 * L) / (1.9 * L), 0), 1);
+  const w = k * k * (3 - 2 * k);
+  const teta = noChao + (solto - noChao) * w;
+  ponta.x = ax + L * Math.cos(teta); ponta.y = ay + L * Math.sin(teta);
 }
 
 /** Resolve todas as juntas. `saida` é reutilizada: não aloca. */
