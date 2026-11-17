@@ -607,6 +607,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
   const stepLigado = () => ({ title: 'Este aparelho já está ligado à sua conta', lead: 'Seu progresso já está ligado à sua conta. Toque abaixo para continuar.', body: <>
     <button type="button" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}Abrir o app</button>
     {feedback('Não deu para abrir agora. Seu progresso continua guardado.')}
+    {error && <a className="restore-workspace-secondary account-outline-link" href="/?progresso=local">Continuar só neste aparelho</a>}
   </> });
   const stepMetade = () => resolution ? { title: 'Terminar o que ficou pela metade', lead: 'Uma escolha de progresso foi interrompida. Seu progresso está protegido.', body: <>
     {closedTabs}

@@ -11,6 +11,7 @@ import './styles/elemental-fundacao.css'
 import './styles/elemental-blocos.css'
 import './lib/backup/startup-screen.css'
 import { startProgressSession } from './lib/backup/progress-startup'
+import { isolateRestoredLocalDocument } from './lib/backup/progress-mode'
 import { showProgressStartup } from './lib/backup/startup-screen'
 
 // ── Fase 1: Força Dark Mode globalmente ────────────────────────────────
@@ -66,6 +67,7 @@ else {
         else window.location.replace('/auth');
       } catch { showProgressStartup(root,'storage-unavailable'); }
     }
+    else if(progressView==='local')void openLocalOnly();
     else if(progressView==='inicio')void openWelcome();
     else if(accessEntry(window.location.pathname, window.location.search)==='account')void openAccountWorkspace();
     else if(accessEntry(window.location.pathname, window.location.search)==='welcome')void openWelcome();
@@ -78,6 +80,16 @@ else {
       else void openProgress();
     }
   }catch{showProgressStartup(root,'startup-failed');}
+}
+/** Escape hatch: opens the app on this device's own progress, with no account, no sync and no writes to the account.
+ *  Nothing is sent, replaced or deleted; the online version stays exactly where it is. */
+async function openLocalOnly() {
+  try {
+    await startProgressSession({storage:()=>window.localStorage,origin:window.location.origin,locks:navigator.locks,exclusive:true,
+      load:async()=>{isolateRestoredLocalDocument();const {mountApp}=await import('./bootstrap-app');mountApp(root);},
+      blocked:reason=>{if(reason==='pending-account')void openAccountWorkspace();else if(reason==='pending-restore')void openRestoreWorkspace();else showProgressStartup(root,reason);},
+    });
+  } catch { showProgressStartup(root,'storage-unavailable'); }
 }
 async function openProgress() {
   try {
