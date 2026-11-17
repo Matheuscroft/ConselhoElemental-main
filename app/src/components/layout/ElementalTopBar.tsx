@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
@@ -16,6 +16,36 @@ function AbasDeLugares() {
   return <nav aria-label="Lugares principais" className="elemental-topbar-abas">
     {ABAS.map((aba) => <Link key={aba.to} to={aba.to} aria-current={pathname === aba.to || pathname.startsWith(`${aba.to}/`) ? 'page' : undefined}>{aba.rotulo}</Link>)}
   </nav>;
+}
+
+/** Scroll past this and the Sanctuary header condenses into a floating pill. */
+const ROLAGEM_PARA_CONDENSAR = 24;
+const ROLAGEM_PARA_SOLTAR = 12;
+
+/**
+ * Sets data-condensado on the header it lives in, from a passive scroll
+ * listener (the hysteresis keeps it from flickering at the threshold). It
+ * touches the DOM attribute directly: a re-render per scroll tick would cost
+ * more than the whole header. The CSS scroll timeline, where supported, draws
+ * the same transition progressively; this is the fallback and the reduced-motion path.
+ */
+function CondensadorDeRolagem() {
+  const marca = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const cabecalho = marca.current?.closest<HTMLElement>('.elemental-topbar');
+    if (!cabecalho) return;
+    const ler = () => {
+      const y = window.scrollY;
+      const atual = cabecalho.dataset.condensado === 'true';
+      if (!atual && y > ROLAGEM_PARA_CONDENSAR) cabecalho.dataset.condensado = 'true';
+      else if (atual && y <= ROLAGEM_PARA_SOLTAR) cabecalho.dataset.condensado = 'false';
+    };
+    cabecalho.dataset.condensado = 'false';
+    ler();
+    window.addEventListener('scroll', ler, { passive: true });
+    return () => { window.removeEventListener('scroll', ler); delete cabecalho.dataset.condensado; };
+  }, []);
+  return <span ref={marca} hidden aria-hidden="true" />;
 }
 
 /** Presentation only: account and navigation operations stay with TopBar. */
@@ -36,6 +66,7 @@ export function ElementalTopBar({ title, onBack, onExplore, exploreOpen, childre
       </nav>
     </div>
     <HudRecursos />
+    {lugar === 'santuario' && <CondensadorDeRolagem />}
   </header>;
 }
 

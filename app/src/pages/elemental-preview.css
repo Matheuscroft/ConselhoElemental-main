@@ -13,7 +13,9 @@
 .elemental-preview input:focus { box-shadow: none; }
 .ep-main:focus { outline: none; }
 .ep-main { max-width: 1168px; margin: auto; padding: 0 40px; }
-.ep-sanctuary { display: flex; flex-direction: column; align-items: center; max-width: 520px; margin: 0 auto; padding: 8px 0 28px; }
+.ep-sanctuary { display: flex; flex-direction: column; align-items: center; max-width: 520px; margin: 0 auto; padding: 24px 0 28px; }
+/* The header is one floating 56px line (plus the safe area) and the scene starts right under it:
+   24px of clearance keeps the whole head clear of the header at 390x844, 360x740 and 360x640. */
 .ep-sanctuary .ep-character-navigation { width: 100%; }
 /* Positioned, so the aura that spills below the stage passes behind the name and not over it. */
 .ep-identity { position: relative; z-index: 1; text-align: center; margin-top: 4px; }

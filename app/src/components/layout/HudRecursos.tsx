@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArcaneIcon, type ArcaneIconName } from '@/components/elemental/ArcaneIcon';
 import { Contagem } from '@/components/motion/Contagem';
@@ -29,6 +29,8 @@ const LIMITE_BAIXO = 20;
 const ROLAGEM_PARA_FECHAR = 24;
 
 const limitar = (valor: number) => Math.max(0, Math.min(100, valor));
+/** How much of the seal ring the travelling glint covers, in 0..1 of its length. */
+const BRILHO_DO_ANEL = 0.12;
 
 /** Reads the same rules the HUD always used; it only decides how they look. */
 function estadoDeReserva(valor: number): Estado {
@@ -52,6 +54,9 @@ export function HudRecursos() {
   const [aberto, setAberto] = useState(false);
   const [rota, setRota] = useState(pathname);
   const raiz = useRef<HTMLDivElement>(null);
+  const mascara = `hud-anel-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
+  const [assinatura, setAssinatura] = useState<string | null>(null);
+  const [pulsos, setPulsos] = useState(0);
 
   // A new route always starts closed; adjusted during render, not in an effect.
   if (rota !== pathname) {
@@ -89,6 +94,14 @@ export function HudRecursos() {
   const faltam = Math.max(0, nivel.xpToNextLevel - xpNoNivel);
   const porcento = Math.max(0, Math.min(100, Math.round(nivel.progressFraction * 100)));
 
+  // Any gain (or spend) pulses the seal ring once. The first render stays
+  // still: opening the app is not an achievement.
+  const leitura = `${nivel.level}|${xpNoNivel}|${hp}|${stamina}|${prana}|${ofensiva}`;
+  if (assinatura !== leitura) {
+    setAssinatura(leitura);
+    if (assinatura !== null) setPulsos((atual) => atual + 1);
+  }
+
   const contas: readonly Conta[] = [
     { id: 'ofensiva', nome: 'Ofensiva', valor: ofensiva, estado: ofensiva > 0 ? 'ativo' : 'repouso', medida: null, cor: ACENTO.fogo, dica: ofensiva === 1 ? 'dia seguido' : 'dias seguidos' },
     { id: 'vida', nome: 'Vida', valor: hp, estado: hp >= HP_MAXIMO ? 'cheio' : hp > HP_BASE ? 'normal' : 'base', medida: limitar(hp), cor: ACENTO.terra, dica: '+5 por ciclo hoje' },
@@ -110,7 +123,22 @@ export function HudRecursos() {
       >
         {/* The level is the one figure allowed to pop: it is the earned one. */}
         <Conjurar marca={nivel.level} className="hud-nivel">
-          <span className="hud-selo" aria-hidden="true">{nivel.level}</span>
+          <span className="hud-selo-wrap" aria-hidden="true">
+            <svg className="hud-selo-anel" viewBox="0 0 40 40" fill="none" focusable="false">
+              <defs>
+                <mask id={mascara} maskUnits="userSpaceOnUse" x={0} y={0} width={40} height={40}>
+                  <circle className="hud-selo-recorte" cx="20" cy="20" r="17.5" pathLength={1} strokeDasharray={`${porcento / 100} 1`} transform="rotate(-90 20 20)" />
+                </mask>
+              </defs>
+              <circle className="hud-selo-trilho" cx="20" cy="20" r="17.5" />
+              <circle className="hud-selo-fio" cx="20" cy="20" r="17.5" pathLength={1} strokeDasharray={`${porcento / 100} 1`} transform="rotate(-90 20 20)" />
+              <g mask={`url(#${mascara})`}>
+                <circle className="hud-selo-brilho" cx="20" cy="20" r="17.5" pathLength={1} strokeDasharray={`${BRILHO_DO_ANEL} ${1 - BRILHO_DO_ANEL}`} transform="rotate(-90 20 20)" />
+              </g>
+              {pulsos > 0 && <circle key={pulsos} className="hud-selo-pulso" cx="20" cy="20" r="17.5" />}
+            </svg>
+            <span className="hud-selo" aria-hidden="true">{nivel.level}</span>
+          </span>
         </Conjurar>
         <span className="hud-trilho" aria-hidden="true"><span style={{ inlineSize: `${porcento}%` }} /></span>
         <span className="hud-contas" aria-hidden="true">

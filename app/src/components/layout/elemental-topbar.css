@@ -4,6 +4,10 @@
  * or earned. Two rows on a phone (place, then the resource thread); one row
  * from 1180px.
  */
+/* The blur radius is a registered length so the Sanctuary header can fade it
+   in; the one blur declaration below reads it, and nothing else blurs. */
+@property --hdr-desfoque { syntax: '<length>'; inherits: false; initial-value: 8px; }
+
 .elemental-topbar {
   --hdr-linha: 52px;
   --hdr-hud: 44px;
@@ -14,8 +18,9 @@
   z-index: 40;
   padding-top: env(safe-area-inset-top);
   background: var(--ds-surface-float);
-  -webkit-backdrop-filter: blur(var(--ds-blur-soft));
-  backdrop-filter: blur(var(--ds-blur-soft));
+  --hdr-desfoque: var(--ds-blur-soft);
+  -webkit-backdrop-filter: blur(var(--hdr-desfoque));
+  backdrop-filter: blur(var(--hdr-desfoque));
   border-bottom: 1px solid var(--hdr-fio);
 }
 
@@ -97,18 +102,66 @@
 .elemental-topbar .hud-fio:hover { background: transparent; }
 
 .hud-nivel { display: inline-flex; flex-shrink: 0; }
-.hud-selo {
+.hud-selo-wrap {
+  position: relative;
   display: grid;
   place-items: center;
-  inline-size: 28px;
-  block-size: 28px;
-  border: 1.5px solid rgb(var(--el-gold));
-  border-radius: 50%;
+  inline-size: 38px;
+  block-size: 38px;
+  color: rgb(var(--el-gold));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.hud-selo {
+  position: relative;
   color: rgb(var(--el-gold));
   font-family: Cinzel, Georgia, serif;
   font-size: var(--ds-text-micro);
   font-variant-numeric: tabular-nums;
 }
+
+/* The XP as a ring around the level seal: same language as the ring at the
+   mage's feet (AnelXp). Normalised to length 1, so the fill is one dash. */
+.hud-selo-anel { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.hud-selo-anel circle { fill: none; }
+.hud-selo-trilho { stroke: rgb(var(--el-gold) / .22); stroke-width: 2; }
+.hud-selo-fio {
+  stroke: rgb(var(--el-gold));
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgb(var(--el-gold) / .55));
+  transition: stroke-dasharray var(--ds-duration-settle) var(--ds-ease);
+}
+.hud-selo-recorte { stroke: #fff; stroke-width: 6; transition: stroke-dasharray var(--ds-duration-settle) var(--ds-ease); }
+.hud-selo-brilho {
+  stroke: var(--ds-nucleo, #fff6e8);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  opacity: .85;
+  animation: hud-selo-correr calc(var(--ds-duration-conjure) * 6) linear infinite;
+}
+.hud-selo-pulso {
+  stroke: rgb(var(--el-gold));
+  stroke-width: 3;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hud-selo-pulsar var(--ds-duration-conjure) var(--ds-ease) both;
+}
+@keyframes hud-selo-correr { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes hud-selo-pulsar {
+  0% { opacity: 0; transform: scale(1); }
+  30% { opacity: .7; }
+  100% { opacity: 0; transform: scale(1.22); }
+}
+
+/* The seal breathes, barely. */
+.hud-nivel .hud-selo-anel { animation: hud-selo-respirar calc(var(--ds-duration-conjure) * 5) ease-in-out infinite; }
+@keyframes hud-selo-respirar { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.045); } }
+
+/* A touch answers with a short spring. */
+.hud-contas { transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); }
+.elemental-topbar .hud-fio:active .hud-selo-wrap,
+.elemental-topbar .hud-fio:active .hud-contas { transform: scale(.9); transition-duration: var(--ds-duration-press); }
 
 .hud-trilho {
   position: relative;
@@ -202,6 +255,120 @@
 .hud-item dd > small { display: block; margin-block-start: 2px; color: rgb(var(--el-muted)); font: 400 var(--ds-text-micro)/1.35 Inter, system-ui, sans-serif; }
 .hud-item[data-estado="repouso"] dt > svg { color: rgb(var(--el-muted)); }
 
+/* -- Sanctuary: one floating line over the scene --
+   No band and no base border: the controls float, with only a fall of light
+   at the very top for legibility. Past ~24px of scroll the SAME element (the
+   one that owns the blur) gains its surface and narrows into a pill. Its
+   height never changes, so nothing below it shifts. */
+.elemental-topbar[data-lugar="santuario"] {
+  --hdr-linha: 56px;
+  --hdr-pilula: 10px;
+  --hdr-conta: 20px;
+  top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-sizing: border-box;
+  block-size: calc(var(--hdr-linha) + env(safe-area-inset-top));
+  padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right));
+  --hdr-desfoque: 0px;
+  background-color: transparent;
+  border-bottom: 0;
+  border-radius: 0;
+  transition:
+    margin-inline var(--ds-duration-settle) var(--ds-ease),
+    border-radius var(--ds-duration-settle) var(--ds-ease),
+    background-color var(--ds-duration-settle) var(--ds-ease),
+    --hdr-desfoque var(--ds-duration-settle) var(--ds-ease);
+}
+/* The inner row dissolves, so its controls and the HUD share one flex line. */
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-inner { display: contents; }
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-brand { order: 1; }
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-location { order: 2; }
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-abas { order: 3; }
+.elemental-topbar[data-lugar="santuario"] .hud-recursos { order: 4; margin-inline-start: auto; padding-inline: 0; flex: 0 0 auto; }
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-actions { order: 5; margin-inline-start: 0; }
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-brand > span { display: none; }
+/* The page already carries its own title: on a phone this one is only for readers. */
+.elemental-topbar[data-lugar="santuario"] .elemental-topbar-location {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  flex: none;
+}
+.elemental-topbar[data-lugar="santuario"] .hud-trilho { display: none; }
+.elemental-topbar[data-lugar="santuario"] .hud-fio { inline-size: auto; gap: 8px; padding-inline: 4px; }
+.elemental-topbar[data-lugar="santuario"] .hud-contas { gap: 2px; }
+.elemental-topbar[data-lugar="santuario"] .hud-conta { inline-size: var(--hdr-conta); block-size: var(--hdr-conta); }
+.elemental-topbar[data-lugar="santuario"] :is(button, a):focus-visible { outline-offset: -2px; }
+/* The fall of light: a translucent gradient at the very top, no blur. It fades
+   out as the pill takes over. */
+.elemental-topbar[data-lugar="santuario"]::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 -32px;
+  z-index: -1;
+  /* Eased stops: a straight ramp reads as a band with an edge. */
+  background: linear-gradient(rgb(var(--el-canvas) / .7), rgb(var(--el-canvas) / .5) 30%, rgb(var(--el-canvas) / .22) 62%, rgb(var(--el-canvas) / .06) 85%, rgb(var(--el-canvas) / 0));
+  pointer-events: none;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+/* The pill's edge: a pseudo-element, so the tray under it stays free. */
+.elemental-topbar[data-lugar="santuario"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--hdr-fio);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+
+.elemental-topbar[data-lugar="santuario"][data-condensado="true"] {
+  margin-inline: var(--hdr-pilula);
+  border-radius: var(--hdr-raio);
+  --hdr-desfoque: var(--ds-blur-soft);
+  background-color: var(--ds-surface-float);
+}
+.elemental-topbar[data-lugar="santuario"][data-condensado="true"]::before { opacity: 1; }
+.elemental-topbar[data-lugar="santuario"][data-condensado="true"]::after { opacity: 0; }
+
+/* The tray sits under the pill, inside its margins. */
+.elemental-topbar[data-lugar="santuario"] .hud-bandeja { inset-inline: 16px; }
+
+@media (min-width: 380px) {
+  .elemental-topbar[data-lugar="santuario"] .elemental-topbar-brand > span { display: block; }
+  .elemental-topbar[data-lugar="santuario"] { --hdr-conta: 22px; }
+}
+
+/* Scroll-driven where the browser can: the pill forms as the page scrolls,
+   over the first 48px. Elsewhere the class above does the same in one step. */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .elemental-topbar[data-lugar="santuario"],
+    .elemental-topbar[data-lugar="santuario"]::before,
+    .elemental-topbar[data-lugar="santuario"]::after {
+      transition: none;
+      animation-name: hdr-condensar;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 48px;
+    }
+    .elemental-topbar[data-lugar="santuario"]::before { animation-name: hdr-borda; }
+    .elemental-topbar[data-lugar="santuario"]::after { animation-name: hdr-luz; }
+  }
+}
+@keyframes hdr-condensar {
+  from { margin-inline: 0; border-radius: 0; background-color: transparent; --hdr-desfoque: 0px; }
+  to { margin-inline: var(--hdr-pilula); border-radius: 16px; background-color: var(--ds-surface-float); --hdr-desfoque: var(--ds-blur-soft); }
+}
+@keyframes hdr-luz { from { opacity: 1; } to { opacity: 0; } }
+@keyframes hdr-borda { from { opacity: 0; } to { opacity: 1; } }
+
 /* -- from 768px: tabs, the Explorar label, the rail offset -- */
 @media (min-width: 768px) {
   .elemental-topbar-inner { padding-inline: 32px; gap: 8px; }
@@ -224,17 +391,32 @@
   .elemental-topbar-abas a:hover { color: rgb(var(--el-text)); }
   .elemental-topbar-abas a[aria-current="page"] { color: rgb(var(--el-gold)); border-block-end-color: rgb(var(--el-gold)); }
   .elemental-topbar-actions > button > span:not(.elemental-account-seal) { display: inline; }
+  .elemental-topbar[data-lugar="santuario"] { padding-inline: 32px; gap: 8px; }
+  .elemental-topbar[data-lugar="santuario"] .elemental-topbar-location { position: static; inline-size: auto; block-size: auto; clip-path: none; flex: 0 1 auto; }
+  .elemental-topbar[data-lugar="santuario"] .elemental-topbar-abas { margin-inline-start: 12px; }
+  .elemental-topbar[data-lugar="santuario"] .hud-bandeja { inset-inline: auto 32px; }
   .hud-bandeja { inset-inline: auto 32px; inline-size: min(560px, calc(100% - 64px)); }
   .hud-grade { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 /* One row of 64px from 1180px. */
 @media (min-width: 1180px) {
-  .elemental-topbar { display: flex; align-items: center; }
-  .elemental-topbar-inner { flex: 1 1 auto; min-inline-size: 0; min-block-size: 64px; padding-inline-end: 0; }
-  .hud-recursos { flex: 0 0 clamp(280px, 28vw, 360px); padding-inline: 16px 32px; }
+  .elemental-topbar[data-lugar="interna"] { display: flex; align-items: center; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-inner { flex: 1 1 auto; min-inline-size: 0; min-block-size: 64px; padding-inline-end: 0; }
+  .elemental-topbar[data-lugar="interna"] .hud-recursos { flex: 0 0 clamp(280px, 28vw, 360px); padding-inline: 16px 32px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hud-trilho > span, .hud-anel-arco, .hud-bandeja, .elemental-topbar button, .elemental-topbar-abas a { transition: none; }
+  .hud-selo-brilho, .hud-selo-pulso, .hud-nivel .hud-selo-anel { animation: none; }
+  .hud-trilho > span, .hud-anel-arco, .hud-selo-fio, .hud-selo-recorte, .hud-selo-wrap, .hud-contas, .elemental-topbar[data-lugar="santuario"], .elemental-topbar[data-lugar="santuario"]::before, .elemental-topbar[data-lugar="santuario"]::after, .hud-bandeja, .elemental-topbar button, .elemental-topbar-abas a { transition: none; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .elemental-topbar[data-lugar="santuario"],
+  .elemental-topbar[data-lugar="santuario"]::before,
+  .elemental-topbar[data-lugar="santuario"]::after { animation: none; }
+  .elemental-topbar[data-lugar="santuario"][data-condensado="true"] {
+    background-color: rgb(var(--el-surface));
+    --hdr-desfoque: 0px;
+  }
 }
