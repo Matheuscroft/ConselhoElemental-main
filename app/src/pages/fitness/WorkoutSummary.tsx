@@ -26,6 +26,10 @@ import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import '@/components/fitness-kit/treino-uau.css';
 import '@/components/fitness-kit/treino-resumo-uau.css';
+import '@/components/rewards/recompensa-uau.css';
+import '@/components/fitness-kit/progressao-uau.css';
+import { ProgressaoEstreias, ProgressaoRecordes } from '@/components/fitness-kit/progressao-recordes';
+import { recordesQuebradosNaSessao } from '@/lib/workout/progressao';
 
 const shortDate = (value: string): string => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 
@@ -96,6 +100,14 @@ export const WorkoutSummary: React.FC = () => {
     return [{id:'active-time',label:'Tempo ativo',value:(measured.seconds/60).toFixed(1),unit:'min'},{id:'activity-load',label:'Carga percebida',value:measured.load.toFixed(1),unit:'u.a.'},{id:'earth',label:'Terra',value:String(session.earthPoints)},{id:'distance',label:'Distância',value:measured.distance>0?String(measured.distance):'—',unit:'m'}];
   }, [session]);
 
+  // Records compare this session with the completed native sessions dated before it.
+  const eventosDeRecorde = useMemo(() => {
+    if (!nativeSession || nativeSession.status !== 'completed') return [];
+    const quando = Date.parse(nativeSession.completedAt ?? nativeSession.startedAt);
+    const anteriores = nativeHistory.filter((item) => item.id !== nativeSession.id && item.status === 'completed' && Date.parse(item.completedAt ?? item.startedAt) < quando);
+    return recordesQuebradosNaSessao(nativeSession, anteriores);
+  }, [nativeSession, nativeHistory]);
+
   if (nativeSession) {
     const Icon = CATEGORY_ICONS[nativeSession.exerciseResults[0]?.modality ?? nativeTemplates.find((template) => template.id === nativeSession.templateId)?.modality ?? 'mixed'] ?? CATEGORY_ICONS.mixed;
     const xp = resolveNativeSessionXp(nativeSession, coreState);
@@ -124,6 +136,8 @@ export const WorkoutSummary: React.FC = () => {
         <p className="mt-1 text-sm text-fitness-muted">Terra · registrada ao concluir</p>
         {coreLog?.ruleVersion?.startsWith('core-native-workout-block-') && <p className="mt-4 text-sm text-fitness-text-soft">{completedSets.length} blocos concluídos · {formatLongClock(coreLog.actualTimeMinutes * 60)} ativos · esforço ponderado {coreLog.actualEffortLevel}/5</p>}
       </FitnessCard>
+      <ProgressaoRecordes eventos={eventosDeRecorde} fresca={foiAgora(nativeSession.completedAt)} />
+      <ProgressaoEstreias eventos={eventosDeRecorde} />
       <NativeSessionDetails session={nativeSession} history={nativeHistory} stars={rating?.stars ?? 0} onRate={(stars) => rateWorkout(nativeSession.id, stars)} />
     </WorkoutSummaryView>;
   }

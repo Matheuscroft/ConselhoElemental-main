@@ -1,0 +1,224 @@
+/* ==========================================================================
+   Plano da semana (aba Treinos). A mesma linguagem do resto de Treinos:
+     - o cartao e o material sem desfoque (.ds-pane); a folha do dia e o vidro
+       real do sistema (.ds-glass-float, vindo de dialogo-uau.css): nenhuma
+       declaracao nova de desfoque aqui;
+     - cada dia pinta o seu selo na cor do elemento da modalidade (data-element
+       -> --elem-acento);
+     - a marca desliza em mola de um dia ao outro; so transform e opacity se
+       movem, e toda duracao vem dos tokens;
+     - a entrada acontece uma vez por abertura do app (data-entrada="plena").
+   ========================================================================== */
+.pl-cartao {
+  --pl-acento: rgb(var(--el-gold));
+  --pl-base: calc(var(--ds-stagger) * 3);
+  position: relative;
+  display: grid;
+  gap: 18px;
+  padding: 18px 14px 14px;
+  border-radius: var(--ds-raio-runa);
+  overflow: clip;
+  background:
+    radial-gradient(ellipse 80% 60% at 8% 0, color-mix(in srgb, var(--pl-acento) 16%, transparent), transparent 100%),
+    var(--ds-surface-raised);
+}
+.pl-cab { padding-inline: 4px; }
+
+/* ---------- Entrada ---------- */
+@keyframes pl-chega { from { opacity: 0; translate: 0 12px; } }
+@keyframes pl-traca { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.pl-cartao[data-entrada="plena"] :is(.pl-cab, .pl-resumo, .pl-convite) {
+  animation: pl-chega var(--ds-duration-settle) var(--ds-ease) calc(var(--pl-base) + var(--i, 0) * var(--ds-stagger)) backwards;
+}
+.pl-cartao[data-entrada="plena"] .pl-dia {
+  animation: pl-chega var(--ds-duration-settle) var(--ds-ease) calc(var(--pl-base) + var(--i, 0) * var(--ds-stagger)) backwards;
+}
+.pl-cartao[data-entrada="plena"] .pl-dia[data-estado="feito"] .pl-arco {
+  animation: pl-traca var(--ds-duration-conjure) var(--ds-ease) calc(var(--pl-base) + var(--i, 0) * var(--ds-stagger) + var(--ds-duration-feedback)) backwards;
+}
+
+/* ---------- Resumo: o anel de aderencia e os tres numeros ---------- */
+.pl-resumo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 18px;
+  padding-inline: 4px;
+}
+.pl-anel { position: relative; display: grid; place-items: center; width: 72px; height: 72px; color: var(--pl-acento); }
+.pl-anel > svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.pl-anel-trilho { fill: none; stroke: rgb(var(--el-muted) / .28); stroke-width: 6; }
+.pl-anel-arco {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--pl-acento) 55%, transparent));
+  transition: stroke-dashoffset var(--ds-duration-settle) var(--ds-ease);
+}
+.pl-anel-centro { position: relative; display: inline-flex; align-items: baseline; font-size: var(--ds-text-lead); font-weight: 700; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.pl-anel-centro small { font-size: var(--ds-text-micro); font-weight: 600; color: rgb(var(--el-muted)); }
+.pl-numeros { display: grid; gap: 6px; min-width: 0; margin: 0; }
+.pl-numeros > div { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 10px; }
+.pl-numeros dt { font-size: var(--ds-text-small); line-height: 1.4; color: rgb(var(--el-muted)); }
+.pl-numeros dd { margin: 0; font-size: var(--ds-text-small); font-weight: 600; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.pl-resumo > .pl-acao { grid-column: 1 / -1; }
+
+/* ---------- Convite: ainda sem plano ---------- */
+.pl-convite {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 14px;
+  border: 1px dashed color-mix(in srgb, var(--pl-acento) 40%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: color-mix(in srgb, var(--pl-acento) 6%, transparent);
+}
+.pl-convite-titulo { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.3; color: rgb(var(--el-text)); }
+.pl-convite-texto { margin: 0 0 6px; font-size: var(--ds-text-small); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; }
+
+.pl-acao, .pl-executar, .pl-mini {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in srgb, var(--pl-acento) 55%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: color-mix(in srgb, var(--pl-acento) 12%, transparent);
+  color: rgb(var(--el-text));
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-small);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.pl-acao:active, .pl-executar:active:not(:disabled), .pl-mini:active:not(:disabled) { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.pl-acao:focus-visible, .pl-executar:focus-visible, .pl-mini:focus-visible, .pl-linha-botao:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: 2px; }
+.pl-acao-sutil { border-color: rgb(255 255 255 / 12%); background: transparent; color: rgb(var(--el-muted)); }
+.pl-acao:disabled, .pl-executar:disabled, .pl-mini:disabled { opacity: .5; cursor: not-allowed; }
+@media (hover: hover) {
+  .pl-acao:hover:not(:disabled), .pl-executar:hover:not(:disabled), .pl-mini:hover:not(:disabled) { background: color-mix(in srgb, var(--pl-acento) 22%, transparent); }
+}
+
+/* ---------- A faixa de sete dias ---------- */
+.pl-faixa { --pl-i: 0; position: relative; }
+.pl-indicador {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: calc(100% / 7);
+  border: 1px solid color-mix(in srgb, var(--pl-acento) 45%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--pl-acento) 20%, transparent), color-mix(in srgb, var(--pl-acento) 7%, transparent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 12%);
+  transform: translateX(calc(var(--pl-i, 0) * 100%));
+  /* The spring of the system: the mark passes the day and settles back. */
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+  pointer-events: none;
+}
+.pl-dias { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.pl-dias > li { min-width: 0; }
+.pl-dia {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 100%;
+  min-height: 76px;
+  padding: 6px 0;
+  border: 0;
+  border-radius: var(--ds-raio-controle);
+  background: transparent;
+  color: rgb(var(--el-muted));
+  font-family: var(--ds-font-body);
+  cursor: pointer;
+  --pl-tom: var(--elem-acento);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), color var(--ds-duration-feedback) var(--ds-ease);
+}
+.pl-dia:not([data-element]) { --pl-tom: rgb(var(--el-gold)); }
+.pl-dia:active { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.pl-dia:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: -2px; }
+.pl-dia[data-selecionado] { color: rgb(var(--el-text)); }
+.pl-dia-rotulo { font-size: var(--ds-text-micro); line-height: 1.2; letter-spacing: .06em; text-transform: uppercase; }
+.pl-dia-numero { font-size: var(--ds-text-body); font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.pl-dia[data-hoje] .pl-dia-numero { color: var(--pl-acento); }
+.pl-dia[data-hoje] .pl-dia-rotulo::after { content: ''; display: block; width: 4px; height: 4px; margin: 2px auto 0; border-radius: 50%; background: var(--pl-acento); }
+@media (hover: hover) {
+  .pl-dia:hover { color: rgb(var(--el-text)); }
+}
+
+/* ---------- O selo do dia ---------- */
+.pl-selo { width: 28px; height: 28px; margin-top: 2px; overflow: visible; }
+.pl-selo * { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pl-traco { stroke: rgb(var(--el-muted) / .55); stroke-width: 1; }
+.pl-trilho { stroke: rgb(var(--el-muted) / .3); stroke-width: 1.6; }
+.pl-ponto { fill: var(--pl-tom); stroke: none; }
+.pl-selo-num { fill: var(--pl-tom); stroke: none; font-size: var(--ds-text-micro); font-weight: 700; }
+.pl-arco, .pl-marca { stroke: var(--pl-tom); stroke-width: 2.4; }
+.pl-arco { transform: rotate(-90deg); transform-origin: center; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--pl-tom) 55%, transparent)); }
+.pl-marca { stroke-width: 2.2; }
+.pl-selo[data-estado="planejado"] .pl-trilho { stroke: color-mix(in srgb, var(--pl-tom) 60%, transparent); }
+/* A day that did not happen is only a quiet dotted ring: no red, no alarm. */
+.pl-selo[data-estado="perdido"] .pl-trilho { stroke: rgb(var(--el-muted) / .55); stroke-dasharray: 2 6; }
+
+/* ---------- A folha do dia ---------- */
+.pl-lista { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.pl-linha {
+  --pl-tom: var(--elem-acento);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: var(--ds-raio-controle);
+}
+.pl-linha:not([data-element]) { --pl-tom: rgb(var(--el-gold)); }
+.pl-linha-botao {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  padding: 12px;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font-family: var(--ds-font-body);
+  text-align: left;
+  cursor: pointer;
+}
+.pl-linha:has(> .pl-linha-botao) { padding: 0; }
+.pl-linha-botao { width: 100%; }
+.pl-sigilo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid color-mix(in srgb, var(--pl-tom) 45%, transparent);
+  border-radius: 50%;
+  color: var(--pl-tom);
+  background: color-mix(in srgb, var(--pl-tom) 12%, transparent);
+}
+.pl-linha-texto { display: grid; gap: 2px; min-width: 0; }
+.pl-linha-nome { font-size: var(--ds-text-body); font-weight: 600; line-height: 1.3; color: rgb(var(--el-text)); overflow-wrap: anywhere; }
+.pl-linha-meta { font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); overflow-wrap: anywhere; }
+.pl-seta { color: rgb(var(--el-muted)); }
+.pl-chip { display: inline-flex; align-items: center; gap: 4px; padding: 6px 10px; border-radius: var(--ds-raio-controle); font-size: var(--ds-text-micro); font-weight: 600; color: var(--pl-tom); border: 1px solid color-mix(in srgb, var(--pl-tom) 45%, transparent); }
+/* The action of a planned row takes its own line when the row is narrow. */
+.pl-linha > .pl-executar { grid-column: 1 / -1; }
+.pl-executar { --pl-acento: var(--pl-tom); width: 100%; }
+.pl-linha-planejar { grid-template-columns: auto minmax(0, 1fr); }
+.pl-linha-acoes { display: flex; grid-column: 1 / -1; flex-wrap: wrap; gap: 8px; }
+.pl-mini { --pl-acento: var(--pl-tom); flex: 1 1 0; min-width: 120px; padding: 0 12px; }
+.pl-vazio { display: grid; justify-items: start; gap: 10px; margin: 0; padding: 14px; border-radius: var(--ds-raio-controle); font-size: var(--ds-text-small); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.pl-vazio p { margin: 0; }
+.pl-folha { --pl-acento: var(--elem-acento); }
+
+@media (prefers-reduced-motion: reduce) {
+  .pl-cartao[data-entrada="plena"] :is(.pl-cab, .pl-resumo, .pl-convite), .pl-cartao[data-entrada="plena"] .pl-dia, .pl-cartao[data-entrada="plena"] .pl-dia[data-estado="feito"] .pl-arco { animation: none; }
+  .pl-indicador, .pl-dia, .pl-anel-arco, .pl-acao, .pl-executar, .pl-mini { transition: none; }
+}

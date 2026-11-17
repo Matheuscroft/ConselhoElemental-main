@@ -14,6 +14,8 @@ import { ModalidadeHeroi } from '@/components/fitness-kit/modalidade-heroi';
 import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
 import type { ElementoId } from '@/lib/design/palette';
 import '@/components/fitness-kit/treino-cartao-uau.css';
+import '@/components/fitness-kit/plano-uau.css';
+import { PlanoSemana } from '@/components/fitness-kit/plano-semana';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SavedWorkoutLibrary } from '@/components/workout/SavedWorkoutLibrary';
@@ -176,6 +178,10 @@ function FitnessLibraryRoot() {
             {active && <FitnessCard className="border border-fitness-primary/30 p-5"><div className="flex items-center gap-2 text-fitness-primary"><Play size={17} /><p className="font-medium">Sessão em andamento</p></div><p className="mt-2 break-words text-lg font-semibold">{active.nameSnapshot}</p><FitnessButton size="md" className="mt-4 w-full" onClick={() => navigate(`/fitness/ativo/${active.id}`)}>Retomar treino</FitnessButton></FitnessCard>}
           {legacyActive && <FitnessListRow title={legacyActive.workoutNameSnapshot} subtitle="Sessão em andamento · continuar treino" icon={Play} onClick={() => navigate(`/treinos/ativo/${legacyActive.id}`)} />}
           {!modality && <>
+            <PlanoSemana onExplorar={() => {
+              modalitiesHeadingRef.current?.focus({ preventScroll: true });
+              modalitiesHeadingRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+            }} />
             <SavedWorkoutLibrary templates={templates} catalog={catalog} onOpen={(id) => navigate(`/treinos/preview/${id}`)} onExplore={() => {
               modalitiesHeadingRef.current?.focus({ preventScroll: true });
               modalitiesHeadingRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });

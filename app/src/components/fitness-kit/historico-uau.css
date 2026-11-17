@@ -1,0 +1,104 @@
+/* Historico: bloco do exercicio (na ficha, cor via --elem-*) e Recordes da aba Historico.
+   Superficies .ds-pane; sem desfoque novo; duracoes pelos tokens; raios 12/16/50%. */
+
+/* ---------- Ficha do exercicio ---------- */
+.hx-bloco {
+  margin-top: 18px;
+  padding: 16px 14px 14px;
+  border: 1px solid color-mix(in srgb, var(--elem-acento, rgb(var(--el-gold))) 24%, transparent);
+  border-radius: var(--ds-raio-runa);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--elem-aura, rgb(var(--el-gold))) 8%, transparent), transparent 52%), rgb(var(--el-canvas) / 36%);
+  min-inline-size: 0;
+}
+.hx-bloco h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--ds-text-lead); }
+.hx-bloco h3 > svg { color: var(--elem-acento); flex: none; }
+.hx-intro { margin: 4px 0 12px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); line-height: 1.5; }
+.hx-vazio { display: flex; align-items: center; gap: 10px; min-block-size: 44px; }
+.hx-vazio > svg { color: var(--elem-acento); flex: none; }
+.hx-vazio p { margin: 0; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); }
+.hx-sugestao {
+  margin: 0 0 12px; padding: 10px 12px;
+  border-radius: var(--ds-raio-controle);
+  background: color-mix(in srgb, var(--elem-acento) 14%, transparent);
+  font-size: var(--ds-text-small); line-height: 1.45; color: rgb(var(--el-text));
+}
+.hx-grafico { margin: 0 0 14px; min-inline-size: 0; }
+.hx-grafico figcaption { margin-block-end: 4px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); }
+.hx-recordes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0 0 14px; padding: 0; list-style: none; }
+.hx-recorde {
+  display: grid; gap: 2px; min-block-size: 44px; padding: 10px 12px; min-inline-size: 0;
+  border-radius: var(--ds-raio-controle);
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 20%, transparent);
+  background: rgb(var(--el-surface) / 60%);
+}
+.hx-recorde-rotulo, .hx-recorde-data { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.hx-recorde strong { font-family: var(--ds-font-heading); font-size: var(--ds-text-title); font-weight: 500; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--elem-acento); }
+.hx-recorde strong small { font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.hx-sessoes { display: grid; margin: 0; padding: 0; list-style: none; }
+.hx-sessoes li {
+  display: grid; grid-template-columns: 3.5rem minmax(0, 1fr) auto; align-items: center; gap: 8px;
+  min-block-size: 44px; border-top: 1px solid rgb(var(--el-muted) / .16); font-size: var(--ds-text-small);
+}
+.hx-sessoes li:first-child { border-top: 0; }
+.hx-sessoes time, .hx-sessoes span { color: rgb(var(--el-muted)); font-variant-numeric: tabular-nums; }
+.hx-sessoes strong { font-weight: 600; font-variant-numeric: tabular-nums; text-align: end; }
+
+/* ---------- Recordes na aba Historico ---------- */
+.hr-secao { display: grid; gap: 10px; min-inline-size: 0; }
+.hr-secao > h2 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; color: rgb(var(--el-text)); }
+.hr-trilho {
+  display: grid; grid-auto-flow: column; grid-auto-columns: min(82%, 19rem); gap: 12px;
+  margin: 0; padding: 2px 2px 6px; list-style: none;
+  overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 2px;
+  scrollbar-width: none;
+}
+.hr-trilho::-webkit-scrollbar { display: none; }
+.hr-trilho > li { scroll-snap-align: start; min-inline-size: 0; }
+.hr-trilho:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: 2px; }
+.hr-cartao {
+  position: relative; display: grid; gap: 10px; block-size: 100%; padding: 14px; overflow: hidden;
+  border-radius: var(--ds-raio-runa);
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 26%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--elem-aura) 14%, transparent), transparent 60%), rgb(var(--el-surface) / 72%);
+}
+.hr-capa { position: absolute; inset: 0; z-index: 0; inline-size: 100%; block-size: 100%; object-fit: cover; opacity: .16; pointer-events: none; }
+.hr-cartao > :not(.hr-capa) { position: relative; z-index: 1; }
+.hr-cabeca h3 { min-inline-size: 0; }
+.hr-cabeca { flex-wrap: wrap; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-block-size: 44px; }
+.hr-cabeca h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--ds-text-body); color: var(--elem-acento); }
+.hr-cabeca h3 > svg { flex: none; }
+.hr-chama {
+  display: inline-flex; align-items: center; gap: 6px; min-block-size: 44px; padding: 0 12px;
+  border-radius: 50%/50%; border: 1px solid color-mix(in srgb, var(--elem-acento) 40%, transparent);
+  background: color-mix(in srgb, var(--elem-acento) 16%, transparent);
+  font-size: var(--ds-text-small); font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.hr-chama > svg { color: var(--elem-acento); flex: none; }
+.hr-numeros { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 0; }
+.hr-numeros > div { display: grid; gap: 2px; min-inline-size: 0; }
+.hr-numeros dt { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.hr-numeros dd { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-title); line-height: 1.1; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); }
+.hr-numeros dd small { font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.hr-rodape { margin: 0; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.hr-vazio { display: flex; align-items: center; gap: 12px; min-block-size: 44px; padding: 14px; border-radius: var(--ds-raio-runa); }
+.hr-vazio > svg { flex: none; color: rgb(var(--el-gold)); }
+.hr-vazio p { margin: 0; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hr-trilho { scroll-behavior: auto; }
+}
+
+/* The sheet styles every list and every span in a list (the technique steps: padded
+   lists, numbered seals). The history block lives in the same sheet, so it resets what
+   leaks in, with enough specificity to win. */
+.hx-bloco .hx-recordes, .hx-bloco .hx-sessoes { padding: 0; margin-inline: 0; }
+.hx-bloco .hx-recordes > li { margin: 0; padding: 10px 12px; }
+.hx-bloco .hx-sessoes > li {
+  display: grid; padding: 0; margin: 0;
+  grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+}
+.hx-bloco .hx-sessoes > li > span {
+  display: inline; inline-size: auto; block-size: auto; min-inline-size: 0;
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; animation: none;
+}
+.hx-bloco .hx-sessoes > li::before, .hx-bloco .hx-sessoes > li::after { content: none; }

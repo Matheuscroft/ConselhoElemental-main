@@ -1,0 +1,58 @@
+/*
+ * Progression on the training screens: the suggestion chip of the active exercise and the
+ * records card of the summary. Presentation only. Surfaces are .ds-pane (no blur), the seal,
+ * ring and sparks come from recompensa-uau.css (.rec-selo, .rec-anel, .rec-faisca).
+ */
+
+/* ---------- Active exercise: last time -> today ---------- */
+.progressao-chip {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 10px 12px; border-radius: var(--ds-raio-runa);
+  border: 1px solid rgb(var(--el-gold) / .32);
+  background: rgb(var(--el-gold) / .08);
+}
+.progressao-chip[data-animar="true"] { animation: progressao-entrar var(--ds-duration-settle) var(--ds-ease-conjure) backwards; }
+.progressao-chip[data-motivo="aliviar"] { border-color: rgb(var(--el-muted) / .35); background: rgb(var(--el-muted) / .1); }
+.progressao-chip-texto { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; min-width: 0; }
+.progressao-chip-antes { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.progressao-chip-seta { align-self: center; flex: 0 0 auto; color: rgb(var(--el-gold)); }
+.progressao-chip-hoje { font-size: var(--ds-text-small); color: rgb(var(--el-text)); }
+.progressao-chip-hoje strong { font-size: var(--ds-text-lead); font-weight: 700; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+.progressao-chip-motivo { flex-basis: 100%; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.progressao-usar { flex: 0 0 auto; min-width: 72px; min-height: 44px; padding: 0 16px; }
+.progressao-discreta { margin: 0; font-size: var(--ds-text-small); line-height: 1.45; color: rgb(var(--el-muted)); }
+.progressao-discreta[data-animar="true"] { animation: progressao-entrar var(--ds-duration-reveal) var(--ds-ease) backwards; }
+@keyframes progressao-entrar { from { opacity: 0; transform: translateY(8px) scale(.97); } }
+
+/* ---------- Summary: records of the session ---------- */
+.progressao-recordes {
+  display: grid; gap: 14px; padding: 18px 16px; border-radius: var(--ds-raio-runa);
+  border: 1px solid rgb(var(--el-gold) / .5);
+  box-shadow: var(--ds-rim), 0 0 36px rgb(var(--el-gold) / .18), var(--ds-lift);
+  animation: progressao-entrar var(--ds-duration-settle) var(--ds-ease-conjure) backwards;
+}
+.progressao-recordes-cabeca { display: flex; align-items: center; gap: 14px; }
+.progressao-selo { flex: 0 0 48px; color: rgb(var(--el-gold)); }
+.progressao-recordes-titulo { margin: 0; font-family: Cinzel, Georgia, serif; font-size: var(--ds-fluid-title); font-weight: 500; line-height: 1.2; color: rgb(var(--el-text)); }
+.progressao-recordes-nota { margin: 2px 0 0; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.progressao-recordes-lista, .progressao-estreias { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.progressao-recorde {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0 12px;
+  padding: 10px 12px; border-radius: 12px; background: rgb(var(--el-canvas) / .45);
+  animation: progressao-entrar var(--ds-duration-reveal) var(--ds-ease) backwards;
+  animation-delay: calc(min(var(--i, 0), 6) * var(--ds-stagger));
+}
+.progressao-recorde-nome { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.progressao-recorde-nome strong { font-size: var(--ds-text-body); font-weight: 600; color: rgb(var(--el-text)); }
+.progressao-recorde-nome span { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.progressao-recorde-valor { font-size: var(--ds-text-small); color: rgb(var(--el-text)); text-align: right; }
+.progressao-recorde-valor b { font-size: var(--ds-fluid-title); font-weight: 700; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); }
+.progressao-recorde-antes { grid-column: 2; font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); text-align: right; }
+.progressao-estreias li { font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
+.progressao-estreias--solta { padding: 0 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .progressao-chip, .progressao-discreta, .progressao-recordes, .progressao-recorde { animation: none; }
+  .progressao-selo i, .progressao-selo .rec-anel { display: none; }
+  .progressao-selo > svg { animation: none; }
+}

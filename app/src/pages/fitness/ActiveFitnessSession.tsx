@@ -11,6 +11,9 @@ import { TreinoCena } from '@/components/fitness-kit/treino-cena';
 import { TreinoDescanso, useDescanso } from '@/components/fitness-kit/treino-descanso';
 import { TreinoEstatisticas } from '@/components/fitness-kit/treino-estatisticas';
 import '@/components/fitness-kit/treino-uau.css';
+import '@/components/fitness-kit/progressao-uau.css';
+import { ProgressaoSugestao } from '@/components/fitness-kit/progressao-sugestao';
+import { historicoDoExercicio, sugestaoDeProgressao, type EntradaDeHistorico, type SugestaoDeProgressao } from '@/lib/workout/progressao';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { FitnessDurationField } from '@/components/workout/FitnessDurationField';
@@ -20,7 +23,9 @@ import { coreLevelToDefaultPerceivedExertion } from '@/lib/core/native-workout-r
 import { resolveExerciseMedia } from '@/lib/workout/exercise-media';
 import type { ExecutedExercise, NativeWorkoutSession, WorkoutSet } from '@/types/workout';
 
-function NativeSetRow({ exercise, series, defaultEffortLevel }: { exercise: ExecutedExercise; series: WorkoutSet; defaultEffortLevel: number }) {
+interface ProgressaoDaSerie { historico: EntradaDeHistorico[]; sugestao: SugestaoDeProgressao }
+
+function NativeSetRow({ exercise, series, defaultEffortLevel, progressao }: { exercise: ExecutedExercise; series: WorkoutSet; defaultEffortLevel: number; progressao?: ProgressaoDaSerie }) {
   const logSet = useWorkoutStore((state) => state.logSet);
   const [amount, setAmount] = useState(String(series.measureMode === 'reps' ? series.reps || series.targetReps || 0 : series.durationSeconds || series.targetDurationSeconds || 0));
   const [load, setLoad] = useState(String(series.loadKg ?? series.targetLoadKg ?? 0));
@@ -37,12 +42,25 @@ function NativeSetRow({ exercise, series, defaultEffortLevel }: { exercise: Exec
       ...(series.measureMode === 'reps' ? { reps: value } : { durationSeconds: value }) });
   };
   const inputClass = 'treino-campo';
+  const temCarga = !['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '');
+  // "Usar" goes through the same edit path as typing: local state plus logSet on the field's own patch.
+  const sug = progressao?.sugestao;
+  const usaCarga = !!sug && sug.cargaKg != null && temCarga && !(sug.motivo === 'subir-reps' && sug.segundos != null);
+  const quantidade = sug ? (series.measureMode === 'reps' ? sug.reps : sug.segundos) : undefined;
+  const usaQuantidade = !!sug && quantidade != null && (sug.motivo === 'subir-reps' || sug.cargaKg == null || !temCarga);
+  const aplicada = usaCarga ? Number(load.replace(',', '.')) === sug!.cargaKg : usaQuantidade ? Number(amount) === quantidade : true;
+  const usarSugestao = () => {
+    if (!sug) return;
+    if (usaCarga) { setLoad(String(sug.cargaKg)); logSet(exercise.id, series.id, { loadKg: sug.cargaKg }); }
+    if (usaQuantidade) { setAmount(String(quantidade)); logSet(exercise.id, series.id, series.measureMode === 'reps' ? { reps: quantidade } : { durationSeconds: quantidade }); }
+  };
   if (series.completed && !series.skipped) return <div className="treino-recibo fitness-set-receipt items-center justify-between">
     <p className="min-w-0 flex-1 text-base leading-snug text-fitness-text">Série {series.setNumber} · Concluída · {series.measureMode === 'reps' ? `${series.reps ?? 0} reps` : `${series.durationSeconds ?? 0}s`} · esforço {series.perceivedExertion ?? defaultRpe}/10</p>
     <button type="button" aria-label={`Desmarcar série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} className="fitness-set-receipt-seal shrink-0 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[rgb(var(--el-gold))]" style={{ width: 48, height: 48 }} onClick={() => save(false)}><Check size={24} strokeWidth={2.75} /></button>
   </div>;
   return <div className="treino-serie">
     <div className="flex items-center justify-between gap-3"><span className="treino-serie-nome">Série {series.setNumber}</span><button type="button" aria-label={`${series.completed ? 'Desmarcar' : 'Concluir'} série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} aria-pressed={series.completed} className="treino-acao treino-acao--concluir !min-h-0 !p-0" style={{ width: 56, height: 56, borderRadius: '50%' }} onClick={() => { if (!save(!series.completed)) toast.error('Informe repetições ou segundos positivos e uma carga válida.'); }}><Check size={26} strokeWidth={2.75} /></button></div>
+    {progressao && <ProgressaoSugestao chave={`${exercise.id}`} historico={progressao.historico} sugestao={progressao.sugestao} aplicada={aplicada} onUsar={usarSugestao} />}
     <div className="treino-serie-campos" data-colunas="2">{series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={amount === '' ? undefined : Number(amount)} onChange={(value) => { setAmount(value == null ? '' : String(value)); if (value != null) logSet(exercise.id, series.id, { reps: value }); }} /> : <FitnessDurationField seconds={amount === '' ? undefined : Number(amount)} minutes={['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '')} onChange={(value) => { setAmount(value == null ? '' : String(value)); if (value != null) logSet(exercise.id, series.id, { durationSeconds: value }); }} />}{['running', 'swimming', 'cycling', 'martial_arts'].includes(exercise.modality ?? '') ? <p className="treino-campo-leitura">Descanso: {series.restSeconds ?? 0}s</p> : <label className="treino-campo-rotulo">Carga (kg)<input aria-label={`Carga da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} inputMode="decimal" className={inputClass} value={load} onChange={(event) => { const next = event.target.value; if (!/^\d*[.,]?\d*$/.test(next)) return; setLoad(next); if (next !== '') logSet(exercise.id, series.id, { loadKg: Number(next.replace(',', '.')) }); }} onBlur={() => save()} /></label>}</div>
     <label className="treino-campo-rotulo">Esforço percebido (1–10)<select name={`perceivedExertion-${series.id}`} autoComplete="off" aria-label={`Esforço percebido da série ${series.setNumber} de ${exercise.exerciseNameSnapshot}`} className={inputClass} value={perceivedExertion} onChange={(event) => { const next = event.target.value; setPerceivedExertion(next); logSet(exercise.id, series.id, { perceivedExertion: Number(next) }); }}>{Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value} · {value <= 2 ? 'Muito leve' : value <= 4 ? 'Leve' : value <= 6 ? 'Moderado' : value <= 8 ? 'Intenso' : 'Máximo'}</option>)}</select></label>
     {['running', 'swimming', 'cycling'].includes(exercise.modality ?? '') && <label className="treino-campo-rotulo">Distância deste bloco (metros, opcional)<input aria-label={`Distância da série ${series.setNumber}`} inputMode="decimal" className={inputClass} value={distance} onChange={event => { const next = event.target.value; if (!/^\d*[.,]?\d*$/.test(next)) return; setDistance(next); logSet(exercise.id, series.id, { distanceMeters: next ? Number(next.replace(',', '.')) : undefined }); }} /></label>}
@@ -75,6 +93,7 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [actionHeight, setActionHeight] = useState<number>();
   const [finishing, setFinishing] = useState(false);
+  const nativeHistory = useWorkoutStore((state) => state.nativeHistory);
   // Rest only reads which sets are done: it never delays or records anything.
   // The session can vanish while finishing, before the screen navigates away, so it is read defensively.
   const resultados = session?.exerciseResults;
@@ -119,7 +138,12 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
       const definition = catalog.find((item) => item.id === exercise.exerciseId);
       const legacy = definition?.legacyId ? useWorkoutStore.getState().getExerciseById(definition.legacyId) : undefined;
       const media = resolveExerciseMedia(exercise, definition, legacy);
-      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality }} />{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} />)}</ExerciseCard>;
+      const historico = historicoDoExercicio(nativeHistory, exercise.exerciseId);
+      const repsPlanejadas = Math.max(0, ...exercise.sets.map((series) => series.targetReps ?? 0));
+      const segundosPlanejados = Math.max(0, ...exercise.sets.map((series) => series.targetDurationSeconds ?? 0));
+      const sugestao = sugestaoDeProgressao(historico, { repsMax: repsPlanejadas || undefined, segundos: segundosPlanejados || undefined });
+      const seriePendente = exercise.sets.find((series) => !series.completed && !series.skipped);
+      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality }} />{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} progressao={series.id === seriePendente?.id ? { historico, sugestao } : undefined} />)}</ExerciseCard>;
     })}</div>
     </TreinoCena>
     <AlertDialog open={confirm} onOpenChange={setConfirm}><AlertDialogContent className="fitness-dialog border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Finalizar com séries pendentes?</AlertDialogTitle><AlertDialogDescription>Somente as séries marcadas como concluídas entram no volume do treino.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Continuar treino</AlertDialogCancel><AlertDialogAction disabled={finishing} className="bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))]" onClick={(event) => { event.preventDefault(); finish(); }}>Confirmar finalização</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>

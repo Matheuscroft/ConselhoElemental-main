@@ -10,6 +10,7 @@ import { SaudeCena } from '@/components/fitness-kit/saude-cena';
 import { useChegadaSaude } from '@/components/fitness-kit/saude-chegada';
 import { elementoDaModalidade } from '@/components/fitness-kit/saude-luz';
 import { SaudeCabeca, SaudeNumeroVivo } from '@/components/fitness-kit/saude-painel';
+import { RecordesDaAba } from '@/components/fitness-kit/historico-recordes';
 import { SaudeVazio } from '@/components/fitness-kit/saude-vazio';
 import { FITNESS_ICONS } from '@/components/fitness-kit/FitnessGlyph';
 import { mapSessionsToHistoryItems } from '@/lib/fitness-kit/adapters';
@@ -129,6 +130,8 @@ export const WorkoutHistory: React.FC = () => {
           ) : (
             <ResumoHistorico total={items.length} periodLabel={periodLabel} />
           )}
+
+          {hasAnyCompleted && <RecordesDaAba sessions={nativeHistory} templates={templates} />}
 
           {items.length === 0 ? (hasAnyCompleted && (
             <div className="ds-pane saude-vazio-painel saude-entra" style={{ '--ordem': 2 } as CSSProperties}>

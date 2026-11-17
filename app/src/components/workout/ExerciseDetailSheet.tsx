@@ -4,6 +4,7 @@ import './exercise-detail.css';
 import './ficha-uau.css';
 import '@/components/fitness-kit/treino-resumo-uau.css';
 import '@/components/fitness-kit/modalidade-uau.css';
+import { HistoricoDoExercicio } from '@/components/fitness-kit/historico-exercicio';
 import { FichaPassos, FichaSigilo, elementoDaFicha } from '@/components/fitness-kit/modalidade-ficha';
 import { MuscleBars } from '@/components/fitness-kit/MuscleBars';
 import { FitnessButton } from '@/components/fitness-kit/FitnessButton';
@@ -150,6 +151,7 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({exercis
         <YogaProfileDetails exercise={exercise} compact />
         <StrengthProfileDetails exercise={exercise} compact />
         {!exercise.strengthProfile && <section className="fu-perfil"><h3>Perfil muscular estimado</h3><p className="fu-perfil-intro">Referência do cadastro; não mede a ativação muscular.</p>{variant === 'fitness' ? <MuscleBars distribution={exercise.muscleDistribution} elemento={elemento} emptyMessage="Sem perfil cadastrado." /> : <MuscleDistributionBars distribution={exercise.muscleDistribution} elemento={elemento} emptyMessage="Sem dados musculares cadastrados." />}</section>}
+        <HistoricoDoExercicio exerciseId={exercise.id} />
       </div>
       {onAddToWorkout && <footer className="fitness-exercise-detail-footer"><FitnessButton size="md" className="fitness-exercise-add" onClick={()=>onAddToWorkout(exercise)}><Plus size={18} aria-hidden="true" />Adicionar ao treino</FitnessButton></footer>}
     </SheetContent>
