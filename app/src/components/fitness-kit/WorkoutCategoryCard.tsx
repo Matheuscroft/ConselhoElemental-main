@@ -36,7 +36,7 @@ export const WorkoutCategoryCard: React.FC<WorkoutCategoryCardProps> = ({ label,
       'focus-visible:ring-2 focus-visible:ring-fitness-primary focus-visible:ring-offset-2 focus-visible:ring-offset-fitness-canvas',
     )}
   >
-    {capa && <span className="tr-runa-capa" aria-hidden="true">
+    {capa && <span className="tr-runa-capa" data-modalidade={modalidade} aria-hidden="true">
       <img src={capa} alt="" aria-hidden="true" width={1152} height={648} loading="lazy" decoding="async" onError={(e) => { e.currentTarget.hidden = true; }} />
     </span>}
     <span className="tr-runa-brilho" aria-hidden="true" />
