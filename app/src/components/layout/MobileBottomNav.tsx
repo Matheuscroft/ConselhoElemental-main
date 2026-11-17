@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArcaneIcon, RouteIcon } from '@/components/elemental/ArcaneIcon';
 import { AllRoutesSheet } from './AllRoutesSheet';
+import './dock-nav.css';
 
 const ITEMS = [
   { label: 'Santuário', path: '/santuario', active: (path: string) => path === '/santuario' },
@@ -15,24 +16,26 @@ export const MobileBottomNav: React.FC = () => {
   const [moreOpen, setMoreOpen] = useState(false);
   const moreActive = ['/grimorio', '/rituais', '/invocar', '/forja', '/treinos', '/fitness', '/dominios', '/astrolabio'].some((path) => pathname.startsWith(path));
 
+  const indice = Math.max(0, ITEMS.findIndex(({ active }) => active(pathname)));
+  const atual = ITEMS.some(({ active }) => active(pathname)) ? indice : moreActive ? ITEMS.length : -1;
+
   return (
     <>
-      <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/10 bg-void/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_40px_rgba(0,0,0,0.38)] backdrop-blur-xl md:left-72">
-        <div className="mx-auto grid h-16 max-w-2xl grid-cols-4 items-center px-2">
+      <nav aria-label="Navegação principal" className="dock-nav" data-ativo={atual >= 0 ? 'true' : 'false'} style={{ '--dock-i': Math.max(atual, 0) } as React.CSSProperties}>
+        <div className="dock-nav__trilha">
+          <span className="dock-nav__pilula" aria-hidden="true" />
           {ITEMS.map(({ label, path, active }) => {
             const selected = active(pathname);
             return (
-              <button key={path} type="button" onClick={() => navigate(path)} aria-current={selected ? 'page' : undefined}
-                className={`flex h-full flex-col items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${selected ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
-                <RouteIcon routeId={path.slice(1)} size={22} />
-                <span className="text-xs">{label}</span>
+              <button key={path} type="button" onClick={() => navigate(path)} aria-current={selected ? 'page' : undefined} className="dock-nav__item">
+                <RouteIcon routeId={path.slice(1)} size={24} />
+                <span>{label}</span>
               </button>
             );
           })}
-          <button type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-current={moreActive ? 'page' : undefined}
-            className={`flex h-full flex-col items-center justify-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-mystic-gold ${moreActive ? 'text-mystic-gold' : 'text-white/60 hover:text-white'}`}>
-            <ArcaneIcon name="explorar" size={22} />
-            <span className="text-xs">Mais</span>
+          <button type="button" onClick={() => setMoreOpen(true)} aria-expanded={moreOpen} aria-current={moreActive ? 'page' : undefined} className="dock-nav__item">
+            <ArcaneIcon name="explorar" size={24} />
+            <span>Mais</span>
           </button>
         </div>
       </nav>

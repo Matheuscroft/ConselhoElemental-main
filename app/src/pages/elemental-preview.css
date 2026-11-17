@@ -18,7 +18,7 @@
    24px of clearance keeps the whole head clear of the header at 390x844, 360x740 and 360x640. */
 .ep-sanctuary .ep-character-navigation { width: 100%; }
 /* Positioned, so the aura that spills below the stage passes behind the name and not over it. */
-.ep-identity { position: relative; z-index: 1; text-align: center; margin-top: 4px; }
+.ep-identity { position: relative; z-index: 1; text-align: center; margin-top: 16px; }
 .ep-identity h1 { font-size: var(--ds-fluid-display); line-height: 1.2; overflow-wrap: anywhere; letter-spacing: .02em; text-shadow: 0 0 28px color-mix(in srgb, var(--semana-aura) 30%, transparent); }
 .ep-level-line { margin-top: 10px !important; }
 /* The level is a seal, not a line of text: the one number the scene is about. */

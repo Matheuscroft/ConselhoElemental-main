@@ -56,3 +56,10 @@
 @media (max-width: 600px) {
   .pillars-heading { flex-wrap: wrap; gap: 0 16px; }
 }
+
+/* Phone: the top bar names the place; the page keeps only its action, on one slim line. */
+@media (max-width: 767.98px) {
+  .pillars-heading { display: flex; justify-content: flex-end; margin-block-end: 4px; }
+  .pillars-heading > h1 { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .pillars-heading .pillars-manage { display: inline-flex; align-items: center; min-block-size: 44px; }
+}

@@ -79,7 +79,7 @@ function CartaoDeFoco({ id, pendentes }: { id: ElementId; pendentes: number }) {
   const nome = ELEMENTS[id].name;
   const xp = user[XP_DO_ELEMENTO[id]] ?? 0;
   const progresso = progressoDoNivel(xp);
-  const vertentes = vertentesDoElemento(id, [...AREAS, ...customAreas], selectedAreas);
+  const vertentes = vertentesDoElemento(id, [...AREAS, ...customAreas], selectedAreas, 2);
   const format = (valor: number) => valor.toLocaleString('pt-BR', { maximumFractionDigits: 0 });
   return <section className="ep-foco ds-pane" aria-label="Elemento em foco" style={{ '--element-accent': ACENTO[id] } as CSSProperties}>
     <div className="ep-foco-corpo" key={id}>

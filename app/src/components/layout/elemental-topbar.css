@@ -369,6 +369,34 @@
 @keyframes hdr-luz { from { opacity: 1; } to { opacity: 0; } }
 @keyframes hdr-borda { from { opacity: 0; } to { opacity: 1; } }
 
+/* -- Inner pages on a phone: the same single line as the Sanctuary, with the place name kept.
+   Place, level seal with the four accounts, then the actions: one row instead of two, so the
+   page starts higher. The XP thread stays in the tray that opens from the seal. -- */
+@media (max-width: 767.98px) {
+  .elemental-topbar[data-lugar="interna"] {
+    --hdr-conta: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-sizing: border-box;
+    block-size: calc(var(--hdr-linha) + env(safe-area-inset-top));
+    padding-inline: max(12px, env(safe-area-inset-left)) max(12px, env(safe-area-inset-right));
+  }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-inner { display: contents; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-back { order: 1; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-brand { order: 2; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-location { order: 3; padding-inline-start: 4px; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-abas { order: 4; }
+  .elemental-topbar[data-lugar="interna"] .hud-recursos { order: 5; margin-inline-start: auto; padding-inline: 0; flex: 0 0 auto; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-actions { order: 6; margin-inline-start: 0; }
+  .elemental-topbar[data-lugar="interna"] .hud-trilho { display: none; }
+  .elemental-topbar[data-lugar="interna"] .hud-fio { inline-size: auto; gap: 8px; padding-inline: 4px; }
+  .elemental-topbar[data-lugar="interna"] .hud-contas { gap: 2px; }
+  .elemental-topbar[data-lugar="interna"] .hud-conta { inline-size: var(--hdr-conta); block-size: var(--hdr-conta); }
+  .elemental-topbar[data-lugar="interna"] .hud-bandeja { inset-inline: 12px; }
+  .elemental-topbar[data-lugar="interna"] :is(button, a):focus-visible { outline-offset: -2px; }
+}
+
 /* -- from 768px: tabs, the Explorar label, the rail offset -- */
 @media (min-width: 768px) {
   .elemental-topbar-inner { padding-inline: 32px; gap: 8px; }
