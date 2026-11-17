@@ -37,12 +37,13 @@ const bezier = ([x1, y1, x2, y2]: readonly number[]) => {
 const easeStandard = bezier(EASE.standard);
 
 /**
- * Where a counting number stands at a point in its run. Whole numbers only:
- * XP, a streak and a level are counted things, and a decimal flickering past
- * reads as a glitch rather than as a tally.
+ * Where a counting number stands at a point in its run. Whole numbers on the
+ * way: a decimal flickering past reads as a glitch rather than as a tally.
+ * The two ends are exact, though. The run must land on the real value, or a
+ * score of 12,5 or a waist change of -1,5 cm settles on a rounded lie.
  */
 export function contagemValor(from: number, to: number, progress: number): number {
-  if (progress <= 0) return Math.round(from);
-  if (progress >= 1) return Math.round(to);
+  if (progress <= 0) return from;
+  if (progress >= 1) return to;
   return Math.round(from + (to - from) * easeStandard(progress));
 }

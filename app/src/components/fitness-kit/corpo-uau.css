@@ -1,0 +1,54 @@
+/* Evolução de qualquer medida: chips, variação neutra e o texto discreto de "Outras medidas". */
+.corpo-chips {
+  display: flex;
+  gap: 8px;
+  margin-block-end: 12px;
+  margin-inline: -4px;
+  padding: 2px 4px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.corpo-chips::-webkit-scrollbar { display: none; }
+.corpo-chip {
+  flex: none;
+  min-block-size: 44px;
+  padding: 0 16px;
+  border-radius: var(--ds-raio-controle);
+  border: var(--ds-edge);
+  background: rgb(var(--el-canvas) / .4);
+  color: rgb(var(--el-muted));
+  font-size: var(--ds-text-micro);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.corpo-chip[aria-selected="true"] {
+  color: rgb(var(--el-text));
+  border-color: rgb(var(--el-gold) / .6);
+  background: rgb(var(--el-gold) / .12);
+}
+.corpo-chip:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; }
+
+.corpo-variacao { display: grid; gap: 8px; margin: 12px 0 0; }
+.corpo-variacao-linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-block-size: 44px;
+  padding: 0 12px;
+  align-items: center;
+  border-radius: var(--ds-raio-controle);
+  border: var(--ds-edge);
+  background: rgb(var(--el-canvas) / .4);
+}
+.corpo-variacao-linha dt { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+.corpo-variacao-linha dd { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; font-variant-numeric: tabular-nums; color: rgb(var(--el-text)); white-space: nowrap; }
+.corpo-variacao-linha dd span { margin-inline-start: 4px; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+
+.saude-extra-variacao { display: block; margin-block-start: 2px; font-size: var(--ds-text-micro); font-variant-numeric: tabular-nums; color: rgb(var(--el-muted)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .corpo-chip { transition: none; }
+}

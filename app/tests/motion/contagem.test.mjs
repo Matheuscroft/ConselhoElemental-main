@@ -63,3 +63,9 @@ test('a tally can run down, and a tally that is not moving does not move', () =>
   assert.ok(contagemValor(100, 40, 0.5) < 100);
   assert.equal(contagemValor(55, 55, 0.5), 55);
 });
+
+test('the run lands on the exact value, so decimals survive the tally', () => {
+  assert.equal(contagemValor(0, 12.5, 1), 12.5);
+  assert.equal(contagemValor(0, -1.5, 1), -1.5);
+  assert.equal(contagemValor(2.5, 40, 0), 2.5);
+});

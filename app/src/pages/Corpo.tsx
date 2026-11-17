@@ -6,19 +6,20 @@ import { useShallow } from 'zustand/react/shallow';
 import { ChevronDown, Scale, Trash2 } from 'lucide-react';
 import {
   BodyMetricsCard,
-  FitnessButton,
   FitnessTopTabs,
   FitnessHeader,
   FitnessPageShell,
   RingsOverview,
-  TrendAreaChart,
   WorkoutHistoryCard,
   type RingMetric,
 } from '@/components/fitness-kit';
 import '@/components/fitness-kit/saude-uau.css';
+import '@/components/fitness-kit/corpo-uau.css';
+import { CorpoEvolucao } from '@/components/fitness-kit/corpo-evolucao';
 import { SaudeCena } from '@/components/fitness-kit/saude-cena';
 import { elementoDaModalidade, useSaudeLuz } from '@/components/fitness-kit/saude-luz';
-import { SaudePainel } from '@/components/fitness-kit/saude-painel';
+import { formatarVariacao } from '@/components/fitness-kit/corpo-evolucao';
+import { serieDaMedida, variacao, type ChaveMedida } from '@/lib/fitness/corpo-evolucao';
 import { SaudeVazio } from '@/components/fitness-kit/saude-vazio';
 import { BODY_MEASUREMENT_FIELDS, BodyMeasurementDialog } from '@/components/workout';
 import { mapMeasurementToMetrics } from '@/lib/fitness-kit/adapters';
@@ -28,7 +29,12 @@ import { CATEGORY_ICONS, CATEGORY_LABELS, formatWorkoutDateTime } from '@/lib/wo
 import { useWorkoutStore } from '@/stores/workoutStore';
 
 const ordem = (valor: number) => ({ '--ordem': Math.min(valor, 9) }) as CSSProperties;
-const oneDecimal = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+
+const VariacaoDiscreta: React.FC<{ history: Parameters<typeof serieDaMedida>[0]; chave: ChaveMedida; unidade: string }> = ({ history, chave, unidade }) => {
+  const { desdeAAnterior } = variacao(serieDaMedida(history, chave));
+  if (desdeAAnterior === null) return null;
+  return <small className="saude-extra-variacao">{formatarVariacao(desdeAAnterior)} {unidade} desde a anterior</small>;
+};
 
 const BodyContent: React.FC<{ embedded: boolean }> = ({ embedded }) => {
   const navigate = useNavigate();
@@ -42,10 +48,6 @@ const BodyContent: React.FC<{ embedded: boolean }> = ({ embedded }) => {
   const metrics = useMemo(() => mapMeasurementToMetrics(latest), [latest]);
   const fields = latest ? BODY_MEASUREMENT_FIELDS.filter((field) => typeof latest[field.key] === 'number') : [];
   const extraFields = fields.filter((field) => !metrics.some((metric) => metric.id === field.key));
-  const trend = useMemo(() => history.filter((m) => m.weightKg != null).slice(-7).map((m) => ({
-    label: new Date(m.measuredAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-    value: m.weightKg as number,
-  })), [history]);
   const days = useMemo(() => buildDayBuckets(sessions, 7), [sessions]);
   const todayMinutes = days.at(-1)?.minutes ?? 0;
   const weekWorkouts = days.reduce((sum, day) => sum + day.workouts, 0);
@@ -54,7 +56,6 @@ const BodyContent: React.FC<{ embedded: boolean }> = ({ embedded }) => {
     { id: 'workouts', value: weekWorkouts, max: 3, color: '#FF9B52', trackColor: '#6B4021', label: 'Treinos nos últimos 7 dias', display: `${weekWorkouts} / 3`, count: { value: weekWorkouts, format: (value) => `${Math.round(value)} / 3` } },
   ];
   const recent = sessions.filter((session) => session.status === 'completed').slice(0, 3);
-  const latestWeight = latest?.weightKg;
 
   return (
     <>
@@ -69,29 +70,13 @@ const BodyContent: React.FC<{ embedded: boolean }> = ({ embedded }) => {
               {extraFields.map((field) => <div key={field.key} className="saude-extra">
                 <dt>{field.label}</dt>
                 <dd>{latest?.[field.key]}<span>{field.unit}</span></dd>
+                <VariacaoDiscreta history={history} chave={field.key as ChaveMedida} unidade={field.unit} />
               </div>)}
             </dl>
           </section>
         )}
 
-        <SaudePainel
-          order={3}
-          arrivalKey="corpo-peso"
-          title="Evolução do peso"
-          subtitle={latestWeight != null ? 'Na última avaliação' : undefined}
-          highlight={latestWeight != null && trend.length >= 2 ? { value: latestWeight, format: oneDecimal, unit: 'kg' } : undefined}
-          summary={trend.length >= 2 ? `Peso por avaliação: ${trend.map((point) => `${point.label}: ${point.value} kg`).join(', ')}` : undefined}
-          empty={trend.length >= 2 ? undefined : (
-            <SaudeVazio
-              icon={Scale}
-              title="A curva do peso começa aqui"
-              text="Registre pelo menos duas avaliações com peso para acompanhar sua evolução."
-              action={<FitnessButton size="md" variant="secondary" onClick={() => setDialogOpen(true)}>Registrar avaliação</FitnessButton>}
-            />
-          )}
-        >
-          {(arrived) => <TrendAreaChart data={trend} unit="kg" decimals={1} height={190} color={luz.acento} animate arrived={arrived} fitRange highlight={trend.length - 1} />}
-        </SaudePainel>
+        <CorpoEvolucao order={3} history={history} color={luz.acento} onRecord={() => setDialogOpen(true)} />
 
         <section aria-label="Histórico de avaliações">
           <div className="saude-secao-linha saude-entra" style={ordem(4)}>
