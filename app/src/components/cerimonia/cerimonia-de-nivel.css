@@ -1,8 +1,11 @@
 /*
  * The mage's level ceremony: three scenes that hit one after the other.
- *   1. Impact  (~1.6 s): flash, a slanted panel with the mage, the title.
+ *   1. The ring (~4.9 s): the XP ring at the mage's feet fills, closes with a
+ *      shock and a burst, the title lands, the small seal lights up and counts.
+ *      The sparks and the shock are WebGL (ascensao-cena.ts); here is what the
+ *      CSS draws, and the whole sequence when WebGL is not there.
  *   2. Cards   (~2.2 s): the mage settles, four element cards jump in.
- *   3. Number  (~2.6 s): a grey seal drops, lights up, counts, the bar fills.
+ *   3. Summary (~2.2 s): the seal lands, the level, the title, the bar fills.
  *
  * The final scene is the base style of every element. Each scene only animates
  * towards that base, so the end state (and reduced motion, and a skip) is
@@ -72,65 +75,229 @@
   to { opacity: 0; }
 }
 
-/* ---------- Scene 1: impact ---------- */
-.cn-painel {
-  position: absolute;
-  inset-inline: 0;
-  inset-block-start: 5%;
-  block-size: 56%;
-  clip-path: polygon(0 0, 100% 9%, 100% 90%, 0 100%);
-  overflow: hidden;
-  will-change: transform;
-  animation: cn-bater var(--c) var(--cn-mola) calc(var(--ds-duration-settle) * 0.3) both;
+/* ---------- Scene 1: the ring (the bar completes) ---------- */
+.cn-asc {
+  --asc-cor: rgb(var(--el-gold));      /* the dominant element, set inline */
+  --asc-tinta: var(--cn-petroleo);
+  --asc-w: min(94vw, 480px);           /* width of the ring */
+  --asc-chao: 24dvh;                   /* where the floor is, from the bottom */
+  --asc-fill: 0;                       /* how full the ring is, written by the loop */
+  --asc-dy: -40dvh;                    /* ring centre to seal centre, written by the loop */
 }
 
-@keyframes cn-bater {
-  from { translate: -115% 0; rotate: -5deg; }
-  to { translate: 0 0; rotate: 0deg; }
-}
-
-.cn-painel__cor {
+/* The element's light on the dark: it grows with the ring. */
+.cn-asc__fundo {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 70% 60% at 50% 40%, rgb(var(--el-gold) / 35%), transparent 70%),
-    linear-gradient(160deg, var(--cn-petroleo) 0%, var(--cn-esmeralda) 55%, var(--cn-ouro-escuro) 115%);
+    radial-gradient(ellipse 95% 42% at 50% calc(100% - var(--asc-chao)), color-mix(in srgb, var(--asc-cor) 42%, transparent), transparent 70%),
+    radial-gradient(ellipse 80% 38% at 50% 14%, color-mix(in srgb, var(--asc-tinta) 80%, transparent), transparent 72%);
+  opacity: calc(0.3 + var(--asc-fill) * 0.7);
+  animation: cn-asc-nascer var(--ds-duration-settle) var(--ds-ease) backwards;
 }
 
-.cn-feixe {
+@keyframes cn-asc-nascer {
+  from { opacity: 0; }
+}
+
+/* The ring is the same ellipse as the sanctuary's, 200 x 32, in perspective on the floor. */
+.cn-asc__anel {
   position: absolute;
-  inset-inline-start: var(--esq);
-  inset-block: -20% auto;
-  inline-size: 5%;
-  block-size: 140%;
-  background: linear-gradient(180deg, transparent, rgb(255 255 255 / 55%) 40%, transparent);
-  opacity: 0;
-  rotate: 14deg;
-  animation: cn-varrer calc(var(--c) * 1.3) linear calc(var(--ds-duration-settle) + var(--i) * var(--ds-stagger) * 2) both;
+  inset-inline-start: 50%;
+  inset-block-end: var(--asc-chao);
+  inline-size: var(--asc-w);
+  aspect-ratio: 200 / 32;
+  translate: -50% 0;
+  animation: cn-asc-nascer var(--ds-duration-settle) var(--ds-ease) backwards;
 }
 
-@keyframes cn-varrer {
-  0% { opacity: 0; translate: -80% 0; }
-  30% { opacity: 1; }
-  100% { opacity: 0; translate: 380% 0; }
-}
-
-.cn-painel__mago {
+.cn-anel {
   position: absolute;
   inset: 0;
   inline-size: 100%;
   block-size: 100%;
-  object-fit: cover;
-  object-position: 50% 10%;
-  rotate: -6deg;
-  scale: 1.18;
-  filter: drop-shadow(0 8px 18px rgb(0 0 0 / 45%));
-  animation: cn-mago-pop calc(var(--c) * 1.1) var(--cn-mola) calc(var(--ds-duration-settle) * 0.9) both;
+  overflow: visible;
 }
 
-@keyframes cn-mago-pop {
-  from { scale: 0.7; opacity: 0; }
-  to { scale: 1.18; opacity: 1; }
+.cn-anel path {
+  fill: none;
+  stroke-linejoin: round;
+}
+
+.cn-anel__trilho {
+  stroke: color-mix(in srgb, var(--asc-cor, var(--ouro)) 30%, transparent);
+  stroke-width: 1.4;
+}
+
+.cn-anel__fio {
+  stroke: var(--asc-cor, var(--ouro));
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--asc-cor, var(--ouro)) 70%, transparent));
+}
+
+/* The mask is the fill again, wide enough to let the glint's glow through. */
+.cn-anel__recorte {
+  stroke: var(--cn-flash);
+  stroke-width: 6;
+}
+
+.cn-anel__brilho {
+  stroke: var(--cn-flash);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.cn-anel__ponta {
+  stroke: var(--cn-flash);
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px var(--asc-cor, var(--ouro)));
+}
+
+/* The mage stands on the ring, the feet on its centre. */
+.cn-asc__mago {
+  position: absolute;
+  inset-inline-start: 50%;
+  inset-block-end: calc(var(--asc-chao) + var(--asc-w) * 0.08 - 1.5dvh);
+  block-size: min(44dvh, 96vw);
+  inline-size: auto;
+  max-inline-size: 70vw;
+  translate: -50% 0;
+  object-fit: contain;
+  object-position: 50% 100%;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--asc-cor) 45%, transparent));
+  animation: cn-asc-mago calc(var(--c) * 1.1) var(--cn-mola) backwards;
+}
+
+@keyframes cn-asc-mago {
+  from { opacity: 0; scale: 0.92; translate: -50% 3dvh; }
+}
+
+/* Where the burst flies to. Only its opacity animates, so it can be measured. */
+.cn-asc__selo {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 8dvh;
+  display: grid;
+  place-items: center;
+  animation: cn-asc-nascer var(--ds-duration-settle) var(--ds-ease) backwards;
+}
+
+/* The canvas of the WebGL scene sits over the ring and the mage, under the title. */
+.cn-asc__palco {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cn-asc__canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+/* A short, soft flash over the floor as the ring closes (never the whole screen white). */
+.cn-asc__clarao {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 120% 60% at 50% calc(100% - var(--asc-chao)), var(--cn-flash), color-mix(in srgb, var(--asc-cor) 55%, transparent) 45%, transparent 75%);
+  animation: cn-asc-clarao var(--ds-duration-settle) var(--ds-ease) both;
+}
+
+@keyframes cn-asc-clarao {
+  from { opacity: 0.65; }
+  to { opacity: 0; }
+}
+
+/* Without WebGL: three rings of shock in CSS, and sparks that leave the ring for the seal. */
+.cn-asc__onda {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--asc-cor);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: cn-asc-onda calc(var(--c) * 1.3) var(--ds-ease) both;
+}
+
+.cn-asc__onda--b { animation-delay: calc(var(--ds-stagger) * 2.3); }
+.cn-asc__onda--c { animation-delay: calc(var(--ds-stagger) * 4.6); }
+
+@keyframes cn-asc-onda {
+  from { opacity: 0.9; scale: 1; }
+  to { opacity: 0; scale: 4.1; }
+}
+
+.cn-faisca--anel {
+  --cor: var(--cn-flash);
+  inset-inline-start: calc(var(--ux) * 1%);
+  inset-block-start: calc(var(--uy) * 1%);
+  animation: cn-asc-faisca calc(var(--c) * 1.5) var(--ds-ease) calc(var(--k) * var(--ds-stagger) * 0.5) both;
+}
+
+@keyframes cn-asc-faisca {
+  0% { opacity: 0; translate: 0 0; scale: 0; rotate: 0deg; }
+  15% { opacity: 1; scale: 1.2; }
+  100% { opacity: 0; translate: calc((var(--ux) - 50) * var(--asc-w) * -0.01) var(--asc-dy); scale: 0.3; rotate: 90deg; }
+}
+
+/* The small seal: grey until the burst arrives, then it lights up and counts. */
+.cn-selo.cn-selo--mini {
+  --selo: min(30vw, 128px, 17dvh);
+  inline-size: var(--selo);
+  margin-block-end: 0;
+}
+
+.cn-selo--mini strong { scale: 1.2; }
+
+.cn-asc:not([data-fase='aceso']) .cn-selo__aceso { opacity: 0; }
+
+.cn-asc:not([data-fase='aceso']) .cn-selo strong {
+  color: var(--cn-cinza);
+  text-shadow: none;
+}
+
+.cn-asc[data-fase='aceso'] .cn-selo__aceso {
+  animation: cn-acender var(--ds-duration-settle) var(--ds-ease) both;
+}
+
+.cn-asc[data-fase='aceso'] .cn-selo strong {
+  animation:
+    cn-numero-acende var(--ds-duration-settle) var(--ds-ease) both,
+    cn-pulso-mini var(--ds-duration-settle) var(--cn-mola) both;
+}
+
+@keyframes cn-pulso-mini {
+  50% { scale: 1.45; }
+}
+
+.cn-asc[data-fase='aceso'] .cn-selo__onda--a {
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) both;
+}
+
+.cn-asc[data-fase='aceso'] .cn-selo__onda--b {
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) calc(var(--ds-stagger) * 3) both;
+}
+
+.cn-asc[data-fase='aceso'] .cn-faisca--selo {
+  animation-delay: calc(var(--k) * var(--ds-stagger) * 0.4);
+}
+
+/* The title lands during the burst, above the canvas. */
+.cn-asc .cn-titulo-caixa { inset-block-start: 6dvh; }
+
+.cn-asc .cn-titulo {
+  animation: cn-titulo-pop var(--c) var(--cn-mola) both;
+}
+
+.cn-asc .cn-estilhaco {
+  animation-delay: calc(var(--i) * var(--ds-stagger) * 0.4);
 }
 
 .cn-titulo-caixa {
@@ -342,6 +509,18 @@
   margin-block-end: 8px;
 }
 
+.cn-c3 .cn-selo { z-index: 1; }
+
+.cn-anel-final {
+  position: relative;
+  flex: none;
+  inline-size: min(78vw, 320px);
+  aspect-ratio: 200 / 32;
+  margin-block: -34px 2px;
+}
+
+.cn-anel-final .cn-anel__brilho { display: none; }
+
 .cn-selo__corpo {
   position: absolute;
   inset: 0;
@@ -468,52 +647,30 @@
 }
 
 /* Before scene 3 the button is not there yet. */
-.cerimonia-nivel:is([data-cena='impacto'], [data-cena='cartoes']) .cn-continuar { visibility: hidden; }
+.cerimonia-nivel:is([data-cena='anel'], [data-cena='cartoes']) .cn-continuar { visibility: hidden; }
 
-/* Scene 3 plays towards the base style above. */
+/* Scene 3 plays towards the base style above: the seal (already counted in
+   the ring scene) lands lit, with its waves. */
 .cerimonia-nivel[data-cena='numero'] .cn-selo {
   will-change: transform;
-  animation: cn-cair calc(var(--c) * 0.9) var(--cn-mola) both;
+  animation: cn-pousar calc(var(--c) * 0.9) var(--cn-mola) both;
 }
 
-@keyframes cn-cair {
-  from { translate: 0 -95dvh; rotate: -8deg; }
-  to { translate: 0 0; rotate: 0deg; }
+@keyframes cn-pousar {
+  from { scale: 0.55; opacity: 0; }
+  to { scale: 1; opacity: 1; }
 }
 
-.cerimonia-nivel[data-cena='numero'] .cn-selo__aceso {
-  animation: cn-acender var(--ds-duration-settle) var(--ds-ease) var(--c) both;
-}
-
-@keyframes cn-acender {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.cerimonia-nivel[data-cena='numero'] .cn-selo strong {
-  animation: cn-numero-acende var(--ds-duration-settle) var(--ds-ease) var(--c) both;
-}
-
-@keyframes cn-numero-acende {
-  from { color: var(--cn-cinza); text-shadow: none; }
-  to { color: var(--cn-ouro-claro); text-shadow: 0 0 18px rgb(var(--el-gold) / 55%); }
-}
-
-/* The count pulses once, as it starts. */
-.cerimonia-nivel[data-cena='numero'] .cn-selo[data-pulsa='true'] strong {
-  animation: cn-pulso var(--ds-duration-settle) var(--cn-mola) both;
-}
-
-@keyframes cn-pulso {
-  50% { scale: 2.65; }
+.cerimonia-nivel[data-cena='numero'] .cn-anel-final {
+  animation: cn-abrir var(--ds-duration-settle) var(--ds-ease) calc(var(--c) * 0.4) both;
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-selo__onda--a {
-  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) var(--c) both;
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) calc(var(--c) * 0.3) both;
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-selo__onda--b {
-  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) calc(var(--c) + var(--ds-stagger) * 3) both;
+  animation: cn-onda calc(var(--c) * 1.4) var(--ds-ease) calc(var(--c) * 0.3 + var(--ds-stagger) * 3) both;
 }
 
 @keyframes cn-onda {
@@ -521,8 +678,18 @@
   to { opacity: 0; scale: 2.6; }
 }
 
+@keyframes cn-acender {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes cn-numero-acende {
+  from { color: var(--cn-cinza); text-shadow: none; }
+  to { color: var(--cn-ouro-claro); text-shadow: 0 0 18px rgb(var(--el-gold) / 55%); }
+}
+
 .cerimonia-nivel[data-cena='numero'] .cn-faisca--selo {
-  animation-delay: calc(var(--c) + var(--k) * var(--ds-stagger) * 0.4);
+  animation-delay: calc(var(--c) * 0.3 + var(--k) * var(--ds-stagger) * 0.4);
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-halo {
@@ -530,19 +697,19 @@
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-nivel {
-  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.5) both;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 0.8) both;
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-titulo-pilula {
-  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.7) both;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1) both;
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-progresso {
-  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.95) both;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 1.25) both;
 }
 
 .cerimonia-nivel[data-cena='numero'] .cn-barra i {
-  animation: cn-encher calc(var(--c) * 1.1) var(--cn-mola) calc(var(--c) * 2.1) both;
+  animation: cn-encher calc(var(--c) * 1.1) var(--cn-mola) calc(var(--c) * 1.4) both;
 }
 
 @keyframes cn-encher {
@@ -552,7 +719,7 @@
 
 .cerimonia-nivel[data-cena='numero'] .cn-continuar {
   will-change: transform;
-  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 2.9) both;
+  animation: cn-subir var(--ds-duration-settle) var(--cn-mola) calc(var(--c) * 2.2) both;
 }
 
 @supports (transition-timing-function: linear(0, 1)) {

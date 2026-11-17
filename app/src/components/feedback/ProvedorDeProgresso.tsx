@@ -6,7 +6,7 @@ import { detectarEventos, type EstadoLido } from '@/lib/progresso/eventos';
 import { emitirAscensao } from '@/lib/progresso/canal';
 import { CerimoniaDeNivel } from '@/components/cerimonia/CerimoniaDeNivel';
 import {
-  adicionarPedido, atrasoDaCerimonia, concluirPedido, pedidoAtual, progressoDoNivel, xpParaNivel,
+  adicionarPedido, atrasoDaCerimonia, concluirPedido, fracaoAntesDoGanho, pedidoAtual, progressoDoNivel, xpParaNivel,
   type PedidoDeNivel,
 } from '@/lib/cerimonia/nivel';
 import { NoticiaElemental } from './NoticiaElemental';
@@ -41,8 +41,10 @@ export function ProvedorDeProgresso() {
     let hidratando = false;
     const novoId = () => `n${++contador.current}`;
     const temporizadores = new Set<number>();
-    const pedir = (de: number, para: number, titulo: string, atraso: number) => {
-      const pedido: PedidoDeNivel = { id: `nivel${++contador.current}`, de, para, titulo };
+    const pedir = (de: number, para: number, titulo: string, atraso: number, fracaoAntes?: number) => {
+      const pedido: PedidoDeNivel = { id: `nivel${++contador.current}`, de, para, titulo, fracaoAntes };
+      // Warm the WebGL chunk of the ceremony while the notices play; it is never in the entry bundle.
+      void import('@/components/cerimonia/ascensao-cena').catch(() => undefined);
       if (atraso <= 0) { setCerimonias((atual) => adicionarPedido(atual, pedido)); return; }
       const t = window.setTimeout(() => {
         temporizadores.delete(t);
@@ -86,7 +88,8 @@ export function ProvedorDeProgresso() {
         if (e.tipo !== 'nivel') continue;
         tocarConquista();
         // An ascension plays its own ceremony in Ciclos; the mage's waits so they do not overlap.
-        pedir(e.de, e.para, e.titulo, atrasoDaCerimonia(haAscensao));
+        const xpAntes = antes.user.xp_fire + antes.user.xp_water + antes.user.xp_air + antes.user.xp_earth;
+        pedir(e.de, e.para, e.titulo, atrasoDaCerimonia(haAscensao), fracaoAntesDoGanho(xpAntes, e.de));
       }
       setFila((atual) => empilhar(atual, novas));
     });
@@ -139,6 +142,7 @@ export function ProvedorDeProgresso() {
           para={cerimonia.para}
           titulo={cerimonia.titulo}
           fracao={progresso.fracao}
+          fracaoAntes={cerimonia.fracaoAntes}
           faltam={progresso.faltam}
           onFechar={fecharCerimonia}
         />

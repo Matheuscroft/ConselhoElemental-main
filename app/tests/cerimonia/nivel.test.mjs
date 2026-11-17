@@ -28,6 +28,14 @@ test('com movimento reduzido (SSR) não há raios nem luzes', () => {
   assert.doesNotMatch(out, /cerimonia-nivel__luzes/);
 });
 
+test('sem movimento (SSR) a cena final mostra o anel já completo e o selo aceso, sem partículas', () => {
+  const out = html();
+  assert.match(out, /cn-anel-final/);
+  assert.match(out, /stroke-dashoffset="0"/, 'the ring is closed');
+  assert.match(out, /cn-selo/);
+  assert.doesNotMatch(out, /cn-asc__canvas|cn-asc__palco/);
+});
+
 test('a fila toca uma cerimônia por vez, na ordem de chegada', () => {
   const a = { id: 'a', de: 1, para: 2, titulo: 'Iniciado' };
   const b = { id: 'b', de: 2, para: 3, titulo: 'Iniciado' };
