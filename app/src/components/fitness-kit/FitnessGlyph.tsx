@@ -4,7 +4,7 @@ import { ANATOMY, BODY_OUTLINES, MOVEMENTS, type FitnessGlyphName } from './fitn
 export type { FitnessGlyphName } from './fitness-glyph-data';
 
 type Props = SVGProps<SVGSVGElement> & { name: FitnessGlyphName; size?: number | string; label?: string };
-type Movement = {fill:string;line:string;head?:readonly number[];circles?:readonly (readonly number[])[];inverse?:boolean;accent?:string;neutral?:boolean};
+type Movement = {fill:string;line:string;solid?:string;head?:readonly number[];circles?:readonly (readonly number[])[];inverse?:boolean;accent?:string;neutral?:boolean};
 type Anatomy = {body:keyof typeof BODY_OUTLINES;target:string;detail?:string;rear?:boolean};
 const CONTEXT = 'rgb(var(--el-muted, 170 180 196))';
 
@@ -24,6 +24,7 @@ export const FitnessGlyph = forwardRef<SVGSVGElement, Props>(({name, size=24, la
     </> : movement ? <>
       {movement.head && <circle cx={movement.head[0]} cy={movement.head[1]} r={movement.head[2]} fill="currentColor" strokeWidth={.6}/>}
       {movement.circles?.map(([cx,cy,r],i)=><circle key={i} cx={cx} cy={cy} r={r} strokeWidth={1.7}/>)}
+      {movement.solid && <path d={movement.solid} transform="translate(0 32) scale(0.0333333)" fill="currentColor" fillOpacity={.3} stroke="currentColor" strokeWidth={34} strokeLinejoin="round"/>}
       <path d={movement.fill} fill={movement.neutral?CONTEXT:"currentColor"} stroke={movement.neutral?CONTEXT:undefined} fillOpacity={.24} strokeWidth={1.4}/>
       <path d={movement.line} stroke={movement.inverse?'rgb(var(--el-text, 242 239 231))':movement.neutral?CONTEXT:'currentColor'} strokeWidth={1.8}/>
       {movement.accent && <path d={movement.accent} fill="currentColor" strokeWidth={.5}/>}
