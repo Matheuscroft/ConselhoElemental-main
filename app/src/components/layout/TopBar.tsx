@@ -1,6 +1,7 @@
 import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
 import { AccountConnectionCard } from '@/components/backup/AccountConnectionCard';
-import { UserRound } from 'lucide-react';
+import { ChevronDown, ChevronRight, UserRound } from 'lucide-react';
+import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import React from 'react';
 import { ElementalTopBar, AccountSeal } from './ElementalTopBar';
 import { AllRoutesSheet } from './AllRoutesSheet';
@@ -24,7 +25,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -160,7 +160,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </>}
 
       <Dialog open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen}>
-        <DialogContent className="account-hub-dialog">
+        <DialogContent className="account-hub-dialog ds-glass-float">
           <DialogHeader>
             <DialogTitle>Minha conta</DialogTitle>
             <DialogDescription>
@@ -170,7 +170,8 @@ export const TopBar: React.FC<TopBarProps> = ({
 
           <AccountConnectionCard sync={sync} profileName={activeAccount?.name ?? 'Jornada neste aparelho'} />
 
-          <details><summary>Perfis neste aparelho</summary><p className="mb-3 text-sm text-white/60">Perfis organizam jornadas dentro deste aparelho. Eles não são contas de acesso online.</p>
+          <div className="acc-secoes">
+          <details className="acc-secao"><summary><span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="dominios" size={22} /></span><span className="acc-rotulo">Perfis neste aparelho</span><ChevronDown className="acc-seta" size={18} aria-hidden="true" /></summary><div className="acc-secao-corpo"><p className="mb-3 text-sm text-white/60">Perfis organizam jornadas dentro deste aparelho. Eles não são contas de acesso online.</p>
           <div className="space-y-2">
             {accounts.length === 0 ? (
               <p className="text-sm text-white/70">Nenhuma conta criada ainda.</p>
@@ -214,9 +215,8 @@ export const TopBar: React.FC<TopBarProps> = ({
               Criar e ativar perfil
             </Button>
           </div>
-
-          </details>
-          <details><summary>Preferências e integrações</summary>
+          </div></details>
+          <details className="acc-secao"><summary><span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="astrolabio" size={22} /></span><span className="acc-rotulo">Preferências e integrações</span><ChevronDown className="acc-seta" size={18} aria-hidden="true" /></summary><div className="acc-secao-corpo">
           <div className="space-y-3 rounded-lg border border-white/15 p-3">
             <p className="text-sm font-medium text-white">Início da semana</p>
             <div className="inline-flex rounded-lg border border-white/20 bg-white/5 p-1 text-xs">
@@ -295,7 +295,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               {googleStatus === 'error' && 'Falha ao carregar status'}
               {googleStatus === 'idle' && 'Aguardando verificacao'}
             </p>
-            {googleStatusMessage ? <p className="text-[11px] text-white/55">{googleStatusMessage}</p> : null}
+            {googleStatusMessage ? <p className="text-xs text-white/60">{googleStatusMessage}</p> : null}
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
@@ -313,19 +313,16 @@ export const TopBar: React.FC<TopBarProps> = ({
               </Button>
             </div>
             {!googleConnectUrl ? (
-              <p className="text-[11px] text-white/55">
+              <p className="text-xs text-white/60">
                 A conexão com a agenda ainda não está disponível neste ambiente.
               </p>
             ) : null}
           </div>
-
-
-          </details>
-          <DialogFooter>
-            <Button type="button" variant="secondary" onClick={() => navigate('/grimorio')}>
-              Abrir Grimório
-            </Button>
-          </DialogFooter>
+          </div></details>
+          <button type="button" className="acc-secao acc-atalho" onClick={() => navigate('/grimorio')}>
+            <span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="grimorio" size={22} /></span><span className="acc-rotulo">Abrir Grimório</span><ChevronRight className="acc-seta" size={18} aria-hidden="true" />
+          </button>
+          </div>
         </DialogContent>
       </Dialog>
     </>

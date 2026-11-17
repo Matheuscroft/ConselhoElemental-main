@@ -1,0 +1,57 @@
+/*
+ * Resumo do treino, passe UAU. Vive sobre treino-uau.css e dialogo-uau.css:
+ * so acrescenta o que falta (avaliacao que se acende, cifras grandes, barras do
+ * elemento, convite de evolucao, barra "Concluir" leve). Sem blur proprio (a
+ * barra ja usa .ds-glass-float), toda duracao e token --ds-duration-*, e so
+ * transform, opacity e filtros de sombra se movem.
+ */
+
+/* ---------- Avaliacao: as estrelas se acendem em sequencia, em mola curta ---------- */
+.estrelas-nota svg[data-pop] {
+  animation: sr-acende var(--ds-duration-settle) var(--ds-ease-conjure) backwards;
+  animation-delay: calc(var(--i, 0) * var(--ds-stagger));
+}
+.dg-avalia .estrelas-nota svg[data-pop] {
+  filter: drop-shadow(0 0 8px rgb(var(--el-gold) / .55));
+}
+.dg-avalia .estrelas-nota svg:not([data-pop]) { color: rgb(var(--el-muted) / .6); }
+.dg-avalia .estrelas-nota svg[data-pop] { color: rgb(var(--el-gold)); fill: rgb(var(--el-gold)); }
+.dg-avalia .dg-nota { min-height: 2.6em; max-width: 34ch; transition: color var(--ds-duration-reveal) var(--ds-ease); }
+.dg-avalia[data-avaliado] .dg-nota { color: rgb(var(--el-text)); }
+@keyframes sr-acende { 0% { opacity: .2; transform: scale(.55) rotate(-14deg); } 100% { opacity: 1; transform: none; } }
+
+/* ---------- O que voce realizou: numeros grandes ---------- */
+.dg-realizou .dg-cifra { padding: 14px 16px; }
+.dg-realizou .dg-cifra > dd { font-size: var(--ds-text-hero); line-height: 1.1; }
+.dg-realizou .dg-cifra > dd small { font-size: var(--ds-text-small); }
+.dg-realizou .dg-cifra[data-larga] > dd { font-size: var(--ds-text-display); }
+
+/* ---------- Perfil muscular: barras do elemento ---------- */
+.mb-lista[data-element] .mb-barra[data-elemento] {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--elem-acento) 55%, transparent), var(--elem-acento));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--elem-aura) 40%, transparent);
+}
+.mb-lista[data-element] .mb-trilho { background: color-mix(in srgb, var(--elem-acento) 10%, rgb(var(--el-canvas) / .5)); }
+.mb-lista .mb-valor { font-variant-numeric: tabular-nums; }
+.mb-lista [data-lider] .mb-nome { color: rgb(var(--el-text)); font-weight: 600; }
+.mb-lista[data-element] [data-lider] .mb-valor { color: var(--elem-acento); font-weight: 600; }
+
+/* ---------- Evolucao vazia: um convite, nao uma caixa de texto ---------- */
+.dg-convite { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 14px; border: 1px dashed color-mix(in srgb, var(--dg-acento) 40%, transparent); border-radius: var(--ds-raio-controle); background: radial-gradient(ellipse 90% 140% at 0 50%, color-mix(in srgb, var(--dg-aura) 14%, transparent), transparent 70%); }
+.dg-convite-selo { display: grid; flex: 0 0 auto; place-items: center; width: 48px; height: 48px; border: 1px solid color-mix(in srgb, var(--dg-acento) 55%, transparent); border-radius: 50%; color: var(--dg-acento); box-shadow: 0 0 18px color-mix(in srgb, var(--dg-aura) 30%, transparent); animation: dg-respirar calc(var(--ds-duration-conjure) * 4) ease-in-out infinite alternate; }
+.dg-convite-texto { margin: 0; min-width: 0; font-size: var(--ds-text-small); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.dg-convite-texto strong { display: block; font-weight: 600; color: rgb(var(--el-text)); }
+
+/* ---------- Barra "Concluir": mais leve, e a pagina reserva o espaco dela ---------- */
+.treino-barra:has(.treino-acao--concluir-resumo) { padding: 6px; }
+.treino-acao--concluir-resumo { min-height: 52px; font-size: var(--ds-text-body); box-shadow: 0 4px 16px color-mix(in srgb, var(--semana-aura) 26%, transparent), inset 0 1px 0 rgb(255 255 255 / .3); }
+.treino-resumo-respiro { height: calc(var(--barra, 88px) + env(safe-area-inset-bottom) + 16px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .estrelas-nota svg[data-pop], .dg-convite-selo { animation: none; }
+  .dg-avalia .dg-nota { transition: none; }
+}
+@media (forced-colors: active) {
+  .dg-convite { border-color: CanvasText; }
+  .dg-avalia .estrelas-nota svg[data-pop] { filter: none; fill: Highlight; color: Highlight; }
+}

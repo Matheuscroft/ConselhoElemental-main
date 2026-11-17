@@ -20,7 +20,7 @@ export const StarRating: React.FC<StarRatingProps> = ({ value, variant = 'defaul
     <div
       role="radiogroup"
       aria-label="Avaliação de 1 a 5 estrelas"
-      className="flex items-center gap-1.5"
+      className="estrelas-nota flex items-center gap-1.5"
       onMouseLeave={() => setHovered(null)}
     >
       {STAR_VALUES.map((star) => {
@@ -48,12 +48,14 @@ export const StarRating: React.FC<StarRatingProps> = ({ value, variant = 'defaul
             className={cn(
               variant === 'fitness' && 'text-fitness-primary',
               'min-h-11 min-w-11 rounded-full p-1 motion-reduce:transform-none motion-reduce:transition-none transition-transform outline-none focus-visible:ring-2 focus-visible:ring-mystic-gold/70',
-              !readOnly && 'hover:scale-110 cursor-pointer',
+              !readOnly && 'hover:scale-110 active:scale-95 cursor-pointer',
               readOnly && 'cursor-default'
             )}
           >
             <Star
-              style={{ width: size, height: size }}
+              key={`${star}-${star <= value ? value : 'vazia'}`}
+              data-pop={star <= value ? '' : undefined}
+              style={{ width: size, height: size, '--i': star - 1 } as React.CSSProperties}
               className={filled ? (variant === 'fitness' ? 'fill-fitness-primary text-fitness-primary' : 'fill-mystic-gold text-mystic-gold') : 'text-white/40'}
               aria-hidden="true"
             />

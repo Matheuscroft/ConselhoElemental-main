@@ -1,8 +1,8 @@
 import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
 import { FITNESS_ICONS, FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { CalendarDays, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
+import { CalendarDays, Check, Eye, Plus, Play, Repeat2, Pencil, ChevronDown, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import { useAppStore } from '@/stores/appStore';
@@ -13,6 +13,7 @@ import { FitnessButton, FitnessCard, FitnessCategoryGrid, FitnessEmptyState, Fit
 import { ModalidadeHeroi } from '@/components/fitness-kit/modalidade-heroi';
 import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
 import type { ElementoId } from '@/lib/design/palette';
+import '@/components/fitness-kit/treino-cartao-uau.css';
 import { FitnessEmbeddedContext } from '@/components/fitness-kit/FitnessEmbeddedContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SavedWorkoutLibrary } from '@/components/workout/SavedWorkoutLibrary';
@@ -62,18 +63,27 @@ function TemplateCard({ template, catalog, element, index = 0 }: { template: Wor
   const reward = previewReward(template.id);
   const series = template.exercises.reduce((sum, exercise) => sum + exercise.sets.length, 0);
   const focus = getWorkoutPresentation(template, catalog);
-  return <FitnessCard luz data-element={element} style={{ '--i': index + 3 } as CSSProperties} className="mo-cartao space-y-4 p-5">
-    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="flex min-h-11 w-full items-start gap-3 rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-fitness-primary"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-fitness-primary/15 text-fitness-primary"><FitnessGlyph name={focus.icon} size={28} label={focus.label} /></span><span className="min-w-0 flex-1"><span className="block break-words text-lg font-semibold">{template.name}</span><span className="mt-1 block text-sm font-normal text-fitness-muted">{template.exercises.length} exercícios · {series} séries</span></span><ChevronDown size={20} className={`mt-3 shrink-0 text-fitness-muted transition-transform ${expanded ? 'rotate-180' : ''}`} /></button></h3>
-    {reward && <div className="space-y-2"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="text-xs text-fitness-muted">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p></div>}
-    {template.scheduledAt && <p className="text-sm text-fitness-muted">Planejado para {new Date(template.scheduledAt).toLocaleDateString('pt-BR')}</p>}
-    <FitnessButton size="md" className="w-full" disabled={!!active || template.exercises.length === 0} onClick={() => {
+  const plural = (n: number, um: string, varios: string) => `${n} ${n === 1 ? um : varios}`;
+  const totalMinutos = calculateEstimatedDuration(template.exercises);
+  const acao = (rotulo: string, icone: ReactNode, onClick: () => void, extra: { destrutiva?: boolean; ativa?: boolean; desabilitada?: boolean } = {}) => <button type="button" className="tc-acao" data-destrutiva={extra.destrutiva ? '' : undefined} data-ativa={extra.ativa ? '' : undefined} disabled={extra.desabilitada} onClick={onClick}>{icone}<span>{rotulo}</span></button>;
+  return <FitnessCard luz data-element={element} style={{ '--i': index + 3 } as CSSProperties} className="mo-cartao tc-cartao space-y-4 p-5">
+    <h3 className="font-sans"><button type="button" aria-expanded={expanded} aria-controls={`template-content-${template.id}`} onClick={() => setExpanded((value) => !value)} className="tc-cabeca"><span className="tc-icone"><FitnessGlyph name={focus.icon} size={28} label={focus.label} /></span><span className="tc-titulo"><span className="tc-nome">{template.name}</span><span className="tc-chips"><span className="tc-chip">{plural(template.exercises.length, 'exercício', 'exercícios')}</span><span className="tc-chip">{plural(series, 'série', 'séries')}</span><span className="tc-chip">~{totalMinutos} min</span>{template.scheduledAt && <span className="tc-chip" data-destaque="">Planejado {new Date(template.scheduledAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>}</span></span><ChevronDown size={20} aria-hidden="true" className="tc-seta" data-aberto={expanded ? '' : undefined} /></button></h3>
+    {reward && <div className="tc-recompensa"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><span className="tc-recompensa-nota">estimativa por sessão</span></div>}
+    <FitnessButton size="md" className="tc-executar w-full" disabled={!!active || template.exercises.length === 0} onClick={() => {
       const session = startSession(template.id);
       if (session) navigate(`/fitness/ativo/${session.id}`);
       else toast.error('Não foi possível iniciar o treino. Confira a sessão em andamento.');
-    }}><Play size={17} />{active?.templateId === template.id ? 'Sessão em andamento' : 'Executar Agora'}</FitnessButton>
-    <FitnessButton size="md" variant="secondary" className="w-full" onClick={() => navigate(`/treinos/preview/${template.id}`)}>Ver treino</FitnessButton>
-    <div id={`template-content-${template.id}`} hidden={!expanded} className="space-y-4">
-    <ol aria-label={`Composição de ${template.name}`} className="space-y-3 rounded-xl bg-fitness-canvas/60 p-3">
+    }}><Play size={17} />{active?.templateId === template.id ? 'Sessão em andamento' : 'Executar agora'}</FitnessButton>
+    <div className="tc-acoes" role="group" aria-label={`Ações de ${template.name}`}>
+      {acao('Ver', <Eye size={20} aria-hidden="true" />, () => navigate(`/treinos/preview/${template.id}`))}
+      {acao('Editar', <Pencil size={20} aria-hidden="true" />, () => setEditing(true))}
+      {acao('Planejar', <CalendarDays size={20} aria-hidden="true" />, () => setEditing(true))}
+      {acao(hasCycle ? 'Em ciclo' : 'Ciclo', hasCycle ? <Check size={20} aria-hidden="true" /> : <Repeat2 size={20} aria-hidden="true" />, () => setCycleOpen(true), { ativa: hasCycle, desabilitada: hasCycle })}
+      {acao('Excluir', <Trash2 size={20} aria-hidden="true" />, () => setConfirmDelete(true), { destrutiva: true })}
+    </div>
+    <div id={`template-content-${template.id}`} hidden={!expanded} className="space-y-3">
+    {reward && <p className="tc-detalhe">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos · esforço {reward.effortLevel}. {reward.estimatedDurationMinutes} min planejados usados na projeção. O ganho é consolidado por sessão.</p>}
+    <ol aria-label={`Composição de ${template.name}`} className="tc-lista">
       {template.exercises.slice().sort((a, b) => a.order - b.order).map((exercise) => {
         const exerciseFocus = getExercisePresentation(exercise.exerciseId, catalog, template.modality);
         const summary = (['reps', 'duration'] as const).flatMap((mode) => {
@@ -84,23 +94,12 @@ function TemplateCard({ template, catalog, element, index = 0 }: { template: Wor
           const varies = amounts.some((amount) => amount !== amounts[0]);
           return [`${sets.length} × ${varies ? '~' : ''}${average.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}${mode === 'reps' ? ' reps' : 's'}`];
         }).join(' + ');
-        return <li key={exercise.id} className="space-y-1"><p className="min-w-0 break-words text-sm font-medium">{exerciseFocus && <FitnessGlyph name={exerciseFocus.icon} size={24} label={exerciseFocus.label} className="mr-2 inline-block align-middle text-[rgb(var(--el-gold))]" />}{exercise.exerciseNameSnapshot}</p><span className="block text-xs tabular-nums text-fitness-muted" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min total</span></li>;
+        return <li key={exercise.id} className="tc-item">{exerciseFocus && <FitnessGlyph name={exerciseFocus.icon} size={24} label={exerciseFocus.label} className="tc-item-icone" />}<span className="tc-item-texto"><span className="tc-item-nome">{exercise.exerciseNameSnapshot}</span><span className="tc-item-meta" title="Tempo estimado incluindo descansos; ~ indica média entre séries diferentes.">{summary} · {calculateEstimatedDuration([exercise])} min</span></span></li>;
       })}
     </ol>
-    <div className="grid grid-cols-2 gap-2">
-      <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm" onClick={() => setEditing(true)}><Pencil size={16} />Editar</FitnessButton>
-      <FitnessButton size="md" variant="secondary" className="w-full min-w-0 px-2 text-sm text-fitness-red" onClick={() => setConfirmDelete(true)}><Trash2 size={16} />Excluir</FitnessButton>
     </div>
     <DialogoAlerta open={confirmDelete} onOpenChange={setConfirmDelete} titulo="Excluir este treino?" descricao={`“${template.name}” será removido da biblioteca e das sequências que o utilizam. Sessões em andamento e o histórico de treinos realizados serão preservados.`} cancelar="Manter treino" confirmar="Excluir treino" onConfirm={() => { deleteTemplate(template.id); toast.success('Treino excluído da biblioteca.'); }} />
     {editing && <NativeTemplateDialog template={template} catalog={catalog} modality={template.modality} onClose={() => setEditing(false)} />}
-
-    <div className="grid grid-cols-2 gap-2">
-      <FitnessButton size="md" variant="secondary" className="px-2 text-sm" onClick={() => {
-        setEditing(true);
-      }}><CalendarDays size={16} />Planejar data</FitnessButton>
-      <FitnessButton size="md" variant="secondary" className={`px-2 text-sm ${hasCycle ? 'text-emerald-300' : ''}`} disabled={hasCycle} onClick={() => setCycleOpen(true)}><Repeat2 size={16} />{hasCycle ? '✓ Ciclo ativo' : 'Tornar Ciclo'}</FitnessButton>
-    </div>
-    </div>
     {cycleOpen && <MakeCycleModal template={template} onClose={() => setCycleOpen(false)} />}
   </FitnessCard>;
 }

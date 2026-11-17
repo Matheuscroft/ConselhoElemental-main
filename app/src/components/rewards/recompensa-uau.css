@@ -1,0 +1,55 @@
+/*
+ * Mini celebracao de uma acao concluida. Camada visual somente: o recibo, o
+ * tempo de vida e o descarte continuam nos componentes que ja os decidem.
+ * O vidro e o do .ds-glass-float, sem blur novo. O selo, o anel e as faiscas
+ * seguem a linguagem de CelebracaoRitual e CelebracaoConquista.
+ */
+.elemental-reward-notice { position: relative; display: grid; gap: 4px; }
+.elemental-reward-notice[data-element] { box-shadow: var(--ds-rim), 0 0 36px color-mix(in srgb, var(--elem-aura) 26%, transparent), var(--ds-lift); }
+.elemental-reward-notice .elemental-reward-summary { padding: 0 2px 4px; }
+.elemental-reward-notice .elemental-reward-sigil { display: none; }
+.elemental-reward-notice .elemental-reward-value strong { font-size: var(--ds-fluid-title); }
+.elemental-reward-notice .elemental-reward-heading { align-items: center; gap: 12px; }
+.elemental-reward-notice .elemental-reward-heading > div { display: grid; gap: 2px; }
+.elemental-reward-notice .elemental-reward-heading strong { color: rgb(var(--el-text)); font-size: var(--ds-text-small); }
+.elemental-reward-notice .elemental-reward-heading small { margin: 0; font-size: var(--ds-text-micro); }
+
+/* Entrance: it rises from below on the conjure spring. */
+.elemental-reward-notice { animation: rec-subir var(--ds-duration-settle) var(--ds-ease-conjure) backwards; }
+@keyframes rec-subir { from { opacity: 0; transform: translateY(28px) scale(.96); } }
+
+/* Seal: the ring draws itself, sparks leave it, the sigil lands. */
+.rec-selo { position: relative; display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; color: var(--elem-acento, rgb(var(--el-gold))); }
+.rec-selo > svg:not(.rec-anel) { filter: drop-shadow(0 0 8px var(--elem-aura, rgb(var(--el-gold)))); animation: rec-selar var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * 2) backwards; }
+.rec-anel { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); fill: none; }
+.rec-anel circle { stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 0; animation: rec-desenhar var(--ds-duration-conjure) var(--ds-ease) backwards; }
+.rec-selo i {
+  --giro: calc(var(--faisca) * 45deg);
+  position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px; border-radius: 50%;
+  background: var(--elem-aura, rgb(var(--el-gold)));
+  animation: rec-faisca var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 2) both;
+}
+@keyframes rec-selar { from { opacity: 0; transform: scale(.4) rotate(-10deg); } }
+@keyframes rec-desenhar { from { stroke-dashoffset: 1; } }
+@keyframes rec-faisca {
+  from { opacity: 1; transform: rotate(var(--giro)) translateY(-14px) scale(1); }
+  to { opacity: 0; transform: rotate(var(--giro)) translateY(-34px) scale(.2); }
+}
+
+/* XP figure, chips and level bar. */
+.elemental-reward-notice .elemental-reward-value strong { text-shadow: 0 0 18px rgb(var(--el-gold) / 35%); }
+.elemental-reward-notice .elemental-reward-elements > span { border: 1px solid color-mix(in srgb, currentColor 32%, transparent); background: color-mix(in srgb, currentColor 10%, transparent); animation: rec-chip var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * (var(--i, 0) + 3)) backwards; }
+@keyframes rec-chip { from { opacity: 0; transform: translateY(8px) scale(.9); } }
+.elemental-reward-notice .elemental-reward-track > span { position: relative; overflow: hidden; animation: rec-encher var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 2) backwards; }
+.elemental-reward-notice .elemental-reward-track > span::after { content: ''; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 60%) 50%, transparent 70%); transform: translateX(-100%); animation: rec-brilho var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-conjure) + var(--ds-stagger)) both; }
+@keyframes rec-encher { from { transform: scaleX(0); } }
+@keyframes rec-brilho { to { transform: translateX(100%); } }
+
+/* The time left, discreet: a hairline that empties along the bottom edge. */
+.rec-tempo { position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; border-radius: 50%; background: rgb(var(--el-gold) / 55%); transform-origin: left; animation: rec-tempo calc(var(--ds-duration-conjure) * 7) linear forwards; pointer-events: none; }
+@keyframes rec-tempo { to { transform: scaleX(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .elemental-reward-notice, .elemental-reward-notice * { animation: none !important; }
+  .rec-selo i, .rec-tempo, .elemental-reward-track > span::after { display: none; }
+}

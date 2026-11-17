@@ -22,7 +22,8 @@
 .elemental-reward-summary.is-fresh:not(.is-reversal) .elemental-reward-sigil { animation: elemental-reward-seal 380ms ease-out both; }
 .elemental-reward-summary.is-reversal .elemental-reward-value strong { color: rgb(var(--el-text)); }
 .elemental-reward-region { position: fixed; left: 1rem; right: 1rem; bottom: calc(6rem + env(safe-area-inset-bottom)); z-index: 100; display: flex; justify-content: center; pointer-events: none; }
-.elemental-reward-notice { width: min(100%,390px); max-height: 55dvh; overflow-y: auto; padding: 12px; border-radius: 20px; background: rgb(var(--el-surface) / .97); border: 1px solid rgb(var(--el-gold) / .5); box-shadow: 0 8px 30px #0005; pointer-events: auto; }
+/* The surface itself comes from .ds-glass-float on the notice; only its shape and place are set here. */
+.elemental-reward-notice { width: min(100%,390px); max-height: 55dvh; overflow-y: auto; padding: 12px 12px 14px; border-radius: 16px; color: rgb(var(--el-text)); pointer-events: auto; touch-action: manipulation; }
 .elemental-reward-notice .elemental-reward-summary { margin-bottom: 0; }
 .elemental-reward-heading { display: flex; align-items: flex-start; gap: 8px; }
 .elemental-reward-heading > div { flex: 1; min-width: 0; }

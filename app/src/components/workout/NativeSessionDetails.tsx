@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { Check, ChevronDown, SkipForward } from 'lucide-react';
+import { Check, ChevronDown, SkipForward, Sparkles } from 'lucide-react';
 import { MuscleBars, TrendAreaChart, VideoExercisePlayer } from '@/components/fitness-kit';
 import { NumeroQueConta } from '@/components/fitness-kit/treino-numero';
 import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
@@ -10,6 +10,14 @@ import { StarRating } from './StarRating';
 import { coreLevelToDefaultPerceivedExertion } from '@/lib/core/native-workout-reward';
 import { formatLongClock } from '@/lib/fitness-kit/format';
 import type { MuscleContribution, MuscleGroupId, NativeWorkoutSession } from '@/types/workout';
+
+const APOIO_ESTRELAS: Record<number, string> = {
+  1: 'Foi pesado. Sua nota ajuda a ajustar o próximo treino.',
+  2: 'Abaixo do esperado. Anotado para calibrar o plano.',
+  3: 'Um treino sólido. Constância é o que conta.',
+  4: 'Bom treino! Dá para repetir esse ritmo.',
+  5: 'Treino memorável. Guarde esse ritmo.',
+};
 
 const performed = (session: NativeWorkoutSession) => session.exerciseResults.flatMap((exercise) => exercise.sets).filter((set) => set.completed && !set.skipped);
 
@@ -44,17 +52,17 @@ export function NativeSessionDetails({ session, history, stars, onRate }: {
   const totalSets = session.exerciseResults.reduce((sum, exercise) => sum + exercise.sets.length, 0);
   const oneDecimal = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 1 });
   return <>
-    <section className="dg-bloco dg-avalia ds-pane" style={ordem(0)} aria-labelledby="dg-avalia-titulo">
+    <section className="dg-bloco dg-avalia ds-pane" data-element={elemento} data-avaliado={stars ? '' : undefined} style={ordem(0)} aria-labelledby="dg-avalia-titulo">
       <h3 id="dg-avalia-titulo" className="dg-bloco-titulo">Como foi este treino?</h3>
       <div className="dg-estrelas"><StarRating variant="fitness" value={stars} onRate={onRate} /></div>
-      <p className="dg-nota" role="status">{stars ? `${stars} de 5 estrelas · avaliação salva` : 'Toque nas estrelas para avaliar sua experiência.'}</p>
+      <p className="dg-nota" role="status">{stars ? `${APOIO_ESTRELAS[stars]} · ${stars} de 5, salva.` : 'Toque nas estrelas: sua nota ajuda a calibrar os próximos treinos.'}</p>
     </section>
-    <section className="dg-bloco ds-pane" data-element={elemento} style={ordem(1)} aria-labelledby="dg-realizou-titulo">
+    <section className="dg-bloco dg-realizou ds-pane" data-element={elemento} style={ordem(1)} aria-labelledby="dg-realizou-titulo">
       <h3 id="dg-realizou-titulo" className="dg-bloco-titulo">O que você realizou</h3>
-      <dl className="dg-cifras">
+      <dl className="dg-cifras" data-sem-carga={volume > 0 ? undefined : ''}>
         <div className="dg-cifra"><dt>Séries feitas</dt><dd><NumeroQueConta texto={String(sets.length)} atraso={120} /><small> de {totalSets}</small></dd></div>
         <div className="dg-cifra"><dt>Esforço médio</dt><dd>{active ? <><NumeroQueConta texto={oneDecimal(rpe)} atraso={180} /><small>/10</small></> : '—'}</dd></div>
-        <div className="dg-cifra" data-larga=""><dt>Volume com carga</dt><dd>{volume > 0 ? <>{volume < 1000 ? <NumeroQueConta texto={oneDecimal(volume)} atraso={240} /> : volume.toLocaleString('pt-BR')}<small> kg·reps</small></> : <span className="dg-cifra-vazia">Sem carga registrada</span>}</dd></div>
+        {volume > 0 && <div className="dg-cifra" data-larga=""><dt>Volume com carga</dt><dd>{volume < 1000 ? <NumeroQueConta texto={oneDecimal(volume)} atraso={240} /> : volume.toLocaleString('pt-BR')}<small> kg·reps</small></dd></div>}
       </dl>
       <details className="dg-grupo"><summary>Como o tempo é calculado<ChevronDown size={16} aria-hidden="true" /></summary><p className="dg-nota">O relógio mostra o tempo da sessão, descontando as pausas registradas. O tempo ativo usa as séries concluídas: duração informada nos blocos por tempo e estimativa de 4 segundos por repetição. Descansos e séries puladas ficam de fora.</p></details>
       <ol className="dg-lista" aria-label="Exercícios realizados">{session.exerciseResults.slice().sort((a, b) => a.order - b.order).map((exercise, indice) => {
@@ -90,14 +98,14 @@ export function NativeSessionDetails({ session, history, stars, onRate }: {
         </details></li>;
       })}</ol>
     </section>
-    <section className="dg-bloco ds-pane" style={ordem(2)} aria-labelledby="dg-musculos-titulo">
+    <section className="dg-bloco ds-pane" data-element={elemento} style={ordem(2)} aria-labelledby="dg-musculos-titulo">
       <h3 id="dg-musculos-titulo" className="dg-bloco-titulo">Perfil muscular estimado</h3>
       <p className="dg-nota">Perfil dos exercícios ponderado pelo tempo ativo realizado. É uma estimativa de distribuição, não uma medição do corpo.{mappedSeconds > 0 && mappedSeconds < active ? ' Alguns exercícios não têm perfil cadastrado e não entram nas barras.' : ''}</p>
-      <MuscleBars distribution={distribution} maxItems={20} emptyMessage="Este treino não tem perfil muscular informado. Você pode adicioná-lo ao exercício para as próximas sessões." />
+      <MuscleBars elemento={elemento} distribution={distribution} maxItems={20} emptyMessage="Este treino não tem perfil muscular informado. Você pode adicioná-lo ao exercício para as próximas sessões." />
     </section>
-    <section className="dg-bloco ds-pane" style={ordem(3)} aria-labelledby="dg-evolucao-titulo">
+    <section className="dg-bloco dg-evolucao ds-pane" data-element={elemento} style={ordem(3)} aria-labelledby="dg-evolucao-titulo">
       <h3 id="dg-evolucao-titulo" className="dg-bloco-titulo">Evolução deste treino</h3>
-      {trend.length > 1 ? <><p className="dg-nota">Tempo ativo registrado nas últimas sessões deste plano, em minutos. Inclui estimativas de repetições.</p><TrendAreaChart data={trend} height={180} unit="min" /></> : <p className="dg-nota">Sua primeira sessão é o ponto de partida. Ao repetir este plano, você verá a evolução aqui.</p>}
+      {trend.length > 1 ? <><p className="dg-nota">Tempo ativo registrado nas últimas sessões deste plano, em minutos. Inclui estimativas de repetições.</p><TrendAreaChart data={trend} height={180} unit="min" /></> : <div className="dg-convite"><span className="dg-convite-selo" aria-hidden="true"><Sparkles size={22} strokeWidth={1.75} /></span><p className="dg-convite-texto"><strong>Este é o seu ponto de partida.</strong> Repita o plano e a curva se desenha aqui.</p></div>}
     </section>
   </>;
 }

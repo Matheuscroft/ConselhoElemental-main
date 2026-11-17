@@ -1,0 +1,235 @@
+/* ==========================================================================
+   Criar treino, passada de clareza. Vive sob .dialogo-treino e so refina o que
+   dialogo-uau.css ja define: nenhum desfoque novo (as superficies sao .ds-glass-float
+   e .ds-pane), tipografia pelos degraus --ds-text-*, movimento pelos tokens.
+     - disclosure animada (grid-template-rows 0fr para 1fr) nos exercicios e series;
+     - cartao de midia com pre-visualizacao ao vivo;
+     - regua de esforco: a barra escolhida cresce e acende com a luz do elemento;
+     - cartao de recompensa que conta; rodape legivel.
+   ========================================================================== */
+
+/* ---------- Entrada coreografada, uma vez ---------- */
+.dialogo-treino .dg-corpo > :is(.dg-dados, .dg-painel, .dg-catalogo-secao) {
+  animation: dg-chega var(--ds-duration-settle) var(--ds-ease) calc(var(--i, 0) * var(--ds-stagger)) backwards;
+}
+.dialogo-treino .dg-corpo > .dg-dados { --i: 0; }
+.dialogo-treino .dg-corpo > .dg-painel { --i: 2; }
+.dialogo-treino .dg-corpo > .dg-catalogo-secao { --i: 3; }
+/* Room at the end of the scroll so the footer never covers the last field. */
+.dialogo-treino .dg-corpo { padding-bottom: 40px; scroll-padding-bottom: 40px; }
+
+/* ---------- Disclosure animada ---------- */
+.dg-colapso {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition: grid-template-rows var(--ds-duration-reveal) var(--ds-ease), opacity var(--ds-duration-feedback) var(--ds-ease), visibility var(--ds-duration-reveal);
+}
+.dg-colapso[data-aberto] { grid-template-rows: 1fr; opacity: 1; visibility: visible; }
+/* The padding keeps focus rings and glows from being clipped by the overflow. */
+.dg-colapso-miolo { min-height: 0; margin: -4px; padding: 4px; overflow: hidden; }
+
+/* ---------- Exercicio: cabecalho legivel e corpo recolhivel ---------- */
+.dialogo-treino .dg-exercicio { gap: 0; padding: 8px 10px; }
+.dialogo-treino .dg-exercicio-cab { grid-template-columns: 36px minmax(0, 1fr); gap: 8px; }
+.dg-exercicio-alterna { justify-content: space-between; gap: 10px; min-height: 52px; }
+.dg-exercicio-corpo { display: grid; gap: 14px; padding-top: 12px; }
+.dg-exercicio-nome > small { font-variant-numeric: tabular-nums; }
+
+.dg-acoes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.dg-acao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: var(--ds-raio-controle);
+  background: var(--ds-surface-sunken);
+  color: rgb(var(--el-text));
+  font-family: var(--ds-font-body);
+  font-size: var(--ds-text-micro);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+.dg-acao > svg { flex: none; color: var(--dg-acento); }
+.dg-acao:active:not(:disabled) { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.dg-acao:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: 2px; }
+.dg-acao:disabled { opacity: .35; cursor: not-allowed; }
+.dg-acao[data-tipo="perigo"] { color: var(--ds-perigo); }
+.dg-acao[data-tipo="perigo"] > svg { color: currentcolor; }
+@media (hover: hover) {
+  .dg-acao:hover:not(:disabled) { border-color: color-mix(in srgb, var(--dg-acento) 55%, transparent); }
+  .dg-acao[data-tipo="perigo"]:hover:not(:disabled) { border-color: var(--ds-perigo); background: color-mix(in srgb, var(--ds-perigo) 12%, transparent); }
+}
+
+/* Series: compact rows; the summary chips are always visible, the fields open below. */
+.dg-series { display: grid; gap: 8px; }
+.dialogo-treino .dg-serie { gap: 0; padding: 2px 6px 4px; }
+.dg-serie-alterna { min-height: 52px; }
+.dg-serie-alterna .dg-serie-texto { gap: 2px; }
+.dg-serie .dg-colapso-miolo { padding-top: 8px; }
+
+/* ---------- Midia do exercicio ---------- */
+.dg-midia { display: grid; min-width: 0; border: var(--ds-edge); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / 30%); }
+.dg-midia-titulo { margin: 0; font-family: var(--ds-font-body); }
+.dg-midia-alterna {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--ds-raio-controle);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dg-midia-alterna:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: 2px; }
+.dg-midia-nome { display: grid; gap: 2px; min-width: 0; font-size: var(--ds-text-small); font-weight: 600; color: var(--dg-acento); }
+.dg-midia-nome > small { font-size: var(--ds-text-micro); font-weight: 400; line-height: 1.4; color: rgb(var(--el-muted)); }
+.dg-midia-corpo { display: grid; gap: 12px; padding: 4px 12px 14px; }
+
+.dg-midia-palco {
+  position: relative;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  aspect-ratio: 16 / 9;
+  min-height: 132px;
+  padding: 14px;
+  overflow: hidden;
+  isolation: isolate;
+  border: 1px dashed color-mix(in srgb, var(--dg-acento) 40%, transparent);
+  border-radius: var(--ds-raio-controle);
+  text-align: center;
+  background: radial-gradient(ellipse 80% 70% at 50% 0, color-mix(in srgb, var(--dg-aura) 16%, transparent), transparent 100%), var(--ds-surface-sunken);
+}
+.dg-midia-palco[data-estado="imagem"] { border-style: solid; border-color: rgb(255 255 255 / 14%); padding: 0; }
+.dg-midia-palco[data-estado="erro"], .dg-midia-palco[data-estado="falha"] { border-color: color-mix(in srgb, var(--ds-perigo) 55%, transparent); }
+.dg-midia-img { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; animation: dg-abre var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.dg-midia-sigilo {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border: 1px solid color-mix(in srgb, var(--dg-acento) 45%, transparent);
+  border-radius: 50%;
+  color: var(--dg-acento);
+  background: radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--dg-aura) 30%, transparent), color-mix(in srgb, var(--dg-aura) 6%, transparent) 72%), rgb(var(--el-canvas) / 40%);
+  box-shadow: 0 0 22px color-mix(in srgb, var(--dg-aura) 24%, transparent);
+}
+.dg-midia-palco[data-estado="erro"] .dg-midia-sigilo, .dg-midia-palco[data-estado="falha"] .dg-midia-sigilo { border-color: var(--ds-perigo); color: var(--ds-perigo); box-shadow: none; }
+.dg-midia-legenda { max-width: 32ch; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: balance; }
+.dg-midia-palco[data-estado="imagem"] .dg-midia-legenda {
+  position: absolute;
+  inset: auto 8px 8px auto;
+  max-width: calc(100% - 16px);
+  padding: 3px 10px;
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-canvas) / 78%);
+  color: rgb(var(--el-text));
+}
+.dg-midia-palco[data-estado="erro"] .dg-midia-legenda, .dg-midia-palco[data-estado="falha"] .dg-midia-legenda { color: var(--ds-perigo); }
+.dg-midia-selo {
+  position: absolute;
+  inset: 8px 8px auto auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 1px solid color-mix(in srgb, var(--dg-acento) 50%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-canvas) / 78%);
+  color: var(--dg-acento);
+  font-size: var(--ds-text-micro);
+  font-weight: 600;
+}
+.dg-rotulo > small { font-size: inherit; color: rgb(var(--el-muted) / 80%); }
+.dg-ajuda { font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); text-wrap: pretty; animation: dg-abre var(--ds-duration-reveal) var(--ds-ease) backwards; }
+.dg-ajuda[data-tipo="erro"] { color: var(--ds-perigo); }
+.dg-ajuda[data-tipo="ok"] { color: var(--ds-sucesso); }
+.dg-contador { justify-self: end; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted) / 80%); font-variant-numeric: tabular-nums; }
+
+/* ---------- Regua de esforco ---------- */
+.dg-regua { display: grid; gap: 8px; }
+.dg-regua-escala { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; padding: 10px; border: var(--ds-edge); border-radius: var(--ds-raio-controle); background: var(--ds-surface-sunken); }
+.dg-regua-marca { position: relative; display: flex; align-items: flex-end; min-height: 96px; cursor: pointer; }
+.dg-regua-marca > input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.dg-regua-barra {
+  display: grid;
+  place-items: start center;
+  box-sizing: border-box;
+  width: 100%;
+  height: calc(34px + var(--n) * 12px);
+  padding-top: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--ds-raio-controle);
+  background: rgb(255 255 255 / 5%);
+  color: rgb(var(--el-muted));
+  font-family: var(--ds-font-heading);
+  font-size: var(--ds-text-lead);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transform-origin: 50% 100%;
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-reveal) var(--ds-ease);
+}
+.dg-regua-marca[data-aceso] .dg-regua-barra { border-color: color-mix(in srgb, var(--dg-acento) 40%, transparent); background: color-mix(in srgb, var(--dg-acento) calc(8% + var(--n) * 3%), transparent); color: rgb(var(--el-text)); }
+.dg-regua-marca[data-atual] .dg-regua-barra { scale: 1.1; border-color: var(--dg-acento); background: var(--dg-acento); color: rgb(var(--el-canvas)); box-shadow: 0 0 26px color-mix(in srgb, var(--dg-aura) 55%, transparent); }
+.dg-regua-marca:active .dg-regua-barra { scale: .94; transition-duration: var(--ds-duration-press); }
+.dg-regua-marca > input:focus-visible + .dg-regua-barra { outline: 2px solid rgb(var(--el-gold) / .9); outline-offset: 3px; }
+.dg-regua-legenda { margin: 0; min-height: 1.6em; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); line-height: 1.4; color: var(--dg-acento); }
+.dg-regua-nome { display: inline-block; animation: dg-troca var(--ds-duration-reveal) var(--ds-ease) backwards; }
+
+/* ---------- Duracao e recompensa ---------- */
+.dg-recompensa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 14px;
+  padding: 14px;
+  border-radius: var(--ds-raio-runa);
+  background: radial-gradient(ellipse 80% 120% at 0 50%, color-mix(in srgb, var(--dg-aura) 18%, transparent), transparent 100%), var(--ds-surface-sunken);
+}
+.dg-recompensa > .dg-nota { grid-column: 1 / -1; }
+.dg-recompensa-selo { display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid color-mix(in srgb, var(--dg-acento) 40%, transparent); border-radius: 50%; background: rgb(var(--el-canvas) / 40%); }
+.dg-recompensa-leitura { display: grid; gap: 2px; min-width: 0; }
+.dg-recompensa-rotulo { font-size: var(--ds-text-micro); line-height: 1.4; letter-spacing: .04em; color: rgb(var(--el-muted)); }
+.dg-recompensa-valor { display: inline-flex; align-items: baseline; gap: 8px; font-family: var(--ds-font-heading); color: rgb(var(--el-text)); font-variant-numeric: tabular-nums; }
+.dg-recompensa-valor > svg { align-self: center; flex: none; }
+.dg-recompensa-numero { font-size: var(--ds-text-display, var(--ds-text-title)); font-weight: 500; line-height: 1.1; color: var(--dg-ouro); }
+.dg-recompensa-valor > small { font-family: var(--ds-font-body); font-size: var(--ds-text-small); font-weight: 600; color: rgb(var(--el-muted)); }
+
+/* ---------- Criar exercicio proprio ---------- */
+.dg-custom { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 14px; border: 1px dashed color-mix(in srgb, var(--dg-acento) 40%, transparent); border-radius: var(--ds-raio-runa); background: var(--ds-surface-sunken); }
+.dg-custom-legenda { padding: 0 6px; font-family: var(--ds-font-heading); font-size: var(--ds-text-body); color: rgb(var(--el-text)); }
+.dg-custom-acoes { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 10px; }
+
+/* ---------- Rodape: leitura clara ---------- */
+.dialogo-treino .dg-resumo { font-size: var(--ds-text-body); color: rgb(var(--el-text)); }
+.dialogo-treino .dg-resumo-numero { color: var(--dg-ouro); font-size: var(--ds-text-lead); }
+.dg-dica { margin: 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
+
+@keyframes dg-troca { from { opacity: 0; translate: 0 4px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-colapso, .dg-regua-barra, .dg-acao { transition: none; }
+  .dg-regua-nome, .dg-midia-img, .dg-ajuda, .dialogo-treino .dg-corpo > * { animation: none; }
+  .dg-regua-marca[data-atual] .dg-regua-barra { scale: 1; }
+}
+@media (forced-colors: active) {
+  .dg-regua-marca[data-atual] .dg-regua-barra { outline: 2px solid Highlight; }
+}
+
+/* The search field keeps the shared input class, whose padding would put the
+   magnifier on top of the placeholder. */
+.dg-campo[data-tipo="busca"] > input.workout-builder-input { padding-left: 42px; }

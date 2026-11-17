@@ -25,6 +25,7 @@ import { useAppStore } from '@/stores/appStore';
 import { resolveNativeSessionXp } from '@/lib/workout/native-session-reward';
 import { formatEarthXp } from '@/lib/workout/native-reward-preview';
 import '@/components/fitness-kit/treino-uau.css';
+import '@/components/fitness-kit/treino-resumo-uau.css';
 
 const shortDate = (value: string): string => new Date(value).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 

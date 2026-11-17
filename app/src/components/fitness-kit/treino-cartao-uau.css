@@ -1,0 +1,58 @@
+/*
+ * Cartao de treino salvo (TemplateCard), passe UAU. Hierarquia em tres niveis:
+ * nome + metricas em chips, "Executar agora" como unica acao forte, e uma linha
+ * de acoes secundarias em icones com rotulo (alvo de 48px, rotulo de 12px).
+ * Sem blur proprio (o cartao ja e .ds-pane via FitnessCard), duracoes por token,
+ * so transform e opacity se movem. A cor vem do elemento da modalidade
+ * (data-element no cartao -> --elem-acento).
+ */
+
+.tc-cartao { --tc-acento: var(--elem-acento, rgb(var(--el-gold))); }
+
+.tc-cabeca { display: flex; align-items: flex-start; gap: 12px; width: 100%; min-height: 48px; padding: 0; border: 0; border-radius: var(--ds-raio-controle); background: none; color: inherit; text-align: left; cursor: pointer; outline: none; }
+.tc-cabeca:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
+.tc-icone { display: grid; flex: 0 0 auto; place-items: center; width: 48px; height: 48px; border: 1px solid color-mix(in srgb, var(--tc-acento) 40%, transparent); border-radius: var(--ds-raio-controle); background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--tc-acento) 24%, transparent), color-mix(in srgb, var(--tc-acento) 8%, transparent)); color: var(--tc-acento); box-shadow: 0 0 18px color-mix(in srgb, var(--tc-acento) 18%, transparent); }
+.tc-icone svg { color: var(--tc-acento); }
+.tc-titulo { display: grid; flex: 1 1 auto; gap: 8px; min-width: 0; }
+.tc-nome { font-size: var(--ds-text-lead); font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; text-wrap: balance; }
+.tc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tc-chip { padding: 2px 10px; border: 1px solid rgb(var(--el-muted) / .22); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / .4); font-size: var(--ds-text-micro); font-weight: 500; line-height: 1.6; color: rgb(var(--el-muted)); font-variant-numeric: tabular-nums; }
+.tc-chip[data-destaque] { border-color: color-mix(in srgb, var(--tc-acento) 45%, transparent); color: var(--tc-acento); }
+.tc-seta { flex: 0 0 auto; margin-top: 14px; color: rgb(var(--el-muted)); transition: transform var(--ds-duration-reveal) var(--ds-ease); }
+.tc-seta[data-aberto] { transform: rotate(180deg); }
+
+.tc-recompensa { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.tc-recompensa-nota { font-size: var(--ds-text-micro); color: rgb(var(--el-muted)); }
+
+.tc-executar { min-height: 52px; font-size: var(--ds-text-body); font-weight: 600; }
+
+/* ---------- Acoes secundarias: icone + rotulo, sem competir ---------- */
+.tc-acoes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; padding-top: 4px; border-top: 1px solid var(--ds-fio, rgb(var(--el-muted) / .18)); }
+.tc-acao { display: grid; place-items: center; align-content: center; gap: 2px; min-width: 0; min-height: 52px; padding: 6px 2px; border: 0; border-radius: var(--ds-raio-controle); background: none; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); font-weight: 500; line-height: 1.2; cursor: pointer; transition: transform var(--ds-duration-feedback) var(--ds-ease-conjure), color var(--ds-duration-feedback) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease); }
+.tc-acao > span { max-width: 100%; overflow-wrap: anywhere; text-align: center; }
+.tc-acao:active:not(:disabled) { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+.tc-acao:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 2px; color: rgb(var(--el-text)); }
+.tc-acao[data-ativa] { color: var(--tc-acento); }
+.tc-acao:disabled { cursor: default; }
+@media (hover: hover) {
+  .tc-acao:hover:not(:disabled) { background: rgb(var(--el-muted) / .12); color: rgb(var(--el-text)); }
+  .tc-acao[data-destrutiva]:hover { color: var(--ds-perigo, #f2a4aa); }
+}
+.tc-acao[data-destrutiva]:focus-visible { color: var(--ds-perigo, #f2a4aa); }
+
+/* ---------- Lista de exercicios: leve, sem caixa ---------- */
+.tc-detalhe { margin: 0; font-size: var(--ds-text-micro); line-height: 1.6; color: rgb(var(--el-muted)); text-wrap: pretty; }
+.tc-lista { display: grid; gap: 10px; margin: 0; padding: 0 0 0 4px; list-style: none; border-left: 2px solid color-mix(in srgb, var(--tc-acento) 30%, transparent); }
+.tc-item { display: flex; align-items: center; gap: 10px; min-width: 0; padding-left: 10px; }
+.tc-item-icone { flex: 0 0 auto; color: var(--tc-acento); }
+.tc-item-texto { display: grid; gap: 1px; min-width: 0; }
+.tc-item-nome { font-size: var(--ds-text-small); font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.tc-item-meta { font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tc-seta, .tc-acao { transition: none; }
+  .tc-acao:active:not(:disabled) { transform: none; }
+}
+@media (forced-colors: active) {
+  .tc-acao:focus-visible, .tc-cabeca:focus-visible { outline-color: Highlight; }
+}

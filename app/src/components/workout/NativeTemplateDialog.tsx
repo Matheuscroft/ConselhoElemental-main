@@ -1,9 +1,9 @@
-import { ElementalXpBadge } from '@/components/rewards/ElementalXpBadge';
+import { ExperienceIcon } from '@/components/rewards/ExperienceIcon';
+import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { FitnessGlyph } from '@/components/fitness-kit/FitnessGlyph';
-import { useId, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { ArrowUp, Check, ChevronDown, Grid2X2, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { useEffect, useId, useMemo, useRef, useState, type CSSProperties, type FormEventHandler, type ReactNode } from 'react';
+import { ArrowDown, ArrowUp, Check, ChevronDown, Film, Grid2X2, ImageOff, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
-import { VideoExercisePlayer } from '@/components/fitness-kit';
 import { useWorkoutStore } from '@/stores/workoutStore';
 import type { Exercise, PlannedExercise, UUIDv4, WorkoutExerciseCategory, WorkoutSet, WorkoutTemplate, Workout } from '@/types/workout';
 import { calculateEstimatedDuration } from '@/lib/workout/workout-duration';
@@ -15,10 +15,11 @@ import { getExercisePresentation } from '@/lib/workout/workout-focus';
 import './create-workout.css';
 import { Contagem } from '@/components/motion/Contagem';
 import { DialogoCabeca } from '@/components/fitness-kit/dialogo-cabeca';
-import { DialogoEsforco } from '@/components/fitness-kit/dialogo-esforco';
 import { useLuzDoDialogo } from '@/components/fitness-kit/dialogo-luz';
 import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
 import '@/components/fitness-kit/dialogo-uau.css';
+import './dialogo-criar-uau.css';
+import { DURATION } from '@/lib/motion/motion';
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
 import { CustomExerciseFields } from './CustomExerciseFields';
 import { resolveExerciseMedia, validExerciseMediaUrl } from '@/lib/workout/exercise-media';
@@ -39,6 +40,94 @@ function plannedExercise(exercise: Exercise, order: number): PlannedExercise {
         : { measureMode: 'duration', targetDurationSeconds: Math.max(1, exercise.defaultDurationSeconds) }),
     })),
   };
+}
+
+/** An animated disclosure: the row grows from 0fr to 1fr and stays out of the tab order while shut. */
+function Colapso({ id, aberto, children, onInvalidCapture }: { id: string; aberto: boolean; children: ReactNode; onInvalidCapture?: FormEventHandler<HTMLDivElement> }) {
+  return <div id={id} className="dg-colapso" data-aberto={aberto || undefined} inert={!aberto} onInvalidCapture={onInvalidCapture}><div className="dg-colapso-miolo">{children}</div></div>;
+}
+
+const NIVEIS = ['Muito leve', 'Leve', 'Moderado', 'Intenso', 'Muito intenso'] as const;
+
+/** Effort of the whole workout as a living ruler: the chosen bar grows and glows, the caption swaps with a fade. */
+function ReguaDeEsforco({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  const nome = useId();
+  const rotulo = useId();
+  return <div className="dg-regua">
+    <span id={rotulo} className="dg-rotulo">Esforço do treino</span>
+    <div role="radiogroup" aria-labelledby={rotulo} aria-describedby={`${nome}-nota`} className="dg-regua-escala">
+      {NIVEIS.map((descricao, indice) => {
+        const nivel = indice + 1;
+        return <label key={nivel} className="dg-regua-marca" data-aceso={nivel <= value || undefined} data-atual={nivel === value || undefined} style={{ '--n': nivel } as CSSProperties}>
+          <input type="radio" name={nome} value={nivel} checked={value === nivel} aria-label={`${nivel}, ${descricao}`} onChange={() => onChange(nivel)} />
+          <span className="dg-regua-barra" aria-hidden="true">{nivel}</span>
+        </label>;
+      })}
+    </div>
+    <p className="dg-regua-legenda" aria-live="polite"><span key={value} className="dg-regua-nome">{NIVEIS[value - 1] ?? 'Sem esforço definido'}</span></p>
+    <p id={`${nome}-nota`} className="dg-nota">Esforço do treino inteiro; não é o esforço de cada série. Ele influencia o custo de Prana.</p>
+  </div>;
+}
+
+type MidiaPatch = Partial<Pick<PlannedExercise, 'imageUrl' | 'videoUrl' | 'notes'>>;
+const AVISO_URL = 'Use um link que comece com http:// ou https://, ou um caminho de arquivo do app, como /imagens/treino.jpg.';
+
+/** Same fields, same validation, same saved data: only presented as a media card with a live preview. */
+function MidiaDoExercicio({ plan, herdada, sigilo, onChange }: { plan: PlannedExercise; herdada?: string; sigilo: ReactNode; onChange: (patch: MidiaPatch) => void }) {
+  const id = useId();
+  const [aberta, setAberta] = useState(false);
+  const [imagem, setImagem] = useState(plan.imageUrl ?? '');
+  const [video, setVideo] = useState(plan.videoUrl ?? '');
+  const [prevista, setPrevista] = useState((plan.imageUrl ?? '').trim());
+  const [falhou, setFalhou] = useState<string | null>(null);
+  useEffect(() => {
+    const espera = window.setTimeout(() => setPrevista(imagem.trim()), DURATION.reveal);
+    return () => window.clearTimeout(espera);
+  }, [imagem]);
+  const imagemLimpa = imagem.trim();
+  const videoLimpo = video.trim();
+  const imagemErro = !validExerciseMediaUrl(imagemLimpa);
+  const videoErro = !validExerciseMediaUrl(videoLimpo);
+  const url = prevista && validExerciseMediaUrl(prevista) && !imagemErro ? prevista : '';
+  const mostra = url && falhou !== url ? url : !imagemLimpa ? herdada : undefined;
+  const estado = imagemErro ? 'erro' : url && falhou === url ? 'falha' : mostra ? 'imagem' : 'vazio';
+  const notas = plan.notes ?? '';
+  const resumo = [imagemLimpa && 'imagem', videoLimpo && 'vídeo', notas.trim() && 'observações'].filter(Boolean).join(' · ') || 'Opcional';
+  const confirmar = (campo: 'imageUrl' | 'videoUrl', valor: string) => onChange({ [campo]: valor.trim() || undefined });
+  return <section className="dg-midia" aria-labelledby={`${id}-t`}>
+    <h5 id={`${id}-t`} className="dg-midia-titulo"><button type="button" aria-expanded={aberta} aria-controls={`${id}-c`} className="dg-midia-alterna" onClick={() => setAberta((atual) => !atual)}>
+      <span className="dg-midia-nome">Mídia do exercício<small>{resumo}</small></span>
+      <ChevronDown size={16} aria-hidden="true" className="dg-seta" data-aberto={aberta || undefined} />
+    </button></h5>
+    <Colapso id={`${id}-c`} aberto={aberta}>
+      <div className="dg-midia-corpo">
+        <div className="dg-midia-palco" data-estado={estado} role="img" aria-label={estado === 'imagem' ? `Pré-visualização da imagem de ${plan.exerciseNameSnapshot}` : estado === 'erro' ? 'Link da imagem inválido' : estado === 'falha' ? 'A imagem não carregou' : 'Sem mídia personalizada'}>
+          {mostra && estado === 'imagem'
+            ? <img key={mostra} src={mostra} alt="" className="dg-midia-img" loading="lazy" onError={() => setFalhou(mostra)} />
+            : <span className="dg-midia-sigilo" aria-hidden="true">{estado === 'erro' || estado === 'falha' ? <ImageOff size={24} strokeWidth={1.55} /> : sigilo}</span>}
+          <span className="dg-midia-legenda" aria-hidden="true">
+            {estado === 'imagem' ? (imagemLimpa ? 'Sua imagem' : 'Imagem do app') : estado === 'erro' ? 'Link inválido' : estado === 'falha' ? 'Não consegui carregar esta imagem' : 'A mídia do app aparece sozinha quando você não preenche'}
+          </span>
+          {videoLimpo && !videoErro && <span className="dg-midia-selo"><Film size={14} aria-hidden="true" />Vídeo</span>}
+        </div>
+        <label className="dg-campo"><span className="dg-rotulo">Link da imagem <small>(opcional)</small></span>
+          <input className={field} value={imagem} placeholder="https://.../imagem.jpg" inputMode="url" autoComplete="off" aria-invalid={imagemErro || undefined} aria-describedby={imagemErro ? `${id}-ei` : undefined}
+            onChange={(event) => setImagem(event.target.value)} onBlur={(event) => confirmar('imageUrl', event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') confirmar('imageUrl', event.currentTarget.value); }} />
+          {imagemErro && <span id={`${id}-ei`} className="dg-ajuda" data-tipo="erro">{AVISO_URL}</span>}
+        </label>
+        <label className="dg-campo"><span className="dg-rotulo">Link direto do vídeo <small>(opcional)</small></span>
+          <input className={field} value={video} placeholder="https://.../video.mp4" inputMode="url" autoComplete="off" aria-invalid={videoErro || undefined} aria-describedby={videoErro ? `${id}-ev` : videoLimpo ? `${id}-ov` : undefined}
+            onChange={(event) => setVideo(event.target.value)} onBlur={(event) => confirmar('videoUrl', event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') confirmar('videoUrl', event.currentTarget.value); }} />
+          {videoErro && <span id={`${id}-ev`} className="dg-ajuda" data-tipo="erro">{AVISO_URL}</span>}
+          {!videoErro && videoLimpo && <span id={`${id}-ov`} className="dg-ajuda" data-tipo="ok">Link válido. O vídeo aparece com botão de reprodução.</span>}
+        </label>
+        <label className="dg-campo"><span className="dg-rotulo">Observações</span>
+          <textarea className={field} rows={3} value={notas} placeholder="Ritmo, pegada, o que lembrar na hora…" onChange={(event) => onChange({ notes: event.target.value })} />
+          <span className="dg-contador" aria-hidden="true">{notas.length} {notas.length === 1 ? 'caractere' : 'caracteres'}</span>
+        </label>
+      </div>
+    </Colapso>
+  </section>;
 }
 
 export function NativeTemplateDialog({ catalog, modality, presetId, template, legacyWorkout, onClose }: {
@@ -99,6 +188,7 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
   const elemento = elementoDaModalidade(modality);
   const SigiloModalidade = CATEGORY_ICONS[modality] ?? CATEGORY_ICONS.mixed;
   const editing = Boolean(template || legacyWorkout);
+  const dicaSalvar = !plans.length ? 'Adicione pelo menos um exercício para salvar.' : !name.trim() ? 'Dê um nome ao treino para salvar.' : '';
   const totalSeries = plans.reduce((sum, plan) => sum + plan.sets.length, 0);
   const toggle = (set: Set<string>, id: string) => { const next = new Set(set); if (next.has(id)) next.delete(id); else next.add(id); return next; };
   const irAoCatalogo = () => {
@@ -146,53 +236,74 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
             <button type="button" className="dg-btn" data-tipo="secundario" onClick={irAoCatalogo}><Plus size={16} aria-hidden="true" />Ver o catálogo</button>
           </div>}
           <ol className="dg-lista" aria-label="Exercícios do treino">
-            {plans.map((plan, index) => <li key={plan.id} className="dg-exercicio ds-pane" style={{ '--i': Math.min(index, 8) } as CSSProperties}>
+            {plans.map((plan, index) => {
+              const aberto = !collapsedExercises.has(plan.id);
+              const exercicioCatalogo = catalog.find((exercise) => exercise.id === plan.exerciseId);
+              const herdada = resolveExerciseMedia({}, exercicioCatalogo, useWorkoutStore.getState().getExerciseById(exercicioCatalogo?.legacyId ?? '')).poster;
+              const minutos = calculateEstimatedDuration([plan]);
+              const mover = (delta: -1 | 1) => setPlans((current) => { const next = [...current]; [next[index + delta], next[index]] = [next[index], next[index + delta]]; return next; });
+              return <li key={plan.id} className="dg-exercicio ds-pane" style={{ '--i': Math.min(index, 8) } as CSSProperties}>
               <div className="dg-exercicio-cab">
                 <span className="dg-ordem" aria-hidden="true">{index + 1}</span>
-                <h4 className="dg-exercicio-titulo"><button type="button" aria-expanded={!collapsedExercises.has(plan.id)} aria-controls={`exercise-series-${plan.id}`} className="dg-exercicio-alterna" onClick={() => setCollapsedExercises((current) => toggle(current, plan.id))}><ChevronDown size={18} aria-hidden="true" className="dg-seta" data-aberto={!collapsedExercises.has(plan.id) || undefined} /><span className="dg-exercicio-nome">{plan.exerciseNameSnapshot}<small>{plan.sets.length} {plan.sets.length === 1 ? 'série' : 'séries'}</small></span></button></h4>
-                <button type="button" disabled={index === 0} className="dg-icone" aria-label={`Mover ${plan.exerciseNameSnapshot} para cima`} onClick={() => setPlans((current) => { const next = [...current]; [next[index - 1], next[index]] = [next[index], next[index - 1]]; return next; })}><ArrowUp size={18} aria-hidden="true" /></button>
-                <button type="button" className="dg-icone" data-tipo="perigo" aria-label={`Remover ${plan.exerciseNameSnapshot}`} onClick={() => setPlans((current) => current.filter((item) => item.id !== plan.id))}><Trash2 size={18} aria-hidden="true" /></button>
+                <h4 className="dg-exercicio-titulo"><button type="button" aria-expanded={aberto} aria-controls={`exercise-series-${plan.id}`} className="dg-exercicio-alterna" onClick={() => setCollapsedExercises((current) => toggle(current, plan.id))}>
+                  <span className="dg-exercicio-nome">{plan.exerciseNameSnapshot}<small>{plan.sets.length} {plan.sets.length === 1 ? 'série' : 'séries'} · {minutos} min</small></span>
+                  <ChevronDown size={18} aria-hidden="true" className="dg-seta" data-aberto={aberto || undefined} />
+                </button></h4>
               </div>
-              <VideoExercisePlayer key={`${plan.id}-${plan.imageUrl}-${plan.videoUrl}`} title={plan.exerciseNameSnapshot} {...resolveExerciseMedia(plan, catalog.find((exercise) => exercise.id === plan.exerciseId), useWorkoutStore.getState().getExerciseById(catalog.find((exercise) => exercise.id === plan.exerciseId)?.legacyId ?? ''))} />
-              <details className="dg-grupo"><summary>Imagem, vídeo e observações<ChevronDown size={16} aria-hidden="true" /></summary><div className="dg-grupo-corpo">
-                <label className="dg-campo"><span className="dg-rotulo">URL da imagem (opcional)</span><input className={field} defaultValue={plan.imageUrl ?? ''} placeholder="https://.../imagem.jpg" inputMode="url" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, imageUrl: event.target.value.trim() || undefined } : item))} /></label>
-                <label className="dg-campo"><span className="dg-rotulo">URL direta do vídeo (opcional)</span><input className={field} defaultValue={plan.videoUrl ?? ''} placeholder="https://.../video.mp4" inputMode="url" onBlur={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, videoUrl: event.target.value.trim() || undefined } : item))} /></label>
-                <label className="dg-campo"><span className="dg-rotulo">Observações</span><textarea className={field} rows={3} value={plan.notes ?? ''} onChange={(event) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, notes: event.target.value } : item))} /></label>
-              </div></details>
-              <div id={`exercise-series-${plan.id}`} hidden={collapsedExercises.has(plan.id)} className="dg-series" onInvalidCapture={(event) => { if (!collapsedExercises.has(plan.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedExercises((current) => { const next = new Set(current); next.delete(plan.id); return next; }); requestAnimationFrame(() => input.focus()); }}>
-                {plan.sets.map((series) => <div key={series.id} className="dg-serie">
-                  <div className="dg-serie-cab">
-                    <button type="button" aria-expanded={!collapsedSeries.has(series.id)} aria-controls={`series-fields-${series.id}`} className="dg-serie-alterna" onClick={() => setCollapsedSeries((current) => toggle(current, series.id))}>
-                      <span className="dg-serie-selo" aria-hidden="true">{series.setNumber}</span>
-                      <span className="dg-serie-texto"><span className="dg-serie-nome">Série {series.setNumber}</span>{collapsedSeries.has(series.id) && <span className="dg-serie-chips"><span className="dg-chip-valor">{series.measureMode === 'reps' ? `${series.targetReps ?? '—'} reps` : `${series.targetDurationSeconds ?? '—'}s`}</span>{(series.targetLoadKg ?? 0) > 0 && <span>{series.targetLoadKg?.toLocaleString('pt-BR')} kg</span>}<span>{series.restSeconds ?? 0}s de pausa</span>{series.loadFactor === 1.5 && <span className="dg-chip-pr">PR</span>}{series.loadFactor === 0.8 && <span>Leve</span>}</span>}</span>
-                      <ChevronDown size={16} aria-hidden="true" className="dg-seta" data-aberto={!collapsedSeries.has(series.id) || undefined} />
-                    </button>
-                    <button type="button" disabled={plan.sets.length === 1} aria-label={`Remover série ${series.setNumber} de ${plan.exerciseNameSnapshot}`} className="dg-icone" data-tipo="perigo" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: item.sets.filter((set) => set.id !== series.id).map((set, i) => ({ ...set, setNumber: i + 1 })) }))}><Trash2 size={16} aria-hidden="true" /></button>
+              <Colapso id={`exercise-series-${plan.id}`} aberto={aberto} onInvalidCapture={(event) => { if (aberto) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedExercises((current) => { const next = new Set(current); next.delete(plan.id); return next; }); requestAnimationFrame(() => input.focus()); }}>
+                <div className="dg-exercicio-corpo">
+                  <div className="dg-acoes" role="group" aria-label={`Ações de ${plan.exerciseNameSnapshot}`}>
+                    <button type="button" disabled={index === 0} className="dg-acao" aria-label={`Mover ${plan.exerciseNameSnapshot} para cima`} onClick={() => mover(-1)}><ArrowUp size={16} aria-hidden="true" />Subir</button>
+                    <button type="button" disabled={index === plans.length - 1} className="dg-acao" aria-label={`Mover ${plan.exerciseNameSnapshot} para baixo`} onClick={() => mover(1)}><ArrowDown size={16} aria-hidden="true" />Descer</button>
+                    <button type="button" className="dg-acao" data-tipo="perigo" aria-label={`Remover ${plan.exerciseNameSnapshot}`} onClick={() => setPlans((current) => current.filter((item) => item.id !== plan.id))}><Trash2 size={16} aria-hidden="true" />Excluir</button>
                   </div>
-                  <div id={`series-fields-${series.id}`} hidden={collapsedSeries.has(series.id)} onInvalidCapture={(event) => { if (!collapsedSeries.has(series.id)) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedSeries((current) => { const next = new Set(current); next.delete(series.id); return next; }); requestAnimationFrame(() => input.focus()); }}><div className="dg-serie-campos">
-                    {series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={series.targetReps} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'reps' ? { ...set, targetReps: value } : set)} /> : <FitnessDurationField seconds={series.targetDurationSeconds} minutes={timedActivity} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'duration' ? { ...set, targetDurationSeconds: value } : set)} />}
-                    {!timedActivity && <label className="dg-campo"><span className="dg-rotulo">Carga (kg)</span><input type="number" inputMode="decimal" min="0" step="0.1" required className={field} value={series.targetLoadKg ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, targetLoadKg: Number(event.target.value) }))} /></label>}
-                    <label className="dg-campo" data-larga={timedActivity ? undefined : ''}><span className="dg-rotulo">Descanso (segundos)</span><input type="number" inputMode="numeric" min="0" step="1" required className={field} value={series.restSeconds ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, restSeconds: Number(event.target.value) }))} /></label>
-                    <label className="dg-campo" data-larga=""><span className="dg-rotulo">Fator de carga da série</span><select className={field} value={series.loadFactor ?? 1} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, loadFactor: Number(event.target.value) as 0.8 | 1 | 1.5 }))}><option value="0.8">Leve (×0,8)</option><option value="1">Manutenção (×1,0)</option><option value="1.5">Progressão / PR (×1,5)</option></select></label>
-                  </div></div>
-                </div>)}
-                <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: [...item.sets, { ...structuredClone(item.sets[item.sets.length - 1]), id: newId(), setNumber: item.sets.length + 1 }] }))}><Plus size={16} aria-hidden="true" />Adicionar série</button>
-              </div>
-            </li>)}
+                  <div className="dg-series">
+                    {plan.sets.map((series) => {
+                      const serieAberta = !collapsedSeries.has(series.id);
+                      return <div key={series.id} className="dg-serie">
+                      <div className="dg-serie-cab">
+                        <button type="button" aria-expanded={serieAberta} aria-controls={`series-fields-${series.id}`} className="dg-serie-alterna" onClick={() => setCollapsedSeries((current) => toggle(current, series.id))}>
+                          <span className="dg-serie-selo" aria-hidden="true">{series.setNumber}</span>
+                          <span className="dg-serie-texto"><span className="dg-serie-nome">Série {series.setNumber}</span><span className="dg-serie-chips"><span className="dg-chip-valor">{series.measureMode === 'reps' ? `${series.targetReps ?? '—'} reps` : `${series.targetDurationSeconds ?? '—'}s`}</span>{(series.targetLoadKg ?? 0) > 0 && <span>{series.targetLoadKg?.toLocaleString('pt-BR')} kg</span>}<span>{series.restSeconds ?? 0}s de pausa</span>{series.loadFactor === 1.5 && <span className="dg-chip-pr">PR</span>}{series.loadFactor === 0.8 && <span>Leve</span>}</span></span>
+                          <ChevronDown size={16} aria-hidden="true" className="dg-seta" data-aberto={serieAberta || undefined} />
+                        </button>
+                        <button type="button" disabled={plan.sets.length === 1} aria-label={`Remover série ${series.setNumber} de ${plan.exerciseNameSnapshot}`} className="dg-icone" data-tipo="perigo" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: item.sets.filter((set) => set.id !== series.id).map((set, i) => ({ ...set, setNumber: i + 1 })) }))}><Trash2 size={16} aria-hidden="true" /></button>
+                      </div>
+                      <Colapso id={`series-fields-${series.id}`} aberto={serieAberta} onInvalidCapture={(event) => { if (serieAberta) return; event.preventDefault(); const input = event.target as HTMLInputElement; setCollapsedSeries((current) => { const next = new Set(current); next.delete(series.id); return next; }); requestAnimationFrame(() => input.focus()); }}><div className="dg-serie-campos">
+                        {series.measureMode === 'reps' ? <FitnessIntegerField label="Repetições" value={series.targetReps} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'reps' ? { ...set, targetReps: value } : set)} /> : <FitnessDurationField seconds={series.targetDurationSeconds} minutes={timedActivity} onChange={(value) => updateSeries(plan.id, series.id, (set) => set.measureMode === 'duration' ? { ...set, targetDurationSeconds: value } : set)} />}
+                        {!timedActivity && <label className="dg-campo"><span className="dg-rotulo">Carga (kg)</span><input type="number" inputMode="decimal" min="0" step="0.1" required className={field} value={series.targetLoadKg ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, targetLoadKg: Number(event.target.value) }))} /></label>}
+                        <label className="dg-campo" data-larga={timedActivity ? undefined : ''}><span className="dg-rotulo">Descanso (segundos)</span><input type="number" inputMode="numeric" min="0" step="1" required className={field} value={series.restSeconds ?? 0} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, restSeconds: Number(event.target.value) }))} /></label>
+                        <label className="dg-campo" data-larga=""><span className="dg-rotulo">Fator de carga da série</span><select className={field} value={series.loadFactor ?? 1} onChange={(event) => updateSeries(plan.id, series.id, (set) => ({ ...set, loadFactor: Number(event.target.value) as 0.8 | 1 | 1.5 }))}><option value="0.8">Leve (×0,8)</option><option value="1">Manutenção (×1,0)</option><option value="1.5">Progressão / PR (×1,5)</option></select></label>
+                      </div></Colapso>
+                    </div>; })}
+                    <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: [...item.sets, { ...structuredClone(item.sets[item.sets.length - 1]), id: newId(), setNumber: item.sets.length + 1 }] }))}><Plus size={16} aria-hidden="true" />Adicionar série</button>
+                  </div>
+                  <MidiaDoExercicio key={plan.id} plan={plan} herdada={herdada} sigilo={<SigiloModalidade size={24} strokeWidth={1.55} />}
+                    onChange={(patch) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, ...patch } : item))} />
+                </div>
+              </Colapso>
+            </li>; })}
           </ol>
         </section>
 
         <details className="dg-painel" onInvalidCapture={(event) => { event.currentTarget.open = true; }}>
           <summary><SlidersHorizontal size={18} aria-hidden="true" /><span className="dg-painel-titulo">Esforço e estimativa</span><span className="dg-painel-valor">{estimatedMinutes} min</span><ChevronDown size={18} aria-hidden="true" className="dg-seta" /></summary>
           <div className="dg-painel-corpo">
-            <DialogoEsforco value={effortLevel} onChange={setEffortLevel} />
-            <p className="dg-nota">Esforço do treino inteiro. É diferente da intensidade de cada série e influencia o custo de Prana.</p>
-            <label className="dg-campo"><span className="dg-rotulo">Duração estimada (minutos)</span>
+            <ReguaDeEsforco value={effortLevel} onChange={setEffortLevel} />
+            <label className="dg-campo"><span className="dg-rotulo">Duração estimada</span>
               <span className="dg-caixa"><input type="number" inputMode="numeric" min="0" step="1" value={estimatedMinutes} onChange={(event) => setManualMinutes(event.target.value === '' ? null : event.target.value)} className={field} /><span className="dg-unidade" aria-hidden="true">min</span></span>
               <span className="dg-nota">{manualMinutes === null ? 'Calculada pelas séries, descansos e transições.' : `Ajuste manual ativo. Estimativa automática: ${automaticMinutes} min.`} A recompensa final usa o tempo real.</span>
             </label>
             {manualMinutes !== null && <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setManualMinutes(null)}>Usar estimativa automática</button>}
-            {!legacyWorkout && <div className="dg-projecao"><ElementalXpBadge value={formatEarthXp(reward.earthXp)} element="terra" /><p className="dg-nota">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos nas séries · esforço {effortLevel}. A projeção usa {reward.estimatedDurationMinutes} min planejados; o ganho é consolidado por sessão.</p></div>}
+            {!legacyWorkout && <div className="dg-recompensa ds-pane">
+              <span className="dg-recompensa-selo" aria-hidden="true"><ElementIcon element="terra" size={40} /></span>
+              <div className="dg-recompensa-leitura">
+                <span className="dg-recompensa-rotulo">Prévia de recompensa · Terra</span>
+                <span className="dg-recompensa-valor" aria-hidden="true"><ExperienceIcon size={24} /><Contagem valor={reward.earthXp} formatar={formatEarthXp} className="dg-recompensa-numero" /><small>XP</small></span>
+                <span className="sr-only" aria-live="polite">{formatEarthXp(reward.earthXp)} XP de Terra</span>
+              </div>
+              <p className="dg-nota">Estimativa · {(reward.activeDurationSeconds / 60).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} min ativos nas séries · esforço {effortLevel}. A projeção usa {reward.estimatedDurationMinutes} min planejados; o ganho é consolidado por sessão.</p>
+            </div>}
             {legacyWorkout && <p className="dg-projecao dg-nota">{plans.length} exercícios · {totalSeries} séries · {estimatedMinutes} min planejados. A recompensa será apresentada ao concluir a sessão.</p>}
           </div>
         </details>
@@ -216,7 +327,8 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
         {error && <p role="alert" className="dg-erro">{error}</p>}
         <p className="dg-resumo"><span className="sr-only">{plans.length} {plans.length === 1 ? 'exercício' : 'exercícios'} · {safeMinutes} min planejados</span>
           <span aria-hidden="true"><Contagem valor={plans.length} formatar={(valor) => String(Math.round(valor))} className="dg-resumo-numero" /> {plans.length === 1 ? 'exercício' : 'exercícios'} · <Contagem valor={safeMinutes} formatar={(valor) => String(Math.round(valor))} className="dg-resumo-numero" /> min planejados</span></p>
-        <div className="dg-pe-acoes"><button type="button" className="dg-btn" data-tipo="fantasma" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className="dg-btn" data-tipo="primario" disabled={!plans.length || !name.trim()}>Salvar treino</button></div>
+        {dicaSalvar && <p id={`${formId}-dica`} className="dg-dica">{dicaSalvar}</p>}
+        <div className="dg-pe-acoes"><button type="button" className="dg-btn" data-tipo="fantasma" onClick={onClose}>Cancelar</button><button type="submit" form={formId} className="dg-btn" data-tipo="primario" disabled={!plans.length || !name.trim()} aria-describedby={dicaSalvar ? `${formId}-dica` : undefined}>Salvar treino</button></div>
       </footer>
     </DialogContent>
   </Dialog>;

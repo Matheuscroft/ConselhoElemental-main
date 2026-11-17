@@ -81,10 +81,11 @@ export const WorkoutSummaryView: React.FC<WorkoutSummaryViewProps> = ({
     )}
 
     {children && <div className="mt-6 space-y-5">{children}</div>}
+    <div className="treino-resumo-respiro" aria-hidden="true" style={{ '--barra': `${alturaBarra ?? 88}px` } as React.CSSProperties} />
     </TreinoCena>
 
     <TreinoBarraAcao onHeightChange={setAlturaBarra}>
-      <button type="button" className="treino-acao treino-acao--principal w-full" onClick={onSave}>Concluir</button>
+      <button type="button" className="treino-acao treino-acao--principal treino-acao--concluir-resumo w-full" onClick={onSave}>Concluir</button>
     </TreinoBarraAcao>
   </FitnessPageShell>
   );
