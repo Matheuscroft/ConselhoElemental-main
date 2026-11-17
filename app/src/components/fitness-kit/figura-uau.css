@@ -1,0 +1,104 @@
+/*
+ * Figuras animadas de exercício: um atleta ilustrado em vetor plano (pele em
+ * dois tons, regata e short na cor do elemento, tênis) sobre o fundo escuro do
+ * cartão. Os músculos-alvo acendem na cor de aura do elemento. O movimento é
+ * feito em JavaScript (requestAnimationFrame, só enquanto a figura está
+ * visível), então este arquivo não declara animação nem transição: só cor e
+ * traço. Sem filtros: o custo por quadro é o de reescrever caminhos.
+ */
+
+.figura {
+  --figura-acento: var(--element-terra);
+  --figura-aura: var(--aura-terra, var(--element-terra));
+  --figura-pele: #e0a982;
+  --figura-pele-luz: #f0c8a7;
+  --figura-pele-sombra: #c68a64;
+  --figura-pele-fundo: #a96f4e;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  overflow: hidden;
+}
+.figura[data-elemento="terra"] { --figura-acento: var(--element-terra); --figura-aura: var(--aura-terra, var(--element-terra)); }
+.figura[data-elemento="fogo"] { --figura-acento: var(--element-fogo); --figura-aura: var(--aura-fogo, var(--element-fogo)); }
+.figura[data-elemento="agua"] { --figura-acento: var(--element-agua); --figura-aura: var(--aura-agua, var(--element-agua)); }
+.figura[data-elemento="ar"] { --figura-acento: var(--element-ar); --figura-aura: var(--aura-ar, var(--element-ar)); }
+
+.figura :is(line, circle, path) { stroke-linecap: round; stroke-linejoin: round; }
+.figura :is(line) { fill: none; }
+
+/* Corpo: preenchimentos (gradientes compartilhados vêm de <defs>, ligados por variável). */
+.figura .f-pele { fill: var(--g-pele, var(--figura-pele)); stroke: none; }
+.figura .f-pele-d { fill: var(--g-pele-d, var(--figura-pele-sombra)); stroke: none; }
+.figura .f-camisa { fill: var(--g-camisa, var(--figura-acento)); stroke: none; }
+.figura .f-short { fill: var(--g-short, var(--figura-acento)); stroke: none; }
+.figura .f-short-d { fill: var(--g-short-d, var(--figura-acento)); stroke: none; }
+.figura .f-cabelo { fill: #3a2b25; stroke: none; }
+.figura .f-orelha { fill: var(--figura-pele-sombra); stroke: none; }
+.figura .f-tenis { fill: #efece6; stroke: none; }
+.figura .f-sola { stroke: var(--figura-acento); }
+.figura .f-detalhe { stroke: rgb(255 255 255 / .62); }
+.figura .f-musculo { fill: color-mix(in srgb, var(--figura-aura) 64%, transparent); stroke: none; }
+.figura .f-musculo-d { fill: color-mix(in srgb, var(--figura-aura) 34%, transparent); stroke: none; }
+.figura .f-sombra { fill: rgb(0 0 0 / .4); stroke: none; }
+.figura .f-chao { stroke: rgb(var(--el-muted) / .34); fill: none; }
+
+/* Equipamento. */
+.figura .f-equip { stroke: #bcc6cf; fill: none; }
+.figura .f-equipcheio { fill: #6f7a85; stroke: none; }
+.figura .f-placa { fill: #2c3138; stroke: #626b77; }
+.figura .f-placa-d { fill: #1e2228; stroke: #434a53; }
+.figura .f-estofado { stroke: #3d3541; fill: none; }
+.figura .f-apoio { stroke: rgb(188 198 207 / .42); fill: none; }
+.figura .f-agua { stroke: var(--element-agua); opacity: .55; fill: none; }
+
+/* Cartão 16:10 da mídia sintética do exercício. O desenho SEMPRE cabe inteiro:
+   o SVG é posicionado por inset e escala por "meet", sem depender do que o
+   contêiner (ficha, lista, prévia) declare para img/svg. */
+.figura-midia { margin: 0; width: 100%; }
+.figura-cartao {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  min-height: 120px;
+  overflow: hidden;
+  border-radius: var(--ds-raio-runa);
+  background:
+    radial-gradient(ellipse 60% 62% at 50% 50%, color-mix(in srgb, var(--figura-acento, var(--element-terra)) 15%, transparent), transparent 78%),
+    rgb(var(--el-canvas));
+  box-shadow: var(--ds-rim), 0 8px 22px rgb(0 0 0 / .28);
+}
+.figura-cartao[data-elemento="terra"] { --figura-acento: var(--element-terra); }
+.figura-cartao[data-elemento="fogo"] { --figura-acento: var(--element-fogo); }
+.figura-cartao[data-elemento="agua"] { --figura-acento: var(--element-agua); }
+.figura-cartao[data-elemento="ar"] { --figura-acento: var(--element-ar); }
+.figura-cartao > .figura { position: absolute; inset: 0; width: 100%; height: 100%; }
+.figura-selo {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  padding: 3px 10px;
+  border: 1px solid rgb(var(--el-gold) / .35);
+  border-radius: var(--ds-raio-controle);
+  background: rgb(var(--el-canvas) / .72);
+  font-size: var(--ds-text-micro);
+  line-height: 1.4;
+  color: rgb(var(--el-gold));
+  pointer-events: none;
+}
+.figura-nome {
+  margin: 6px 2px 0;
+  font-size: var(--ds-text-micro);
+  line-height: 1.4;
+  color: rgb(var(--el-muted));
+  overflow-wrap: anywhere;
+}
+
+/* A figura pequena dentro do palco da mídia do editor de treino. */
+.figura-mini { display: block; width: 96px; height: 96px; }
+
+@media (forced-colors: active) {
+  .figura .f-sola, .figura .f-chao, .figura .f-equip, .figura .f-apoio { stroke: CanvasText; }
+}

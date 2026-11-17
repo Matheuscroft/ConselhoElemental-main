@@ -1,0 +1,374 @@
+categoria | exercício | padrão | motivo
+yoga | Postura da Montanha | yoga | categoria
+yoga | Postura da Árvore | yoga | categoria
+yoga | Guerreiro II | yoga | categoria
+yoga | Cachorro olhando para baixo | yoga | categoria
+yoga | Pinça em pé | yoga | categoria
+yoga | Cobra | yoga | categoria
+yoga | Camelo | yoga | categoria
+yoga | Torção sentada | yoga | categoria
+yoga | Pombo | yoga | categoria
+yoga | Postura da Criança | yoga | categoria
+yoga | Meia Ponte | yoga | categoria
+yoga | Postura do Cadáver | yoga | categoria
+yoga | Guerreiro I | yoga | categoria
+yoga | Guerreiro III | yoga | categoria
+yoga | Postura do Triângulo | yoga | categoria
+yoga | Pinça Sentada | yoga | categoria
+yoga | Postura da Borboleta | yoga | categoria
+yoga | Cachorro Olhando para Cima | yoga | categoria
+yoga | Postura da Roda | yoga | categoria
+yoga | Gato-Vaca | yoga | categoria
+yoga | Prancha Alta | yoga | categoria
+yoga | Postura da Vela | yoga | categoria
+yoga | Pombo Real | yoga | categoria
+yoga | Postura da Cadeira | yoga | categoria
+yoga | Afundo Baixo | yoga | categoria
+yoga | Afundo Alto | yoga | categoria
+yoga | Ângulo Lateral Estendido | yoga | categoria
+yoga | Postura Fácil | yoga | categoria
+yoga | Postura do Filhote Estendido | yoga | categoria
+yoga | Postura do Peixe | yoga | categoria
+yoga | Postura da Esfinge | yoga | categoria
+yoga | Postura do Gafanhoto | yoga | categoria
+yoga | Postura do Bebê Feliz | yoga | categoria
+yoga | Borboleta Deitada | yoga | categoria
+yoga | Postura do Herói | yoga | categoria
+yoga | Abertura Sentada de Pernas | yoga | categoria
+yoga | Postura da Águia | yoga | categoria
+yoga | Postura do Barco | yoga | categoria
+yoga | Postura da Pirâmide | yoga | categoria
+yoga | Meia Flexão em Pé | yoga | categoria
+yoga | Postura da Guirlanda | yoga | categoria
+calisthenics | Flexão Inclinada | flexao-inclinada | palavra
+calisthenics | Flexão Tradicional | flexao | palavra
+calisthenics | Flexão Pike | flexao-pike | palavra
+calisthenics | Remada Australiana | remada-australiana | palavra
+calisthenics | Barra Fixa | barra-fixa | palavra
+calisthenics | Agachamento Livre | agachamento-livre | palavra
+calisthenics | Avanço Caminhando | afundo | palavra
+calisthenics | Hollow Body Hold | abdominal | palavra
+calisthenics | Prancha Frontal | prancha | palavra
+calisthenics | Elevação de Joelhos na Barra | elevacao-joelhos-barra | palavra
+calisthenics | L-Sit (Progressão Tuck) | prancha | palavra
+calisthenics | Burpee Controlado | flexao | palavra
+calisthenics | Flexão Diamante | flexao | palavra
+calisthenics | Mergulho nas Paralelas | mergulho | palavra
+calisthenics | Barra Fixa Supinada (Chin-up) | barra-fixa | palavra
+calisthenics | Transição para Muscle-Up | barra-fixa | palavra
+calisthenics | Agachamento Búlgaro | afundo | palavra
+calisthenics | Agachamento Pistol | afundo | palavra
+calisthenics | Elevação Pélvica | ponte-gluteo | palavra
+calisthenics | Abdominal Canivete (V-Up) | abdominal | palavra
+calisthenics | Dragon Flag | abdominal | palavra
+calisthenics | Flexão na Parede | flexao-inclinada | palavra
+calisthenics | Flexão com Joelhos | flexao | palavra
+calisthenics | Flexão Declinada | flexao | palavra
+calisthenics | Flexão Negativa (Descida Controlada) | flexao | palavra
+calisthenics | Flexão Tradicional com Descida Lenta | flexao | palavra
+calisthenics | Flexão com Pausa no Fundo | flexao | palavra
+calisthenics | Flexão com Pegada Aberta | flexao | palavra
+calisthenics | Flexão com Pegada Fechada | flexao | palavra
+calisthenics | Flexão Escapular | flexao | palavra
+calisthenics | Flexão Arqueiro | flexao | palavra
+calisthenics | Flexão Explosiva | flexao | palavra
+calisthenics | Barra Fixa com Pegada Neutra | barra-fixa | palavra
+calisthenics | Elevação Escapular na Barra | barra-fixa | palavra
+calisthenics | Suspensão Passiva na Barra (Dead Hang) | suspensao | palavra
+calisthenics | Suspensão Ativa na Barra | suspensao | palavra
+calisthenics | Isometria de Depressão Escapular na Barra | suspensao | palavra
+calisthenics | Isometria no Topo do Chin-up | suspensao | palavra
+calisthenics | Isometria com Braços Flexionados | suspensao | palavra
+calisthenics | Barra Fixa Negativa (Descida Controlada) | barra-fixa | palavra
+calisthenics | Chin-up Negativo (Descida Supinada) | barra-fixa | palavra
+calisthenics | Barra Fixa Peito à Barra | barra-fixa | palavra
+calisthenics | Barra Fixa com Elástico | barra-fixa | palavra
+calisthenics | Remada Australiana Escapular | remada-australiana | palavra
+calisthenics | Agachamento Sumô | agachamento-livre | palavra
+calisthenics | Panturrilha no Step | panturrilha | palavra
+calisthenics | Panturrilha Unilateral no Step | panturrilha | palavra
+calisthenics | Elevação de Ponta dos Pés na Parede | panturrilha | palavra
+calisthenics | Avanço Reverso | afundo | palavra
+calisthenics | Avanço Lateral | afundo | palavra
+calisthenics | Isometria na Parede (Wall Sit) | cadeirinha | palavra
+calisthenics | Agachamento Livre com Descida Lenta | agachamento-livre | palavra
+calisthenics | Agachamento com Salto | agachamento-livre | palavra
+calisthenics | Prancha Lateral | prancha | palavra
+calisthenics | Dead Bug | abdominal | palavra
+calisthenics | Abdominal Reverso | abdominal | palavra
+calisthenics | Abdominal Curto (Crunch) | abdominal | palavra
+calisthenics | Abdominal Toque nos Tornozelos | abdominal | palavra
+calisthenics | Abdominal Bicicleta | abdominal | palavra
+calisthenics | Elevação de Pernas com Pausa sem Tocar o Chão | abdominal | palavra
+calisthenics | Elevação de Pernas na Barra | elevacao-joelhos-barra | palavra
+calisthenics | Elevação Lateral de Joelhos na Barra | elevacao-joelhos-barra | palavra
+calisthenics | Isometria de Joelhos Elevados na Barra | elevacao-joelhos-barra | palavra
+calisthenics | Parada de Mãos na Parede (Isometria) | flexao-pike | palavra
+calisthenics | Tuck Planche (Isometria) | prancha | palavra
+calisthenics | Isometria de Apoio nas Paralelas | mergulho | palavra
+calisthenics | Front Lever Tuck (Isometria) | suspensao | palavra
+calisthenics | Elevação Pélvica Unilateral | ponte-gluteo | palavra
+calisthenics | Subida no Step (Step-up) | afundo | palavra
+calisthenics | Arch Hold (Extensão Posterior Isométrica) | prancha | palavra
+strength | Supino reto com barra | supino-barra | palavra
+strength | Supino reto com halteres | supino-halteres | palavra
+strength | Supino inclinado com barra | supino-inclinado-barra | palavra
+strength | Supino inclinado com halteres | supino-inclinado-halteres | palavra
+strength | Supino declinado com barra | supino-barra | palavra
+strength | Supino declinado com halteres | supino-halteres | palavra
+strength | Supino na máquina | supino-maquina | palavra
+strength | Supino convergente articulado | supino-maquina | palavra
+strength | Supino reto no Smith | supino-barra | palavra
+strength | Crucifixo reto com halteres | crucifixo | palavra
+strength | Crucifixo na máquina (Peck Deck) | crucifixo-maquina | palavra
+strength | Crossover na polia (altura média) | crucifixo-cabo | palavra
+strength | Crossover de baixo para cima | crucifixo-cabo | palavra
+strength | Crossover de cima para baixo | crucifixo-cabo | palavra
+strength | Supino em pé na polia | supino-maquina | palavra
+strength | Pressão isométrica de peito na polia | supino-maquina | palavra
+strength | Supino no chão com halteres | supino-halteres | palavra
+strength | Remada curvada com barra | remada-curvada-barra | palavra
+strength | Remada curvada supinada | remada-curvada-barra | palavra
+strength | Remada Pendlay | remada-curvada-barra | palavra
+strength | Remada unilateral com halter | remada-curvada-halteres | palavra
+strength | Remada inclinada com peito apoiado | remada-curvada-halteres | palavra
+strength | Remada baixa na polia | remada-sentada | palavra
+strength | Remada unilateral na polia | remada-sentada | palavra
+strength | Remada articulada na máquina | remada-sentada | palavra
+strength | Puxada alta aberta | puxada-alta | palavra
+strength | Puxada alta com pegada neutra | puxada-alta | palavra
+strength | Puxada alta supinada | puxada-alta | palavra
+strength | Barra fixa assistida na máquina | puxada-alta | palavra
+strength | Pulldown com braços estendidos | puxada-alta | palavra
+strength | Pullover na polia | puxada-alta | palavra
+strength | Pullover com halter | puxada-alta | palavra
+strength | Face pull na polia | remada-sentada | palavra
+strength | Crucifixo inverso na máquina | remada-sentada | palavra
+strength | Encolhimento com barra | carregada | palavra
+strength | Encolhimento com halteres | carregada | palavra
+strength | Remada isométrica na polia | remada-sentada | palavra
+strength | Desenvolvimento militar com barra | desenvolvimento-barra | palavra
+strength | Desenvolvimento com halteres | desenvolvimento-halteres | palavra
+strength | Desenvolvimento na máquina | desenvolvimento-halteres | palavra
+strength | Desenvolvimento no Smith | desenvolvimento-barra | palavra
+strength | Elevação lateral com halteres | elevacao-lateral | palavra
+strength | Elevação lateral na polia | elevacao-lateral | palavra
+strength | Elevação lateral na máquina | elevacao-lateral | palavra
+strength | Elevação frontal com halteres | elevacao-frontal | palavra
+strength | Elevação frontal na polia | elevacao-frontal | palavra
+strength | Crucifixo inverso com halteres | remada-curvada-halteres | palavra
+strength | Rotação externa do ombro na polia | remada-sentada | palavra
+strength | Desenvolvimento isométrico na máquina | desenvolvimento-halteres | palavra
+strength | Rosca direta com barra | rosca-barra | palavra
+strength | Rosca direta com barra EZ | rosca-barra | palavra
+strength | Rosca alternada com halteres | rosca-halteres | palavra
+strength | Rosca alternada com supinação | rosca-halteres | palavra
+strength | Rosca martelo | rosca-halteres | palavra
+strength | Rosca martelo cruzada | rosca-halteres | palavra
+strength | Rosca inclinada com halteres | rosca-halteres | palavra
+strength | Rosca Scott com barra EZ | rosca-barra | palavra
+strength | Rosca Scott unilateral com halter | rosca-halteres | palavra
+strength | Rosca Scott na máquina | rosca-barra | palavra
+strength | Rosca concentrada | rosca-halteres | palavra
+strength | Rosca Spider no banco inclinado | rosca-halteres | palavra
+strength | Rosca na polia baixa com barra reta | rosca-cabo | palavra
+strength | Rosca na polia baixa com barra EZ | rosca-cabo | palavra
+strength | Rosca martelo com corda na polia | rosca-cabo | palavra
+strength | Rosca Bayesian na polia | rosca-cabo | palavra
+strength | Rosca inversa com barra EZ | rosca-barra | palavra
+strength | Rosca Zottman | rosca-halteres | palavra
+strength | Rosca isométrica na polia | rosca-cabo | palavra
+strength | Rosca isométrica com halteres | rosca-halteres | palavra
+strength | Tríceps na polia com barra | triceps-polia | palavra
+strength | Tríceps na polia com corda | triceps-polia | palavra
+strength | Tríceps acima da cabeça na polia | triceps-frances | palavra
+strength | Tríceps unilateral na polia | triceps-polia | palavra
+strength | Tríceps testa com barra EZ | triceps-testa | palavra
+strength | Extensão de tríceps acima da cabeça com halter | triceps-frances | palavra
+strength | Coice de tríceps com halter | triceps-polia | palavra
+strength | Extensão de tríceps na máquina | triceps-polia | palavra
+strength | Supino fechado | supino-barra | palavra
+strength | Extensão isométrica de tríceps na polia | triceps-polia | palavra
+strength | Agachamento livre com barra | agachamento-barra | palavra
+strength | Agachamento frontal com barra | agachamento-barra | palavra
+strength | Agachamento Goblet com halter | agachamento-halter | palavra
+strength | Agachamento no Smith | agachamento-barra | palavra
+strength | Hack squat na máquina | leg-press | palavra
+strength | Leg press 45° | leg-press | palavra
+strength | Leg press horizontal | leg-press | palavra
+strength | Cadeira extensora | extensora | palavra
+strength | Cadeira extensora unilateral | extensora | palavra
+strength | Agachamento búlgaro com halteres | afundo-halteres | palavra
+strength | Agachamento búlgaro no Smith | afundo | palavra
+strength | Agachamento isométrico na parede com anilha | agachamento-livre | palavra
+strength | Cadeira extensora isométrica | extensora | palavra
+strength | Levantamento Romeno com barra | stiff-barra | palavra
+strength | Levantamento Romeno com halteres | stiff-halteres | palavra
+strength | Levantamento terra convencional | terra-barra | palavra
+strength | Levantamento terra sumô | terra-barra | palavra
+strength | Mesa flexora sentada | flexora | palavra
+strength | Mesa flexora deitada | flexora | palavra
+strength | Flexora unilateral na máquina | flexora | palavra
+strength | Good morning com barra | stiff-barra | palavra
+strength | Elevação pélvica com barra | elevacao-pelvica-barra | palavra
+strength | Elevação pélvica no Smith | elevacao-pelvica-barra | palavra
+strength | Coice de glúteo na polia | coice-gluteo | palavra
+strength | Abdutora na máquina | abducao-quadril | palavra
+strength | Adutora na máquina | abducao-quadril | palavra
+strength | Abdução de quadril na polia | abducao-quadril | palavra
+strength | Adução de quadril na polia | abducao-quadril | palavra
+strength | Extensão de quadril na máquina | coice-gluteo | palavra
+strength | Elevação pélvica isométrica com barra | elevacao-pelvica-barra | palavra
+strength | Panturrilha em pé na máquina | panturrilha | palavra
+strength | Panturrilha sentada na máquina | panturrilha | palavra
+strength | Panturrilha no leg press | panturrilha | palavra
+strength | Panturrilha em pé com halteres | panturrilha-halteres | palavra
+strength | Panturrilha unilateral com halter | panturrilha-halteres | palavra
+strength | Abdominal ajoelhado na polia | abdominal | palavra
+strength | Abdominal na máquina | abdominal | palavra
+strength | Rotação diagonal na polia (Woodchop) | rotacao-tronco | palavra
+strength | Pallof press na polia | rotacao-tronco | palavra
+strength | Prancha com anilha | prancha | palavra
+strength | Caminhada do fazendeiro com halteres | carregada | palavra
+strength | Rosca de punho com barra | rosca-barra | palavra
+strength | Rosca inversa de punho com barra | rosca-barra | palavra
+strength | Flexão de punho na polia | rosca-cabo | palavra
+strength | Rolo de punho com carga | rosca-halteres | palavra
+running | Corrida contínua | corrida | categoria
+running | Corrida intervalada | corrida | categoria
+running | Corrida leve / regenerativa | corrida | categoria
+running | Corrida longa | corrida | categoria
+running | Corrida de ritmo / tempo run | corrida | categoria
+running | Fartlek | corrida | categoria
+running | Corrida progressiva | corrida | categoria
+running | Tiros em subida | corrida | categoria
+running | Corrida em percurso ondulado | corrida | categoria
+running | Corrida na esteira | corrida | categoria
+running | Corrida em pista | corrida | categoria
+running | Corrida de rua | corrida | categoria
+running | Corrida em trilha (trail) | corrida | categoria
+running | Cross-country | corrida | categoria
+running | Corrida de montanha | corrida | categoria
+running | Ultramaratona / ultratrail | corrida | categoria
+running | Corrida e caminhada | corrida | categoria
+running | Prova / competição de corrida | corrida | categoria
+swimming | Nado crawl | nado-crawl | categoria
+swimming | Nado peito | nado-peito | categoria
+swimming | Nado costas | nado-costas | categoria
+swimming | Nado borboleta | nado-borboleta | categoria
+swimming | Medley individual | nado-crawl | categoria
+swimming | Série de nado livre | nado-crawl | categoria
+swimming | Natação em águas abertas | nado-crawl | categoria
+swimming | Técnica de natação | nado-crawl | categoria
+swimming | Pernada com prancha | nado-crawl | categoria
+swimming | Braçada com pull buoy | nado-crawl | categoria
+swimming | Natação com nadadeiras | nado-crawl | categoria
+swimming | Natação com palmares | nado-crawl | categoria
+swimming | Natação intervalada | nado-crawl | categoria
+swimming | Natação contínua / resistência | nado-crawl | categoria
+swimming | Tiros de natação | nado-crawl | categoria
+swimming | Natação leve / recuperação | nado-crawl | categoria
+cycling | Pedalada ao ar livre | pedalada | categoria
+cycling | Bicicleta ergométrica | pedalada | categoria
+cycling | Ciclismo de estrada — resistência | pedalada | categoria
+cycling | Ciclismo de estrada — intervalos | pedalada | categoria
+cycling | Ciclismo de estrada — subidas | pedalada | categoria
+cycling | Pedalada leve / recuperação | pedalada | categoria
+cycling | Ciclismo gravel | pedalada | categoria
+cycling | Mountain bike — cross-country | pedalada | categoria
+cycling | Mountain bike — trilha | pedalada | categoria
+cycling | Mountain bike — enduro | pedalada | categoria
+cycling | Mountain bike — downhill | pedalada | categoria
+cycling | Ciclocross | pedalada | categoria
+cycling | Ciclismo de pista | pedalada | categoria
+cycling | BMX racing | pedalada | categoria
+cycling | BMX freestyle | pedalada | categoria
+cycling | Bike trial | pedalada | categoria
+cycling | Aula de ciclismo indoor / spinning | pedalada | categoria
+cycling | Treino em rolo / smart trainer | pedalada | categoria
+cycling | Deslocamento de bicicleta | pedalada | categoria
+cycling | Cicloturismo / passeio | pedalada | categoria
+cycling | Pedalada com bicicleta elétrica | pedalada | categoria
+martial_arts | Taekwondo · prática técnica | luta-chute | categoria
+martial_arts | Taekwondo · rounds / combate | luta-chute | categoria
+martial_arts | Taekwondo · formas / kata / sequência | luta-forma | categoria
+martial_arts | Taekwondo · manoplas / saco / aparadores | luta-chute | categoria
+martial_arts | Jiu-jitsu · prática técnica | luta-solo | categoria
+martial_arts | Jiu-jitsu · rounds / combate | luta-solo | categoria
+martial_arts | Jiu-jitsu · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Judô · prática técnica | luta-solo | categoria
+martial_arts | Judô · rounds / combate | luta-solo | categoria
+martial_arts | Judô · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Karatê · prática técnica | luta-soco | categoria
+martial_arts | Karatê · rounds / combate | luta-soco | categoria
+martial_arts | Karatê · formas / kata / sequência | luta-forma | categoria
+martial_arts | Karatê · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Boxe · prática técnica | luta-soco | categoria
+martial_arts | Boxe · rounds / combate | luta-soco | categoria
+martial_arts | Boxe · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Muay Thai · prática técnica | luta-soco | categoria
+martial_arts | Muay Thai · rounds / combate | luta-soco | categoria
+martial_arts | Muay Thai · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Muay Thai · Wai Kru / Ram Muay | luta-forma | categoria
+martial_arts | Capoeira · prática técnica | luta-chute | categoria
+martial_arts | Capoeira · rounds / combate | luta-chute | categoria
+martial_arts | Capoeira · formas / kata / sequência | luta-forma | categoria
+martial_arts | Capoeira · roda de capoeira | luta-chute | categoria
+martial_arts | Kickboxing · prática técnica | luta-soco | categoria
+martial_arts | Kickboxing · rounds / combate | luta-soco | categoria
+martial_arts | Kickboxing · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Luta olímpica · prática técnica | luta-solo | categoria
+martial_arts | Luta olímpica · rounds / combate | luta-solo | categoria
+martial_arts | Luta olímpica · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Luta greco-romana · prática técnica | luta-solo | categoria
+martial_arts | Luta greco-romana · rounds / combate | luta-solo | categoria
+martial_arts | Luta greco-romana · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Sambo · prática técnica | luta-solo | categoria
+martial_arts | Sambo · rounds / combate | luta-solo | categoria
+martial_arts | Sambo · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Sanda · prática técnica | luta-soco | categoria
+martial_arts | Sanda · rounds / combate | luta-soco | categoria
+martial_arts | Sanda · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | MMA · prática técnica | luta-soco | categoria
+martial_arts | MMA · rounds / combate | luta-soco | categoria
+martial_arts | MMA · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Aikido · prática técnica | luta-solo | categoria
+martial_arts | Aikido · rounds / combate | luta-solo | categoria
+martial_arts | Aikido · formas / kata / sequência | luta-forma | categoria
+martial_arts | Kung fu / Wushu · prática técnica | luta-soco | categoria
+martial_arts | Kung fu / Wushu · rounds / combate | luta-soco | categoria
+martial_arts | Kung fu / Wushu · formas / kata / sequência | luta-forma | categoria
+martial_arts | Kung fu / Wushu · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Hapkido · prática técnica | luta-soco | categoria
+martial_arts | Hapkido · rounds / combate | luta-soco | categoria
+martial_arts | Hapkido · formas / kata / sequência | luta-forma | categoria
+martial_arts | Hapkido · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Krav Maga · prática técnica | luta-soco | categoria
+martial_arts | Krav Maga · rounds / combate | luta-soco | categoria
+martial_arts | Krav Maga · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Savate · prática técnica | luta-chute | categoria
+martial_arts | Savate · rounds / combate | luta-chute | categoria
+martial_arts | Savate · manoplas / saco / aparadores | luta-chute | categoria
+martial_arts | Pencak Silat · prática técnica | luta-soco | categoria
+martial_arts | Pencak Silat · rounds / combate | luta-soco | categoria
+martial_arts | Pencak Silat · formas / kata / sequência | luta-forma | categoria
+martial_arts | Pencak Silat · manoplas / saco / aparadores | luta-soco | categoria
+martial_arts | Luta livre · prática técnica | luta-solo | categoria
+martial_arts | Luta livre · rounds / combate | luta-solo | categoria
+martial_arts | Luta livre · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Sumô · prática técnica | luta-solo | categoria
+martial_arts | Sumô · rounds / combate | luta-solo | categoria
+martial_arts | Sumô · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Kendo · prática técnica | luta-forma | categoria
+martial_arts | Kendo · rounds / combate | luta-forma | categoria
+martial_arts | Kendo · formas / kata / sequência | luta-forma | categoria
+martial_arts | Esgrima · prática técnica | luta-forma | categoria
+martial_arts | Esgrima · rounds / combate | luta-forma | categoria
+martial_arts | Esgrima · formas / kata / sequência | luta-forma | categoria
+martial_arts | Jiu-jitsu tradicional · prática técnica | luta-solo | categoria
+martial_arts | Jiu-jitsu tradicional · rounds / combate | luta-solo | categoria
+martial_arts | Jiu-jitsu tradicional · formas / kata / sequência | luta-forma | categoria
+martial_arts | Jiu-jitsu tradicional · rolagem / luta de treino | luta-solo | categoria
+martial_arts | Lethwei · prática técnica | luta-soco | categoria
+martial_arts | Lethwei · rounds / combate | luta-soco | categoria
+martial_arts | Lethwei · manoplas / saco / aparadores | luta-soco | categoria

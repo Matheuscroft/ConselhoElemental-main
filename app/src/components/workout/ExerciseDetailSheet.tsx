@@ -1,10 +1,13 @@
 import React from 'react';
-import { AlertCircle, Lightbulb, ListChecks, Plus, Repeat2, Timer, Wind } from 'lucide-react';
+import { Activity, AlertCircle, Dumbbell, Lightbulb, ListChecks, Plus, Repeat2, Shuffle, Target, Timer, Wind } from 'lucide-react';
 import './exercise-detail.css';
+import './ficha-uau.css';
+import '@/components/fitness-kit/treino-resumo-uau.css';
 import '@/components/fitness-kit/modalidade-uau.css';
 import { FichaPassos, FichaSigilo, elementoDaFicha } from '@/components/fitness-kit/modalidade-ficha';
 import { MuscleBars } from '@/components/fitness-kit/MuscleBars';
 import { FitnessButton } from '@/components/fitness-kit/FitnessButton';
+import { MidiaDoExercicio } from '@/components/fitness-kit/midia-exercicio';
 import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { MuscleDistributionBars } from './MuscleDistributionBars';
@@ -17,6 +20,20 @@ import {
 } from '@/lib/workout/workout-labels';
 import type { WorkoutExercise } from '@/types/workout';
 import { STRENGTH_EQUIPMENT_LABELS } from '@/constants/strength-training-exercises';
+
+const normalizar = (texto: string) => texto.toLocaleLowerCase('pt-BR').replace(/\s+/g, ' ').trim();
+
+/** One summary line without repeating itself: the focus only shows when the description does not already carry it. */
+function resumoDaFicha(description?: string, focus?: string) {
+  const desc = description?.trim() ?? '';
+  const foco = focus?.trim() ?? '';
+  if (!desc || !foco) return { resumo: desc || foco, foco: '' };
+  const a = normalizar(desc);
+  const b = normalizar(foco);
+  if (a.includes(b)) return { resumo: desc, foco: '' };
+  if (b.includes(a)) return { resumo: foco, foco: '' };
+  return { resumo: desc, foco: foco.replace(/^foco(\s+principal)?\s*:\s*/i, '') };
+}
 
 const YogaProfileDetails: React.FC<{ exercise: WorkoutExercise; compact?: boolean }> = ({ exercise, compact = false }) => {
   const profile = exercise.yogaProfile;
@@ -107,8 +124,11 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({exercis
   const category = CATEGORY_LABELS[exercise.category] ?? 'Exercício';
   const family = exercise.family?.trim();
   const subtitle = family && family.toLocaleLowerCase('pt-BR') !== category.toLocaleLowerCase('pt-BR') ? `${category} · ${family}` : category;
+  const elemento = elementoDaFicha(exercise.category);
+  const { resumo, foco } = resumoDaFicha(exercise.description, exercise.focus);
+  const equipamento = exercise.strengthProfile?.equipmentIds?.slice(0, 2).map((id) => STRENGTH_EQUIPMENT_LABELS[id]).filter(Boolean).join(' · ');
   return <Sheet open={open} onOpenChange={onOpenChange}>
-    <SheetContent side="bottom" className="fitness-exercise-detail mo-ficha" data-element={elementoDaFicha(exercise.category)} closeLabel="Fechar ficha do exercício">
+    <SheetContent side="bottom" className="fitness-exercise-detail mo-ficha" data-element={elemento} closeLabel="Fechar ficha do exercício">
       <header className="fitness-exercise-detail-header mo-ficha-cabeca">
         <span className="mo-ficha-luz" aria-hidden="true" />
         <FichaSigilo icon={Icon} category={exercise.category} muscle={exercise.primaryMuscles?.[0]} />
@@ -118,17 +138,18 @@ export const ExerciseDetailSheet: React.FC<ExerciseDetailSheetProps> = ({exercis
         <SheetDescription className="sr-only">Informações e orientações de registro de {exercise.name}.</SheetDescription>
       </header>
       <div className="fitness-exercise-detail-body">
-        {(exercise.description || exercise.focus) && <p className="fitness-exercise-description">{exercise.description || exercise.focus}</p>}
-        {exercise.focus && exercise.description && exercise.focus !== exercise.description && <p className="fitness-exercise-focus">Foco: {exercise.focus}</p>}
-        <div className="fitness-exercise-tags"><span data-nivel={exercise.level}>{LEVEL_LABELS[exercise.level]}</span><span>{exercise.measureMode === 'duration' ? <Timer size={14} aria-hidden="true" /> : <Repeat2 size={14} aria-hidden="true" />}{exercise.measureMode === 'duration' ? 'Registro por tempo' : 'Registro por repetições'}</span>{exercise.durationLabel && <span>{exercise.durationLabel}</span>}</div>
+        <MidiaDoExercicio title={exercise.name} src={exercise.videoUrl} poster={exercise.imageUrl} exercicio={exercise} />
+        {resumo && <p className="fitness-exercise-description fu-resumo">{resumo}</p>}
+        {foco && <p className="fitness-exercise-focus fu-foco"><Target size={14} aria-hidden="true" />Foco: {foco}</p>}
+        <div className="fitness-exercise-tags"><span data-nivel={exercise.level}>{LEVEL_LABELS[exercise.level]}</span><span>{exercise.measureMode === 'duration' ? <Timer size={14} aria-hidden="true" /> : <Repeat2 size={14} aria-hidden="true" />}{exercise.measureMode === 'duration' ? 'Registro por tempo' : 'Registro por repetições'}</span>{equipamento && <span><Dumbbell size={14} aria-hidden="true" />{equipamento}</span>}{exercise.durationLabel && <span><Activity size={14} aria-hidden="true" />{exercise.durationLabel}</span>}</div>
         {exercise.instructions.length > 0 && <FichaPassos titulo={getInstructionsLabel(exercise.source)} icone={<ListChecks size={18} aria-hidden="true" />} passos={exercise.instructions} />}
         {exercise.breathing && <section className="mo-respiracao"><h3><Wind size={18} aria-hidden="true" />Respiração</h3><p className="fitness-exercise-description">{exercise.breathing}</p></section>}
         {exercise.benefits.length > 0 && <details><summary><Lightbulb size={17} aria-hidden="true" />Benefícios</summary><ul>{exercise.benefits.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
-        {exercise.variations.length > 0 && <details><summary>Variações</summary><ul>{exercise.variations.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
+        {exercise.variations.length > 0 && <details><summary><Shuffle size={17} aria-hidden="true" />Variações</summary><ul>{exercise.variations.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
         {exercise.contraindications.length > 0 && <details className="fitness-exercise-cautions"><summary><AlertCircle size={17} aria-hidden="true" />Cuidados e contraindicações</summary><ul>{exercise.contraindications.map((item,index)=><li key={`${index}-${item}`}>{item}</li>)}</ul></details>}
         <YogaProfileDetails exercise={exercise} compact />
         <StrengthProfileDetails exercise={exercise} compact />
-        {!exercise.strengthProfile && <details><summary>Perfil muscular estimado</summary><p>Referência do cadastro para distribuir o trabalho registrado. Não mede ativação muscular nem considera automaticamente a descrição livre.</p>{variant === 'fitness' ? <MuscleBars distribution={exercise.muscleDistribution} emptyMessage="Sem perfil cadastrado." /> : <MuscleDistributionBars distribution={exercise.muscleDistribution} emptyMessage="Sem dados musculares cadastrados." />}</details>}
+        {!exercise.strengthProfile && <section className="fu-perfil"><h3>Perfil muscular estimado</h3><p className="fu-perfil-intro">Referência do cadastro; não mede a ativação muscular.</p>{variant === 'fitness' ? <MuscleBars distribution={exercise.muscleDistribution} elemento={elemento} emptyMessage="Sem perfil cadastrado." /> : <MuscleDistributionBars distribution={exercise.muscleDistribution} elemento={elemento} emptyMessage="Sem dados musculares cadastrados." />}</section>}
       </div>
       {onAddToWorkout && <footer className="fitness-exercise-detail-footer"><FitnessButton size="md" className="fitness-exercise-add" onClick={()=>onAddToWorkout(exercise)}><Plus size={18} aria-hidden="true" />Adicionar ao treino</FitnessButton></footer>}
     </SheetContent>

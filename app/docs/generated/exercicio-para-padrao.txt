@@ -1,0 +1,195 @@
+categoria | exercício | padrão | motivo
+cali | Flexão Inclinada | flexao-inclinada | palavra
+cali | Flexão Tradicional | flexao | palavra
+cali | Flexão Pike | flexao-pike | palavra
+cali | Remada Australiana | remada-australiana | palavra
+cali | Barra Fixa | barra-fixa | palavra
+cali | Agachamento Livre | agachamento-livre | palavra
+cali | Avanço Caminhando | afundo | palavra
+cali | Hollow Body Hold | abdominal | palavra
+cali | Prancha Frontal | prancha | palavra
+cali | Elevação de Joelhos na Barra | elevacao-joelhos-barra | palavra
+cali | L-Sit (Progressão Tuck) | prancha | palavra
+cali | Burpee Controlado | flexao | palavra
+cali | Flexão Diamante | flexao | palavra
+cali | Mergulho nas Paralelas | mergulho | palavra
+cali | Barra Fixa Supinada (Chin-up) | barra-fixa | palavra
+cali | Transição para Muscle-Up | barra-fixa | palavra
+cali | Agachamento Búlgaro | afundo | palavra
+cali | Agachamento Pistol | afundo | palavra
+cali | Elevação Pélvica | ponte-gluteo | palavra
+cali | Abdominal Canivete (V-Up) | abdominal | palavra
+cali | Dragon Flag | abdominal | palavra
+cali | Flexão na Parede | flexao-inclinada | palavra
+cali | Flexão com Joelhos | flexao | palavra
+cali | Flexão Declinada | flexao | palavra
+cali | Flexão Negativa (Descida Controlada) | flexao | palavra
+cali | Flexão Tradicional com Descida Lenta | flexao | palavra
+cali | Flexão com Pausa no Fundo | flexao | palavra
+cali | Flexão com Pegada Aberta | flexao | palavra
+cali | Flexão com Pegada Fechada | flexao | palavra
+cali | Flexão Escapular | flexao | palavra
+cali | Flexão Arqueiro | flexao | palavra
+cali | Flexão Explosiva | flexao | palavra
+cali | Barra Fixa com Pegada Neutra | barra-fixa | palavra
+cali | Elevação Escapular na Barra | barra-fixa | palavra
+cali | Suspensão Passiva na Barra (Dead Hang) | suspensao | palavra
+cali | Suspensão Ativa na Barra | suspensao | palavra
+cali | Isometria de Depressão Escapular na Barra | suspensao | palavra
+cali | Isometria no Topo do Chin-up | suspensao | palavra
+cali | Isometria com Braços Flexionados | suspensao | palavra
+cali | Barra Fixa Negativa (Descida Controlada) | barra-fixa | palavra
+cali | Chin-up Negativo (Descida Supinada) | barra-fixa | palavra
+cali | Barra Fixa Peito à Barra | barra-fixa | palavra
+cali | Barra Fixa com Elástico | barra-fixa | palavra
+cali | Remada Australiana Escapular | remada-australiana | palavra
+cali | Agachamento Sumô | agachamento-livre | palavra
+cali | Panturrilha no Step | panturrilha | palavra
+cali | Panturrilha Unilateral no Step | panturrilha | palavra
+cali | Elevação de Ponta dos Pés na Parede | panturrilha | palavra
+cali | Avanço Reverso | afundo | palavra
+cali | Avanço Lateral | afundo | palavra
+cali | Isometria na Parede (Wall Sit) | cadeirinha | palavra
+cali | Agachamento Livre com Descida Lenta | agachamento-livre | palavra
+cali | Agachamento com Salto | agachamento-livre | palavra
+cali | Prancha Lateral | prancha | palavra
+cali | Dead Bug | abdominal | palavra
+cali | Abdominal Reverso | abdominal | palavra
+cali | Abdominal Curto (Crunch) | abdominal | palavra
+cali | Abdominal Toque nos Tornozelos | abdominal | palavra
+cali | Abdominal Bicicleta | abdominal | palavra
+cali | Elevação de Pernas com Pausa sem Tocar o Chão | abdominal | palavra
+cali | Elevação de Pernas na Barra | elevacao-joelhos-barra | palavra
+cali | Elevação Lateral de Joelhos na Barra | elevacao-joelhos-barra | palavra
+cali | Isometria de Joelhos Elevados na Barra | elevacao-joelhos-barra | palavra
+cali | Parada de Mãos na Parede (Isometria) | flexao-pike | palavra
+cali | Tuck Planche (Isometria) | prancha | palavra
+cali | Isometria de Apoio nas Paralelas | mergulho | palavra
+cali | Front Lever Tuck (Isometria) | suspensao | palavra
+cali | Elevação Pélvica Unilateral | ponte-gluteo | palavra
+cali | Subida no Step (Step-up) | afundo | palavra
+cali | Arch Hold (Extensão Posterior Isométrica) | prancha | palavra
+musc | Supino reto com barra | supino-barra | palavra
+musc | Supino reto com halteres | supino-halteres | palavra
+musc | Supino inclinado com barra | supino-inclinado-barra | palavra
+musc | Supino inclinado com halteres | supino-inclinado-halteres | palavra
+musc | Supino declinado com barra | supino-barra | palavra
+musc | Supino declinado com halteres | supino-halteres | palavra
+musc | Supino na máquina | supino-maquina | palavra
+musc | Supino convergente articulado | supino-maquina | palavra
+musc | Supino reto no Smith | supino-barra | palavra
+musc | Crucifixo reto com halteres | crucifixo | palavra
+musc | Crucifixo na máquina (Peck Deck) | crucifixo-maquina | palavra
+musc | Crossover na polia (altura média) | crucifixo-cabo | palavra
+musc | Crossover de baixo para cima | crucifixo-cabo | palavra
+musc | Crossover de cima para baixo | crucifixo-cabo | palavra
+musc | Supino em pé na polia | supino-maquina | palavra
+musc | Pressão isométrica de peito na polia | supino-maquina | palavra
+musc | Supino no chão com halteres | supino-halteres | palavra
+musc | Remada curvada com barra | remada-curvada-barra | palavra
+musc | Remada curvada supinada | remada-curvada-barra | palavra
+musc | Remada Pendlay | remada-curvada-barra | palavra
+musc | Remada unilateral com halter | remada-curvada-halteres | palavra
+musc | Remada inclinada com peito apoiado | remada-curvada-halteres | palavra
+musc | Remada baixa na polia | remada-sentada | palavra
+musc | Remada unilateral na polia | remada-sentada | palavra
+musc | Remada articulada na máquina | remada-sentada | palavra
+musc | Puxada alta aberta | puxada-alta | palavra
+musc | Puxada alta com pegada neutra | puxada-alta | palavra
+musc | Puxada alta supinada | puxada-alta | palavra
+musc | Barra fixa assistida na máquina | puxada-alta | palavra
+musc | Pulldown com braços estendidos | puxada-alta | palavra
+musc | Pullover na polia | puxada-alta | palavra
+musc | Pullover com halter | puxada-alta | palavra
+musc | Face pull na polia | remada-sentada | palavra
+musc | Crucifixo inverso na máquina | remada-sentada | palavra
+musc | Encolhimento com barra | carregada | palavra
+musc | Encolhimento com halteres | carregada | palavra
+musc | Remada isométrica na polia | remada-sentada | palavra
+musc | Desenvolvimento militar com barra | desenvolvimento-barra | palavra
+musc | Desenvolvimento com halteres | desenvolvimento-halteres | palavra
+musc | Desenvolvimento na máquina | desenvolvimento-halteres | palavra
+musc | Desenvolvimento no Smith | desenvolvimento-barra | palavra
+musc | Elevação lateral com halteres | elevacao-lateral | palavra
+musc | Elevação lateral na polia | elevacao-lateral | palavra
+musc | Elevação lateral na máquina | elevacao-lateral | palavra
+musc | Elevação frontal com halteres | elevacao-frontal | palavra
+musc | Elevação frontal na polia | elevacao-frontal | palavra
+musc | Crucifixo inverso com halteres | remada-curvada-halteres | palavra
+musc | Rotação externa do ombro na polia | remada-sentada | palavra
+musc | Desenvolvimento isométrico na máquina | desenvolvimento-halteres | palavra
+musc | Rosca direta com barra | rosca-barra | palavra
+musc | Rosca direta com barra EZ | rosca-barra | palavra
+musc | Rosca alternada com halteres | rosca-halteres | palavra
+musc | Rosca alternada com supinação | rosca-halteres | palavra
+musc | Rosca martelo | rosca-halteres | palavra
+musc | Rosca martelo cruzada | rosca-halteres | palavra
+musc | Rosca inclinada com halteres | rosca-halteres | palavra
+musc | Rosca Scott com barra EZ | rosca-barra | palavra
+musc | Rosca Scott unilateral com halter | rosca-halteres | palavra
+musc | Rosca Scott na máquina | rosca-barra | palavra
+musc | Rosca concentrada | rosca-halteres | palavra
+musc | Rosca Spider no banco inclinado | rosca-halteres | palavra
+musc | Rosca na polia baixa com barra reta | rosca-cabo | palavra
+musc | Rosca na polia baixa com barra EZ | rosca-cabo | palavra
+musc | Rosca martelo com corda na polia | rosca-cabo | palavra
+musc | Rosca Bayesian na polia | rosca-cabo | palavra
+musc | Rosca inversa com barra EZ | rosca-barra | palavra
+musc | Rosca Zottman | rosca-halteres | palavra
+musc | Rosca isométrica na polia | rosca-cabo | palavra
+musc | Rosca isométrica com halteres | rosca-halteres | palavra
+musc | Tríceps na polia com barra | triceps-polia | palavra
+musc | Tríceps na polia com corda | triceps-polia | palavra
+musc | Tríceps acima da cabeça na polia | triceps-frances | palavra
+musc | Tríceps unilateral na polia | triceps-polia | palavra
+musc | Tríceps testa com barra EZ | triceps-testa | palavra
+musc | Extensão de tríceps acima da cabeça com halter | triceps-frances | palavra
+musc | Coice de tríceps com halter | triceps-polia | palavra
+musc | Extensão de tríceps na máquina | triceps-polia | palavra
+musc | Supino fechado | supino-barra | palavra
+musc | Extensão isométrica de tríceps na polia | triceps-polia | palavra
+musc | Agachamento livre com barra | agachamento-barra | palavra
+musc | Agachamento frontal com barra | agachamento-barra | palavra
+musc | Agachamento Goblet com halter | agachamento-halter | palavra
+musc | Agachamento no Smith | agachamento-barra | palavra
+musc | Hack squat na máquina | leg-press | palavra
+musc | Leg press 45° | leg-press | palavra
+musc | Leg press horizontal | leg-press | palavra
+musc | Cadeira extensora | extensora | palavra
+musc | Cadeira extensora unilateral | extensora | palavra
+musc | Agachamento búlgaro com halteres | afundo-halteres | palavra
+musc | Agachamento búlgaro no Smith | afundo | palavra
+musc | Agachamento isométrico na parede com anilha | agachamento-livre | palavra
+musc | Cadeira extensora isométrica | extensora | palavra
+musc | Levantamento Romeno com barra | stiff-barra | palavra
+musc | Levantamento Romeno com halteres | stiff-halteres | palavra
+musc | Levantamento terra convencional | terra-barra | palavra
+musc | Levantamento terra sumô | terra-barra | palavra
+musc | Mesa flexora sentada | flexora | palavra
+musc | Mesa flexora deitada | flexora | palavra
+musc | Flexora unilateral na máquina | flexora | palavra
+musc | Good morning com barra | stiff-barra | palavra
+musc | Elevação pélvica com barra | elevacao-pelvica-barra | palavra
+musc | Elevação pélvica no Smith | elevacao-pelvica-barra | palavra
+musc | Coice de glúteo na polia | coice-gluteo | palavra
+musc | Abdutora na máquina | abducao-quadril | palavra
+musc | Adutora na máquina | abducao-quadril | palavra
+musc | Abdução de quadril na polia | abducao-quadril | palavra
+musc | Adução de quadril na polia | abducao-quadril | palavra
+musc | Extensão de quadril na máquina | coice-gluteo | palavra
+musc | Elevação pélvica isométrica com barra | elevacao-pelvica-barra | palavra
+musc | Panturrilha em pé na máquina | panturrilha | palavra
+musc | Panturrilha sentada na máquina | panturrilha | palavra
+musc | Panturrilha no leg press | panturrilha | palavra
+musc | Panturrilha em pé com halteres | panturrilha-halteres | palavra
+musc | Panturrilha unilateral com halter | panturrilha-halteres | palavra
+musc | Abdominal ajoelhado na polia | abdominal | palavra
+musc | Abdominal na máquina | abdominal | palavra
+musc | Rotação diagonal na polia (Woodchop) | rotacao-tronco | palavra
+musc | Pallof press na polia | rotacao-tronco | palavra
+musc | Prancha com anilha | prancha | palavra
+musc | Caminhada do fazendeiro com halteres | carregada | palavra
+musc | Rosca de punho com barra | rosca-barra | palavra
+musc | Rosca inversa de punho com barra | rosca-barra | palavra
+musc | Flexão de punho na polia | rosca-cabo | palavra
+musc | Rolo de punho com carga | rosca-halteres | palavra

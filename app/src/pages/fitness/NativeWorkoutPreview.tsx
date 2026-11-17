@@ -2,7 +2,8 @@ import { useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronDown, Pencil, Play } from 'lucide-react';
 import { toast } from 'sonner';
-import { FitnessButton, FitnessPageShell, VideoExercisePlayer, WorkoutPreviewHero, MuscleBars } from '@/components/fitness-kit';
+import { FitnessButton, FitnessPageShell, WorkoutPreviewHero, MuscleBars } from '@/components/fitness-kit';
+import { MidiaDoExercicio } from '@/components/fitness-kit/midia-exercicio';
 import { TreinoBarraAcao } from '@/components/fitness-kit/treino-barra';
 import { TreinoCena } from '@/components/fitness-kit/treino-cena';
 import { NumeroQueConta } from '@/components/fitness-kit/treino-numero';
@@ -59,7 +60,7 @@ export function NativeWorkoutPreview({ template }: { template: WorkoutTemplate }
             </span>
             <ChevronDown className="treino-runa-seta" size={22} aria-hidden="true" />
           </summary>
-          <div className="treino-runa-detalhe"><VideoExercisePlayer title={exercise.exerciseNameSnapshot} {...media} />
+          <div className="treino-runa-detalhe"><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: template.modality }} />
             <ol className="divide-y divide-white/10">{exercise.sets.map(set => <li key={set.id} className="py-3 text-base text-fitness-text-soft">{set.setNumber}. {set.measureMode === 'reps' ? `${set.targetReps ?? 0} repetições` : `${((set.targetDurationSeconds ?? 0) / 60).toLocaleString('pt-BR', { maximumFractionDigits: 2 })} min`}{set.targetLoadKg ? ` · ${set.targetLoadKg} kg` : ''}<span className="block text-sm text-fitness-muted">{set.restSeconds ?? 0}s de descanso</span></li>)}</ol>
             {!!definition?.instructions.length && <div><h4 className="font-sans text-base font-semibold">Como executar</h4><ol className="mt-2 list-inside list-decimal space-y-2 text-sm leading-relaxed text-fitness-muted">{definition.instructions.map((step, stepIndex) => <li key={stepIndex}>{step}</li>)}</ol></div>}
             {exercise.notes && <p className="whitespace-pre-wrap break-words text-sm text-fitness-muted">{exercise.notes}</p>}

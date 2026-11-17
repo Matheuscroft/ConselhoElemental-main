@@ -1,0 +1,63 @@
+/* Ficha do exercicio: camada UAU sobre o tema da modalidade (cor vem de --elem-*). */
+.mo-ficha .fitness-exercise-detail-body { display: flow-root; padding-top: 14px; scroll-padding-bottom: 24px; }
+
+/* Entrada coreografada: cada bloco chega um passo depois do anterior. */
+.mo-ficha .fitness-exercise-detail-body > * {
+  animation: fu-entrar var(--ds-duration-reveal) var(--ds-ease) backwards;
+  animation-delay: calc(var(--fu-i, 0) * var(--ds-stagger));
+}
+.mo-ficha .fitness-exercise-detail-body > :nth-child(1) { --fu-i: 0; }
+.mo-ficha .fitness-exercise-detail-body > :nth-child(2) { --fu-i: 1; }
+.mo-ficha .fitness-exercise-detail-body > :nth-child(3) { --fu-i: 2; }
+.mo-ficha .fitness-exercise-detail-body > :nth-child(4) { --fu-i: 3; }
+.mo-ficha .fitness-exercise-detail-body > :nth-child(5) { --fu-i: 4; }
+.mo-ficha .fitness-exercise-detail-body > :nth-child(n + 6) { --fu-i: 5; }
+@keyframes fu-entrar { from { opacity: 0; transform: translateY(14px); } }
+
+/* A midia vem do componente irmao; aqui so o respiro ao redor dela. */
+.mo-ficha .fitness-exercise-detail-body > :is(.figura-cartao, figure, [class*="video"]):first-child { margin-bottom: 14px; }
+
+/* Resumo de uma linha e foco. */
+.mo-ficha .fu-resumo { margin: 0; color: rgb(var(--el-text) / .86); font-size: var(--ds-text-body); line-height: 1.55; }
+.mo-ficha .fu-foco { display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--elem-acento); }
+.mo-ficha .fu-foco > svg { flex: none; }
+
+/* Chips em vidro leve, rolando sem quebrar o layout. */
+.mo-ficha .fitness-exercise-tags { margin: 14px 0 18px; }
+.mo-ficha .fitness-exercise-tags span { min-height: 32px; }
+
+/* Passos: selo maior e marca que pulsa ao marcar. */
+.mo-ficha .mo-passos li[data-estado="feito"] .mo-passo-num { animation: fu-marcar var(--ds-duration-settle) var(--ds-ease-conjure); }
+.mo-ficha .mo-passos li[data-estado="feito"] .mo-passo-texto { text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--elem-acento) 50%, transparent); }
+@keyframes fu-marcar { 0% { transform: scale(.7); } 60% { transform: scale(1.18); } 100% { transform: scale(1); } }
+
+/* Blocos recolhiveis. */
+.mo-ficha details > summary { min-height: 48px; gap: 10px; }
+.mo-ficha details > summary > svg { flex: none; }
+.mo-ficha details ul { margin: 0 0 14px; }
+
+/* Perfil muscular: bloco proprio, na cor do elemento. */
+.mo-ficha .fu-perfil {
+  margin-top: 18px;
+  padding: 16px 14px 14px;
+  border: 1px solid color-mix(in srgb, var(--elem-acento) 24%, transparent);
+  border-radius: var(--ds-raio-runa);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--elem-aura) 8%, transparent), transparent 52%), rgb(var(--el-canvas) / 36%);
+}
+.mo-ficha .fu-perfil h3 > svg { color: var(--elem-acento); }
+.mo-ficha .fu-perfil-intro { margin: -4px 0 14px; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); line-height: 1.5; }
+.mo-ficha .fu-perfil .mb-lista { margin: 0; }
+.mo-ficha .fu-perfil .mb-linha { font-size: var(--ds-text-small); }
+
+/* Barra de acao: leve, sem sombra pesada; o rodape e irmao do corpo, entao nada fica coberto. */
+.fitness-exercise-detail.mo-ficha .fitness-exercise-detail-footer {
+  padding: 10px 18px max(12px, env(safe-area-inset-bottom));
+  border-top: 1px solid color-mix(in srgb, var(--elem-acento) 18%, transparent);
+  background: rgb(var(--el-surface) / 94%);
+  box-shadow: none;
+}
+.mo-ficha .fitness-exercise-add { height: 50px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mo-ficha .fitness-exercise-detail-body > *, .mo-ficha .mo-passos li[data-estado="feito"] .mo-passo-num { animation: none; }
+}

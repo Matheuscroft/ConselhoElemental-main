@@ -16,12 +16,15 @@ import './create-workout.css';
 import { Contagem } from '@/components/motion/Contagem';
 import { DialogoCabeca } from '@/components/fitness-kit/dialogo-cabeca';
 import { useLuzDoDialogo } from '@/components/fitness-kit/dialogo-luz';
-import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
 import '@/components/fitness-kit/dialogo-uau.css';
 import './dialogo-criar-uau.css';
 import { DURATION } from '@/lib/motion/motion';
 import { CATEGORY_ICONS, CATEGORY_LABELS } from '@/lib/workout';
 import { CustomExerciseFields } from './CustomExerciseFields';
+import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
+import { FiguraExercicio } from '@/components/fitness-kit/FiguraExercicio';
+import { padraoExiste } from '@/components/fitness-kit/figura-padroes';
+import { padraoDeMovimento, type ExercicioClassificavel } from '@/lib/workout/exercise-motion';
 import { resolveExerciseMedia, validExerciseMediaUrl } from '@/lib/workout/exercise-media';
 
 const newId = () => crypto.randomUUID() as UUIDv4;
@@ -69,11 +72,17 @@ function ReguaDeEsforco({ value, onChange }: { value: number; onChange: (value: 
   </div>;
 }
 
+/** Ilustração do padrão de movimento, se houver uma desenhada para o exercício. */
+function figuraDe(exercicio: ExercicioClassificavel, modality: string): ReactNode {
+  const padrao = padraoDeMovimento(exercicio);
+  return padraoExiste(padrao) ? <FiguraExercicio padraoId={padrao} elemento={elementoDaModalidade(modality)} tamanho="mini" /> : undefined;
+}
+
 type MidiaPatch = Partial<Pick<PlannedExercise, 'imageUrl' | 'videoUrl' | 'notes'>>;
 const AVISO_URL = 'Use um link que comece com http:// ou https://, ou um caminho de arquivo do app, como /imagens/treino.jpg.';
 
 /** Same fields, same validation, same saved data: only presented as a media card with a live preview. */
-function MidiaDoExercicio({ plan, herdada, sigilo, onChange }: { plan: PlannedExercise; herdada?: string; sigilo: ReactNode; onChange: (patch: MidiaPatch) => void }) {
+function MidiaDoExercicio({ plan, herdada, sigilo, figura, onChange }: { plan: PlannedExercise; herdada?: string; sigilo: ReactNode; figura?: ReactNode; onChange: (patch: MidiaPatch) => void }) {
   const id = useId();
   const [aberta, setAberta] = useState(false);
   const [imagem, setImagem] = useState(plan.imageUrl ?? '');
@@ -104,9 +113,11 @@ function MidiaDoExercicio({ plan, herdada, sigilo, onChange }: { plan: PlannedEx
         <div className="dg-midia-palco" data-estado={estado} role="img" aria-label={estado === 'imagem' ? `Pré-visualização da imagem de ${plan.exerciseNameSnapshot}` : estado === 'erro' ? 'Link da imagem inválido' : estado === 'falha' ? 'A imagem não carregou' : 'Sem mídia personalizada'}>
           {mostra && estado === 'imagem'
             ? <img key={mostra} src={mostra} alt="" className="dg-midia-img" loading="lazy" onError={() => setFalhou(mostra)} />
-            : <span className="dg-midia-sigilo" aria-hidden="true">{estado === 'erro' || estado === 'falha' ? <ImageOff size={24} strokeWidth={1.55} /> : sigilo}</span>}
+            : estado === 'vazio' && figura
+              ? <span className="figura-mini" aria-hidden="true">{figura}</span>
+              : <span className="dg-midia-sigilo" aria-hidden="true">{estado === 'erro' || estado === 'falha' ? <ImageOff size={24} strokeWidth={1.55} /> : sigilo}</span>}
           <span className="dg-midia-legenda" aria-hidden="true">
-            {estado === 'imagem' ? (imagemLimpa ? 'Sua imagem' : 'Imagem do app') : estado === 'erro' ? 'Link inválido' : estado === 'falha' ? 'Não consegui carregar esta imagem' : 'A mídia do app aparece sozinha quando você não preenche'}
+            {estado === 'imagem' ? (imagemLimpa ? 'Sua imagem' : 'Imagem do app') : estado === 'erro' ? 'Link inválido' : estado === 'falha' ? 'Não consegui carregar esta imagem' : figura ? 'Demonstração animada do app, até você preencher' : 'A mídia do app aparece sozinha quando você não preenche'}
           </span>
           {videoLimpo && !videoErro && <span className="dg-midia-selo"><Film size={14} aria-hidden="true" />Vídeo</span>}
         </div>
@@ -278,7 +289,7 @@ export function NativeTemplateDialog({ catalog, modality, presetId, template, le
                     </div>; })}
                     <button type="button" className="dg-btn" data-tipo="secundario" onClick={() => setPlans((current) => current.map((item) => item.id !== plan.id ? item : { ...item, sets: [...item.sets, { ...structuredClone(item.sets[item.sets.length - 1]), id: newId(), setNumber: item.sets.length + 1 }] }))}><Plus size={16} aria-hidden="true" />Adicionar série</button>
                   </div>
-                  <MidiaDoExercicio key={plan.id} plan={plan} herdada={herdada} sigilo={<SigiloModalidade size={24} strokeWidth={1.55} />}
+                  <MidiaDoExercicio key={plan.id} plan={plan} herdada={herdada} sigilo={<SigiloModalidade size={24} strokeWidth={1.55} />} figura={figuraDe(exercicioCatalogo ?? { name: plan.exerciseNameSnapshot, category: modality }, modality)}
                     onChange={(patch) => setPlans((current) => current.map((item) => item.id === plan.id ? { ...item, ...patch } : item))} />
                 </div>
               </Colapso>

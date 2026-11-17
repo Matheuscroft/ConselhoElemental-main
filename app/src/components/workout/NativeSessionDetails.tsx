@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Check, ChevronDown, SkipForward, Sparkles } from 'lucide-react';
-import { MuscleBars, TrendAreaChart, VideoExercisePlayer } from '@/components/fitness-kit';
+import { MuscleBars, TrendAreaChart } from '@/components/fitness-kit';
+import { MidiaDoExercicio } from '@/components/fitness-kit/midia-exercicio';
 import { NumeroQueConta } from '@/components/fitness-kit/treino-numero';
 import { elementoDaModalidade } from '@/components/fitness-kit/treinos-elementos';
 import '@/components/fitness-kit/dialogo-uau.css';
@@ -76,7 +77,7 @@ export function NativeSessionDetails({ session, history, stars, onRate }: {
               <span className="dg-pips" aria-hidden="true">{exercise.sets.map((set) => <i key={set.id} className="dg-pip" data-estado={set.skipped ? 'pulada' : set.completed ? 'feita' : 'aberta'} />)}</span></span>
             <ChevronDown size={18} aria-hidden="true" className="dg-seta" />
           </summary>
-          {(media.poster || media.src) && <div className="dg-recibo-midia"><VideoExercisePlayer title={exercise.exerciseNameSnapshot} {...media} /></div>}
+          <div className="dg-recibo-midia"><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality }} /></div>
           <ul className="dg-recibo-series">{exercise.sets.map((set) => {
             const feita = set.completed && !set.skipped;
             return <li key={set.id} className="dg-recibo-serie" data-estado={set.skipped ? 'pulada' : set.completed ? 'feita' : 'aberta'}>

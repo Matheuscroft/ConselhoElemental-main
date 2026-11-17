@@ -4,23 +4,30 @@ import { MUSCLE_LABELS } from '@/lib/workout';
 import type { MuscleContribution } from '@/types/workout';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { beatUnless } from '@/lib/motion/motion';
+import { MuscleBars } from '@/components/fitness-kit/MuscleBars';
+import type { ElementoId } from '@/lib/design/palette';
 
 interface MuscleDistributionBarsProps {
   distribution: MuscleContribution[];
   emptyMessage?: string;
   maxItems?: number;
+  /** Com o elemento da modalidade, as barras usam a cor dele e se desenham ao entrar na tela. */
+  elemento?: ElementoId;
 }
 
 export const MuscleDistributionBars: React.FC<MuscleDistributionBarsProps> = ({
   distribution,
   emptyMessage = 'Conclua séries para revelar a distribuição muscular desta sessão.',
   maxItems,
+  elemento,
 }) => {
   const reduced = useMotionPreference();
   const sorted = useMemo(() => {
     const ordered = [...distribution].sort((a, b) => b.percentage - a.percentage);
     return typeof maxItems === 'number' ? ordered.slice(0, maxItems) : ordered;
   }, [distribution, maxItems]);
+
+  if (elemento) return <MuscleBars distribution={distribution} emptyMessage={emptyMessage} maxItems={maxItems} elemento={elemento} />;
 
   if (sorted.length === 0) {
     return <p className="text-xs text-white/50">{emptyMessage}</p>;

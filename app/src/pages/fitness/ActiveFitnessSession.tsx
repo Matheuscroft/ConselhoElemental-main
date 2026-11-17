@@ -3,7 +3,8 @@ import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { sessionClockSeconds } from '@/lib/workout/session-clock';
 import { Check } from 'lucide-react';
 import { toast } from 'sonner';
-import { ExerciseCard, FitnessHeader, FitnessPageShell, VideoExercisePlayer } from '@/components/fitness-kit';
+import { ExerciseCard, FitnessHeader, FitnessPageShell } from '@/components/fitness-kit';
+import { MidiaDoExercicio } from '@/components/fitness-kit/midia-exercicio';
 import { TreinoAnel } from '@/components/fitness-kit/treino-anel';
 import { TreinoBarraAcao } from '@/components/fitness-kit/treino-barra';
 import { TreinoCena } from '@/components/fitness-kit/treino-cena';
@@ -118,7 +119,7 @@ function SessionExecution({ onFinished }: { onFinished: (session: NativeWorkoutS
       const definition = catalog.find((item) => item.id === exercise.exerciseId);
       const legacy = definition?.legacyId ? useWorkoutStore.getState().getExerciseById(definition.legacyId) : undefined;
       const media = resolveExerciseMedia(exercise, definition, legacy);
-      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}><VideoExercisePlayer title={exercise.exerciseNameSnapshot} {...media} />{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} />)}</ExerciseCard>;
+      return <ExerciseCard key={exercise.id} title={exercise.exerciseNameSnapshot} subtitle={`${done} de ${exercise.sets.length} séries`} state={done === exercise.sets.length ? 'completed' : expanded === exercise.id ? 'active' : 'pending'} progress={exercise.sets.length ? done / exercise.sets.length * 100 : 0} expanded={expanded === exercise.id} onToggle={() => setExpanded(expanded === exercise.id ? null : exercise.id)}><MidiaDoExercicio title={exercise.exerciseNameSnapshot} {...media} exercicio={definition ?? { name: exercise.exerciseNameSnapshot, category: exercise.modality }} />{exercise.sets.map((series) => <NativeSetRow key={series.id} exercise={exercise} series={series} defaultEffortLevel={session.effortLevel ?? 1} />)}</ExerciseCard>;
     })}</div>
     </TreinoCena>
     <AlertDialog open={confirm} onOpenChange={setConfirm}><AlertDialogContent className="fitness-dialog border-white/10 bg-fitness-canvas text-fitness-text"><AlertDialogHeader><AlertDialogTitle>Finalizar com séries pendentes?</AlertDialogTitle><AlertDialogDescription>Somente as séries marcadas como concluídas entram no volume do treino.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Continuar treino</AlertDialogCancel><AlertDialogAction disabled={finishing} className="bg-[rgb(var(--el-gold))] text-[rgb(var(--el-canvas))]" onClick={(event) => { event.preventDefault(); finish(); }}>Confirmar finalização</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
