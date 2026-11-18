@@ -164,8 +164,9 @@
     var(--ep-grao),
     radial-gradient(ellipse 78% 44% at 50% 36%, color-mix(in srgb, var(--semana-aura) 15%, transparent), transparent 72%),
     radial-gradient(ellipse 100% 26% at 50% 0, rgb(var(--el-gold) / .08), transparent 70%);
-  -webkit-mask-image: linear-gradient(#000 70%, transparent);
-  mask-image: linear-gradient(#000 70%, transparent);
+  /* Fades in at the top too: a hard top edge of the grain read as a band under the header. */
+  -webkit-mask-image: linear-gradient(transparent, #000 150px, #000 70%, transparent);
+  mask-image: linear-gradient(transparent, #000 150px, #000 70%, transparent);
 }
 
 /* The pool of light the character stands in. */
