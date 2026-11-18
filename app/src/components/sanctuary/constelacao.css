@@ -43,7 +43,7 @@
 /* The front orb is named a little larger, and the ones behind stay quiet but readable. */
 .ep-orbit-position[data-frente] .ep-portal-name { font-size: var(--ds-text-small); border-color: color-mix(in srgb, var(--element-accent) 62%, transparent); }
 /* Behind the body: the name goes above the orb (the face is below it) and quieter. */
-.ep-orbit-position[data-tras] .ep-portal-name { top: auto; bottom: calc(100% + 4px); transform-origin: 50% 100%; opacity: .5; }
+.ep-orbit-position[data-tras] .ep-portal-name { top: auto; bottom: calc(100% + 4px); transform-origin: 50% 100%; opacity: 0; }
 .ep-portal-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--element-accent); box-shadow: 0 0 8px var(--element-accent); }
 
 /* An element with rituals waiting today breathes slowly: an invitation, not an alarm. */

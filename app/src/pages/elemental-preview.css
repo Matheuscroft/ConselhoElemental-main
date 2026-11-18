@@ -345,3 +345,7 @@
   }
 }
 @keyframes ep-revelar { from { opacity: 0; transform: translateY(26px) scale(.98); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 420px) {
+  .ep-cena .ep-next-heading > h2 { font-size: var(--ds-text-body); white-space: nowrap; letter-spacing: .04em; }
+}
