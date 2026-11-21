@@ -384,13 +384,15 @@
   }
   .elemental-topbar[data-lugar="interna"] .elemental-topbar-inner { display: contents; }
   .elemental-topbar[data-lugar="interna"] .elemental-topbar-back { order: 1; }
-  .elemental-topbar[data-lugar="interna"] .elemental-topbar-brand { order: 2; }
+  /* The home sigil repeats the first tab of the bottom bar: the room goes to the place name. */
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-brand { order: 2; display: none; }
+  .elemental-topbar[data-lugar="interna"] .elemental-topbar-location { padding-inline-start: 4px; font-size: var(--ds-text-body); letter-spacing: 0; }
   .elemental-topbar[data-lugar="interna"] .elemental-topbar-location { order: 3; padding-inline-start: 4px; }
   .elemental-topbar[data-lugar="interna"] .elemental-topbar-abas { order: 4; }
   .elemental-topbar[data-lugar="interna"] .hud-recursos { order: 5; margin-inline-start: auto; padding-inline: 0; flex: 0 0 auto; }
   .elemental-topbar[data-lugar="interna"] .elemental-topbar-actions { order: 6; margin-inline-start: 0; }
   .elemental-topbar[data-lugar="interna"] .hud-trilho { display: none; }
-  .elemental-topbar[data-lugar="interna"] .hud-fio { inline-size: auto; gap: 8px; padding-inline: 4px; }
+  .elemental-topbar[data-lugar="interna"] .hud-fio { inline-size: auto; gap: 6px; padding-inline: 2px; }
   .elemental-topbar[data-lugar="interna"] .hud-contas { gap: 2px; }
   .elemental-topbar[data-lugar="interna"] .hud-conta { inline-size: var(--hdr-conta); block-size: var(--hdr-conta); }
   .elemental-topbar[data-lugar="interna"] .hud-bandeja { inset-inline: 12px; }
