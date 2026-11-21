@@ -1,4 +1,4 @@
-import { useRef, type CSSProperties } from 'react';
+import { useRef, useState, type CSSProperties } from 'react';
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
@@ -11,12 +11,14 @@ import type { ElementId } from '@/types';
 import '@/styles/elemental-motion.css';
 import './boas-vindas.css';
 
-const ELEMENTOS: ReadonlyArray<{ id: ElementId; nome: string; papel: string }> = [
-  { id: 'terra', nome: 'Terra', papel: 'sua base' },
-  { id: 'fogo', nome: 'Fogo', papel: 'sua iniciativa' },
-  { id: 'agua', nome: 'Água', papel: 'suas conexões' },
-  { id: 'ar', nome: 'Ar', papel: 'seu conhecimento' },
+const ELEMENTOS: ReadonlyArray<{ id: ElementId; nome: string; papel: string; dica: string }> = [
+  { id: 'terra', nome: 'Terra', papel: 'sua base', dica: 'Corpo, rotina e casa: tudo o que sustenta o seu dia.' },
+  { id: 'fogo', nome: 'Fogo', papel: 'sua iniciativa', dica: 'Metas, trabalho e coragem de começar.' },
+  { id: 'agua', nome: 'Água', papel: 'suas conexões', dica: 'Pessoas, emoções e o cuidado com o que sente.' },
+  { id: 'ar', nome: 'Ar', papel: 'seu conhecimento', dica: 'Estudo, ideias e clareza para decidir.' },
 ];
+
+const DICA_PADRAO = 'Toque num elemento para ver o que ele cuida.';
 
 /**
  * The entry, reached after the awakening. It keeps the sanctuary behind it so
@@ -34,17 +36,24 @@ export function EntryWelcome() {
   const nome = getOpeningName();
   const reduzido = useMotionPreference();
   const cenaRef = useRef<HTMLDivElement>(null);
+  const [ativo, setAtivo] = useState<ElementId | null>(null);
+  const atual = ELEMENTOS.find((e) => e.id === ativo) ?? null;
 
   useParalaxe(cenaRef, !reduzido);
   useLuzDoToque(cenaRef);
 
   return (
-    <div className="boas" ref={cenaRef}>
+    <div
+      className="boas"
+      ref={cenaRef}
+      style={atual ? ({ '--boas-cor': `var(--element-${atual.id})` } as CSSProperties) : undefined}
+    >
       <a className="boas-pular" href="#boas-titulo">
         Ir para a apresentação
       </a>
 
       <FundoSantuario opacidade={0.62} viva />
+      <span className="boas-luz-elemento" data-acesa={atual ? '' : undefined} aria-hidden="true" />
 
       <header className="boas-topo">
         <EntryBrand />
@@ -70,16 +79,27 @@ export function EntryWelcome() {
                 className="boas-selo"
                 style={{ '--selo-cor': `var(--element-${elemento.id})`, '--selo-i': indice } as CSSProperties}
               >
-                <span className="boas-sigilo" aria-hidden="true">
-                  <ElementIcon element={elemento.id} size={26} />
-                </span>
-                <span className="boas-selo-texto">
-                  <strong>{elemento.nome}</strong>
-                  <span>{elemento.papel}</span>
-                </span>
+                <button
+                  type="button"
+                  className="boas-selo-botao"
+                  aria-pressed={ativo === elemento.id}
+                  onClick={() => setAtivo(ativo === elemento.id ? null : elemento.id)}
+                >
+                  <span className="boas-sigilo" aria-hidden="true">
+                    <ElementIcon element={elemento.id} size={26} />
+                  </span>
+                  <span className="boas-selo-texto">
+                    <strong>{elemento.nome}</strong>
+                    <span>{elemento.papel}</span>
+                  </span>
+                </button>
               </li>
             ))}
           </ul>
+
+          <p className="boas-dica" aria-live="polite" data-ativa={atual ? '' : undefined}>
+            {atual ? atual.dica : DICA_PADRAO}
+          </p>
 
           <div className="boas-acoes">
             <a className="boas-primaria" href="/auth?modo=cadastro">

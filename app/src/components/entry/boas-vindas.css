@@ -205,7 +205,7 @@
   gap: 8px;
   min-inline-size: 0;
   min-block-size: 56px;
-  padding: 8px;
+  padding: 0;
   border: 1px solid color-mix(in srgb, var(--selo-cor) 38%, transparent);
   border-radius: 12px;
   background: linear-gradient(
@@ -215,7 +215,58 @@
   );
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%), 0 0 18px -8px color-mix(in srgb, var(--selo-cor) 60%, transparent);
   animation: boas-selo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * (12 + var(--selo-i))) both;
+  transition: border-color var(--ds-duration-feedback) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
 }
+
+.boas-selo-botao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  inline-size: 100%;
+  min-block-size: 56px;
+  padding: 8px;
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: scale var(--ds-duration-press) var(--ds-ease-conjure);
+}
+.boas-selo-botao:active { scale: 0.96; }
+.boas-selo-botao:focus-visible { outline: 2px solid #d6b66f; outline-offset: 2px; }
+.boas-selo:has([aria-pressed='true']) {
+  border-color: color-mix(in srgb, var(--selo-cor) 90%, white);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--selo-cor) 34%, transparent), color-mix(in srgb, var(--selo-cor) 12%, transparent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 16%), 0 0 26px -2px color-mix(in srgb, var(--selo-cor) 70%, transparent);
+}
+
+/* The element chosen lights the whole screen, once and softly. */
+.boas-luz-elemento {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 110% 60% at 50% 70%, color-mix(in srgb, var(--boas-cor, transparent) 62%, transparent), transparent 100%),
+    radial-gradient(ellipse 90% 40% at 50% 38%, color-mix(in srgb, var(--boas-cor, transparent) 28%, transparent), transparent 100%);
+  opacity: 0;
+  transition: opacity var(--ds-duration-settle) var(--ds-ease);
+}
+.boas-luz-elemento[data-acesa] { opacity: 1; }
+
+.boas-dica {
+  margin: 0;
+  min-block-size: 2.9em;
+  color: rgb(244 236 224 / 62%);
+  font-size: var(--ds-text-small);
+  line-height: 1.45;
+  transition: color var(--ds-duration-feedback) var(--ds-ease);
+  animation: boas-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 16) both;
+}
+.boas-dica[data-ativa] { color: rgb(244 236 224 / 92%); }
 
 .boas-sigilo {
   position: relative;
@@ -411,6 +462,7 @@
   .boas-sigilo::before,
   .boas-primaria,
   .boas-primaria::after,
+  .boas-dica,
   .boas-secundaria {
     animation: none;
   }
@@ -418,6 +470,6 @@
 
 /* Narrow phones: the four seals give the words the room so none breaks mid-word. */
 @media (max-width: 400px) {
-  .boas-selo { gap: 6px; padding: 6px; }
+  .boas-selo-botao { gap: 6px; padding: 6px; }
   .boas-sigilo { inline-size: 28px; block-size: 28px; }
 }
