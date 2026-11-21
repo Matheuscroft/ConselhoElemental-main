@@ -6,6 +6,7 @@ import App from './App.tsx'
 import './styles/elemental-theme.css'
 import './styles/elemental-motion.css'
 import './styles/elemental-rewards.css'
+import './styles/elemental-profundidade.css'
 import { ElementalMotion } from './components/motion/ElementalMotion'
 import AuroraBackground from './components/ui/aurora-background'
 

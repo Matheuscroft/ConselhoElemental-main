@@ -1,0 +1,103 @@
+/*
+ * Depth, for every button and field of the app. One recipe, so a button feels the same on every screen:
+ * a lip under the face, a highlight on its top edge, and a press that sinks it into the lip. Primary
+ * buttons carry the gold; secondary ones carry an outline and a softer lip. Fields share one focus ring.
+ *
+ * It is written on top of the families that already exist (.ds-botao, .elemental-action, .quest-*,
+ * .cycle-primary, .tr-novo, the shadcn Button), with a doubled attribute so it wins over their own rules
+ * wherever they are loaded. Only transform, box-shadow and colour change: nothing here costs a frame.
+ * Radii stay 12 / 16 / 50%, targets stay 44px or more, motion uses the design tokens.
+ */
+:root {
+  --ds-labio-ouro: color-mix(in srgb, rgb(var(--el-gold)) 48%, #000);
+  --ds-labio-fio: rgb(0 0 0 / .38);
+  --ds-realce: inset 0 1px 0 rgb(255 255 255 / .38);
+  --ds-realce-suave: inset 0 1px 0 rgb(255 255 255 / .09);
+}
+
+/* ----- Primary: the gold button ----- */
+[class].ds-botao[data-tipo="primario"]:not(:disabled),
+[class].elemental-action:not(.elemental-action-secondary):not(:disabled),
+[class].quest-primary:not(.quest-botao3d):not(:disabled),
+[class].cycle-primary:not(:disabled),
+[class].tr-novo,
+[class].cycle-composer footer button[type="submit"]:not(:disabled),
+[data-slot="button"][data-variant="default"]:not(:disabled) {
+  box-shadow: 0 4px 0 var(--ds-labio-ouro), var(--ds-realce);
+  transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].ds-botao[data-tipo="primario"]:active:not(:disabled),
+[class].elemental-action:not(.elemental-action-secondary):active:not(:disabled),
+[class].quest-primary:not(.quest-botao3d):active:not(:disabled),
+[class].cycle-primary:active:not(:disabled),
+[class].tr-novo:active,
+[class].cycle-composer footer button[type="submit"]:active:not(:disabled),
+[data-slot="button"][data-variant="default"]:active:not(:disabled) {
+  transform: translateY(4px); box-shadow: 0 0 0 var(--ds-labio-ouro), var(--ds-realce);
+}
+
+/* ----- Secondary: outline with a softer lip ----- */
+[class].ds-botao[data-tipo="secundario"]:not(:disabled),
+[class].elemental-action-secondary:not(:disabled),
+[class].quest-secondary:not(:disabled),
+[class].cycle-composer footer button[type="button"]:not(:disabled),
+[data-slot="button"][data-variant="outline"]:not(:disabled) {
+  box-shadow: 0 3px 0 var(--ds-labio-fio), var(--ds-realce-suave);
+  transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].ds-botao[data-tipo="secundario"]:active:not(:disabled),
+[class].elemental-action-secondary:active:not(:disabled),
+[class].quest-secondary:active:not(:disabled),
+[class].cycle-composer footer button[type="button"]:active:not(:disabled),
+[data-slot="button"][data-variant="outline"]:active:not(:disabled) {
+  transform: translateY(3px); box-shadow: 0 0 0 var(--ds-labio-fio), var(--ds-realce-suave);
+}
+
+/* ----- Touch targets: every real button is at least 44px tall on a touch screen ----- */
+@media (pointer: coarse) {
+  [data-slot="button"]:not([data-size^="icon"]) { min-block-size: 44px; }
+}
+
+/* ----- Chips: any toggle button that says pressed/checked looks the same ----- */
+[class].cycle-weekdays > div { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+[class].cycle-weekdays button {
+  min-block-size: 48px; display: grid; place-items: center; padding: 0; border-radius: 12px; border: 1px solid rgb(var(--el-muted) / .24); background: transparent;
+  color: rgb(var(--el-muted)); font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif;
+  transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].cycle-weekdays button > span[aria-hidden="true"] { display: none; }
+[class].cycle-weekdays button[aria-pressed="true"] {
+  border-color: rgb(var(--el-gold) / .8); background: linear-gradient(180deg, rgb(var(--el-gold) / .3), rgb(var(--el-gold) / .14));
+  color: rgb(var(--el-gold)); box-shadow: 0 3px 0 rgb(var(--el-gold) / .28);
+}
+[class].cycle-weekdays button:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
+
+/* ----- Fields: one focus ring, and a drawn caret on native selects ----- */
+select:not([multiple]):not([data-slot]) {
+  -webkit-appearance: none; appearance: none; padding-inline-end: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d5b66f' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; background-size: 16px;
+}
+:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]), select, textarea):focus-visible {
+  outline: none; border-color: rgb(var(--el-gold) / .75); box-shadow: 0 0 0 3px rgb(var(--el-gold) / .18);
+}
+
+/* ----- Toggle buttons made of .ds-botao (element pickers, filters): off is quiet, on takes its own colour and a lip ----- */
+[class].ds-botao[aria-pressed]:not(:disabled) {
+  border-color: rgb(var(--el-muted) / .26); box-shadow: 0 3px 0 var(--ds-labio-fio), var(--ds-realce-suave);
+  transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].ds-botao[aria-pressed="true"]:not(:disabled) {
+  border-color: color-mix(in srgb, currentColor 75%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, currentColor 28%, transparent), color-mix(in srgb, currentColor 12%, transparent));
+  box-shadow: 0 3px 0 color-mix(in srgb, currentColor 30%, #000), inset 0 1px 0 rgb(255 255 255 / .12);
+}
+[class].ds-botao[aria-pressed]:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 transparent, var(--ds-realce-suave); }
+
+/* A disabled button is flat: no lip to press. */
+[class]:is(.ds-botao, .elemental-action, .quest-primary, .quest-secondary, .cycle-primary):disabled,
+[class].cycle-composer footer button:disabled,
+[data-slot="button"]:disabled { box-shadow: none; }
+
+/* ----- Dialogs: the title never runs under the close button ----- */
+[role="dialog"] :is([data-slot="dialog-title"], [data-slot="sheet-title"], h2:first-of-type) { padding-inline-end: 40px; }
