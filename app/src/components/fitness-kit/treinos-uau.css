@@ -458,3 +458,9 @@
    the same way. */
 .tr-runa-capa[data-modalidade="martial_arts"] img { filter: brightness(2.1) contrast(1.1) saturate(1.6); }
 .tr-runa-capa[data-modalidade="yoga"] img { transform: scale(1.35); transform-origin: 50% 49%; }
+
+/* Phone: a lighter heading, so the content starts higher. */
+@media (max-width: 420px) {
+  .tr-titulo { font-size: var(--ds-fluid-title); }
+  .tr-subtitulo { margin-top: 2px; }
+}

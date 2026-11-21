@@ -551,3 +551,9 @@
   .saude-cena button.saude-runa:active, .saude-cena .saude-atalho:active { transform: none; }
   .saude-spark svg { clip-path: none; transition: none; }
 }
+
+/* Phone: the month is already named under the page title; the summary keeps its number and label. */
+@media (max-width: 420px) {
+  .saude-resumo small { display: none; }
+  .saude-resumo { grid-template-columns: auto minmax(0, 1fr); }
+}
