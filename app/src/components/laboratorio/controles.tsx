@@ -43,8 +43,9 @@ export function Texto({ rotulo, valor, aoMudar }: { rotulo: string; valor: strin
   );
 }
 
-export function Acao({ children, aoClicar, primaria = false }: { children: ReactNode; aoClicar: () => void; primaria?: boolean }) {
-  return <button type="button" className="lab-acao" data-primaria={primaria || undefined} onClick={aoClicar}>{children}</button>;
+/** `fixa`: the main button of a long block stays in view at the foot of the screen while you tune its sliders. */
+export function Acao({ children, aoClicar, primaria = false, fixa = false }: { children: ReactNode; aoClicar: () => void; primaria?: boolean; fixa?: boolean }) {
+  return <button type="button" className="lab-acao" data-primaria={primaria || undefined} data-fixa={fixa || undefined} onClick={aoClicar}>{children}</button>;
 }
 
 export function Bloco({ titulo, nota, children }: { titulo: string; nota?: string; children: ReactNode }) {

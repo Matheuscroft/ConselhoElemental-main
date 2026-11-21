@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout';
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import { CerimoniaDeNivel } from '@/components/cerimonia/CerimoniaDeNivel';
@@ -10,6 +11,7 @@ import { ReelMomentos, type DiaDoReel } from '@/components/momentos/ReelMomentos
 import { Conjurar } from '@/components/motion/Conjurar';
 import { Contagem } from '@/components/motion/Contagem';
 import { RewardSummary } from '@/components/rewards/RewardSummary';
+import { ativarSom, silenciado, tocarConclusao, tocarConquista, tocarNivel, tocarToque, tocarTrocaDeElemento, tocarVibracaoDeTeste } from '@/lib/audio';
 import type { Premio } from '@/lib/cerimonia/cerimonia';
 import { ACENTO, type ElementoId } from '@/lib/design/palette';
 import type { AscensaoDoReel, NivelDeAscensao } from '@/lib/momentos/ascensao';
@@ -28,11 +30,12 @@ const NOME: Record<ElementoId, string> = { fogo: 'Fogo', agua: 'Água', ar: 'Ar'
 const OPCOES_ELEMENTO = ELEMENTOS.map((valor) => ({ valor, texto: NOME[valor] }));
 const OPCOES_OU_NENHUM: ReadonlyArray<{ valor: ElementoId | null; texto: string }> = [{ valor: null, texto: 'Nenhum' }, ...OPCOES_ELEMENTO];
 
-type Painel = 'nivel' | 'moldura' | 'avisos' | 'recompensa' | 'movimento';
+type Painel = 'nivel' | 'moldura' | 'avisos' | 'recompensa' | 'movimento' | 'som';
 const PAINEIS: ReadonlyArray<{ id: Painel; texto: string }> = [
   { id: 'nivel', texto: 'Nível' }, { id: 'moldura', texto: 'Moldura' }, { id: 'avisos', texto: 'Avisos' },
-  { id: 'recompensa', texto: 'Recompensa' }, { id: 'movimento', texto: 'Movimento' },
+  { id: 'recompensa', texto: 'Recompensa' }, { id: 'movimento', texto: 'Movimento' }, { id: 'som', texto: 'Som' },
 ];
+const ids = PAINEIS.map((item) => item.id);
 
 /* ---------- Nível: a subida de nível e a cerimônia de conclusão ---------- */
 function PainelNivel() {
@@ -58,12 +61,20 @@ function PainelNivel() {
   return (
     <>
       <Bloco titulo="Subida de nível" nota="A tela cheia do anel do Santuário, os quatro elementos e o número novo.">
+        <div className="lab-cenarios" role="group" aria-label="Cenários rápidos">
+          <span className="lab-rotulo">Cenários rápidos</span>
+          <div className="lab-segmentos">
+            <button type="button" onClick={() => { setDe(4); setTitulo('Aprendiz'); setFracao(0.12); setFracaoAntes(0.9); setFaltam(120); }}>Subida comum</button>
+            <button type="button" onClick={() => { setDe(9); setTitulo('Adepto'); setFracao(0.02); setFracaoAntes(0.98); setFaltam(480); }}>Salto de título</button>
+            <button type="button" onClick={() => { setDe(29); setTitulo('Mestre'); setFracao(0.5); setFracaoAntes(0.5); setFaltam(900); }}>Nível alto</button>
+          </div>
+        </div>
         <Deslizante rotulo="Nível de partida" valor={de} min={1} max={60} aoMudar={setDe} formatar={(v) => `${v} → ${v + 1}`} />
         <Texto rotulo="Título de maestria do novo nível" valor={titulo} aoMudar={setTitulo} />
         <Deslizante rotulo="Já andado no novo nível" valor={fracao} min={0} max={1} passo={0.01} aoMudar={setFracao} formatar={(v) => `${Math.round(v * 100)}%`} />
         <Deslizante rotulo="Andado no nível vencido, antes do ganho" valor={fracaoAntes} min={0} max={1} passo={0.01} aoMudar={setFracaoAntes} formatar={(v) => `${Math.round(v * 100)}%`} />
         <Deslizante rotulo="XP que faltam para o próximo" valor={faltam} min={0} max={2000} passo={10} aoMudar={setFaltam} />
-        <Acao primaria aoClicar={() => setSubida((n) => (n ?? 0) + 1)}>Disparar subida de nível</Acao>
+        <Acao primaria fixa aoClicar={() => setSubida((n) => (n ?? 0) + 1)}>Disparar subida de nível</Acao>
       </Bloco>
       {subida !== null ? createPortal(
         <CerimoniaDeNivel key={subida} de={de} para={de + 1} titulo={titulo} fracao={fracao} fracaoAntes={fracaoAntes} faltam={faltam} onFechar={() => setSubida(null)} />,
@@ -75,7 +86,7 @@ function PainelNivel() {
         <Texto rotulo="Título" valor={tituloPremio} aoMudar={setTituloPremio} />
         <Escolha rotulo="Mostrar o número" valor={comNumero ? 1 : 0} opcoes={[{ valor: 1, texto: 'Sim' }, { valor: 0, texto: 'Não' }]} aoMudar={(v) => setComNumero(v === 1)} />
         <Escolha rotulo="Mostrar o que destrava" valor={comDestrave ? 1 : 0} opcoes={[{ valor: 1, texto: 'Sim' }, { valor: 0, texto: 'Não' }]} aoMudar={(v) => setComDestrave(v === 1)} />
-        <Acao primaria aoClicar={() => setPremioN((n) => (n ?? 0) + 1)}>Disparar cerimônia</Acao>
+        <Acao primaria fixa aoClicar={() => setPremioN((n) => (n ?? 0) + 1)}>Disparar cerimônia</Acao>
       </Bloco>
       {premioN !== null ? <Cerimonia key={premioN} premio={premio} onFechar={() => setPremioN(null)} /> : null}
     </>
@@ -168,6 +179,13 @@ function PainelAvisos() {
   );
 }
 
+/** The smallest XP total that reaches a level, found by walking up (levels are cheap to compute). */
+function xpDoNivel(nivel: number): number {
+  let xp = 0;
+  while (LevelingCalculatorService.calculate(xp).level < nivel && xp < 100000) xp += 5;
+  return xp;
+}
+
 /* ---------- Recompensa: o recibo de XP, com e sem subida de nível ---------- */
 function PainelRecompensa() {
   const [elemento, setElemento] = useState<ElementoId>('fogo');
@@ -179,10 +197,18 @@ function PainelRecompensa() {
 
   return (
     <Bloco titulo="Recibo de recompensa" nota={progresso.level > nivelAntes ? `Sobe do nível ${nivelAntes} para ${progresso.level}.` : 'Sem subida de nível com estes valores.'}>
+      <div className="lab-cenarios" role="group" aria-label="Cenários rápidos">
+        <span className="lab-rotulo">Cenários rápidos</span>
+        <div className="lab-segmentos">
+          <button type="button" onClick={() => { setAntes(380); setGanho(60); setToque((n) => n + 1); }}>Ganho comum</button>
+          <button type="button" onClick={() => { const alvo = xpDoNivel(4); setAntes(Math.max(0, alvo - 30)); setGanho(80); setToque((n) => n + 1); }}>Sobe de nível</button>
+          <button type="button" onClick={() => { setAntes(2000); setGanho(0); setToque((n) => n + 1); }}>Sem XP</button>
+        </div>
+      </div>
       <Escolha rotulo="Elemento" valor={elemento} opcoes={OPCOES_ELEMENTO} aoMudar={setElemento} />
       <Deslizante rotulo="XP total antes" valor={antes} min={0} max={6000} passo={10} aoMudar={setAntes} />
       <Deslizante rotulo="XP ganho" valor={ganho} min={0} max={900} passo={5} aoMudar={setGanho} formatar={(v) => `+${v}`} />
-      <Acao primaria aoClicar={() => setToque((n) => n + 1)}>Reproduzir</Acao>
+      <Acao primaria fixa aoClicar={() => setToque((n) => n + 1)}>Reproduzir</Acao>
       <div className="lab-recibo">
         <RewardSummary key={toque} xp={ganho} elements={[{ element: elemento, amount: ganho }]} progress={progresso} fromLevel={nivelAntes} animate />
       </div>
@@ -215,8 +241,48 @@ function PainelMovimento() {
   );
 }
 
+
+/* ---------- Som: os sinais sonoros e a vibração ---------- */
+function PainelSom() {
+  const [elemento, setElemento] = useState<ElementoId>('fogo');
+  const [para, setPara] = useState<ElementoId>('agua');
+  const [intensidade, setIntensidade] = useState(0.6);
+  const mudo = silenciado();
+  // Audio needs a real tap to start: every button wakes it before playing.
+  const tocar = (fazer: () => void) => { void ativarSom().then(fazer); };
+  return (
+    <>
+      <Bloco titulo="Sinais sonoros" nota={mudo ? 'O som está desligado nas suas preferências (Minha conta), então nada toca aqui. O Laboratório não muda essa preferência.' : 'Cada elemento tem a sua melodia. Os mesmos sinais tocam quando você conclui algo no app.'}>
+        <Escolha rotulo="Elemento" valor={elemento} opcoes={OPCOES_ELEMENTO} aoMudar={setElemento} />
+        <Deslizante rotulo="Intensidade da conclusão" valor={intensidade} min={0} max={1} passo={0.05} aoMudar={setIntensidade} formatar={(v) => `${Math.round(v * 100)}%`} />
+        <div className="lab-acoes">
+          <Acao primaria aoClicar={() => tocar(() => tocarConclusao(elemento, intensidade))}>Conclusão</Acao>
+          <Acao aoClicar={() => tocar(() => tocarNivel(elemento, 2))}>Nível · Fluxo</Acao>
+          <Acao aoClicar={() => tocar(() => tocarNivel(elemento, 3))}>Nível · Domínio</Acao>
+          <Acao aoClicar={() => tocar(() => tocarConquista())}>Conquista</Acao>
+          <Acao aoClicar={() => tocar(() => tocarToque())}>Toque</Acao>
+        </div>
+      </Bloco>
+      <Bloco titulo="Troca de elemento" nota="O som de passar de um elemento ao outro.">
+        <Escolha rotulo="De" valor={elemento} opcoes={OPCOES_ELEMENTO} aoMudar={setElemento} />
+        <Escolha rotulo="Para" valor={para} opcoes={OPCOES_ELEMENTO} aoMudar={setPara} />
+        <Acao primaria aoClicar={() => tocar(() => tocarTrocaDeElemento(elemento, para))}>Tocar troca</Acao>
+      </Bloco>
+      <Bloco titulo="Vibração" nota="Só nos aparelhos que vibram, e só se a vibração estiver ligada nas preferências. O iPhone no Safari não vibra.">
+        <Acao primaria aoClicar={() => tocarVibracaoDeTeste()}>Vibrar</Acao>
+      </Bloco>
+    </>
+  );
+}
+
 export default function Laboratorio() {
-  const [painel, setPainel] = useState<Painel>('nivel');
+  // The open tab lives in the address (?aba=moldura): the bench survives a reload and can be opened straight on a tab, with no storage.
+  const [busca, setBusca] = useSearchParams();
+  const pedido = busca.get('aba');
+  const painel: Painel = ids.includes(pedido as Painel) ? (pedido as Painel) : 'nivel';
+  const setPainel = (id: Painel) => setBusca({ aba: id }, { replace: true });
+  // The chosen tab scrolls into view in the row of tabs (the last ones sit off to the right on a phone).
+  useEffect(() => { document.querySelector('.lab-abas [aria-selected="true"]')?.scrollIntoView({ inline: 'center', block: 'nearest' }); }, [painel]);
   return (
     <AppLayout>
       <main className="lab">
@@ -236,6 +302,7 @@ export default function Laboratorio() {
           {painel === 'avisos' ? <PainelAvisos /> : null}
           {painel === 'recompensa' ? <PainelRecompensa /> : null}
           {painel === 'movimento' ? <PainelMovimento /> : null}
+        {painel === 'som' ? <PainelSom /> : null}
         </div>
       </main>
     </AppLayout>

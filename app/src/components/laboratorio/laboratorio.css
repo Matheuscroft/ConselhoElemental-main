@@ -38,3 +38,12 @@
 .lab-numero { margin: 0; font: 500 var(--ds-text-display)/1.1 Cinzel, Georgia, serif; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); text-align: center; }
 .lab-recibo { min-inline-size: 0; }
 @media (prefers-reduced-motion: reduce) { .lab-painel { animation: none; } }
+
+/* Quick scenarios: one tap sets a whole situation. */
+.lab-cenarios { display: grid; gap: 8px; padding: 12px; border-radius: 12px; border: 1px dashed rgb(var(--el-gold) / .35); background: rgb(var(--el-gold) / .05); }
+.lab-cenarios button { min-block-size: 44px; padding-inline: 14px; border-radius: 50px; border: 1px solid rgb(var(--el-gold) / .4); background: transparent; color: rgb(var(--el-gold)); font: 600 var(--ds-text-small)/1.2 Inter, system-ui, sans-serif; transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease); }
+.lab-cenarios button:active { transform: scale(.96); background: rgb(var(--el-gold) / .16); }
+.lab-cenarios button:focus-visible { outline: 2px solid rgb(var(--el-gold) / .8); outline-offset: 2px; }
+
+/* The main action follows the thumb through a long block, above the dock. */
+.lab-acao[data-fixa] { position: sticky; inset-block-end: calc(5.25rem + env(safe-area-inset-bottom)); z-index: 6; inline-size: 100%; }
