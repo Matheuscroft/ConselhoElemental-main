@@ -10,6 +10,7 @@ import {
   type SyntheticEvent,
 } from 'react';
 import { Contagem } from '@/components/motion/Contagem';
+import { CenaMagica } from './CenaMagica';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { tocarToque } from '@/lib/audio';
 import { ACENTO, AURA, TINTA } from '@/lib/design/palette';
@@ -115,6 +116,13 @@ function Imagem({ src, largura, altura, className }: { src: string; largura: num
 function Selo({ numero, pulsa, faiscas, mini }: { numero: number; pulsa: boolean; faiscas: boolean; mini?: boolean }) {
   return (
     <div className={mini ? 'cn-selo cn-selo--mini' : 'cn-selo'} data-pulsa={pulsa} aria-hidden="true">
+      {mini ? null : (
+        <>
+          <span className="cn-orbita cn-orbita--a"><i /></span>
+          <span className="cn-orbita cn-orbita--b"><i /></span>
+          <span className="cn-orbita cn-orbita--c"><i /></span>
+        </>
+      )}
       <span className="cn-selo__onda cn-selo__onda--a" />
       <span className="cn-selo__onda cn-selo__onda--b" />
       <div className="cn-selo__corpo">
@@ -480,6 +488,10 @@ export function CerimoniaDeNivel({ de, para, titulo, fracao, fracaoAntes, faltam
       data-reduzido={reduced}
       onClick={fim ? undefined : encerrar}
     >
+      {ativa === 'anel' ? null : (
+        <CenaMagica cor={ACENTO[elemento]} aura={AURA[elemento]} cy={ativa === 'cartoes' ? 44 : 34} />
+      )}
+
       {ativa === 'anel' ? (
         <Ascensao de={de} para={para} inicio={inicio} elemento={elemento} aoTerminar={aoTerminarOAnel} />
       ) : null}

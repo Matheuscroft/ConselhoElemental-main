@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { CenaMagica } from './CenaMagica';
 import { Contagem } from '@/components/motion/Contagem';
 import { useMotionPreference } from '@/components/motion/useMotionPreference';
 import { ACENTO, AURA } from '@/lib/design/palette';
@@ -10,18 +11,6 @@ import './cerimonia.css';
 const NOME = { terra: 'Terra', fogo: 'Fogo', agua: 'Água', ar: 'Ar' } as const;
 const OURO = '#d6b66f';
 const OURO_VIVO = '#f0cf86';
-
-/** Embers rising behind everything: fixed numbers, so the same ceremony always looks the same. */
-const BRASAS = Array.from({ length: 22 }, (_, i) => {
-  const ruido = (k: number) => ((Math.sin((i + 1) * k) * 43758.5453) % 1 + 1) % 1;
-  return {
-    x: 4 + ruido(12.9898) * 92,
-    tamanho: 2 + ruido(78.233) * 3.5,
-    duracao: 5 + ruido(37.719) * 5,
-    atraso: ruido(4.581) * 10,
-    deriva: (ruido(9.131) - 0.5) * 70,
-  };
-});
 
 /** The count on the number beat starts at the old value and runs to the new one, so it is seen being earned. */
 function useContar(de: number, para: number, parado: boolean) {
@@ -72,7 +61,6 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
   const tudoDeUmaVez = reduced || beat === 'fim';
   const visiveis = tudoDeUmaVez ? beatsDe(premio).filter((b) => b !== 'fim') : [beat];
   const passos = beatsDe(premio).filter((b) => b !== 'fim');
-  const brasas = useMemo(() => BRASAS, []);
 
   useEffect(() => { sairRef.current?.focus(); }, []);
 
@@ -90,6 +78,8 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
 
   const encerrar = useCallback(() => onFechar(), [onFechar]);
   const pronto = beat === 'fim' || tudoDeUmaVez;
+  // The light is centred on whatever is on show.
+  const cy = beat === 'chegada' && !tudoDeUmaVez ? 36 : beat === 'fim' || tudoDeUmaVez ? 40 : 43;
 
   // Rendered on the body: wherever it is called from, nothing (a stacking context, a transform) may keep it under the bars.
   if (typeof document === 'undefined') return null;
@@ -104,19 +94,7 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
       data-parado={reduced}
       style={{ '--cerimonia-cor': cor, '--cerimonia-aura': aura } as CSSProperties}
     >
-      <div className="cerimonia-fundo" aria-hidden="true">
-        <i className="cerimonia-nevoa" />
-        <i className="cerimonia-raios cerimonia-raios-a" />
-        <i className="cerimonia-raios cerimonia-raios-b" />
-        <i className="cerimonia-vinheta" />
-        <i className="cerimonia-clarao" />
-        <i className="cerimonia-onda" />
-        <ul className="cerimonia-brasas">
-          {brasas.map((b, i) => (
-            <li key={i} style={{ '--x': `${b.x}%`, '--s': `${b.tamanho}px`, '--d': b.duracao, '--a': b.atraso, '--dx': `${b.deriva}px` } as CSSProperties} />
-          ))}
-        </ul>
-      </div>
+      <CenaMagica cor={cor} aura={aura} cy={cy} />
 
       <div className="cerimonia-corpo">
         {visiveis.includes('chegada') ? (

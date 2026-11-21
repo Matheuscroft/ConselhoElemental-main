@@ -725,3 +725,16 @@
 @supports (transition-timing-function: linear(0, 1)) {
   .cerimonia-nivel { --cn-mola: linear(0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%, 1.017 19.4%, 1.077 22.1%, 1.121 24.7%, 1.149 27.4%, 1.158 30.1%, 1.134 36.3%, 1.077 41.5%, 1.036 46.5%, 1.012 51.4%, 0.996 57.4%, 0.99 63.7%, 1 100%); }
 }
+
+
+/* ---------- Magic: motes orbiting the seal, and the scene behind everything ---------- */
+.cn-orbita { position: absolute; inset: -14%; pointer-events: none; animation: cn-orbita calc(var(--ds-duration-conjure) * var(--v, 9)) linear infinite; }
+.cn-orbita i { position: absolute; inset-block-start: 0; inset-inline-start: 50%; inline-size: 9px; block-size: 9px; margin-inline-start: -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 3px var(--asc-cor, var(--cn-ouro)), 0 0 22px 6px color-mix(in srgb, var(--asc-cor, var(--cn-ouro)) 50%, transparent); }
+.cn-orbita--a { --v: 7; }
+.cn-orbita--b { --v: 11; inset: -24%; animation-direction: reverse; }
+.cn-orbita--b i { inline-size: 6px; block-size: 6px; margin-inline-start: -3px; }
+.cn-orbita--c { --v: 15; inset: -34%; }
+.cn-orbita--c i { inline-size: 5px; block-size: 5px; margin-inline-start: -2.5px; opacity: .8; }
+@keyframes cn-orbita { to { rotate: 360deg; } }
+.cerimonia-nivel > .cena-magica { z-index: 0; }
+@media (prefers-reduced-motion: reduce) { .cn-orbita { animation: none; } }

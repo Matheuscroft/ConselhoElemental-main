@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AppLayout } from '@/components/layout';
 import { Cerimonia } from '@/components/cerimonia/Cerimonia';
 import { CerimoniaDeNivel } from '@/components/cerimonia/CerimoniaDeNivel';
@@ -64,8 +65,9 @@ function PainelNivel() {
         <Deslizante rotulo="XP que faltam para o próximo" valor={faltam} min={0} max={2000} passo={10} aoMudar={setFaltam} />
         <Acao primaria aoClicar={() => setSubida((n) => (n ?? 0) + 1)}>Disparar subida de nível</Acao>
       </Bloco>
-      {subida !== null ? (
-        <CerimoniaDeNivel key={subida} de={de} para={de + 1} titulo={titulo} fracao={fracao} fracaoAntes={fracaoAntes} faltam={faltam} onFechar={() => setSubida(null)} />
+      {subida !== null ? createPortal(
+        <CerimoniaDeNivel key={subida} de={de} para={de + 1} titulo={titulo} fracao={fracao} fracaoAntes={fracaoAntes} faltam={faltam} onFechar={() => setSubida(null)} />,
+        document.body,
       ) : null}
 
       <Bloco titulo="Cerimônia de conclusão" nota="As telas que marcam terminar algo: a chegada, o número e o que se destrava.">
@@ -156,10 +158,11 @@ function PainelAvisos() {
           <Acao aoClicar={() => novo({ tipo: 'resumo', nome: '5 conclusões', xp: xp * 5, quantidade: 5 })}>Resumo de 5</Acao>
         </div>
       </Bloco>
-      {fila.length ? (
+      {fila.length ? createPortal(
         <div className="noticias">
           {fila.map((noticia) => <NoticiaElemental key={noticia.id} noticia={noticia} onFechar={fechar} />)}
-        </div>
+        </div>,
+        document.body,
       ) : null}
     </>
   );
