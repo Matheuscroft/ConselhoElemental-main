@@ -115,7 +115,7 @@ test('ornamento: so acima de 16px, antes do traco, 1px e opacidade .55; brilho s
 });
 
 test('as chaves de SIGILOS continuam as mesmas', () => {
-  assert.equal(Object.keys(SIGILOS).length, 64);
+  assert.equal(Object.keys(SIGILOS).length, 65);
   const novos = ['excluir', 'relogio', 'desfazer', 'pular', 'baixar', 'compartilhar', 'lembrete', 'arrastar', 'mais', 'chevron', 'voltar', 'seta', 'fechar'];
   for (const k of novos) assert.ok(SIGILOS[k] && SIGILOS[k].traco, k);
   assert.equal(new Set(novos.map((k) => SIGILOS[k].traco)).size, novos.length);

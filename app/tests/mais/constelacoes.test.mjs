@@ -23,7 +23,7 @@ test('todo id de APP_ROUTES é mapeado exatamente uma vez, sem ids fantasmas', (
 test('a distribuição do briefing', () => {
   const visiveis = (e) => c.ROTAS_POR_ELEMENTO[e].filter((id) => !c.ehLatente(id) && !c.ehSubportal(id));
   assert.deepEqual(visiveis('fogo'), ['invocar', 'rituais', 'jornadas', 'grandes-obras', 'forja', 'cassino']);
-  assert.deepEqual(visiveis('ar'), ['grimorio', 'astrolabio', 'mapa']);
+  assert.deepEqual(visiveis('ar'), ['grimorio', 'astrolabio', 'mapa', 'laboratorio']);
   assert.deepEqual(visiveis('agua'), ['ciclos', 'temporal', 'lua', 'estacoes']);
   assert.deepEqual(visiveis('terra'), ['santuario', 'pilares', 'dominios', 'treinos']);
   assert.ok(c.ehLatente('treinos-historico') && c.ehLatente('fitness') && !c.ehLatente('treinos'));
@@ -41,7 +41,7 @@ test("conjurar('') coincide com o filtro padrão e nada acende", () => {
   assert.deepEqual(ids(r.visiveis).sort(), ids(filterNavigationRoutes(APP_ROUTES, '')).sort());
   assert.deepEqual(r.acesas, []);
   assert.equal(r.primeira, null);
-  assert.deepEqual(r.contagemPorElemento, { fogo: 6, ar: 3, agua: 4, terra: 4 });
+  assert.deepEqual(r.contagemPorElemento, { fogo: 6, ar: 4, agua: 4, terra: 4 });
   assert.ok(!ids(r.visiveis).includes('treinos-historico'));
 });
 

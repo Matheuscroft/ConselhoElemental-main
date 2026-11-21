@@ -35,7 +35,7 @@ export const INSCRICOES: Record<ElementId, Inscricao> = {
  */
 export const ROTAS_POR_ELEMENTO: Record<ElementId, readonly string[]> = {
   fogo: ['invocar', 'rituais', 'jornadas', 'grandes-obras', 'forja', 'cassino'],
-  ar: ['grimorio', 'astrolabio', 'mapa'],
+  ar: ['grimorio', 'astrolabio', 'mapa', 'laboratorio'],
   agua: ['ciclos', 'temporal', 'temporal-mes', 'temporal-ano', 'temporal-calendario', 'lua', 'estacoes'],
   terra: [
     'santuario', 'pilares', 'dominios', 'treinos',

@@ -82,6 +82,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       '/jornadas': 'Jornadas',
       '/grandes-obras': 'Grandes Obras',
       '/forja': 'Forja',
+      '/laboratorio': 'Laboratório',
       '/astrolabio': 'Astrolábio',
       '/lua': 'Lua',
       '/estacoes': 'Estações',

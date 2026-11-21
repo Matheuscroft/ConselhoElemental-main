@@ -1,7 +1,7 @@
 import {
   Sparkles, CheckSquare, Flame, Dumbbell, Swords, Mountain, Calendar, Library, Globe,
   BookOpen, Dice6, Bot, Shield, Moon, Leaf, Plus, Map as MapIcon, BarChart3, History, Activity,
-  CalendarDays, CalendarRange, CalendarClock, type LucideIcon,
+  CalendarDays, CalendarRange, CalendarClock, FlaskConical, type LucideIcon,
 } from 'lucide-react';
 
 export type RouteGroup = 'Núcleo' | 'Tempo e ciclos' | 'Treino' | 'Domínios';
@@ -30,6 +30,7 @@ export const APP_ROUTES: AppRoute[] = [
   { id: 'forja', label: 'Forja', path: '/forja', group: 'Núcleo', icon: Bot, description: 'Assistente e criação', sidebar: true, mobile: 'more' },
   { id: 'pilares', label: 'Pilares', path: '/pilares', group: 'Núcleo', icon: Shield, description: 'Pilares elementais', sidebar: true, mobile: 'more' },
   { id: 'astrolabio', label: 'Astrolábio', path: '/astrolabio', group: 'Núcleo', icon: BookOpen, description: 'Astrologia', sidebar: true, mobile: 'more' },
+  { id: 'laboratorio', label: 'Laboratório', path: '/laboratorio', group: 'Núcleo', icon: FlaskConical, description: 'Teste animações, molduras e efeitos sem ganhar XP' },
   { id: 'mapa', label: 'Mapa de páginas', path: '/mapa', group: 'Núcleo', icon: MapIcon, description: 'Todas as páginas e como acessá-las', sidebar: true, mobile: 'more' },
 
   { id: 'ciclos', label: 'Ciclos', path: '/ciclos', group: 'Tempo e ciclos', icon: Flame, description: 'Hábitos e ciclos de execução', sidebar: true, mobile: 'more' },

@@ -47,6 +47,7 @@ import { FigurasGaleria } from '@/lib/dev/figuras-galeria';
 import { FigurasTira } from '@/lib/dev/figuras-tira';
 import '@/components/backup/restore-workspace.css';
 
+const Laboratorio = lazy(() => import('@/pages/Laboratorio'));
 const ElementalPreview = lazy(() => import('@/pages/ElementalPreview'));
 const DespertarRota = lazy(() => import('@/components/sanctuary/DespertarRota'));
 const signedOutView: Readonly<AccountSyncView> = Object.freeze({ status: 'stopped', message: 'Entre para continuar.' });
@@ -142,6 +143,7 @@ function App() {
             <Route path="/treinos/semana" element={<Navigate to="/treinos?tab=health&view=week" replace />} />
             <Route path="/treinos/insights" element={<Navigate to="/treinos?tab=health&view=insights" replace />} />
             <Route path="/mapa" element={<Mapa />} />
+            <Route path="/laboratorio" element={<Suspense fallback={<p className="p-8 text-white">Preparando o Laboratório…</p>}><Laboratorio /></Suspense>} />
             <Route path="/treinos/corpo" element={<Navigate to="/treinos?tab=body" replace />} />
             <Route path="/treinos/ativo/:sessionId" element={<ActiveWorkout />} />
             <Route path="/treinos/resumo/:sessionId" element={<WorkoutSummary />} />

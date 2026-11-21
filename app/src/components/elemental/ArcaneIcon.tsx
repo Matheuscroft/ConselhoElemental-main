@@ -59,7 +59,7 @@ export function ElementIcon({ element, tone = 'color', ...props }: IconProps & {
 
 export const ROUTE_ICONS: Record<string, ArcaneIconName> = {
   santuario: 'santuario', rituais: 'ritual', ciclos: 'ciclo', jornadas: 'jornada', 'grandes-obras': 'obra',
-  grimorio: 'grimorio', invocar: 'invocar', forja: 'forja', pilares: 'pilares', astrolabio: 'astrolabio', mapa: 'mapa',
+  grimorio: 'grimorio', invocar: 'invocar', forja: 'forja', pilares: 'pilares', astrolabio: 'astrolabio', mapa: 'mapa', laboratorio: 'laboratorio',
   temporal: 'semana', 'temporal-mes': 'calendario', 'temporal-ano': 'ano', 'temporal-calendario': 'agenda',
   lua: 'lua', estacoes: 'estacoes', dominios: 'dominios', cassino: 'cassino', fitness: 'modalidades', treinos: 'treino',
   'treinos-painel': 'painel', 'treinos-semana': 'treinoSemana', 'treinos-historico': 'historico', 'treinos-insights': 'tendencias', 'treinos-corpo': 'corpo',
