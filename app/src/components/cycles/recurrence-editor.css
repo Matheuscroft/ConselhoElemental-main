@@ -1,0 +1,40 @@
+/* The recurrence editor: a segmented control with a sliding pill instead of a native select, seven weekdays in one
+   row with a clear on/off state. Radii 12/16, targets 44px or more, motion by the design tokens. */
+.rec-titulo { margin-block-end: 4px; color: rgb(var(--el-text)); font: 500 var(--ds-text-body)/1.3 Cinzel, Georgia, serif; letter-spacing: .02em; }
+.rec-rotulo { display: block; margin-block-end: 8px; color: rgb(var(--el-muted)); font: 500 var(--ds-text-small)/1.3 Inter, system-ui, sans-serif; }
+.rec-campo { display: block; }
+
+.rec-segmentos {
+  --rec-i: 0;
+  position: relative; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px;
+  border: 1px solid rgb(var(--el-muted) / .22); border-radius: 16px; background: rgb(var(--el-canvas) / .55);
+}
+.rec-pilula {
+  position: absolute; inset-block: 4px; inset-inline-start: 4px; inline-size: calc((100% - 8px) / 4); border-radius: 12px;
+  background: linear-gradient(180deg, rgb(var(--el-gold) / .26), rgb(var(--el-gold) / .1)); box-shadow: inset 0 0 0 1px rgb(var(--el-gold) / .45), 0 3px 0 rgb(var(--el-gold) / .22);
+  transform: translateX(calc(var(--rec-i) * 100%)); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.rec-segmento {
+  position: relative; z-index: 1; min-block-size: 44px; border: 0; border-radius: 12px; background: transparent;
+  color: rgb(var(--el-muted)); font: 600 var(--ds-text-small)/1 Inter, system-ui, sans-serif;
+  transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-press) var(--ds-ease);
+}
+.rec-segmento[aria-checked="true"] { color: rgb(var(--el-gold)); }
+.rec-segmento:active { transform: scale(.95); }
+.rec-segmento:focus-visible { outline: 2px solid rgb(var(--el-gold) / .8); outline-offset: -2px; }
+
+.rec-dias { min-inline-size: 0; border: 0; padding: 0; margin: 0; }
+.rec-dias-grade { display: grid; gap: 6px; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.rec-dia {
+  min-block-size: 48px; padding: 0; border: 1px solid rgb(var(--el-muted) / .24); border-radius: 12px; background: transparent;
+  color: rgb(var(--el-muted)); font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif;
+  transition: background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease);
+}
+.rec-dia[aria-pressed="true"] {
+  border-color: rgb(var(--el-gold) / .8); background: linear-gradient(180deg, rgb(var(--el-gold) / .3), rgb(var(--el-gold) / .14));
+  color: rgb(var(--el-gold)); box-shadow: 0 3px 0 rgb(var(--el-gold) / .28);
+}
+.rec-dia:active { transform: translateY(3px); box-shadow: none; }
+.rec-dia:focus-visible { outline: 2px solid rgb(var(--el-gold) / .8); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) { .rec-pilula, .rec-segmento, .rec-dia { transition: none; } }

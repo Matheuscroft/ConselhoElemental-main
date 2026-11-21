@@ -275,3 +275,26 @@
 /* The day pane is the biggest glass on the screen and scrolls over the animated background: a lighter blur there is
    the cheapest frame budget the screen has, and it reads the same over a dark ground. */
 .cycles-workspace .cycle-day-panel { --ds-blur-strong: 10px; }
+
+/* ---------- Create-cycle sheet: a lighter preview, so the form starts higher ---------- */
+.cycle-composer .cycle-composer-preview { padding: 12px 14px; gap: 12px; }
+.cycle-composer .cycle-composer-preview > span { inline-size: 40px; block-size: 50px; }
+.cycle-composer .cycle-composer-preview strong { margin-block: 2px; font-size: var(--ds-text-body); }
+.cycle-composer .cycle-composer-preview p { margin: 0; }
+
+/* ---------- Sequences, empty: a chain of three seals that shows the idea, one after the other ---------- */
+.cycles-workspace .cycle-welcome-showcase:has(.seq-cadeia) { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; gap: 14px; padding: 22px 16px; }
+.cycles-workspace .cycle-welcome-showcase:has(.seq-cadeia) > div { display: grid; justify-items: center; }
+.seq-cadeia { inline-size: 100%; max-inline-size: 15rem; block-size: 44px; border: 0; border-radius: 0; background: none; position: relative; display: flex; align-items: center; justify-content: space-between; }
+.seq-cadeia::before { content: ''; position: absolute; inset-inline: 22px; inset-block-start: 50%; block-size: 2px; margin-block-start: -1px; border-radius: 2px; background: rgb(var(--el-muted) / .3); }
+.seq-cadeia::after { content: ''; position: absolute; inset-inline-start: 22px; inset-block-start: 50%; inline-size: 36px; block-size: 3px; margin-block-start: -1.5px; border-radius: 3px; background: linear-gradient(90deg, transparent, rgb(var(--el-gold)), transparent); animation: seq-fio calc(var(--ds-duration-conjure) * 4) ease-in-out infinite; }
+@keyframes seq-fio { 0% { transform: translateX(0); opacity: 0; } 15%, 85% { opacity: 1; } 100% { transform: translateX(calc(15rem - 44px - 36px)); opacity: 0; } }
+.seq-cadeia > i { position: relative; z-index: 1; inline-size: 34px; block-size: 34px; border-radius: 50%; border: 2px solid rgb(var(--el-muted) / .4); background: rgb(var(--el-canvas)); box-shadow: 0 3px 0 rgb(0 0 0 / .4); }
+.seq-cadeia > i:nth-child(1) { border-color: rgb(var(--el-gold)); background: rgb(var(--el-gold) / .22); box-shadow: 0 3px 0 rgb(var(--el-gold) / .3), 0 0 16px rgb(var(--el-gold) / .35); animation: seq-vez calc(var(--ds-duration-conjure) * 4) ease-in-out infinite; }
+@keyframes seq-vez { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+/* One call to action while there are no sequences. */
+#cycle-library-panel:has(.cycle-welcome-showcase) .cycle-library > .flex button { display: none; }
+@media (prefers-reduced-motion: reduce) { .seq-cadeia::after, .seq-cadeia > i:nth-child(1) { animation: none; } }
+
+/* The XP notice now sits after the lists: it needs its own space above. */
+.cycles-workspace .cycle-xp-recovery { margin-block: var(--ds-ritmo-secao) var(--ds-ritmo-cabeca); }

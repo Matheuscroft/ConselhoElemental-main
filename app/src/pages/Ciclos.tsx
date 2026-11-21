@@ -2453,7 +2453,7 @@ export const Ciclos: React.FC = () => {
         <p className="cycle-library-count" role="status">{visibleSequenceSummaries.length} de {sequenceSummaries.length} sequências</p></>}
         {sequenceSummaries.length > 0 && visibleSequenceSummaries.length === 0 && <div className="cycle-filter-empty"><p>Nenhuma sequência encontrada.</p><button type="button" onClick={() => setSequenceQuery('')}>Limpar busca</button></div>}
         {sequenceSummaries.length === 0 ? (
-          <div className="cycle-welcome-showcase"><span className="cycle-welcome-art" aria-hidden="true"><ArcaneIcon name="ciclo" size={50} /></span><div><h3>Um passo leva ao próximo</h3><p>Reúna seus ciclos em uma sequência e acompanhe qual está na vez.</p><Button onClick={() => setShowQuickCreateSequence(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Criar sequência</Button></div></div>
+          <div className="cycle-welcome-showcase"><span className="cycle-welcome-art seq-cadeia" aria-hidden="true"><i /><i /><i /></span><div><h3>Um passo leva ao próximo</h3><p>Reúna seus ciclos em uma sequência e acompanhe qual está na vez.</p><Button onClick={() => setShowQuickCreateSequence(true)} className="cycle-primary"><Plus size={18} aria-hidden="true" />Criar sequência</Button></div></div>
         ) : (
           <div className="space-y-2">
             <p className="text-xs text-white/45">Abra uma sequência para ver os passos e gerenciar sua execução. A ordem da rotina é ajustada na aba Rotina.</p>
