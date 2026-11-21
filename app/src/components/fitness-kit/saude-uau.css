@@ -16,14 +16,17 @@
 .saude-aura {
   position: absolute;
   inset-block: -2rem auto;
-  inset-inline: -1.5rem;
-  block-size: 28rem;
+  inset-inline: -2rem;
+  block-size: 34rem;
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 58% 50% at 26% 20%, color-mix(in srgb, var(--saude-aura) 30%, transparent), transparent 100%),
-    radial-gradient(ellipse 50% 44% at 80% 44%, color-mix(in srgb, var(--saude-aura) 20%, transparent), transparent 100%),
-    radial-gradient(ellipse 44% 34% at 16% 74%, rgb(var(--el-gold) / .14), transparent 100%);
+    radial-gradient(ellipse closest-side at 30% 26%, color-mix(in srgb, var(--saude-aura) 30%, transparent), transparent),
+    radial-gradient(ellipse closest-side at 78% 44%, color-mix(in srgb, var(--saude-aura) 20%, transparent), transparent),
+    radial-gradient(ellipse closest-side at 18% 66%, rgb(var(--el-gold) / .14), transparent);
+  /* A luz some por todos os lados antes da borda da caixa: nenhuma linha reta atravessa a tela. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 120px, #000 55%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 120px, #000 55%, transparent);
 }
 .saude-cena[data-entrada='plena'] .saude-aura { animation: saude-luz-acende calc(var(--ds-duration-conjure) * 2) var(--ds-ease) backwards; }
 @keyframes saude-luz-acende { from { opacity: 0; } to { opacity: 1; } }
@@ -328,7 +331,7 @@
 .saude-corpo-cabeca { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .saude-corpo-cabeca h2 { margin: 0; font-family: var(--ds-font-heading); font-size: var(--ds-text-lead); font-weight: 500; line-height: 1.25; color: rgb(var(--el-text)); }
 .saude-corpo-cabeca p { margin: 2px 0 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); }
-.saude-corpo-palco { display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); align-items: center; gap: 12px; overflow: clip; }
+.saude-corpo-palco { display: grid; grid-template-columns: minmax(0, 38fr) minmax(0, 62fr); align-items: center; gap: 12px; }
 .saude-silhueta { position: relative; inline-size: 100%; max-inline-size: 8.5rem; aspect-ratio: 912 / 1724; justify-self: center; }
 .saude-silhueta img {
   position: relative;
@@ -340,9 +343,8 @@
 }
 .saude-silhueta-luz {
   position: absolute;
-  inset: -8% -22%;
-  border-radius: 50%;
-  background: radial-gradient(ellipse 50% 52% at 50% 46%, color-mix(in srgb, var(--saude-aura) 46%, transparent), transparent 72%);
+  inset: -6% -14%;
+  background: radial-gradient(ellipse closest-side at 50% 46%, color-mix(in srgb, var(--saude-aura) 46%, transparent), transparent);
   animation: saude-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite;
 }
 .saude-ponto {
