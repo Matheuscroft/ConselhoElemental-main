@@ -64,6 +64,8 @@ export function PesquisaInicial({
   const [cidade, setCidade] = useState<SanctuaryCityId>(cidadeInicial);
   const [nascimento, setNascimento] = useState('');
   const [selando, setSelando] = useState(false);
+  /** Counts keystrokes in the name, so each one can send a ripple through the orb. */
+  const [toques, setToques] = useState(0);
 
   const raizRef = useRef<HTMLElement>(null);
   const cidadesRef = useRef<Array<HTMLButtonElement | null>>([]);
@@ -146,6 +148,8 @@ export function PesquisaInicial({
       aria-label="Perguntas rápidas"
       data-passo={passo}
       data-signo={signo ? 'sim' : 'nao'}
+      data-cidade={cidade}
+      data-nome={saudacao ? '' : undefined}
       data-selando={selando ? '' : undefined}
       style={estilo}
     >
@@ -177,8 +181,11 @@ export function PesquisaInicial({
           <div className="pesquisa-orbe">
             <span className="pesquisa-orbe-anel" />
             <span className="pesquisa-orbe-anel" data-volta="" />
+            {toques > 0 ? <span key={toques} className="pesquisa-orbe-onda" /> : null}
             <span className="pesquisa-orbe-nucleo">
-              <span className="pesquisa-orbe-glifo">{signo ? `${signo.icon}\uFE0E` : null}</span>
+              <span className="pesquisa-orbe-glifo">
+                {signo ? `${signo.icon}\uFE0E` : saudacao ? Array.from(saudacao)[0]?.toLocaleUpperCase('pt-BR') : null}
+              </span>
             </span>
           </div>
           <p className="pesquisa-saudacao" data-tem-nome={saudacao ? '' : undefined}>
@@ -216,7 +223,7 @@ export function PesquisaInicial({
                   maxLength={MAX_NAME_LENGTH}
                   placeholder="Seu nome ou apelido"
                   value={nome}
-                  onChange={(evento) => setNome(evento.target.value)}
+                  onChange={(evento) => { setNome(evento.target.value); setToques((n) => n + 1); }}
                 />
                 <p className="pesquisa-ajuda">
                   É assim que o santuário vai falar com você.

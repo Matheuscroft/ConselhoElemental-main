@@ -208,7 +208,27 @@
     scale var(--ds-duration-settle) var(--ds-ease-conjure);
 }
 
-.pesquisa[data-signo='sim'] .pesquisa-orbe-glifo { opacity: 1; scale: 1; }
+.pesquisa[data-signo='sim'] .pesquisa-orbe-glifo,
+.pesquisa[data-nome] .pesquisa-orbe-glifo { opacity: 1; scale: 1; }
+
+/* Until a birth date gives it a sign, the core wears the first letter of the name. */
+.pesquisa[data-signo='nao'] .pesquisa-orbe-glifo { font-family: Georgia, 'Times New Roman', serif; font-weight: 600; color: rgb(7 11 18 / 90%); }
+
+/* Each keystroke sends one ring out of the core, once. */
+.pesquisa-orbe-onda {
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--pesq-cor) 80%, white);
+  pointer-events: none;
+  animation: pesq-onda var(--ds-duration-conjure) var(--ds-ease) backwards;
+}
+@keyframes pesq-onda { from { opacity: .8; scale: .9; } to { opacity: 0; scale: 1.9; } }
+
+/* The sky chosen tints the rings a little: sea for Recife, warm stone for Olinda. */
+.pesquisa-orbe-anel { transition: border-color var(--ds-duration-settle) var(--ds-ease); }
+.pesquisa[data-passo='1'][data-cidade='recife'] .pesquisa-orbe-anel[data-volta] { border-right-color: rgb(120 200 230 / 80%); }
+.pesquisa[data-passo='1'][data-cidade='olinda'] .pesquisa-orbe-anel[data-volta] { border-right-color: rgb(240 170 120 / 80%); }
 
 .pesquisa-orbe-anel {
   position: absolute;
@@ -622,6 +642,7 @@
   .pesquisa-luz, .pesquisa-orbe { translate: none; }
   .pesquisa-passo[data-estado] { translate: none; }
   .pesquisa-saudacao, .pesquisa-saudacao[data-tem-nome] { translate: none; }
+  .pesquisa-orbe-onda { display: none; }
   .pesquisa-cidade, .pesquisa-primaria, .pesquisa-primaria svg,
   .pesquisa-painel::before, .pesquisa-painel::after { transition: none; }
   .pesquisa-primaria::after { display: none; }
