@@ -3,7 +3,7 @@
   font-family: Inter, system-ui, sans-serif;
   line-height: 1.5;
 }
-.ep-page { min-height: 100dvh; padding-bottom: calc(4rem + env(safe-area-inset-bottom)); background: radial-gradient(ellipse at 75% 25%, #24314444, transparent 50%), rgb(var(--el-canvas)); }
+.ep-page { overflow-x: clip; /* the page edge is the only place light may be cut: the screen edge, where nobody sees it */ min-height: 100dvh; padding-bottom: calc(4rem + env(safe-area-inset-bottom)); background: radial-gradient(ellipse at 75% 25%, #24314444, transparent 50%), rgb(var(--el-canvas)); }
 .elemental-preview h1, .elemental-preview h2, .elemental-preview h3, .elemental-preview p { margin: 0; }
 .elemental-preview h1, .elemental-preview h2 { font-family: Cinzel, Georgia, serif; font-weight: 500; }
 .elemental-preview h3 { font-family: Inter, system-ui, sans-serif; font-weight: 500; }
@@ -26,7 +26,7 @@
 .ep-sanctuary ~ * { position: relative; z-index: 1; }
 .ep-level-remaining { color: rgb(var(--el-muted)); font-size: var(--ds-text-small); margin-top: 8px !important; font-variant-numeric: tabular-nums; }
 .ep-character-section { min-width: 0; text-align: center; }
-.ep-orbit { --orbit-radius-x: min(37%, calc(50% - 68px)); --orbit-radius-y: 17%; position: relative; width: 100%; height: 460px; isolation: isolate; overflow-x: clip; overflow-y: visible; overflow-clip-margin: 18px; }
+.ep-orbit { --orbit-radius-x: min(37%, calc(50% - 68px)); --orbit-radius-y: 17%; position: relative; width: 100%; height: 460px; isolation: isolate; /* No clip here: it cut the orbs and their halos in a straight line inside the screen. */ overflow: visible; }
 .ep-orbit-track { position: absolute; border: 1px solid #d5b66f28; border-radius: 50%; pointer-events: none; }
 .ep-orbit-track-outer { inset: 32% 10%; transform: rotate(-12deg); border-color: #d5b66f3b; }
 .ep-orbit-track-inner { inset: 35% 13%; border-style: dashed; border-color: #d5b66f1c; transform: rotate(-12deg); }

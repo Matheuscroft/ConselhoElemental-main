@@ -1,4 +1,5 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
@@ -52,8 +53,13 @@ const tema = (id: ElementId) => ({
   '--pilar-acento': `var(--element-${id})`,
 }) as CSSProperties;
 
+const semAssinatura = () => () => {};
+/** True in the browser, false on the server and during hydration: portals only exist where there is a document. */
+const useNoNavegador = () => useSyncExternalStore(semAssinatura, () => true, () => false);
+
 export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
   const reduzido = useMotionPreference();
+  const noNavegador = useNoNavegador();
   const [foco, setFoco] = useState(() => focoInicial(itens));
   const [rolando, setRolando] = useState(false);
   const trilhoRef = useRef<HTMLDivElement>(null);
@@ -141,6 +147,12 @@ export function PalcoPilares({ itens }: { itens: readonly PilarPalco[] }) {
 
   return (
     <div ref={raizRef} className="palco-pilares" data-entrada={entrada}>
+      {noNavegador && createPortal(
+        <div className="pilar-ambiente" aria-hidden="true">
+          {itens.map((item, indice) => <span key={item.id} data-ativo={indice === foco} data-elemento={item.id} style={tema(item.id)} />)}
+        </div>,
+        document.body,
+      )}
       <div ref={cenaRef} className="palco-cena" data-rolando={rolando}>
         <div className="palco-camadas" aria-hidden="true">
           {itens.map((item, indice) => (

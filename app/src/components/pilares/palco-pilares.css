@@ -331,3 +331,22 @@
   .palco-brasas { display: none; }
   .palco-explorar::after { display: none; }
 }
+
+/* ---------- The element's light spills over the whole screen, translucent, behind everything ---------- */
+.pilar-ambiente { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+.pilar-ambiente > span {
+  position: absolute; inset: 0; opacity: 0;
+  transition: opacity calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease);
+  background:
+    radial-gradient(ellipse 130% 52% at 50% 24%, color-mix(in srgb, var(--pilar-aura) 28%, transparent), color-mix(in srgb, var(--pilar-aura) 12%, transparent) 52%, transparent 88%),
+    radial-gradient(ellipse 120% 40% at 50% 104%, color-mix(in srgb, var(--pilar-aura) 20%, transparent), transparent 82%),
+    radial-gradient(ellipse 55% 70% at 0% 46%, color-mix(in srgb, var(--pilar-aura) 14%, transparent), transparent 80%),
+    radial-gradient(ellipse 55% 70% at 100% 46%, color-mix(in srgb, var(--pilar-aura) 14%, transparent), transparent 80%);
+  transform-origin: 50% 30%;
+}
+.pilar-ambiente > span[data-ativo='true'] { opacity: 1; animation: pilar-ambiente-respira calc(var(--ds-duration-conjure) * 11) ease-in-out infinite alternate; }
+@keyframes pilar-ambiente-respira { from { transform: scale(1); } to { transform: scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .pilar-ambiente > span { transition: none; }
+  .pilar-ambiente > span[data-ativo='true'] { animation: none; }
+}
