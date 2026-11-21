@@ -84,7 +84,8 @@ void main() {
   // The quad is twice the body on each axis, so the body's own outline sits
   // at d = 1 and the field has room to burn out before the canvas edge --
   // otherwise the glow is cut off in a straight line and reads as a box.
-  vec2 p = (vUv - vec2(0.5)) / (vec2(0.25) * uScale);
+  // Narrower than tall, like the body: with the same reach on both axes the ring stood far off the shoulders.
+  vec2 p = (vUv - vec2(0.5)) / (vec2(0.19, 0.25) * uScale);
   float d = length(p);
 
   // Tongues of light climbing. The second fbm warps the first, which is what
@@ -95,13 +96,16 @@ void main() {
 
   // The aura lives OUTSIDE the silhouette: anything bright behind the body is
   // light the person's own sprite hides, so the shell starts at the outline.
-  float shell = smoothstep(0.88, 1.14, d) * (1.0 - smoothstep(1.18, 1.92, d));
-  float bloom = (1.0 - smoothstep(0.92, 1.96, d)) * 0.26;
+  // The shell starts inside the outline and a wide soft bloom fills the gap around the body: one continuous
+  // glow that fades outward, not a bright ring with a dark hollow between it and the person.
+  float shell = smoothstep(0.62, 1.14, d) * (1.0 - smoothstep(1.18, 1.92, d));
+  float bloom = (1.0 - smoothstep(0.2, 1.96, d)) * 0.34;
 
   // Thinner overhead than at the feet, the way heat leaves a body.
   float climb = mix(1.0, 0.32, smoothstep(0.40, 0.92, vUv.y));
 
-  float field = (shell * (0.30 + 1.45 * tongues) + bloom) * climb;
+  // Gentler contrast in the tongues: the light moves, but it no longer leaves bright and dark patches.
+  float field = (shell * (0.55 + 0.95 * tongues) + bloom) * climb;
   float breath = 0.88 + 0.12 * sin(uTime * uPulse);
 
   // Soft tone-mapping instead of a hard clamp: the raw field reaches ~1.95 and
