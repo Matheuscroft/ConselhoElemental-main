@@ -31,6 +31,8 @@ import './reel-momentos.css';
 const MolduraFeitico = lazy(() => import('./MolduraFeitico'));
 // The leap across the screen belongs to level 3 alone, so it is its own chunk.
 const DobraTelaCheia = lazy(() => import('./DobraTelaCheia'));
+import { AscensaoPalco } from './AscensaoPalco';
+import { CoroaDominio } from './CoroaDominio';
 
 /** How long a conquest stays on the frame before it is cleared. */
 const CONQUISTA_DURA_MS = 1800;
@@ -436,6 +438,10 @@ export function ReelMomentos({ dias, selecionado, aoEscolher, ascensao }: {
             />
           </Suspense>
         ) : null}
+        {nivelAberto === 3 && !reduced && aberto ? (
+          <CoroaDominio elemento={elementoDaMoldura(aberto.elemento, cerimonia)} visivel={!rolando} />
+        ) : null}
+        {cerimonia && !reduced ? <AscensaoPalco key={cerimonia.n} ascensao={cerimonia} /> : null}
         {dobraMontada && !reduced ? (
           <Suspense fallback={null}>
             <DobraTelaCheia

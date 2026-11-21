@@ -1,0 +1,51 @@
+/*
+ * The stage of an ascension. It lives as long as the frame's overflow (--asc-dur): it comes in fast, holds, and leaves
+ * through opacity. Only transform and opacity move; no blur, no tap taken.
+ */
+.asc-anuncio { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.asc-palco {
+  position: fixed; inset: 0; z-index: 150; pointer-events: none; overflow: clip;
+  animation: asc-vida var(--asc-dur) linear both;
+}
+.asc-palco[data-nivel='2'] .cena-magica { opacity: .7; }
+@keyframes asc-vida { 0% { opacity: 0; } 9% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
+
+/* A dark veil under the scene so the title always reads, lighter for Fluxo. */
+.asc-palco::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse closest-side at 50% 42%, rgb(5 7 12 / .72), rgb(5 7 12 / .35) 70%, transparent); }
+.asc-palco[data-nivel='3']::before { background: radial-gradient(ellipse closest-side at 50% 42%, rgb(5 7 12 / .86), rgb(5 7 12 / .55) 70%, rgb(5 7 12 / .2)); }
+
+/* The flash: a white-gold burst, bigger at Domínio. */
+.asc-clarao { position: absolute; inset-inline: -30%; inset-block: 2% auto; block-size: 80%; display: block; opacity: 0; background: radial-gradient(ellipse closest-side, rgb(255 255 255 / .9), color-mix(in srgb, var(--cerimonia-aura) 60%, transparent) 40%, transparent); animation: asc-clarao calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both; }
+.asc-palco[data-nivel='3'] .asc-clarao { animation-duration: calc(var(--ds-duration-conjure) * 2); }
+@keyframes asc-clarao { 0% { opacity: 0; scale: .3; } 14% { opacity: 1; } 100% { opacity: 0; scale: 1.2; } }
+
+/* Shockwaves: rings that leave the centre one after another. */
+.asc-onda { position: absolute; inset-inline-start: 50%; inset-block-start: 40%; inline-size: 240px; block-size: 240px; margin: -120px 0 0 -120px; display: block; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--cerimonia-aura) 75%, white); opacity: 0; animation: asc-onda calc(var(--ds-duration-conjure) * 1.8) var(--ds-ease) both; }
+.asc-onda-b { animation-delay: calc(var(--ds-stagger) * 3); border-width: 1.5px; }
+.asc-onda-c { animation-delay: calc(var(--ds-stagger) * 6); border-color: rgb(255 240 190 / .9); }
+.asc-onda-d { animation-delay: calc(var(--ds-stagger) * 9); border-width: 1px; }
+@keyframes asc-onda { 0% { opacity: .95; scale: .2; } 100% { opacity: 0; scale: 3.4; } }
+
+/* The title. */
+.asc-titulo { position: absolute; inset-inline: 0; inset-block-start: 40%; translate: 0 -50%; display: grid; justify-items: center; gap: 8px; text-align: center; animation: asc-titulo calc(var(--ds-duration-conjure) * 1.2) var(--ds-ease-conjure) calc(var(--ds-stagger) * 2) both; }
+@keyframes asc-titulo { from { opacity: 0; scale: 1.5; } to { opacity: 1; scale: 1; } }
+.asc-glifo { color: var(--cerimonia-cor); filter: drop-shadow(0 0 14px var(--cerimonia-aura)); }
+.asc-titulo small { font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif; letter-spacing: .34em; text-transform: uppercase; color: var(--cerimonia-cor); }
+.asc-titulo strong {
+  font: 500 var(--ds-fluid-display)/1.05 Cinzel, Georgia, serif; letter-spacing: .06em; text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 15%, color-mix(in srgb, var(--cerimonia-cor) 75%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 20px color-mix(in srgb, var(--cerimonia-aura) 60%, transparent));
+}
+.asc-palco[data-nivel='3'] .asc-titulo strong { font-size: var(--ds-fluid-hero, var(--ds-text-hero)); background: linear-gradient(180deg, #fff 10%, #f4dc9c 60%, var(--cerimonia-cor)); -webkit-background-clip: text; background-clip: text; }
+.asc-filete { inline-size: 9rem; block-size: 1px; background: linear-gradient(90deg, transparent, var(--cerimonia-cor), transparent); animation: asc-filete var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 6) both; }
+@keyframes asc-filete { from { scale: 0 1; opacity: 0; } to { scale: 1 1; opacity: 1; } }
+
+/* The crown over Domínio: it draws itself. */
+.asc-coroa { inline-size: 92px; block-size: 28px; overflow: visible; stroke: #f4dc9c; stroke-width: 1.4; stroke-linejoin: round; stroke-linecap: round; fill: rgb(244 220 156 / .12); filter: drop-shadow(0 0 10px #f4dc9c); }
+.asc-coroa path { stroke-dasharray: 1; stroke-dashoffset: 1; animation: asc-traca calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) calc(var(--ds-stagger) * 4) both; }
+.asc-coroa circle { fill: #fff; stroke: none; opacity: 0; animation: asc-ponto var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-duration-conjure) * 1.8) both; }
+@keyframes asc-traca { to { stroke-dashoffset: 0; } }
+@keyframes asc-ponto { to { opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) { .asc-palco { display: none; } }

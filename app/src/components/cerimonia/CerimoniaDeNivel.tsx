@@ -113,7 +113,20 @@ function Imagem({ src, largura, altura, className }: { src: string; largura: num
 }
 
 /** The number seal: grey until it lights up, with its waves and sparks. Small in the ring scene, large in the summary. */
-function Selo({ numero, pulsa, faiscas, mini }: { numero: number; pulsa: boolean; faiscas: boolean; mini?: boolean }) {
+/** Gold dust thrown by the seal when it lights: direction in degrees, how far (px), size (px). */
+const POEIRA = Array.from({ length: 26 }, (_, i) => ({ a: (360 / 26) * i + (i % 2 ? 6 : -6), d: 90 + ((i * 37) % 80), s: 2 + ((i * 13) % 4) }));
+
+function Selo({ numero, de, pulsa, faiscas, mini }: { numero: number; de?: number; pulsa: boolean; faiscas: boolean; mini?: boolean }) {
+  // The number is seen being earned: it starts at the level just left and counts up to the new one.
+  const reduzidoDoSelo = useMotionPreference();
+  const contar = de !== undefined && !reduzidoDoSelo && de !== numero;
+  const [chegou, setChegou] = useState(false);
+  useEffect(() => {
+    if (!contar) return undefined;
+    const espera = window.setTimeout(() => setChegou(true), 520);
+    return () => window.clearTimeout(espera);
+  }, [contar]);
+  const exibido = contar && !chegou ? (de as number) : numero;
   return (
     <div className={mini ? 'cn-selo cn-selo--mini' : 'cn-selo'} data-pulsa={pulsa} aria-hidden="true">
       {mini ? null : (
@@ -128,9 +141,14 @@ function Selo({ numero, pulsa, faiscas, mini }: { numero: number; pulsa: boolean
       <div className="cn-selo__corpo">
         <span className="cn-selo__aceso" />
         <strong>
-          <Contagem valor={numero} beat="conjure" />
+          <Contagem valor={exibido} beat="conjure" />
         </strong>
       </div>
+      {mini ? null : (
+        <span className="cn-poeira" aria-hidden="true">
+          {POEIRA.map((p, k) => <i key={k} style={{ '--ang': `${p.a}deg`, '--dist': `${p.d}px`, '--s': `${p.s}px`, '--k': k } as CSSProperties} />)}
+        </span>
+      )}
       {faiscas
         ? FAISCAS_DO_SELO.map((f, k) => (
             <i key={k} className="cn-faisca cn-faisca--selo" style={{ '--tx': px(f.x), '--ty': px(f.y), '--k': k } as CSSProperties} />
@@ -525,7 +543,7 @@ export function CerimoniaDeNivel({ de, para, titulo, fracao, fracaoAntes, faltam
       {ativa === 'anel' || ativa === 'cartoes' ? null : (
         <div className="cn-cena cn-c3" style={{ '--asc-cor': AURA[elemento] } as CSSProperties}>
           <div className="cn-halo" aria-hidden="true" />
-          <Selo numero={para} pulsa={false} faiscas={!fim} />
+          <Selo numero={para} de={de} pulsa={false} faiscas={!fim} />
           <div className="cn-anel-final" aria-hidden="true">
             <AnelSvg fracao={1} mascara={mascaraFinal} />
           </div>

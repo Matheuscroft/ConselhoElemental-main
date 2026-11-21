@@ -1,0 +1,63 @@
+/*
+ * Domínio, the third level of the day frame: the crown outside the card. It uses the same box as the frame's canvas
+ * (centred on the open card) and only moves by transform and opacity. Radii follow the card (22px).
+ */
+.reel-coroa-dominio {
+  position: absolute;
+  inset-block-start: calc(10px + var(--reel-largura) * 2 / 3);
+  inset-inline-start: 50%;
+  inline-size: var(--reel-largura);
+  block-size: calc(var(--reel-largura) * 4 / 3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 5;
+  opacity: 0;
+  transition: opacity var(--ds-duration-feedback) var(--ds-ease);
+}
+.reel-coroa-dominio[data-visivel='true'] { opacity: 1; transition-duration: var(--ds-duration-settle); }
+
+/* A ring of light just outside the card: bright on the border, gone before the rail. It breathes. */
+.cd-anel {
+  position: absolute; inset: -22px; border-radius: 36px; display: block;
+  background: radial-gradient(ellipse closest-side, transparent 66%, color-mix(in srgb, var(--coroa-aura) 34%, transparent) 84%, transparent 100%);
+  mix-blend-mode: screen;
+  animation: cd-respira calc(var(--ds-duration-conjure) * 6) ease-in-out infinite;
+}
+@keyframes cd-respira { 0%, 100% { opacity: .55; scale: .985; } 50% { opacity: 1; scale: 1.025; } }
+
+/* The sheen: a diagonal band of light that crosses the face, then rests off the card for a while. */
+.cd-holo { position: absolute; inset: 0; border-radius: 22px; overflow: clip; display: block; }
+.cd-holo::before {
+  content: ''; position: absolute; inset-block: -10%; inset-inline-start: -70%; inline-size: 48%;
+  background: linear-gradient(105deg, transparent 0%, color-mix(in srgb, var(--coroa-aura) 26%, transparent) 36%, rgb(255 255 255 / .34) 50%, color-mix(in srgb, var(--coroa-cor) 22%, transparent) 64%, transparent 100%);
+  transform: skewX(-16deg);
+  mix-blend-mode: soft-light;
+  animation: cd-varre calc(var(--ds-duration-conjure) * 11) var(--ds-ease) infinite;
+}
+@keyframes cd-varre { 0% { inset-inline-start: -70%; } 38%, 100% { inset-inline-start: 150%; } }
+
+/* The crest: a gem between two pairs of wings, floating over the top edge, with a small bob and a lit core. */
+.cd-crista { position: absolute; inset-block-start: -38px; inset-inline-start: 50%; inline-size: 100px; block-size: 42px; margin-inline-start: -50px; overflow: visible; animation: cd-flutua calc(var(--ds-duration-conjure) * 7) ease-in-out infinite; filter: drop-shadow(0 0 7px var(--coroa-aura)); }
+@keyframes cd-flutua { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }
+.cd-asa { stroke: var(--coroa-cor); stroke-width: 1.2; stroke-linecap: round; }
+.cd-asa-baixa { stroke-width: .9; opacity: .65; }
+.cd-gema { fill: color-mix(in srgb, var(--coroa-aura) 40%, rgb(7 11 18)); stroke: var(--coroa-cor); stroke-width: 1.1; stroke-linejoin: round; }
+.cd-nucleo { fill: #fff; animation: cd-pulsa calc(var(--ds-duration-conjure) * 3) ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes cd-pulsa { 0%, 100% { opacity: .7; scale: .85; } 50% { opacity: 1; scale: 1.15; } }
+.cd-ponta { fill: var(--coroa-aura); }
+
+/* Flares on the four corners, each lit in its turn. */
+.cd-flare {
+  position: absolute; inline-size: 20px; block-size: 20px; display: block;
+  background: linear-gradient(135deg, #fff, var(--coroa-aura));
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  filter: drop-shadow(0 0 5px var(--coroa-aura)); opacity: 0;
+  animation: cd-brilha calc(var(--ds-duration-conjure) * 5) ease-in-out calc(var(--ds-duration-conjure) * var(--i) * 1.3) infinite;
+}
+@keyframes cd-brilha { 0%, 60%, 100% { opacity: 0; scale: 0; rotate: 0deg; } 78% { opacity: 1; scale: 1; rotate: 45deg; } }
+.cd-flare[data-canto='nw'] { inset-block-start: -9px; inset-inline-start: -9px; }
+.cd-flare[data-canto='ne'] { inset-block-start: -9px; inset-inline-end: -9px; }
+.cd-flare[data-canto='se'] { inset-block-end: -9px; inset-inline-end: -9px; }
+.cd-flare[data-canto='sw'] { inset-block-end: -9px; inset-inline-start: -9px; }
+
+@media (prefers-reduced-motion: reduce) { .reel-coroa-dominio { display: none; } }

@@ -34,7 +34,7 @@
 .lab-acao[data-primaria] { color: rgb(var(--el-canvas)); background: linear-gradient(180deg, rgb(var(--el-gold)), rgb(var(--el-gold) / .82)); border-color: transparent; box-shadow: 0 3px 0 var(--ds-labio-ouro); }
 .lab-acao[data-primaria]:active { transform: translateY(3px); box-shadow: none; }
 
-.lab-palco { min-inline-size: 0; overflow: clip; border-radius: 16px; }
+.lab-palco { min-inline-size: 0; padding-block-start: 40px; margin-block-start: -24px; }
 .lab-numero { margin: 0; font: 500 var(--ds-text-display)/1.1 Cinzel, Georgia, serif; font-variant-numeric: tabular-nums; color: rgb(var(--el-gold)); text-align: center; }
 .lab-recibo { min-inline-size: 0; }
 @media (prefers-reduced-motion: reduce) { .lab-painel { animation: none; } }
