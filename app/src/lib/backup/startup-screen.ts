@@ -22,6 +22,9 @@ const messages: Record<StartupBlock, { title: string; detail: string }> = {
 
 /** Small native-DOM screen: importing it cannot initialize React stores or auth. */
 export function showProgressStartup(root: HTMLElement, reason?: StartupBlock): void {
+  // The opening scene (index.html, public/splash/abertura.css) is already the loading screen:
+  // keep it on screen, so it never restarts. Only a block or a failure replaces it.
+  if (!reason && root.querySelector?.('.abertura')) return;
   const doc = root.ownerDocument;
   const panel = doc.createElement('main');
   panel.className = 'progress-startup';

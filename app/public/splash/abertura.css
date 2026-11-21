@@ -1,0 +1,104 @@
+/* Opening scene: a sanctuary lit candle by candle around an altar and a pentagram.
+   Plain CSS and one inline SVG, transforms and opacity only: it paints before the app's code
+   arrives and costs the phone almost nothing. It is in the page itself (index.html), so the
+   first paint is already this scene; the app replaces it when it is ready. */
+html { background: #080b12; }
+.abertura {
+  --atraso: calc(.5s + var(--i, 0) * .36s);
+  box-sizing: border-box;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  color: #eceae3;
+  background:
+    radial-gradient(ellipse 70% 42% at 50% 68%, rgb(255 157 60 / .1), transparent 70%),
+    radial-gradient(ellipse 90% 60% at 50% 30%, rgb(36 49 68 / .55), transparent 75%),
+    #080b12;
+}
+.abertura__marca {
+  margin: 0;
+  color: #d5b66f;
+  font: 500 14px/1.2 Cinzel, Georgia, serif;
+  letter-spacing: .32em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: ab-aparece 900ms ease-out 100ms forwards;
+}
+.abertura__cena { inline-size: min(100%, 24rem); block-size: auto; max-block-size: 62dvh; overflow: visible; }
+.abertura__estado {
+  margin: 0;
+  color: #adb8c8;
+  font: 400 14px/1.5 Inter, system-ui, sans-serif;
+  opacity: 0;
+  animation: ab-aparece 900ms ease-out 700ms forwards;
+}
+
+/* The temple */
+.arco { fill: none; stroke: #d5b66f; stroke-opacity: .22; stroke-width: 1.2; }
+.arco--interno { stroke-opacity: .1; }
+.anel-chao { fill: none; stroke: #d5b66f; stroke-opacity: .16; stroke-width: 1; }
+.anel-chao--2 { stroke-opacity: .1; stroke-dasharray: 2 6; }
+.estrela { fill: #eceae3; opacity: 0; animation: ab-cintila 3200ms ease-in-out calc(var(--d, 0) * 420ms) infinite; }
+
+/* The altar and the pentagram */
+.altar__base { fill: url(#ab-pedra); stroke: #d5b66f; stroke-opacity: .25; stroke-width: 1; }
+.altar__tampo { fill: #2b303c; stroke: #d5b66f; stroke-opacity: .4; stroke-width: 1.2; }
+.altar__brasa { fill: #ff9d3c; opacity: .12; animation: ab-brasa 2400ms ease-in-out 3200ms infinite; }
+.pentagrama__aro, .pentagrama__estrela {
+  fill: none;
+  stroke: #d5b66f;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ab-tracar 2600ms cubic-bezier(.4, 0, .2, 1) 300ms forwards;
+}
+.pentagrama__aro { stroke-opacity: .7; }
+.pentagrama__luz { fill: none; stroke: #ffcf7a; stroke-width: 6; stroke-opacity: .14; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ab-tracar 2600ms cubic-bezier(.4, 0, .2, 1) 300ms forwards; }
+.pentagrama { animation: ab-desperta 2600ms ease-in-out 3200ms infinite; }
+.halo { opacity: 0; animation: ab-halo 2600ms ease-in-out 3200ms infinite; }
+
+/* The candles */
+.vela__cera { fill: #d8d2c0; opacity: .72; }
+.vela__sombra { fill: #000; opacity: .45; }
+.vela__brilho { opacity: 0; animation: ab-brilho 700ms ease-out var(--atraso) forwards; }
+.vela__chama {
+  fill: #ffd98a;
+  stroke: #ff9d3c;
+  stroke-width: .8;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scale(0);
+  animation:
+    ab-acender 520ms cubic-bezier(.2, 1.4, .4, 1) var(--atraso) forwards,
+    ab-tremer 1300ms ease-in-out calc(var(--atraso) + 520ms) infinite;
+}
+
+@keyframes ab-aparece { to { opacity: 1; } }
+@keyframes ab-cintila { 0%, 100% { opacity: 0; } 50% { opacity: .85; } }
+@keyframes ab-tracar { to { stroke-dashoffset: 0; } }
+@keyframes ab-acender { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes ab-brilho { to { opacity: 1; } }
+@keyframes ab-tremer {
+  0%, 100% { transform: scale(1, 1) skewX(0); }
+  30% { transform: scale(.94, 1.08) skewX(2deg); }
+  60% { transform: scale(1.04, .95) skewX(-2deg); }
+}
+@keyframes ab-desperta { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
+@keyframes ab-halo { 0%, 100% { opacity: .25; } 50% { opacity: .65; } }
+@keyframes ab-brasa { 0%, 100% { opacity: .12; } 50% { opacity: .4; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .abertura__marca, .abertura__estado { animation: none; opacity: 1; }
+  .pentagrama__aro, .pentagrama__estrela, .pentagrama__luz { animation: none; stroke-dashoffset: 0; }
+  .vela__chama { animation: none; transform: scale(1); }
+  .vela__brilho { animation: none; opacity: 1; }
+  .estrela { animation: none; opacity: .5; }
+  .pentagrama, .halo, .altar__brasa { animation: none; }
+  .halo { opacity: .4; }
+}
