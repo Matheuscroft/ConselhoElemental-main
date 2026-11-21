@@ -346,3 +346,66 @@
 
 /* Number and its suffix stay one item, so a grid parent (.ds-cifra) never drops the % to its own row. */
 .cq-numero { white-space: nowrap; }
+
+/* ---------- A trail that feels alive: stones with a lip, a floating next step, a bubble that pops ---------- */
+.quest-map { --quest-swing: clamp(30px, 14vw, 64px); --quest-lip: color-mix(in srgb, var(--quest-accent) 42%, #000); }
+
+/* The stone has a lip under its face; a press sinks it into the lip. */
+.quest-map .quest-step-stone { box-shadow: 0 6px 0 var(--quest-lip); transition: translate var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease); }
+.quest-path > li[data-complete="true"] .quest-step-stone { box-shadow: 0 6px 0 var(--quest-lip), 0 0 22px color-mix(in srgb, var(--quest-accent) 38%, transparent); }
+.quest-path > li[data-next="true"] .quest-step-stone { box-shadow: 0 6px 0 var(--quest-lip), 0 0 26px color-mix(in srgb, var(--quest-accent) 50%, transparent); }
+.quest-path > li[data-available="false"] .quest-step-stone { box-shadow: 0 6px 0 rgb(0 0 0 / .45); }
+.quest-map .quest-step:active .quest-step-stone { translate: 0 4px; box-shadow: 0 2px 0 var(--quest-lip); }
+
+/* The next step floats, with its progress ring and a bouncing "Começar". */
+.quest-path > li[data-next="true"] .quest-step-face { animation: cq-flutuar calc(var(--ds-duration-conjure) * 3) ease-in-out infinite alternate; }
+@keyframes cq-flutuar { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+.quest-step-anel { position: absolute; inset: -12px; inline-size: calc(100% + 24px); block-size: calc(100% + 24px); rotate: -90deg; overflow: visible; pointer-events: none; }
+.quest-step-anel circle { fill: none; stroke-width: 4; }
+.quest-step-anel-trilho { stroke: color-mix(in srgb, var(--quest-accent) 24%, transparent); }
+.quest-step-anel-fio { stroke: var(--quest-accent); stroke-linecap: round; stroke-dasharray: calc(var(--prog, 0) * .94 + .04) 1; animation: cq-anel-tracar calc(var(--ds-duration-conjure) * 2) var(--ds-ease) backwards; }
+@keyframes cq-anel-tracar { from { stroke-dasharray: 0 1; } }
+.quest-step-dica {
+  position: absolute; z-index: 2; inset-block-start: -44px; inset-inline-start: 50%; translate: -50% 0;
+  padding: 7px 12px; border: 2px solid var(--quest-accent); border-radius: 12px; background: var(--ds-surface-raised);
+  color: var(--quest-accent); font: 700 var(--ds-text-micro)/1 Inter, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+  animation: cq-quicar calc(var(--ds-duration-conjure) * 2) ease-in-out infinite;
+}
+.quest-step-dica::after { content: ''; position: absolute; inset-block-end: -7px; inset-inline-start: 50%; inline-size: 10px; block-size: 10px; margin-inline-start: -5px; background: var(--ds-surface-raised); border-inline-end: 2px solid var(--quest-accent); border-block-end: 2px solid var(--quest-accent); rotate: 45deg; }
+@keyframes cq-quicar { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* The detail opens as a bubble from the stone, with a spring. The main button has a lip too. */
+.quest-step-detail { transform-origin: calc(50% + var(--step-offset, 0) * var(--quest-swing)) 0; animation: cq-balao var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+@keyframes cq-balao { 0% { opacity: 0; transform: translateY(-10px) scale(.9); } 60% { opacity: 1; transform: translateY(2px) scale(1.02); } 100% { opacity: 1; transform: none; } }
+.quest-step-detail .quest-primary { box-shadow: 0 4px 0 color-mix(in srgb, var(--quest-gold) 45%, #000); transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease); }
+.quest-step-detail .quest-primary:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 color-mix(in srgb, var(--quest-gold) 45%, #000); }
+
+/* A step just done: the stone leaps, a ring and sparks burst out of it. */
+.quest-step-stone[data-acabou] { animation: cq-pulo calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease-conjure) both; }
+@keyframes cq-pulo {
+  0% { scale: 1; rotate: 0deg; }
+  30% { scale: 1.3; rotate: -7deg; }
+  55% { scale: .93; rotate: 4deg; }
+  78% { scale: 1.07; rotate: 0deg; }
+  100% { scale: 1; }
+}
+.quest-step-fagulhas { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.quest-step-fagulhas::before { content: ''; position: absolute; inset: 4px; border: 3px solid var(--quest-accent); border-radius: 50%; animation: cq-onda calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both; }
+@keyframes cq-onda { from { opacity: .9; transform: scale(.7); } to { opacity: 0; transform: scale(1.9); } }
+.quest-step-fagulhas i {
+  --giro: calc(var(--faisca) * 45deg);
+  position: absolute; inset-block-start: 50%; inset-inline-start: 50%; inline-size: 8px; block-size: 8px; margin: -4px 0 0 -4px; border-radius: 50%;
+  background: rgb(var(--el-gold)); box-shadow: 0 0 8px rgb(var(--el-gold) / .8);
+  animation: cq-fagulha calc(var(--ds-duration-conjure) * 1.5) var(--ds-ease) both;
+}
+@keyframes cq-fagulha { from { opacity: 1; transform: rotate(var(--giro)) translateY(-10px) scale(1); } to { opacity: 0; transform: rotate(var(--giro)) translateY(-62px) scale(.3); } }
+
+/* The reward chest at the end wobbles once the whole trail is done. */
+.quest-finish-line[data-completa] > span { transform-origin: 50% 100%; animation: cq-bau calc(var(--ds-duration-conjure) * 4) ease-in-out infinite; }
+@keyframes cq-bau { 0%, 55%, 100% { rotate: 0deg; } 65% { rotate: -9deg; } 75% { rotate: 9deg; } 85% { rotate: -5deg; } 93% { rotate: 3deg; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-path > li[data-next="true"] .quest-step-face, .quest-step-dica, .quest-step-anel-fio, .quest-step-detail,
+  .quest-step-stone[data-acabou], .quest-step-fagulhas::before, .quest-step-fagulhas i, .quest-finish-line[data-completa] > span { animation: none; }
+  .quest-map .quest-step-stone, .quest-step-detail .quest-primary { transition: none; }
+}
