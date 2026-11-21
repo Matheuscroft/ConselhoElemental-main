@@ -1,0 +1,49 @@
+/* The day picker (react-day-picker) in the app's own voice: no flat black slab, a serif month, round 44px arrows,
+   today ringed in gold, the chosen day lifted on a gold lip like every primary control. Radii 12/16/50%, targets
+   44px, text 12px or more, motion by the design tokens. The `[class]` selectors win over the library's utility classes. */
+[class].rdp-root { position: relative; inline-size: 100%; padding: 4px 0 0; background: transparent; }
+[class].rdp-root .rdp-months, [class].rdp-root .rdp-month { inline-size: 100%; gap: 12px; }
+[class].rdp-root .rdp-month_caption { block-size: 44px; padding-inline: 52px; }
+[class].rdp-root .rdp-caption_label { font: 500 var(--ds-text-lead)/1.2 Cinzel, Georgia, serif; letter-spacing: .02em; text-transform: capitalize; color: rgb(var(--el-gold)); text-shadow: 0 0 18px rgb(var(--el-gold) / .25); }
+[class].rdp-root .rdp-nav { inset-block-start: 0; justify-content: space-between; pointer-events: none; }
+[class].rdp-root .rdp-nav button {
+  pointer-events: auto; inline-size: 44px; block-size: 44px; padding: 0; border-radius: 50%; color: rgb(var(--el-gold));
+  border: 1px solid rgb(var(--el-muted) / .22); background: rgb(var(--el-surface) / .6); box-shadow: var(--ds-rim);
+  transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].rdp-root .rdp-nav button:active { transform: scale(.92); background: rgb(var(--el-gold) / .14); }
+[class].rdp-root .rdp-nav button svg { inline-size: 20px; block-size: 20px; }
+[class].rdp-root .rdp-weekdays { margin-block-end: 4px; }
+[class].rdp-root .rdp-weekday { padding-block: 6px; font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: rgb(var(--el-muted)); }
+[class].rdp-root .rdp-week { margin-block-start: 4px; gap: 4px; }
+[class].rdp-root td.rdp-day { background: transparent; border-radius: 12px; aspect-ratio: auto; }
+[class].rdp-root td.rdp-day > button {
+  inline-size: 100%; block-size: 44px; border-radius: 12px; border: 1px solid transparent; background: transparent;
+  color: rgb(var(--el-text)); font: 500 var(--ds-text-body)/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums;
+  transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease);
+}
+[class].rdp-root td.rdp-day > button:hover { background: rgb(var(--el-gold) / .1); }
+[class].rdp-root td.rdp-day > button:active { transform: scale(.93); }
+[class].rdp-root td.rdp-day > button:focus-visible { outline: 2px solid rgb(var(--el-gold) / .8); outline-offset: 1px; }
+[class].rdp-root td.rdp-outside > button { color: rgb(var(--el-muted) / .5); }
+[class].rdp-root td.rdp-disabled > button { opacity: .3; }
+[class].rdp-root td.rdp-today > button { border-color: rgb(var(--el-gold) / .7); color: rgb(var(--el-gold)); font-weight: 700; background: rgb(var(--el-gold) / .08); }
+[class].rdp-root td.rdp-selected > button, [class].rdp-root td[data-selected="true"] > button {
+  border-color: transparent; background: linear-gradient(180deg, rgb(var(--el-gold)), rgb(var(--el-gold) / .82)); color: rgb(var(--el-canvas)); font-weight: 700;
+  box-shadow: 0 3px 0 var(--ds-labio-ouro), 0 0 18px rgb(var(--el-gold) / .3);
+}
+
+/* The date sheet: a bottom sheet on the phone, lit from its top edge, with the jump field in the same family. */
+.cycle-calendar-dialog { overflow-x: clip; isolation: isolate; }
+.cycle-calendar-dialog::after { content: ''; position: absolute; inset-block-start: 0; inset-inline: 0; block-size: 160px; z-index: -1; pointer-events: none; background: radial-gradient(ellipse closest-side at 50% 0, rgb(var(--el-gold) / .14), transparent); }
+.cycle-calendar-dialog .cycle-date-jump input { border-radius: 16px; min-block-size: 52px; border-color: rgb(var(--el-gold) / .28); box-shadow: inset 0 2px 6px rgb(0 0 0 / .28); }
+.cycle-calendar-dialog .cycle-date-jump input:focus-visible { outline: none; border-color: rgb(var(--el-gold) / .85); box-shadow: inset 0 2px 6px rgb(0 0 0 / .28), 0 0 0 3px rgb(var(--el-gold) / .22); }
+.cycle-calendar-dialog .cycle-date-jump button { min-block-size: 52px; border-radius: 16px; font-weight: 600; }
+@media (max-width: 600px) {
+  .cycle-calendar-dialog { left: 0; top: auto; bottom: 0; translate: none; transform: none; inline-size: 100%; max-inline-size: none; max-block-size: calc(100dvh - env(safe-area-inset-top) - 16px); overflow-y: auto; border-radius: 24px 24px 0 0; padding: 34px 20px max(20px, env(safe-area-inset-bottom)); }
+  .cycle-calendar-dialog::before { content: ''; position: absolute; inset-block-start: 8px; inset-inline: 0; margin-inline: auto; inline-size: 40px; block-size: 4px; border-radius: 4px; background: rgb(var(--el-muted) / .4); }
+}
+
+/* Native date fields (end date, date jump, forms): same dark scheme, gold calendar icon, same focus ring. */
+input[type="date"] { color-scheme: dark; accent-color: rgb(var(--el-gold)); }
+input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .85; filter: sepia(1) saturate(2.4) brightness(1.15); inline-size: 22px; block-size: 22px; padding: 6px; }
