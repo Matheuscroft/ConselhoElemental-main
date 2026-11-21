@@ -340,3 +340,14 @@
 .cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(3) { animation-delay: calc(var(--ds-stagger) * 2); }
 .cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(4) { animation-delay: calc(var(--ds-stagger) * 3); }
 .cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(n+5) { animation-delay: calc(var(--ds-stagger) * 4); }
+
+/* The live schedule in the preview, and a sheen that crosses the create button once, the moment it becomes ready. */
+.cycle-composer .cycle-composer-preview p b { color: rgb(var(--el-gold)); font-weight: 600; }
+.cycle-composer footer button[type="submit"] { position: relative; overflow: hidden; }
+.cycle-composer footer button[type="submit"]:not(:disabled)::after {
+  content: ''; position: absolute; inset-block: 0; inset-inline-start: -60%; inline-size: 45%; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / .38), transparent); transform: skewX(-18deg);
+  animation: cycle-composer-brilho calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both;
+}
+@keyframes cycle-composer-brilho { from { inset-inline-start: -60%; } to { inset-inline-start: 130%; } }
+@media (prefers-reduced-motion: reduce) { .cycle-composer footer button[type="submit"]::after { display: none; } }

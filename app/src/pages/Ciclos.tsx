@@ -28,7 +28,7 @@ import { BotaoEstacao } from '@/components/cycles/ceu/BotaoEstacao';
 import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
 import { fimDaEstacao, instanteDoCeu, rotuloDeData } from '@/lib/temporal/ceu-dos-ciclos';
 import { CycleCalendarNavigation } from '@/components/cycles/CycleCalendarNavigation';
-import { RecurrenceEditor, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
+import { RecurrenceEditor, resumoDaAgenda, type RecurrenceEditorValue } from '@/components/cycles/RecurrenceEditor';
 import { validateRecurrence, dateToInput } from '@/lib/temporal/recurrence';
 import { CycleXpRecovery } from '@/components/cycles/CycleXpRecovery';
 import { advanceDailyView } from '@/lib/cycles/daily-view';
@@ -3096,7 +3096,7 @@ export const Ciclos: React.FC = () => {
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
           <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
             agenda={<RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} />}
-            startLabel={selectedDate.toLocaleDateString('pt-BR')}
+            startLabel={selectedDate.toLocaleDateString('pt-BR')} agendaResumo={resumoDaAgenda(quickCreateCycleSchedule, selectedDate)}
             onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}
             onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}>
             {quickCreateCycleError && <p role="alert">{quickCreateCycleError}</p>}

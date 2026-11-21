@@ -38,3 +38,10 @@
 .rec-dia:focus-visible { outline: 2px solid rgb(var(--el-gold) / .8); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) { .rec-pilula, .rec-segmento, .rec-dia { transition: none; } }
+
+/* The end date is optional: folded until asked for. */
+.rec-final { border-radius: 12px; }
+.rec-final > summary { display: flex; align-items: center; min-block-size: 44px; cursor: pointer; list-style: none; color: rgb(var(--el-gold)); font: 500 var(--ds-text-small)/1.3 Inter, system-ui, sans-serif; }
+.rec-final > summary::-webkit-details-marker { display: none; }
+.rec-final > summary::before { content: '+'; display: grid; place-items: center; inline-size: 22px; block-size: 22px; margin-inline-end: 8px; border-radius: 50%; border: 1px solid rgb(var(--el-gold) / .45); font-size: 15px; line-height: 1; }
+.rec-final[open] > summary::before { content: '–'; }

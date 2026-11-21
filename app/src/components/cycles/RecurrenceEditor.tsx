@@ -9,6 +9,24 @@ const TIPOS: ReadonlyArray<{ type: RecurrenceType; rotulo: string }> = [
   { type: 'DAILY', rotulo: 'Diário' }, { type: 'WEEKLY', rotulo: 'Semanal' }, { type: 'MONTHLY', rotulo: 'Mensal' }, { type: 'YEARLY', rotulo: 'Anual' },
 ];
 const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+
+/** One line in the user's words for what the schedule does ("Seg · Qua · Sex", "Todo dia 15"), for previews. Pure: reads the value only. */
+export function resumoDaAgenda(value: RecurrenceEditorValue, referenceDate: Date = new Date()): string {
+  const { type, config } = value;
+  const ate = config.until ? ` · até ${config.until.split('-').reverse().join('/')}` : '';
+  if (type === 'DAILY') return `Todos os dias${ate}`;
+  if (type === 'WEEKLY') {
+    const dias = config.daysOfWeek;
+    if (!dias || dias.length === 0 || dias.length === 7) return `Todos os dias${ate}`;
+    return `${[...dias].sort((a, b) => a - b).map(item => names[item].slice(0, 3)).join(' · ')}${ate}`;
+  }
+  if (type === 'MONTHLY') {
+    const dias = config.daysOfMonth;
+    return `${dias && dias.length ? `Todo mês, dia ${[...dias].sort((a, b) => a - b).join(', ')}` : 'Todo mês'}${ate}`;
+  }
+  return `Todo ano, ${config.day ?? referenceDate.getDate()}/${config.month ?? referenceDate.getMonth() + 1}${ate}`;
+}
+
 const control = 'min-h-12 w-full rounded-xl border border-white/20 bg-void p-3 text-base text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-mystic-gold';
 
 /** Edits only when the user acts. Opening a legacy record does not normalize it. */
@@ -54,10 +72,12 @@ export function RecurrenceEditor({ value, onChange, referenceDate = new Date(), 
         </button>)}
       </div>
     </fieldset>}
+    <details className="rec-final" open={Boolean(value.config.until)}><summary>{value.config.until ? 'Data final definida' : 'Definir data final (opcional)'}</summary>
     <label htmlFor={`${id}-until`} className="block space-y-2"><span className="rec-rotulo">Repetir até (opcional)</span>
       <input id={`${id}-until`} type="date" className={control} value={value.config.until ?? ''}
         onChange={event => { const config = { ...value.config }; if (event.target.value) config.until = event.target.value; else delete config.until; onChange({ ...value, config }); }} />
     </label>
+    </details>
     {disabled ? <p className="text-sm text-white/60">A agenda é definida no ciclo principal.</p>
       : <p className="text-sm text-white/60">{yearly ? `Uma vez por ano, em ${day}/${month}. ` : monthly ? 'Repete nos dias do mês escolhidos. ' : 'Repete nos dias da semana escolhidos. '}{(monthly || yearly) && 'Datas inexistentes são puladas, sem antecipação. '}O histórico de conclusões é preservado.</p>}
     {!yearly && !days && <p className="text-sm text-mystic-gold">Agenda anterior sem dias definidos: aparece todos os dias. Escolha os dias para ajustar.</p>}

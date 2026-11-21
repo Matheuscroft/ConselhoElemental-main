@@ -11,14 +11,14 @@ export function CycleWeekdays({ days, onToggle }: { days: number[]; onToggle: (d
 }
 
 /** Controlled composer. It never creates, persists, or calculates a cycle. */
-export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, onSubmit, onCancel, children, agenda }: {
+export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, agendaResumo, onSubmit, onCancel, children, agenda }: {
   kind: 'cycle' | 'sequence'; name: string; onNameChange: (name: string) => void;
-  days?: number[]; onToggleDay?: (day: number) => void; startLabel: string;
+  days?: number[]; onToggleDay?: (day: number) => void; startLabel: string; agendaResumo?: string;
   onSubmit: () => void; onCancel: () => void; children?: ReactNode; agenda?: ReactNode;
 }) {
   const sequence = kind === 'sequence';
   return <form className="cycle-composer" onSubmit={event => { event.preventDefault(); if (name.trim()) onSubmit(); }}>
-    <div className="cycle-composer-preview"><span><ArcaneIcon name="ciclo" size={34} /></span><div><small>{sequence ? 'Um ciclo por vez' : 'Uma atividade que se repete'}</small><strong>{name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo')}</strong><p>A partir de {startLabel}</p></div></div>
+    <div className="cycle-composer-preview"><span><ArcaneIcon name="ciclo" size={34} /></span><div><small>{sequence ? 'Um ciclo por vez' : 'Uma atividade que se repete'}</small><strong>{name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo')}</strong><p>A partir de {startLabel}{agendaResumo ? <> · <b>{agendaResumo}</b></> : null}</p></div></div>
     <label className="cycle-composer-name">{sequence ? 'Nome da sequência' : 'O que você quer praticar?'}<input autoFocus required value={name} onChange={event => onNameChange(event.target.value)} placeholder={sequence ? 'Ex.: Alternar treino A e B' : 'Ex.: Ler por 20 minutos'} /></label>
     {!sequence && !name.trim() ? <div className="cycle-composer-sugestoes" role="group" aria-label="Sugestões de ciclo">{SUGESTOES.map(item => <button key={item} type="button" onClick={() => onNameChange(item)}>{item}</button>)}</div> : null}
     {children}
