@@ -44,8 +44,8 @@
     var(--temporal-grao),
     radial-gradient(ellipse 78% 40% at 50% 28%, color-mix(in srgb, var(--semana-aura) 17%, transparent), transparent 72%),
     radial-gradient(ellipse 100% 24% at 50% 0, rgb(var(--el-gold) / .08), transparent 70%);
-  -webkit-mask-image: linear-gradient(#000 70%, transparent);
-  mask-image: linear-gradient(#000 70%, transparent);
+  -webkit-mask-image: linear-gradient(transparent, #000 130px, #000 70%, transparent);
+  mask-image: linear-gradient(transparent, #000 130px, #000 70%, transparent);
   /* Depth: the light leans away from the finger (--par-x and --par-y run from -1 to 1). */
   translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -4px);
 }

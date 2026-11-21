@@ -65,8 +65,8 @@
     radial-gradient(ellipse 54% 64% at 17% 34%, color-mix(in srgb, var(--semana-aura) 30%, transparent), transparent 100%),
     radial-gradient(ellipse 44% 44% at 82% 8%, rgb(var(--el-gold) / .13), transparent 100%),
     radial-gradient(ellipse 60% 30% at 50% 0, color-mix(in srgb, var(--semana-acento) 14%, transparent), transparent 100%);
-  -webkit-mask-image: linear-gradient(#000 55%, transparent);
-  mask-image: linear-gradient(#000 55%, transparent);
+  -webkit-mask-image: linear-gradient(transparent, #000 130px, #000 55%, transparent);
+  mask-image: linear-gradient(transparent, #000 130px, #000 55%, transparent);
   translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -5px);
 }
 .hub[data-buscando] .hub-luz { opacity: .6; transition: opacity var(--ds-duration-settle) var(--ds-ease); }
