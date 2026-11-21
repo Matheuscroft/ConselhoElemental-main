@@ -28,7 +28,7 @@
 /* ---------- The room: a light from above in the week's colour ---------- */
 .treino-luz {
   position: absolute;
-  inset: -8px 0 auto;
+  inset: -8px -16px auto;
   height: 340px;
   z-index: -1;
   pointer-events: none;

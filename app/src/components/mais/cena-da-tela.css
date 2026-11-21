@@ -27,7 +27,9 @@
 /* ---------- The light behind the heading ---------- */
 .cena-luz {
   position: absolute;
-  inset: -24px 0 auto 0;
+  /* Reaches the screen edges (the page gutter is 16px) and ends in a mask that touches no edge: a light that is cut by
+     its box reads as a rectangle, and here it showed as two strips at the sides of the whole page. */
+  inset: -24px -16px auto -16px;
   height: 380px;
   z-index: -1;
   pointer-events: none;
@@ -36,8 +38,8 @@
     radial-gradient(ellipse 52% 56% at 42% 30%, color-mix(in srgb, var(--semana-aura) 26%, transparent), transparent 100%),
     radial-gradient(ellipse 38% 40% at 72% 46%, rgb(var(--el-gold) / .14), transparent 100%),
     radial-gradient(ellipse 46% 26% at 52% 8%, color-mix(in srgb, var(--semana-acento) 16%, transparent), transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 64% 68% at 50% 42%, #000 34%, transparent 100%);
-  mask-image: radial-gradient(ellipse 64% 68% at 50% 42%, #000 34%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse closest-side at 50% 42%, #000 34%, transparent 100%);
+  mask-image: radial-gradient(ellipse closest-side at 50% 42%, #000 34%, transparent 100%);
   translate: calc(var(--par-x, 0) * -8px) calc(var(--par-y, 0) * -4px);
 }
 .cena[data-entrada="plena"] .cena-luz { animation: cena-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
@@ -80,9 +82,9 @@
   inset: -32px -8px -24px;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 38%, transparent), transparent 100%),
-    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .22), transparent 100%),
-    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 22%, transparent), transparent 100%);
+    radial-gradient(ellipse closest-side at 24% 34%, color-mix(in srgb, var(--semana-aura) 38%, transparent), transparent 100%),
+    radial-gradient(ellipse closest-side at 78% 66%, rgb(var(--el-gold) / .22), transparent 100%),
+    radial-gradient(ellipse closest-side at 58% 16%, color-mix(in srgb, var(--semana-acento) 22%, transparent), transparent 100%);
   translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
 }
 .cena[data-entrada="plena"] .cena-vidro-luz { animation: cena-aparecer var(--ds-duration-conjure) var(--ds-ease) var(--ds-duration-reveal) backwards; }

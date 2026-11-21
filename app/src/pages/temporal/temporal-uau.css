@@ -36,7 +36,7 @@
 .temporal-surface::before {
   content: '';
   position: absolute;
-  inset: -8px 0 auto;
+  inset: -8px -16px auto;
   z-index: -1;
   height: 560px;
   pointer-events: none;

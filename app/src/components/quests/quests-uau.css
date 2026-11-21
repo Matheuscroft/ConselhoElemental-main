@@ -77,9 +77,9 @@
   inset: -32px -8px -24px;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 34% 40% at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
-    radial-gradient(ellipse 28% 34% at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
-    radial-gradient(ellipse 36% 20% at 58% 12%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
+    radial-gradient(ellipse closest-side at 24% 34%, color-mix(in srgb, var(--semana-aura) 40%, transparent), transparent 100%),
+    radial-gradient(ellipse closest-side at 78% 66%, rgb(var(--el-gold) / .24), transparent 100%),
+    radial-gradient(ellipse closest-side at 58% 16%, color-mix(in srgb, var(--semana-acento) 24%, transparent), transparent 100%);
   translate: calc(var(--par-x, 0) * -12px) calc(var(--par-y, 0) * -6px);
 }
 /* The glass itself is the system's recipe on the markup; here only the fill, the specular edge and the grain. */
