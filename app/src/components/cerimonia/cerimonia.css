@@ -1,132 +1,185 @@
 /*
- * The ceremony: whole screens, one thing on each.
+ * The ceremony: whole screens, one thing on each, in the colour of the person's element.
  *
- * It covers everything on purpose. The point of a ceremony is that the app
- * stops for a moment, and a celebration crowded by the interface it
- * interrupts is just a louder notice.
+ * It covers everything on purpose and is fully opaque: the point of a ceremony is that the app stops for a moment.
+ * The scene is built in layers that only ever move by transform or opacity (nothing here repaints per frame):
+ * a breathing haze, two sets of soft rays turning against each other, a static vignette that feathers them out,
+ * a flash and a shockwave on arrival, and embers rising behind the text.
  */
+/* Where the light is centred follows the screen on show, and glides between screens. */
+@property --cy { syntax: '<percentage>'; inherits: true; initial-value: 38%; }
 .cerimonia {
+  --cy: 36%;
+  transition: --cy var(--ds-duration-settle) var(--ds-ease);
   position: fixed;
   inset: 0;
   z-index: 200;
   display: grid;
   grid-template-rows: 1fr auto;
-  place-items: center;
-  padding: 24px max(20px, env(safe-area-inset-left)) max(28px, env(safe-area-inset-bottom));
+  justify-items: center;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-left)) max(24px, env(safe-area-inset-bottom));
+  overflow: clip;
   background:
-    radial-gradient(ellipse 70% 50% at 50% 42%, color-mix(in srgb, var(--cerimonia-cor) 22%, transparent), transparent 70%),
-    rgb(5 7 12 / 96%);
+    radial-gradient(ellipse closest-side at 50% var(--cy), color-mix(in srgb, var(--cerimonia-aura) 16%, transparent), transparent),
+    rgb(5 7 12);
   animation: cerimonia-abrir var(--ds-duration-reveal) var(--ds-ease) both;
 }
+/* The body is centred in the space above the foot, so the light sits on whatever is on show. */
+.cerimonia[data-beat='numero'], .cerimonia[data-beat='destrave'] { --cy: 43%; }
+.cerimonia[data-beat='fim'] { --cy: 40%; }
+@keyframes cerimonia-abrir { from { opacity: 0; } to { opacity: 1; } }
 
-@keyframes cerimonia-abrir {
-  from { opacity: 0; }
-  to { opacity: 1; }
+/* ---------- The scene ---------- */
+.cerimonia-fundo { position: absolute; inset: 0; pointer-events: none; overflow: clip; }
+.cerimonia-fundo > i { position: absolute; display: block; }
+
+.cerimonia-nevoa {
+  inset-inline: -30%; inset-block: calc(var(--cy) - 45%) auto; block-size: 90%;
+  background: radial-gradient(ellipse closest-side, color-mix(in srgb, var(--cerimonia-aura) 34%, transparent), transparent);
+  animation: cerimonia-respira calc(var(--ds-duration-conjure) * 8) ease-in-out infinite;
+}
+@keyframes cerimonia-respira { 0%, 100% { opacity: .65; scale: .94; } 50% { opacity: 1; scale: 1.06; } }
+
+/* Soft rays: a triangle wave of light (never a hard stripe), two sets at different pitches turning against each other. */
+.cerimonia-raios { inset-inline: -90%; inset-block-start: calc(var(--cy) - 130%); block-size: 260%; }
+.cerimonia-raios-a {
+  background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, color-mix(in srgb, var(--cerimonia-aura) 26%, transparent) 3.5deg, transparent 7deg, transparent 12deg);
+  animation: cerimonia-gira calc(var(--ds-duration-conjure) * 120) linear infinite;
+}
+.cerimonia-raios-b {
+  background: repeating-conic-gradient(from 6deg at 50% 50%, transparent 0deg, color-mix(in srgb, var(--cerimonia-cor) 16%, transparent) 5deg, transparent 10deg, transparent 19deg);
+  animation: cerimonia-gira calc(var(--ds-duration-conjure) * 190) linear infinite reverse;
+}
+@keyframes cerimonia-gira { to { rotate: 360deg; } }
+
+/* Static: feathers the rays into the dark, so they have no edge and no end. */
+.cerimonia-vinheta {
+  inset: 0;
+  background:
+    radial-gradient(ellipse closest-side at 50% var(--cy), transparent 6%, rgb(5 7 12 / .72) 46%, rgb(5 7 12) 100%),
+    linear-gradient(to bottom, rgb(5 7 12 / .5), transparent 18%, transparent 70%, rgb(5 7 12 / .85));
 }
 
-/* The rays behind it: the burst, turned slowly so it is alive without
-   demanding to be watched. */
-.cerimonia-raios {
-  position: absolute;
-  inset: -25%;
-  pointer-events: none;
-  background: repeating-conic-gradient(
-    from 0deg at 50% 46%,
-    color-mix(in srgb, var(--cerimonia-cor) 20%, transparent) 0deg 4deg,
-    transparent 4deg 13deg
-  );
-  -webkit-mask-image: radial-gradient(circle at 50% 46%, #000 12%, transparent 62%);
-  mask-image: radial-gradient(circle at 50% 46%, #000 12%, transparent 62%);
-  animation: cerimonia-girar 42s linear infinite;
+/* Arrival: a flash and one shockwave, played once. */
+.cerimonia-clarao {
+  inset-inline: -20%; inset-block: calc(var(--cy) - 40%) auto; block-size: 80%;
+  background: radial-gradient(ellipse closest-side, rgb(255 255 255 / .85), color-mix(in srgb, var(--cerimonia-aura) 55%, transparent) 38%, transparent);
+  opacity: 0;
+  animation: cerimonia-clarao calc(var(--ds-duration-conjure) * 1.1) var(--ds-ease) both;
+}
+@keyframes cerimonia-clarao { 0% { opacity: 0; scale: .4; } 18% { opacity: .9; } 100% { opacity: 0; scale: 1.15; } }
+.cerimonia-onda {
+  inset-inline-start: 50%; inset-block-start: var(--cy); inline-size: 220px; block-size: 220px; margin: -110px 0 0 -110px;
+  border-radius: 50%; border: 2px solid color-mix(in srgb, var(--cerimonia-aura) 80%, white);
+  opacity: 0;
+  animation: cerimonia-onda calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) both;
+}
+@keyframes cerimonia-onda { 0% { opacity: .9; scale: .25; } 100% { opacity: 0; scale: 2.8; } }
+
+.cerimonia-brasas { position: absolute; inset: 0; margin: 0; padding: 0; list-style: none; }
+.cerimonia-brasas li {
+  position: absolute; inset-inline-start: var(--x); inset-block-end: -2%; inline-size: var(--s); block-size: var(--s); border-radius: 50%;
+  background: var(--cerimonia-aura); box-shadow: 0 0 10px var(--cerimonia-aura);
+  opacity: 0;
+  animation: cerimonia-sobe calc(var(--ds-duration-conjure) * var(--d) * 1.4) linear calc(var(--ds-duration-conjure) * var(--a) * -1) infinite;
+}
+@keyframes cerimonia-sobe {
+  0% { opacity: 0; translate: 0 0; }
+  12% { opacity: .9; }
+  70% { opacity: .6; }
+  100% { opacity: 0; translate: var(--dx) -105dvh; }
 }
 
-.cerimonia-raios[data-parado='true'] { animation: none; }
+/* ---------- The body ---------- */
+.cerimonia-corpo { position: relative; align-self: center; display: grid; justify-items: center; gap: 28px; text-align: center; max-inline-size: 22rem; inline-size: 100%; }
+.cerimonia-beat { display: grid; justify-items: center; gap: 10px; animation: cerimonia-chega var(--ds-duration-settle) var(--ds-ease) both; }
+@keyframes cerimonia-chega { from { opacity: 0; translate: 0 14px; } to { opacity: 1; translate: 0 0; } }
+.cerimonia-chegada { animation: none; gap: 12px; }
 
-@keyframes cerimonia-girar {
-  to { rotate: 360deg; }
+/* The sigil: a ticked ring that turns, a fine ring that draws itself, four nodes, a lit disc and the element's own glyph. */
+.cerimonia-emblema {
+  --tam: 176px; position: relative; inline-size: var(--tam); block-size: var(--tam); display: grid; place-items: center;
+  animation: cerimonia-emblema calc(var(--ds-duration-conjure) * 1.2) var(--ds-ease-conjure) both;
 }
+.cerimonia[data-pronto='true'] .cerimonia-emblema { --tam: 132px; }
+@keyframes cerimonia-emblema { from { opacity: 0; scale: .45; } to { opacity: 1; scale: 1; } }
+.cerimonia-emblema > svg { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; overflow: visible; }
+.cerimonia-anel-ticks { stroke: color-mix(in srgb, var(--cerimonia-cor) 55%, transparent); stroke-width: 3; stroke-dasharray: .8 4.2; transform-origin: 60px 60px; animation: cerimonia-gira calc(var(--ds-duration-conjure) * 70) linear infinite; }
+.cerimonia-anel-fio { stroke: var(--cerimonia-cor); stroke-width: 1.2; stroke-dasharray: 1; stroke-dashoffset: 1; transform-origin: 60px 60px; rotate: -90deg; animation: cerimonia-traca calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) calc(var(--ds-stagger) * 2) both; }
+@keyframes cerimonia-traca { to { stroke-dashoffset: 0; } }
+.cerimonia-anel-miolo { fill: color-mix(in srgb, var(--cerimonia-aura) 22%, rgb(5 7 12)); stroke: color-mix(in srgb, var(--cerimonia-cor) 60%, transparent); stroke-width: .8; }
+.cerimonia-no { fill: var(--cerimonia-aura); opacity: 0; animation: cerimonia-no var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--ds-stagger) * 6) both; }
+@keyframes cerimonia-no { from { opacity: 0; } to { opacity: 1; } }
+.cerimonia-glifo { position: relative; color: var(--cerimonia-cor); filter: drop-shadow(0 0 12px var(--cerimonia-aura)); animation: cerimonia-pulsa calc(var(--ds-duration-conjure) * 5) ease-in-out infinite; }
+@keyframes cerimonia-pulsa { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
 
-.cerimonia-corpo {
-  position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 26px;
-  text-align: center;
-}
-
-.cerimonia-beat {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  /* Each beat arrives on the curve that overshoots: this is the one place in
-     the app where something is allowed to land harder than it settles. */
-  animation: cerimonia-chegar var(--ds-duration-conjure) var(--ds-ease-conjure) both;
-}
-
-@keyframes cerimonia-chegar {
-  from { opacity: 0; scale: 0.82; }
-  to { opacity: 1; scale: 1; }
-}
-
-.cerimonia-selo {
-  inline-size: 104px;
-  block-size: 104px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--cerimonia-cor) 0%, color-mix(in srgb, var(--cerimonia-cor) 30%, transparent) 46%, transparent 72%);
-  box-shadow: 0 0 60px color-mix(in srgb, var(--cerimonia-cor) 45%, transparent);
-}
-
+.cerimonia-kicker { margin-block-start: 4px; font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif; letter-spacing: .34em; text-transform: uppercase; color: var(--cerimonia-cor); animation: cerimonia-chega var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 3) both; }
 .cerimonia-chegada h2 {
-  margin: 0;
-  font-family: Cinzel, Georgia, serif;
-  font-size: var(--ds-fluid-display);
-  font-weight: 500;
-  line-height: var(--ds-leading-tight);
-  text-wrap: balance;
+  margin: 0; inline-size: 100%; text-align: center; letter-spacing: .04em; font-family: Cinzel, Georgia, serif; font-size: var(--ds-fluid-display); font-weight: 500; line-height: var(--ds-leading-tight); text-wrap: balance;
+  background: linear-gradient(180deg, #fff 20%, color-mix(in srgb, var(--cerimonia-cor) 72%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 18px color-mix(in srgb, var(--cerimonia-aura) 45%, transparent));
+  animation: cerimonia-titulo var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 4) both;
 }
+@keyframes cerimonia-titulo { from { opacity: 0; scale: 1.14; translate: 0 10px; } to { opacity: 1; scale: 1; translate: 0 0; } }
+.cerimonia-filete { position: relative; inline-size: 9rem; block-size: 1px; background: linear-gradient(90deg, transparent, var(--cerimonia-cor), transparent); transform-origin: center; animation: cerimonia-filete var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-stagger) * 7) both; }
+.cerimonia-filete::after { content: ''; position: absolute; inset-inline-start: 50%; inset-block-start: 50%; inline-size: 7px; block-size: 7px; margin: -3.5px 0 0 -3.5px; rotate: 45deg; background: var(--cerimonia-cor); box-shadow: 0 0 10px var(--cerimonia-aura); }
+@keyframes cerimonia-filete { from { scale: 0 1; opacity: 0; } to { scale: 1 1; opacity: 1; } }
 
+/* The number: the old one steps aside, the new one counts up in gold and element light. */
+.cerimonia-numero-linha { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.cerimonia-numero-de { font: 500 var(--ds-text-title)/1 Cinzel, Georgia, serif; font-variant-numeric: tabular-nums; color: rgb(var(--el-muted)); opacity: .7; }
+.cerimonia-numero-seta { inline-size: 26px; block-size: 2px; position: relative; background: linear-gradient(90deg, transparent, var(--cerimonia-cor)); }
+.cerimonia-numero-seta::after { content: ''; position: absolute; inset-inline-end: 0; inset-block-start: -3px; inline-size: 7px; block-size: 7px; border-top: 2px solid var(--cerimonia-cor); border-right: 2px solid var(--cerimonia-cor); rotate: 45deg; }
 .cerimonia-numero strong {
-  display: block;
-  color: var(--cerimonia-cor);
-  font-family: Cinzel, Georgia, serif;
-  font-size: var(--ds-fluid-hero, var(--ds-text-hero));
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
+  display: block; font-family: Cinzel, Georgia, serif; font-size: var(--ds-fluid-hero, var(--ds-text-hero)); font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1;
+  background: linear-gradient(180deg, #fff, var(--cerimonia-cor) 78%); -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 22px color-mix(in srgb, var(--cerimonia-aura) 55%, transparent));
 }
+.cerimonia-numero small { font: 600 var(--ds-text-small)/1.2 Inter, system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: rgb(var(--el-muted)); }
+.cerimonia-numero small b { color: var(--cerimonia-cor); font-weight: 700; }
 
-.cerimonia-numero small,
-.cerimonia-destrave small {
-  color: rgb(var(--el-muted));
-  font-size: var(--ds-text-small);
+/* What it unlocks: a card that rises, with a sheen that crosses it once. */
+.cerimonia-cartao {
+  position: relative; overflow: clip; display: flex; align-items: center; gap: 14px; inline-size: 100%; padding: 14px 18px; text-align: start;
+  border-radius: 16px; border: 1px solid color-mix(in srgb, var(--cerimonia-cor) 45%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cerimonia-aura) 14%, rgb(14 18 28)), rgb(14 18 28));
+  box-shadow: var(--ds-rim), 0 14px 30px -12px color-mix(in srgb, var(--cerimonia-aura) 40%, transparent);
+  animation: cerimonia-cartao calc(var(--ds-duration-conjure) * 1.1) var(--ds-ease-conjure) both;
 }
+@keyframes cerimonia-cartao { from { opacity: 0; translate: 0 26px; scale: .94; } to { opacity: 1; translate: 0 0; scale: 1; } }
+.cerimonia-cartao::after { content: ''; position: absolute; inset-block: 0; inset-inline-start: -60%; inline-size: 40%; background: linear-gradient(100deg, transparent, rgb(255 255 255 / .22), transparent); transform: skewX(-18deg); animation: cerimonia-brilho calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) calc(var(--ds-duration-conjure) * .8) both; }
+@keyframes cerimonia-brilho { from { inset-inline-start: -60%; } to { inset-inline-start: 140%; } }
+.cerimonia-cartao-selo { flex: none; display: grid; place-items: center; inline-size: 44px; block-size: 44px; border-radius: 50%; color: var(--cerimonia-cor); border: 1px solid color-mix(in srgb, var(--cerimonia-cor) 55%, transparent); background: color-mix(in srgb, var(--cerimonia-aura) 18%, transparent); }
+.cerimonia-cartao strong { display: block; font-size: var(--ds-text-lead); font-weight: 500; color: rgb(var(--el-text)); }
+.cerimonia-cartao small { display: block; margin-block-start: 2px; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
 
-.cerimonia-destrave strong {
-  font-size: var(--ds-text-lead);
-  font-weight: 500;
-}
-
+/* ---------- The foot: where you are in the sequence, and the way out ---------- */
+.cerimonia-pe { position: relative; display: grid; justify-items: center; gap: 16px; inline-size: 100%; }
+.cerimonia-passos { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.cerimonia-passos li { inline-size: 8px; block-size: 8px; border-radius: 50%; background: rgb(var(--el-muted) / .35); transition: inline-size var(--ds-duration-settle) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease); }
+.cerimonia-passos li[data-estado='feito'] { background: color-mix(in srgb, var(--cerimonia-cor) 70%, transparent); }
+.cerimonia-passos li[data-estado='atual'] { inline-size: 24px; border-radius: 4px; background: var(--cerimonia-cor); box-shadow: 0 0 10px var(--cerimonia-aura); }
 .cerimonia-sair {
-  position: relative;
-  min-block-size: 52px;
-  inline-size: min(100%, 320px);
-  border: 1px solid color-mix(in srgb, var(--cerimonia-cor) 62%, transparent);
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--cerimonia-cor) 16%, transparent);
-  color: rgb(var(--el-text));
-  font-size: var(--ds-text-body);
-  cursor: pointer;
+  min-block-size: 52px; inline-size: min(100%, 320px); border-radius: 16px; font: 600 var(--ds-text-body)/1 Inter, system-ui, sans-serif; cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--cerimonia-cor) 50%, transparent); background: transparent; color: rgb(var(--el-muted));
+  transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease);
 }
-
-.cerimonia-sair:focus-visible {
-  outline: 2px solid rgb(var(--el-gold));
-  outline-offset: 3px;
+.cerimonia-sair[data-pronto='true'] {
+  border-color: transparent; color: rgb(5 7 12); background: linear-gradient(180deg, var(--cerimonia-cor), color-mix(in srgb, var(--cerimonia-cor) 78%, #000));
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--cerimonia-cor) 45%, #000), 0 0 26px -4px var(--cerimonia-aura);
+  animation: cerimonia-chega var(--ds-duration-settle) var(--ds-ease) both;
 }
+.cerimonia-sair:active { transform: translateY(3px); }
+.cerimonia-sair[data-pronto='true']:active { box-shadow: 0 1px 0 color-mix(in srgb, var(--cerimonia-cor) 45%, #000); }
+.cerimonia-sair:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
 
+/* Reduced motion: the same screen, still. */
 @media (prefers-reduced-motion: reduce) {
-  .cerimonia,
-  .cerimonia-beat,
-  .cerimonia-raios {
-    animation: none;
-  }
+  .cerimonia, .cerimonia-beat, .cerimonia-nevoa, .cerimonia-raios, .cerimonia-clarao, .cerimonia-onda, .cerimonia-emblema,
+  .cerimonia-anel-ticks, .cerimonia-anel-fio, .cerimonia-no, .cerimonia-glifo, .cerimonia-kicker, .cerimonia-chegada h2, .cerimonia-filete,
+  .cerimonia-cartao, .cerimonia-cartao::after, .cerimonia-sair { animation: none; }
+  .cerimonia-anel-fio { stroke-dashoffset: 0; }
+  .cerimonia-no { opacity: 1; }
+  .cerimonia-clarao, .cerimonia-onda, .cerimonia-brasas, .cerimonia-cartao::after { display: none; }
 }
+.cerimonia[data-parado='true'] .cerimonia-brasas { display: none; }
