@@ -85,7 +85,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       '/astrolabio': 'Astrolábio',
       '/lua': 'Lua',
       '/estacoes': 'Estações',
-      '/cassino-arcano': 'Cassino Arcano',
+      '/cassino-arcano': 'Cassino',
       '/grimorio': 'Grimório',
       '/invocar': 'Invocar',
       '/dominios': 'Domínios',

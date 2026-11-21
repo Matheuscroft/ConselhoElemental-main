@@ -277,6 +277,7 @@
   border-radius: 0;
   transition:
     margin-inline var(--ds-duration-settle) var(--ds-ease),
+    padding-inline var(--ds-duration-settle) var(--ds-ease),
     border-radius var(--ds-duration-settle) var(--ds-ease),
     background-color var(--ds-duration-settle) var(--ds-ease),
     --hdr-desfoque var(--ds-duration-settle) var(--ds-ease);
@@ -328,12 +329,18 @@
 }
 
 .elemental-topbar[data-lugar="santuario"][data-condensado="true"] {
+  /* The pill is narrower than the bar: the side padding gives its width back, or the account button is cut at the edge. */
+  padding-inline: 8px;
   margin-inline: var(--hdr-pilula);
   border-radius: var(--hdr-raio);
   --hdr-desfoque: var(--ds-blur-soft);
   background-color: var(--ds-surface-float);
 }
 .elemental-topbar[data-lugar="santuario"][data-condensado="true"]::before { opacity: 1; }
+/* In the pill the wordmark gives way to the sigil alone: the pill is narrower than the bar and the wordmark cut the account button. */
+@media (max-width: 767.98px) {
+  .elemental-topbar[data-lugar="santuario"][data-condensado="true"] .elemental-topbar-brand > span { display: none; }
+}
 .elemental-topbar[data-lugar="santuario"][data-condensado="true"]::after { opacity: 0; }
 
 /* The tray sits under the pill, inside its margins. */
@@ -363,8 +370,8 @@
   }
 }
 @keyframes hdr-condensar {
-  from { margin-inline: 0; border-radius: 0; background-color: transparent; --hdr-desfoque: 0px; }
-  to { margin-inline: var(--hdr-pilula); border-radius: 16px; background-color: var(--ds-surface-float); --hdr-desfoque: var(--ds-blur-soft); }
+  from { margin-inline: 0; padding-inline: max(16px, env(safe-area-inset-left)) max(16px, env(safe-area-inset-right)); border-radius: 0; background-color: transparent; --hdr-desfoque: 0px; }
+  to { margin-inline: var(--hdr-pilula); padding-inline: 8px; border-radius: 16px; background-color: var(--ds-surface-float); --hdr-desfoque: var(--ds-blur-soft); }
 }
 @keyframes hdr-luz { from { opacity: 1; } to { opacity: 0; } }
 @keyframes hdr-borda { from { opacity: 0; } to { opacity: 1; } }
