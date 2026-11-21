@@ -22,7 +22,7 @@ export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay,
     <label className="cycle-composer-name">{sequence ? 'Nome da sequência' : 'O que você quer praticar?'}<input autoFocus required value={name} onChange={event => onNameChange(event.target.value)} placeholder={sequence ? 'Ex.: Alternar treino A e B' : 'Ex.: Ler por 20 minutos'} /></label>
     {!sequence && !name.trim() ? <div className="cycle-composer-sugestoes" role="group" aria-label="Sugestões de ciclo">{SUGESTOES.map(item => <button key={item} type="button" onClick={() => onNameChange(item)}>{item}</button>)}</div> : null}
     {children}
-    {agenda ?? (days && onToggleDay ? <CycleWeekdays days={days} onToggle={onToggleDay} /> : null)}
+    <div className="cycle-composer-agenda">{agenda ?? (days && onToggleDay ? <CycleWeekdays days={days} onToggle={onToggleDay} /> : null)}</div>
     <details className="cycle-composer-ajuda"><summary>Como funciona?</summary><p className="cycle-composer-help">{sequence ? 'Alterna um ciclo por data programada. Concluir hoje deixa o próximo para o próximo dia da agenda. Para atividades que você quer fazer no mesmo dia, crie ciclos separados.' : 'Cada data programada tem sua própria conclusão. Use subitens para etapas fixas e o contador do cartão para somar repetições ou qualquer medida que você escolher.'}</p></details>
     <footer><button type="button" onClick={onCancel}>Cancelar</button><button type="submit" disabled={!name.trim()}>{sequence ? 'Criar sequência' : 'Criar ciclo'}</button></footer>
   </form>;

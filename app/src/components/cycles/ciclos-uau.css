@@ -316,3 +316,27 @@
 .cycle-composer-ajuda[open] summary::after { content: '–'; }
 .cycle-composer-ajuda .cycle-composer-help { padding: 0 14px 14px; }
 .cycle-composer footer { border-top: 0; box-shadow: 0 -14px 18px -6px rgb(var(--el-canvas)); }
+
+/* ---------- Create-cycle sheet, second pass: a lit top edge, a grabber, grouped schedule, sections that arrive one by one ---------- */
+.cycle-composer-dialog { position: fixed; overflow-x: clip; isolation: isolate; }
+.cycle-composer-dialog::after {
+  content: ''; position: absolute; inset-block-start: 0; inset-inline: 0; block-size: 180px; z-index: -1; pointer-events: none;
+  background: radial-gradient(ellipse closest-side at 50% 0, rgb(var(--el-gold) / .16), transparent);
+}
+.cycle-composer-dialog [data-slot="dialog-close"] { inline-size: 44px; block-size: 44px; display: grid; place-items: center; border-radius: 50%; }
+.cycle-composer-dialog [data-slot="dialog-title"] { letter-spacing: .02em; text-shadow: 0 0 22px rgb(var(--el-gold) / .22); }
+@media (max-width: 600px) {
+  .cycle-composer-dialog::before { content: ''; position: absolute; inset-block-start: 8px; inset-inline: 0; margin-inline: auto; inline-size: 40px; block-size: 4px; border-radius: 4px; background: rgb(var(--el-muted) / .4); }
+  .cycle-composer-dialog { padding-block-start: 34px; }
+}
+.cycle-composer-agenda { padding: 14px; border-radius: 16px; border: 1px solid rgb(var(--el-muted) / .2); background: rgb(var(--el-surface) / .55); box-shadow: var(--ds-rim); }
+.cycle-composer-agenda:empty { display: none; }
+.cycle-composer-agenda .cycle-weekdays { margin: 0; padding: 0; border: 0; }
+.cycle-composer-agenda .cycle-weekdays legend { padding: 0; margin-block-end: 10px; color: rgb(var(--el-text)); font: 500 var(--ds-text-body)/1.3 Cinzel, Georgia, serif; }
+.cycle-composer-agenda > fieldset { margin: 0; }
+@keyframes cycle-composer-chega { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0 0; } }
+.cycle-composer-dialog[data-state="open"] .cycle-composer > :not(footer) { animation: cycle-composer-chega var(--ds-duration-settle) var(--ds-ease-conjure) backwards; }
+.cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(2) { animation-delay: var(--ds-stagger); }
+.cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(3) { animation-delay: calc(var(--ds-stagger) * 2); }
+.cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(4) { animation-delay: calc(var(--ds-stagger) * 3); }
+.cycle-composer-dialog[data-state="open"] .cycle-composer > :nth-child(n+5) { animation-delay: calc(var(--ds-stagger) * 4); }
