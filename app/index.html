@@ -29,8 +29,8 @@
     <title>Conselho Elemental</title>
   </head>
   <body>
-    <div id="root">
-<div class="abertura" role="status" aria-live="polite" aria-label="Carregando santuário">
+    
+<div class="abertura" id="abertura" role="status" aria-live="polite" aria-label="Carregando santuário">
 <div class="quadro">
 <img class="quadro__img" src="/splash/santuario.webp" width="828" height="1472" alt="" decoding="async" fetchpriority="high" onload="this.dataset.ok=1" />
 <div class="neblina neblina--a"></div>
@@ -60,10 +60,30 @@
 <p class="abertura__estado">Carregando santuário…</p>
 </div>
 </div>
+    <div id="root"></div>
 <script>
-(function(){var p=document.getElementById('ab-pct');if(!p)return;var t0=Date.now();var id=setInterval(function(){if(!document.getElementById('ab-pct')){clearInterval(id);return;}var t=Date.now()-t0;var v=Math.round(92*(1-Math.exp(-t/2600)));p.textContent=v+'%';},120);})();
+(function(){
+  var el=document.getElementById('abertura'),root=document.getElementById('root');if(!el)return;
+  var pct=document.getElementById('ab-pct'),chamas=el.querySelectorAll('.chama'),selo=el.querySelector('.selo-chao');
+  var v=0,alvo=6,fim=false,saiu=false;
+  window.__abertura=function(p){if(p>alvo)alvo=p>100?100:p;};
+  function sair(){if(saiu)return;saiu=true;el.setAttribute('data-saindo','');setTimeout(function(){clearInterval(id);if(el.parentNode)el.parentNode.removeChild(el);},700);}
+  function passo(){
+    if(fim){v+=(100-v)*.6+3;}
+    else if(v<alvo){v+=(alvo-v)*.16+.3;}
+    else if(v<Math.min(alvo+7,95)){v+=.06;}
+    if(v>=100){v=100;}
+    var r=Math.round(v);
+    pct.textContent=r+'%';
+    el.style.setProperty('--p',v.toFixed(1));
+    for(var i=0;i<chamas.length;i++){if(!chamas[i].hasAttribute('data-on')&&v>=(i+1)*100/(chamas.length+1))chamas[i].setAttribute('data-on','');}
+    if(v>=24)selo.setAttribute('data-on','');
+    if(fim&&v>=100)sair();
+  }
+  var id=setInterval(passo,60);
+  new MutationObserver(function(){if(root.firstChild){fim=true;alvo=100;}}).observe(root,{childList:true});
+})();
 </script>
-    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -7,18 +7,23 @@ import { mountAccountApp } from './mount-account-app';
 import { ACCOUNT_BINDING_KEY } from './lib/backup/account-binding';
 
 /** Loaded under the exclusive progress lease; failures never fall through to App. */
+const etapa=(p:number)=>{try{(window as unknown as {__abertura?:(p:number)=>void}).__abertura?.(p);}catch{/* the opening scene is only decoration */}};
+
 export async function mountAccountResume(root: HTMLElement) {
   // The record stays wherever it was saved (this tab or this device); reads cover both.
+  etapa(32);
   const access=accountAccessStorage(undefined,window);
   try {
     const config={url:import.meta.env.VITE_SUPABASE_URL,key:import.meta.env.VITE_SUPABASE_ANON_KEY};
     if(window.localStorage.getItem(ACCOUNT_BINDING_KEY)!==null){
       if(!isRestoredLocalDocument())throw new Error('Confira o vínculo local.');
       const session=await resumeAccountSession({config,origin:window.location.origin,storage:window.localStorage,accessStorage:access,isExclusive:hasExclusiveProgressSession});
+      etapa(62);
       try { await mountAccountApp(root,session); } catch(error) { session.dispose();throw error; }
     }else{
       const {resumeAuthenticatedAccountSession}=await import('./lib/backup/resume-authenticated-account');
       const session=await resumeAuthenticatedAccountSession({config,origin:window.location.origin,accessStorage:access,isCurrent:hasExclusiveProgressSession});
+      etapa(62);
       try{const {mountAuthenticatedAccountApp}=await import('./mount-authenticated-account-app');await mountAuthenticatedAccountApp(root,session);}
       catch(error){session.dispose();throw error;}
     }

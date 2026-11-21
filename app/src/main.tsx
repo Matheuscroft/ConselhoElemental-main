@@ -18,6 +18,8 @@ import { showProgressStartup } from './lib/backup/startup-screen'
 document.documentElement.classList.add('dark');
 
 const root = document.getElementById('root')!;
+const etapa=(p:number)=>{try{(window as unknown as {__abertura?:(p:number)=>void}).__abertura?.(p);}catch{/* the opening scene is only decoration */}};
+etapa(14);
 showProgressStartup(root);
 function hasValidAccountAccess() {
   const raw=accountAccessStorage(undefined,window).getItem(ACCOUNT_TAB_ACCESS_KEY),project=import.meta.env.VITE_SUPABASE_URL as string|undefined;
@@ -100,6 +102,7 @@ async function openProgress() {
     showProgressStartup(root, 'storage-unavailable');
     return;
   }
+  etapa(22);
   try { if (needsReminderWorkspace(window.location.search, () => window.sessionStorage)) { await openReminderWorkspace(); return; } }
   catch { showProgressStartup(root, 'storage-unavailable'); return; }
   try {

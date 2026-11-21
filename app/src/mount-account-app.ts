@@ -3,6 +3,8 @@ import { hasExclusiveProgressSession } from './lib/backup/progress-startup';
 import { isRestoredLocalDocument, markLiveAccountDocument } from './lib/backup/progress-mode';
 
 /** Only imported from the explicit workspace handoff under an exclusive lease. */
+const etapa=(p:number)=>{try{(window as unknown as {__abertura?:(p:number)=>void}).__abertura?.(p);}catch{/* the opening scene is only decoration */}};
+
 export async function mountAccountApp(root: HTMLElement, session: LiveAccountSession) {
   if (!hasExclusiveProgressSession() || !isRestoredLocalDocument()) throw new Error('Reabra a conferência da conta antes de sincronizar.');
   const sync = createLiveAccountSync({origin:window.location.origin,storage:window.localStorage,session,isExclusive:hasExclusiveProgressSession,isOnline:()=>navigator.onLine});
@@ -14,9 +16,11 @@ export async function mountAccountApp(root: HTMLElement, session: LiveAccountSes
   try {
     stopRefresh = session.startRefresh?.(() => sync.invalidate());
     await sync.flush();
+    etapa(76);
     if (!['saved','idle'].includes(sync.getSnapshot().status)) { sync.stop(); throw new Error('Confira as versões da conta antes de entrar.'); }
     session.activateResume?.();
     const { mountApp } = await import('./bootstrap-app');
+    etapa(92);
     if (!hasExclusiveProgressSession() || !['saved','idle'].includes(sync.getSnapshot().status)) throw new Error('A sessão mudou durante a abertura do app. Confira a conta novamente.');
     markLiveAccountDocument();
     mountApp(root,sync);
