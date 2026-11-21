@@ -16,7 +16,14 @@
   --palco-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
 }
 
-.palco-cena { position: relative; block-size: var(--palco-altura); overflow: hidden; }
+.palco-cena {
+  position: relative; block-size: var(--palco-altura); overflow: hidden;
+  /* The stage clips its own glow; a hard box edge in a light reads as a rectangle. The four edges fade out softly instead. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 40px, #000 calc(100% - 40px), transparent), linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to bottom, transparent, #000 40px, #000 calc(100% - 40px), transparent), linear-gradient(to right, transparent, #000 24px, #000 calc(100% - 24px), transparent);
+  mask-composite: intersect;
+}
 
 /* Four layers; the chosen one is lit, the others sit dark and paused. */
 .palco-camadas { position: absolute; inset: 0; pointer-events: none; }
