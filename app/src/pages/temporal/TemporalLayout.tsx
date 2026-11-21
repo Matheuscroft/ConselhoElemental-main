@@ -36,7 +36,7 @@ export const TemporalLayout = ({ title, subtitle, children, actions, className =
   const selectedDay = selectedDayStamp == null ? null : new Date(selectedDayStamp);
   const navigationDate = selectedDay ?? anchorDate;
   const returnTo = safeTemporalReturn(location.state);
-  return <AppLayout title={title}>
+  return <AppLayout title={title.startsWith('Temporal - ') ? 'Temporal' : title}>
   <CenaTemporal className={className}>
     <header className="temporal-header">
       <Link className="temporal-back" to="/santuario"><ArrowLeft size={16} />Santuário</Link>

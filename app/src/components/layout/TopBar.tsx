@@ -90,11 +90,11 @@ export const TopBar: React.FC<TopBarProps> = ({
       '/invocar': 'Invocar',
       '/dominios': 'Domínios',
       '/pilares': 'Pilares',
-      '/mapa': 'Mapa de páginas',
-      '/temporal/semana': 'Temporal - Semana',
-      '/temporal/mes': 'Temporal - Mês',
-      '/temporal/ano': 'Temporal - Ano',
-      '/temporal/calendario': 'Temporal - Calendário',
+      '/mapa': 'Mapa',
+      '/temporal/semana': 'Temporal',
+      '/temporal/mes': 'Temporal',
+      '/temporal/ano': 'Temporal',
+      '/temporal/calendario': 'Temporal',
     };
     
     return titles[path] || 'Conselho Elemental';

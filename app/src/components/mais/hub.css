@@ -128,3 +128,8 @@
 
 /* The hub carries its own close button; hide the sheet component's default one. */
 .all-routes-sheet > button { display: none; }
+
+/* Phone: the place name fits on one line beside the rose. */
+@media (max-width: 420px) {
+  .hub-titulo { font-size: var(--ds-text-lead); }
+}

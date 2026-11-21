@@ -227,3 +227,8 @@
 .temporal-reminder button:disabled { opacity: .55; cursor: default; }
 .temporal-reminder :is(button, input, select, a):focus-visible { outline: 2px solid #eceae3; outline-offset: 3px; }
 .temporal-agenda-list .temporal-reminder a { display: inline-flex; min-height: 48px; color: #d5b66f; font-size: var(--ds-text-small); }
+
+/* Phone: the bottom bar already leads back to the Sanctuary, so the extra link is hidden. */
+@media (max-width: 767.98px) {
+  .temporal-back { display: none; }
+}
