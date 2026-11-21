@@ -250,3 +250,7 @@
 @media (max-width: 420px) {
   .cycles-workspace .cycle-date-selected strong { font-size: .9375rem; letter-spacing: 0; white-space: nowrap; }
 }
+
+/* The main button has a lip and a top highlight, and sinks when pressed (same depth as the rest of the app). */
+.cycles-workspace .cycle-primary { box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }
+.cycles-workspace .cycle-primary:active:not(:disabled) { translate: 0 4px; box-shadow: 0 0 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }

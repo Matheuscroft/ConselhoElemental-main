@@ -39,6 +39,13 @@ import { ScrollToTop } from '@/components/layout/ScrollToTop';
 import { ProvedorDeProgresso } from '@/components/feedback/ProvedorDeProgresso';
 import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
 import type { AccountSyncView } from '@/lib/backup/account-live-sync';
+import { qaBypassAuth } from '@/lib/dev/qa-bypass';
+import { PrimeiroAcesso } from '@/components/entry/PrimeiroAcesso';
+import { EntryWelcome } from '@/components/entry/EntryWelcome';
+import { AccountWorkspace } from '@/components/backup/AccountWorkspace';
+import { FigurasGaleria } from '@/lib/dev/figuras-galeria';
+import { FigurasTira } from '@/lib/dev/figuras-tira';
+import '@/components/backup/restore-workspace.css';
 
 const ElementalPreview = lazy(() => import('@/pages/ElementalPreview'));
 const DespertarRota = lazy(() => import('@/components/sanctuary/DespertarRota'));
@@ -56,6 +63,10 @@ function AccountEntryRedirect() {
 function ProtectedRoute() {
   const accountSync = useContext(AccountConnectionContext);
   const accountView = useSyncExternalStore(accountSync?.subscribe ?? subscribeSignedOut, accountSync?.getSnapshot ?? getSignedOutView, getSignedOutView);
+  // Dev-only and opt-in: see src/lib/dev/qa-bypass.ts. Placed after the hooks so
+  // the rules of hooks hold, and before every redirect so it skips them all.
+  if (qaBypassAuth()) return <Outlet />;
+
   if (accountSync && accountView.status !== 'stopped') {
     return <Outlet />;
   }
@@ -86,6 +97,11 @@ function App() {
 
           {/* Auth */}
           <Route path="/auth" element={<PublicAuthRoute />} />
+          {qaBypassAuth() ? <Route path="/qa/primeiro-acesso" element={<PrimeiroAcesso />} /> : null}
+          {qaBypassAuth() ? <Route path="/qa/boas-vindas" element={<EntryWelcome />} /> : null}
+          {qaBypassAuth() ? <Route path="/qa/conta" element={<AccountWorkspace notice="none" />} /> : null}
+          {qaBypassAuth() ? <Route path="/qa/figuras" element={<FigurasGaleria />} /> : null}
+          {qaBypassAuth() ? <Route path="/qa/figuras-tira" element={<FigurasTira />} /> : null}
 
           {/* Rever a introdução. O primeiro acesso roda a cena por outro
               caminho; aqui ela leva de volta ao Santuário. */}

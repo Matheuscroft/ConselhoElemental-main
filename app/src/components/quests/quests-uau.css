@@ -420,3 +420,61 @@
 .quest-path > li[data-complete="true"] .quest-step-label strong { color: rgb(var(--el-muted)); font-weight: 500; }
 .quest-path > li[data-next="true"] .quest-step-label strong { font-size: var(--ds-text-lead); }
 .quest-path > li[data-available="false"] .quest-step-label { opacity: .6; }
+
+/* ---------- Duolingo-like depth: the bubble takes the element's colour, the button has a lip and a sweeping shine ---------- */
+/* The ring around the next stone is four arcs, with a glint that runs along it; soft rays turn behind it. */
+.quest-step-anel-trilho { stroke-dasharray: .215 .035; }
+.quest-step-anel-fio { stroke-linecap: butt; }
+.quest-step-anel-brilho { stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: .07 .93; opacity: .85; transform-origin: 50px 50px; animation: cq-gira calc(var(--ds-duration-conjure) * 5) linear infinite; }
+@keyframes cq-gira { to { transform: rotate(360deg); } }
+.quest-step-raios {
+  position: absolute; inset: -34px; z-index: -1; border-radius: 50%; pointer-events: none; opacity: .5;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--quest-accent) 34%, transparent) 0 5deg, transparent 5deg 20deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 34%, #000 50%, transparent 72%);
+  mask-image: radial-gradient(circle, transparent 34%, #000 50%, transparent 72%);
+  animation: cq-gira calc(var(--ds-duration-conjure) * 22) linear infinite;
+}
+
+/* The bubble: solid in the element's colour, with its own lip and a tail pointing at the stone. */
+.quest-map .quest-step-detail {
+  padding: 16px 16px 14px; border: 0; border-radius: 18px;
+  background: var(--quest-accent); color: var(--quest-ink);
+  box-shadow: 0 5px 0 var(--quest-lip), 0 14px 28px rgb(0 0 0 / .32);
+  display: grid; gap: 4px;
+}
+.quest-map .quest-step-detail::before { background: var(--quest-accent); border: 0; }
+.quest-map .quest-step-detail p { color: var(--quest-ink); }
+.quest-balao-titulo { display: block; font: 700 var(--ds-text-lead)/1.25 Inter, system-ui, sans-serif; color: var(--quest-ink); }
+.quest-balao-sub { display: block; font-size: var(--ds-text-small); color: color-mix(in srgb, var(--quest-ink) 72%, transparent); margin-block-end: 8px; }
+.quest-map .quest-step-detail .quest-detail-actions { display: grid; gap: 4px; }
+.quest-map .quest-step-detail .quest-text-button { color: color-mix(in srgb, var(--quest-ink) 78%, transparent); font-weight: 600; }
+
+/* The deep button: a lip, a top highlight, a shine that sweeps across now and then, and it sinks when pressed. */
+.quest-map .quest-botao3d {
+  position: relative; isolation: isolate; overflow: hidden; min-block-size: 52px; border: 0; border-radius: 14px;
+  background: #fff7e4; color: color-mix(in srgb, var(--quest-accent) 38%, #14100a);
+  font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  box-shadow: 0 5px 0 #cdbd96, inset 0 2px 0 rgb(255 255 255 / .9);
+}
+.quest-botao3d::after {
+  content: ''; position: absolute; inset-block: -20%; inset-inline-start: -40%; inline-size: 28%; z-index: -1; pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgb(255 255 255 / .85), transparent); transform: skewX(-22deg) translateX(-100%);
+  animation: cq-brilho calc(var(--ds-duration-conjure) * 5) ease-in-out infinite;
+}
+@keyframes cq-brilho { 0%, 55% { transform: skewX(-22deg) translateX(-120%); } 85%, 100% { transform: skewX(-22deg) translateX(560%); } }
+.quest-map .quest-step-detail .quest-botao3d { box-shadow: 0 5px 0 #cdbd96, inset 0 2px 0 rgb(255 255 255 / .9); }
+.quest-map .quest-step-detail .quest-botao3d:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 #cdbd96, inset 0 2px 0 rgb(255 255 255 / .9); }
+
+/* Primary buttons everywhere get the same lip and press. */
+.ds-botao[data-tipo="primario"], .quest-primary:not(.quest-botao3d) {
+  box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38);
+  transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease);
+}
+.ds-botao[data-tipo="primario"]:active:not(:disabled), .quest-primary:not(.quest-botao3d):active:not(:disabled) {
+  transform: translateY(4px); box-shadow: 0 0 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-step-anel-brilho, .quest-step-raios, .quest-botao3d::after { animation: none; }
+  .quest-botao3d::after { display: none; }
+}

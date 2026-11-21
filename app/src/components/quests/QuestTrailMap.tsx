@@ -45,7 +45,8 @@ function PedraDaEtapa({ concluida, proxima, children }: { concluida: boolean; pr
     return () => window.clearTimeout(fim);
   }, [acabou]);
   return <span className="quest-step-stone" aria-hidden="true" data-acabou={acabou ? '' : undefined}>
-    {proxima && <svg className="quest-step-anel" viewBox="0 0 100 100"><circle className="quest-step-anel-trilho" cx="50" cy="50" r="46" /><circle className="quest-step-anel-fio" cx="50" cy="50" r="46" pathLength="1" /></svg>}
+    {proxima && <span className="quest-step-raios" />}
+    {proxima && <svg className="quest-step-anel" viewBox="0 0 100 100"><circle className="quest-step-anel-trilho" cx="50" cy="50" r="46" pathLength="1" /><circle className="quest-step-anel-fio" cx="50" cy="50" r="46" pathLength="1" /><circle className="quest-step-anel-brilho" cx="50" cy="50" r="46" pathLength="1" /></svg>}
     {proxima && <span className="quest-step-dica">Começar</span>}
     {acabou && <span className="quest-step-fagulhas">{[0, 1, 2, 3, 4, 5, 6, 7].map(n => <i key={n} style={{ '--faisca': n } as CSSProperties} />)}</span>}
     {children}

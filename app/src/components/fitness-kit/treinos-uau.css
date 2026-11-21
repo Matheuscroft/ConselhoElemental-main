@@ -464,3 +464,7 @@
   .tr-titulo { font-size: var(--ds-fluid-title); }
   .tr-subtitulo { margin-top: 2px; }
 }
+
+/* Depth for the main buttons: a lip, a top highlight, and a sink when pressed. */
+.tr-novo { box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }
+.tr-novo:active { translate: 0 4px; box-shadow: 0 0 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }
