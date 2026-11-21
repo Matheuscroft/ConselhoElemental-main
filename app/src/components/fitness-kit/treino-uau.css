@@ -484,3 +484,24 @@ textarea.treino-campo { min-height: 88px; padding: 12px; }
   .treino-exercicio[data-state="active"] { outline: 2px solid Highlight; }
   .treino-acao--principal, .treino-acao--concluir { border-color: ButtonText; }
 }
+
+/* ---------- Depth: every action has a lip and sinks when pressed; the destructive one steps back ---------- */
+.treino-acao { box-shadow: 0 3px 0 rgb(0 0 0 / .38), inset 0 1px 0 rgb(255 255 255 / .08); transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease), filter var(--ds-duration-feedback) var(--ds-ease), opacity var(--ds-duration-feedback) var(--ds-ease); }
+.treino-acao:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 rgb(0 0 0 / .38), inset 0 1px 0 rgb(255 255 255 / .08); }
+.treino-acao--principal { box-shadow: 0 5px 0 color-mix(in srgb, var(--semana-acento) 45%, #000), inset 0 1px 0 rgb(255 255 255 / .35); }
+.treino-acao--principal:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 0 0 color-mix(in srgb, var(--semana-acento) 45%, #000), inset 0 1px 0 rgb(255 255 255 / .35); }
+.treino-acao:disabled { box-shadow: none; }
+/* In the action bar, "finish" leads and "cancel" is a quiet, narrow button: never two equal giants side by side. */
+.treino-barra-botoes > .treino-acao:not(.treino-acao--principal):not(.treino-acao--pular) {
+  flex: 0 0 auto; min-height: 60px; padding-inline: 14px; background: transparent; color: rgb(var(--el-muted));
+  font-size: var(--ds-text-small); font-weight: 500; box-shadow: none;
+}
+.treino-barra-botoes > .treino-acao:not(.treino-acao--principal):not(.treino-acao--pular):active:not(:disabled) { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) { .treino-acao { transition: none; } }
+
+/* A set not yet done asks to be done: an outlined ring. A set done is the filled seal, so the two never look alike. */
+.treino-acao--concluir[aria-pressed="false"] {
+  border-width: 2px; border-color: var(--semana-acento); background: color-mix(in srgb, var(--semana-acento) 10%, transparent);
+  color: var(--semana-acento); box-shadow: 0 3px 0 color-mix(in srgb, var(--semana-acento) 38%, #000), 0 0 18px color-mix(in srgb, var(--semana-aura) 22%, transparent);
+}
+.treino-acao--concluir[aria-pressed="false"]:active:not(:disabled) { background: var(--semana-acento); color: rgb(var(--el-canvas)); }

@@ -101,3 +101,9 @@ select:not([multiple]):not([data-slot]) {
 
 /* ----- Dialogs: the title never runs under the close button ----- */
 [role="dialog"] :is([data-slot="dialog-title"], [data-slot="sheet-title"], h2:first-of-type) { padding-inline-end: 40px; }
+
+/* ----- Confirmation dialogs (alert dialogs): the buttons come from the shadcn class string without data attributes ----- */
+[role="alertdialog"] button:not([aria-label="Close"]) { min-block-size: 48px; border-radius: 12px; font-weight: 600; transition: transform var(--ds-duration-press) var(--ds-ease), box-shadow var(--ds-duration-press) var(--ds-ease); }
+[role="alertdialog"] button:not(:disabled) { box-shadow: 0 3px 0 var(--ds-labio-fio), var(--ds-realce-suave); }
+[role="alertdialog"] button:last-of-type:not(:disabled) { box-shadow: 0 4px 0 var(--ds-labio-ouro), var(--ds-realce); }
+[role="alertdialog"] button:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }

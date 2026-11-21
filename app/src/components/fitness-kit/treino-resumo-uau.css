@@ -55,3 +55,6 @@
   .dg-convite { border-color: CanvasText; }
   .dg-avalia .estrelas-nota svg[data-pop] { filter: none; fill: Highlight; color: Highlight; }
 }
+
+/* A value wrapped in a span (a count) keeps the size of its neighbours; only a unit beside a number is small. */
+.treino-stat dd > span:only-child { font: inherit; color: inherit; }
