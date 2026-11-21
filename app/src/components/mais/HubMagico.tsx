@@ -122,6 +122,7 @@ export function HubMagico({ pathname, onNavegar, onFechar, conteudoRef, titleRef
     alvo: alvoDaFolha,
     aoFechar: onFechar,
     reduzido,
+    corpo: corpoRef,
     aoElemento: (passo) => {
       if (buscando) return;
       const i = ELEMENTOS_DA_ROSA.indexOf(agulha);
