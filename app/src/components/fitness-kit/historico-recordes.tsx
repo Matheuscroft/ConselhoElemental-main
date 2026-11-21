@@ -1,5 +1,5 @@
-import React, { useMemo, type CSSProperties } from 'react';
-import { Flame, Trophy } from 'lucide-react';
+import React, { useId, useMemo, useState, type CSSProperties } from 'react';
+import { Trophy } from 'lucide-react';
 import './historico-uau.css';
 import { elementoDaModalidade } from './treinos-elementos';
 import { capaDaModalidade } from './modalidade-capa';
@@ -10,12 +10,37 @@ import type { NativeWorkoutSession, WorkoutExerciseCategory, WorkoutTemplate } f
 const num = (value: number, digits = 0) => value.toLocaleString('pt-BR', { maximumFractionDigits: digits });
 const minutos = (s: number) => (s >= 3600 ? `${Math.floor(s / 3600)} h ${String(Math.round((s % 3600) / 60)).padStart(2, '0')} min` : `${Math.round(s / 60)} min`);
 const data = (iso: string) => new Date(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' });
-const semanas = (n: number) => (n === 1 ? '1 semana' : `${n} semanas`);
 
 interface Props {
   sessions: readonly NativeWorkoutSession[];
   templates: readonly Pick<WorkoutTemplate, 'id' | 'modality'>[];
 }
+
+
+/** The streak as an object you can touch: a living flame, one pip per week (lit in turn), the best run marked. */
+const SequenciaChama: React.FC<{ atual: number; melhor: number }> = ({ atual, melhor }) => {
+  const [aberta, setAberta] = useState(false);
+  const idDetalhe = useId();
+  const pips = Math.min(8, Math.max(4, atual, melhor));
+  const rotulo = atual === 1 ? 'semana seguida' : 'semanas seguidas';
+  return (
+    <div className="hr-seq" data-aberta={aberta ? '' : undefined}>
+      <button type="button" className="hr-seq-botao" aria-expanded={aberta} aria-controls={idDetalhe} onClick={() => setAberta((v) => !v)}>
+        <svg className="hr-seq-fogo" viewBox="0 0 24 32" aria-hidden="true" focusable="false">
+          <path className="hr-seq-fora" d="M12 1c1.2 6.5 8 9.5 8 18a8 8 0 0 1-16 0c0-4 2-6.2 3.2-8.4 1 3 2.2 4.2 3.4 4.2C10.4 9 9.6 5.4 12 1z" />
+          <path className="hr-seq-dentro" d="M12.2 14c1 3.2 4 4.4 4 8a4 4 0 0 1-8 0c0-2.2 1-3.2 2.2-4.4.6 1.2 1.2 1.8 2.2 1.8-.4-2-.4-3.6-.4-5.4z" />
+        </svg>
+        <span className="hr-seq-texto"><strong>{atual}</strong><span>{rotulo}</span></span>
+        <span className="hr-seq-pips" aria-hidden="true">
+          {Array.from({ length: pips }, (_, i) => <i key={i} data-aceso={i < atual ? '' : undefined} data-melhor={i + 1 === melhor ? '' : undefined} style={{ '--i': i } as CSSProperties} />)}
+        </span>
+      </button>
+      <p id={idDetalhe} className="hr-seq-detalhe" hidden={!aberta}>
+        {atual === melhor ? 'Esta é a sua melhor sequência. Treine nesta semana para mantê-la.' : `Sua melhor sequência foi de ${melhor} ${melhor === 1 ? 'semana' : 'semanas'}. Faltam ${melhor - atual + 1} para superá-la.`}
+      </p>
+    </div>
+  );
+};
 
 const Cartao: React.FC<{ modalidade: WorkoutExerciseCategory; r: RecordesDaModalidade }> = ({ modalidade, r }) => {
   const Icone = CATEGORY_ICONS[modalidade] ?? CATEGORY_ICONS.mixed;
@@ -30,10 +55,8 @@ const Cartao: React.FC<{ modalidade: WorkoutExerciseCategory; r: RecordesDaModal
       {capa && <img className="hr-capa" src={capa} alt="" loading="lazy" decoding="async" aria-hidden="true" />}
       <div className="hr-cabeca">
         <h3><Icone size={18} aria-hidden="true" />{CATEGORY_LABELS[modalidade]}</h3>
-        {r.semanasAtivasSeguidas > 0 && (
-          <span className="hr-chama"><Flame size={16} aria-hidden="true" />{semanas(r.semanasAtivasSeguidas)} seguidas</span>
-        )}
       </div>
+      {r.semanasAtivasSeguidas > 0 && <SequenciaChama atual={r.semanasAtivasSeguidas} melhor={Math.max(r.melhorSequenciaDeSemanas, r.semanasAtivasSeguidas)} />}
       <dl className="hr-numeros">
         {itens.map(([rotulo, valor]) => <div key={rotulo}><dt>{rotulo}</dt><dd>{valor}</dd></div>)}
       </dl>
