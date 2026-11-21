@@ -6,6 +6,7 @@ import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ResourceMeter } from '@/components/grimorio/ResourceMeter';
 import { ElementMasteryCard } from '@/components/grimorio/ElementMasteryCard';
 import { useGrimoireAnchor } from '@/components/grimorio/useGrimoireAnchor';
+import { useSecaoAtiva } from '@/components/grimorio/useSecaoAtiva';
 import { GrimoireHistory } from '@/components/grimorio/GrimoireHistory';
 import { CenaGrimorio } from '@/components/grimorio/CenaGrimorio';
 import { useEntradaGrimorio } from '@/components/grimorio/useEntradaGrimorio';
@@ -23,6 +24,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import './grimorio.css';
 import { hpDoDia } from '@/lib/recursos/vitalidade';
 
+const SECOES = [["grimoire-character", "Personagem"], ["grimoire-elements", "Elementos"], ["grimoire-history", "Histórico"], ["grimoire-backup", "Cópia de segurança"]] as const;
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
 export function Grimorio() {
@@ -31,6 +33,11 @@ export function Grimorio() {
 }
 
 function GrimorioContent() {
+  const secaoAtiva = useSecaoAtiva(SECOES.map(([id]) => id));
+  // The active tab is brought into view in its own bar: with four tabs on a phone the last one hides at the edge.
+  useEffect(() => {
+    document.querySelector<HTMLElement>('.gr-cena .ds-abas > a[aria-current]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  }, [secaoAtiva]);
   useGrimoireAnchor();
   const { entrada, acesa } = useEntradaGrimorio();
   const reduzido = useMotionPreference();
@@ -91,7 +98,7 @@ function GrimorioContent() {
   return <AppLayout>
     <CenaGrimorio entrada={entrada}>
       <header className="ds-cabecalho gr-cabecalho"><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></header>
-      <nav className="ds-abas" aria-label="Seções do Grimório"><a href="#grimoire-character">Personagem</a><a href="#grimoire-elements">Elementos</a><a href="#grimoire-history">Histórico</a><a href="#grimoire-backup">Cópia de segurança</a></nav>
+      <nav className="ds-abas" aria-label="Seções do Grimório">{SECOES.map(([id, rotulo]) => <a key={id} href={`#${id}`} aria-current={secaoAtiva === id ? 'location' : undefined}>{rotulo}</a>)}</nav>
 
       <section id="grimoire-character" tabIndex={-1} className="grimoire-sheet ds-glass-float" data-luz="" aria-labelledby="grimoire-character-name">
         <div className="grimoire-portrait" aria-hidden="true">

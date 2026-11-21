@@ -26,7 +26,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   const reducedMotion = useMotionPreference();
 
   return (
-    <div className="min-h-screen text-fg-primary bg-transparent overflow-x-hidden selection:bg-mystic-arcane/40">
+    <div className="min-h-screen text-fg-primary bg-transparent overflow-x-clip selection:bg-mystic-arcane/40">
       <Sidebar />
       <TopBar title={title} showBackButton={showBackButton} rightAction={rightAction} />
 

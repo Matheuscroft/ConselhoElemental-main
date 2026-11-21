@@ -1,6 +1,6 @@
 import { AccountConnectionContext } from '@/lib/backup/account-connection-context';
 import { AccountConnectionCard } from '@/components/backup/AccountConnectionCard';
-import { ChevronDown, ChevronRight, UserRound } from 'lucide-react';
+import { ChevronDown, ChevronRight, Images, UserRound } from 'lucide-react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { MomentosCopia } from '@/components/momentos/MomentosCopia';
 import React from 'react';
@@ -161,7 +161,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </>}
 
       <Dialog open={isAccountModalOpen} onOpenChange={setIsAccountModalOpen}>
-        <DialogContent className="account-hub-dialog ds-glass-float">
+        <DialogContent className="account-hub-dialog ds-glass-float" onOpenAutoFocus={event => event.preventDefault()}>
           <DialogHeader>
             <DialogTitle>Minha conta</DialogTitle>
             <DialogDescription>
@@ -320,7 +320,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             ) : null}
           </div>
           </div></details>
-          <details className="acc-secao"><summary><span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="grimorio" size={22} /></span><span className="acc-rotulo">Meus momentos</span><ChevronDown className="acc-seta" size={18} aria-hidden="true" /></summary><div className="acc-secao-corpo"><MomentosCopia /></div></details>
+          <details className="acc-secao"><summary><span className="acc-sigilo" aria-hidden="true"><Images size={22} /></span><span className="acc-rotulo">Meus momentos</span><ChevronDown className="acc-seta" size={18} aria-hidden="true" /></summary><div className="acc-secao-corpo"><MomentosCopia /></div></details>
           <button type="button" className="acc-secao acc-atalho" onClick={() => navigate('/grimorio')}>
             <span className="acc-sigilo" aria-hidden="true"><ArcaneIcon name="grimorio" size={22} /></span><span className="acc-rotulo">Abrir Grimório</span><ChevronRight className="acc-seta" size={18} aria-hidden="true" />
           </button>

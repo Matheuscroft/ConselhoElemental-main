@@ -48,3 +48,7 @@
 @media (min-width: 600px) { .account-preparation-review .account-preparation-xp { grid-template-columns: repeat(4,minmax(0,1fr)); } }
 
 .progress-backup .progress-backup-import { display:flex; align-items:center; justify-content:center; gap:8px; min-height:48px; padding:12px; border-radius:12px; background:rgb(var(--el-gold)); color:#10141d; font-weight:600; text-align:center; text-decoration:none; }
+
+/* The safe, everyday action leads: saving a copy. Importing replaces what is on this device, so it sits with the quiet buttons. */
+.progress-backup .progress-backup-import { background: transparent; color: rgb(var(--el-gold)); border: 1px solid rgb(var(--el-gold) / .35); box-shadow: 0 3px 0 rgb(0 0 0 / .38), inset 0 1px 0 rgb(255 255 255 / .09); }
+.progress-backup .progress-backup-import ~ button:not(:disabled):first-of-type { background: rgb(var(--el-gold)); color: #10141d; font-weight: 600; border-color: transparent; box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }

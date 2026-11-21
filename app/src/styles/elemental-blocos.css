@@ -221,8 +221,8 @@
 }
 .ds-abas > :is(button, a) { display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto; min-height: 44px; padding: 0 2px; scroll-snap-align: start; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; box-shadow: none; color: rgb(var(--el-muted)); font-family: var(--ds-font-heading); font-size: var(--ds-text-body); white-space: nowrap; cursor: pointer; }
 .ds-abas > :is(button, a) > span { padding: 0; background: none; font-family: var(--ds-font-body); font-size: var(--ds-text-micro); }
-.ds-abas > :is([aria-selected="true"], [data-state="active"], [aria-pressed="true"], [aria-current="page"]) { color: rgb(var(--el-gold)); background: none; box-shadow: none; border-bottom-color: rgb(var(--el-gold)); }
-.ds-abas[data-element] > :is([aria-selected="true"], [data-state="active"], [aria-pressed="true"], [aria-current="page"]) { border-bottom-color: var(--elem-acento); }
+.ds-abas > :is([aria-selected="true"], [data-state="active"], [aria-pressed="true"], [aria-current="page"], [aria-current="location"]) { color: rgb(var(--el-gold)); background: none; box-shadow: none; border-bottom-color: rgb(var(--el-gold)); }
+.ds-abas[data-element] > :is([aria-selected="true"], [data-state="active"], [aria-pressed="true"], [aria-current="page"], [aria-current="location"]) { border-bottom-color: var(--elem-acento); }
 .ds-abas > :is(button, a):focus-visible { outline: 2px solid rgb(var(--el-gold) / .6); outline-offset: 2px; }
 .ds-abas[data-tom="filtro"] { gap: 20px; margin-bottom: var(--ds-ritmo-cabeca); border-bottom: 1px solid var(--ds-fio); }
 .ds-abas[data-tom="filtro"] > :is(button, a) { font-family: var(--ds-font-body); font-size: var(--ds-text-small); margin-bottom: -1px; }

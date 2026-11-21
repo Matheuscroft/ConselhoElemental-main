@@ -393,3 +393,11 @@
   .gr-luz, .gr-cena .grimoire-portrait > img, .gr-cena .grimoire-portrait-ring, .grimoire-element-art img { translate: none; }
   .gr-anel-cometa, .gr-fio { display: none; }
 }
+
+/* The section tabs stay under the top bar while the page is read, and light the section being read. */
+.gr-cena .ds-abas {
+  position: sticky; z-index: 20; inset-block-start: calc(52px + env(safe-area-inset-top));
+  margin-inline: -16px; padding-inline: 16px; background: rgb(var(--el-canvas) / .94);
+}
+.gr-cena .ds-abas > a { transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
+@media (min-width: 768px) { .gr-cena .ds-abas { inset-block-start: 0; margin-inline: 0; padding-inline: 0; } }
