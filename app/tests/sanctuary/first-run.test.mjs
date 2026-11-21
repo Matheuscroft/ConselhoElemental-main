@@ -60,6 +60,10 @@ const {
   normaliseName,
   rememberAwakeningSeen,
   setOpeningName,
+  getOpeningAreas,
+  setOpeningAreas,
+  clearOpeningAreas,
+  MAX_OPENING_AREAS,
 } = firstRun;
 
 const withStorage = (run, { denied = false } = {}) => {
@@ -122,11 +126,12 @@ test('a browser with storage denied still opens, it just starts over', () => {
   }, { denied: true });
 });
 
-test('the opening runs awakening, questions, entry — and is skipped once seen', () => {
+test('the opening runs awakening, questions, focus, entry — and is skipped once seen', () => {
   assert.equal(initialFirstRunStep(false), 'despertar');
   assert.equal(initialFirstRunStep(true), 'entrada');
   assert.equal(nextFirstRunStep('despertar'), 'pesquisa');
-  assert.equal(nextFirstRunStep('pesquisa'), 'entrada');
+  assert.equal(nextFirstRunStep('pesquisa'), 'foco');
+  assert.equal(nextFirstRunStep('foco'), 'entrada');
   assert.equal(nextFirstRunStep('entrada'), 'entrada');
 });
 
@@ -144,4 +149,24 @@ test('each question can be answered or left for later', () => {
   assert.ok(markup.includes('aria-checked="true"'), 'the current city starts selected');
   assert.ok(markup.includes('Responder depois'), 'the survey must be skippable');
   assert.ok(markup.includes('maxLength="40"') || markup.includes('maxlength="40"'), 'the name field is capped');
+});
+
+test('the chosen areas are kept as clean ids on this device, never trusted raw, and cleared once handed over', () => {
+  withStorage((store) => {
+    assert.deepEqual(getOpeningAreas(), []);
+    setOpeningAreas(['area-saude', 'area-saude', 'area-carreira', '', 42]);
+    assert.deepEqual(getOpeningAreas(), ['area-saude', 'area-carreira']);
+    store.set('ce:inicio:areas', '{"not":"a list"}');
+    assert.deepEqual(getOpeningAreas(), []);
+    store.set('ce:inicio:areas', 'not json');
+    assert.deepEqual(getOpeningAreas(), []);
+    setOpeningAreas(Array.from({ length: 100 }, (_, i) => `area-${i}`));
+    assert.equal(getOpeningAreas().length, MAX_OPENING_AREAS);
+    clearOpeningAreas();
+    assert.equal(store.has('ce:inicio:areas'), false);
+  });
+  withStorage(() => {
+    assert.deepEqual(getOpeningAreas(), [], 'denied storage reads as nothing chosen');
+    setOpeningAreas(['area-saude']);
+  }, { denied: true });
 });

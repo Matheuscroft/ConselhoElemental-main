@@ -1,11 +1,14 @@
 import { lazy, Suspense, useCallback, useState } from 'react';
 import { EntryWelcome } from '@/components/entry/EntryWelcome';
+import { FocoInicial } from '@/components/entry/FocoInicial';
 import { PesquisaInicial } from '@/components/entry/PesquisaInicial';
 import {
   type FirstRunStep,
   initialFirstRunStep,
   nextFirstRunStep,
+  getOpeningAreas,
   rememberAwakeningSeen,
+  setOpeningAreas,
   setOpeningName,
 } from '@/lib/sanctuary/first-run';
 import {
@@ -20,7 +23,7 @@ import './primeiro-acesso.css';
 const DespertarCena = lazy(() => import('@/components/sanctuary/DespertarCena'));
 
 /**
- * The first open, in order: the awakening, two questions, then the entry that
+ * The first open, in order: the awakening, four questions (name, sky, birth, focus), then the entry that
  * already existed. Someone who has seen the awakening lands straight on the
  * entry, and every auth, import and session guard behind it is untouched.
  */
@@ -40,7 +43,7 @@ export function PrimeiroAcesso() {
       setOpeningName(nome);
       setSanctuaryCityPreference(cidade);
       setBirthDatePreference(nascimento || null);
-      setStep('entrada');
+      setStep('foco');
     },
     [],
   );
@@ -57,6 +60,17 @@ export function PrimeiroAcesso() {
       >
         <DespertarCena onComplete={() => avancar(true)} onSkip={() => avancar(false)} />
       </Suspense>
+    );
+  }
+
+  if (step === 'foco') {
+    return (
+      <FocoInicial
+        iniciais={getOpeningAreas()}
+        despertou={despertou}
+        aoConcluir={(areas) => { setOpeningAreas(areas); setStep('entrada'); }}
+        aoVoltar={() => setStep('pesquisa')}
+      />
     );
   }
 

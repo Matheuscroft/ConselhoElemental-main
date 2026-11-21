@@ -30,6 +30,8 @@ const OURO = '#d5b66f';
 
 const TOTAL = 3;
 const ULTIMO = TOTAL - 1;
+/** The whole survey, as the person counts it: these three and the choice of focus that follows. */
+const PERGUNTAS_NO_TOTAL = TOTAL + 1;
 
 const pedeMenosMovimento = (): boolean =>
   typeof window !== 'undefined'
@@ -141,7 +143,7 @@ export function PesquisaInicial({
     <section
       ref={raizRef}
       className="pesquisa"
-      aria-label="Três perguntas rápidas"
+      aria-label="Perguntas rápidas"
       data-passo={passo}
       data-signo={signo ? 'sim' : 'nao'}
       data-selando={selando ? '' : undefined}
@@ -155,7 +157,7 @@ export function PesquisaInicial({
             {despertou ? 'Os quatro responderam' : 'Antes de começar'}
           </p>
           <div className="pesquisa-progresso" aria-hidden="true">
-            {Array.from({ length: TOTAL }, (_, indice) => (
+            {Array.from({ length: PERGUNTAS_NO_TOTAL }, (_, indice) => (
               <span
                 key={indice}
                 className="pesquisa-pip"
@@ -167,7 +169,7 @@ export function PesquisaInicial({
             ))}
           </div>
           <p className="pesquisa-contagem" role="status" aria-live="polite">
-            Pergunta {passo + 1} de {TOTAL}
+            Pergunta {passo + 1} de {PERGUNTAS_NO_TOTAL}
           </p>
         </header>
 

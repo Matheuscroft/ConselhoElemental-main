@@ -41,6 +41,7 @@ import { AccountConnectionContext } from '@/lib/backup/account-connection-contex
 import type { AccountSyncView } from '@/lib/backup/account-live-sync';
 import { qaBypassAuth } from '@/lib/dev/qa-bypass';
 import { PrimeiroAcesso } from '@/components/entry/PrimeiroAcesso';
+import { AplicarFocoInicial } from '@/components/entry/AplicarFocoInicial';
 import { EntryWelcome } from '@/components/entry/EntryWelcome';
 import { AccountWorkspace } from '@/components/backup/AccountWorkspace';
 import { FigurasGaleria } from '@/lib/dev/figuras-galeria';
@@ -88,6 +89,7 @@ function App() {
     <BrowserRouter>
       <ScrollToTop />
       <ProvedorDeProgresso />
+      <AplicarFocoInicial />
       <ActiveTimerBar />
       <AppUpdateNotice />
       <RestoredLocalNotice />

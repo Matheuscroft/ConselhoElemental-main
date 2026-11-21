@@ -9,6 +9,7 @@
 
 const SEEN_KEY = 'ce:inicio:despertar-visto';
 const NAME_KEY = 'ce:inicio:nome';
+const AREAS_KEY = 'ce:inicio:areas';
 
 export const MAX_NAME_LENGTH = 40;
 
@@ -58,8 +59,43 @@ export function setOpeningName(raw: string): void {
   write(NAME_KEY, name);
 }
 
+/**
+ * The areas of life the person chose to look after, kept on this device until the account exists (the app's own store
+ * only loads after sign-in). Ids only, deduplicated and capped; anything that is not a short string is dropped.
+ */
+export const MAX_OPENING_AREAS = 40;
+
+export function getOpeningAreas(): string[] {
+  const raw = read(AREAS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const ids = parsed.filter((id): id is string => typeof id === 'string' && id.length > 0 && id.length <= 80);
+    return [...new Set(ids)].slice(0, MAX_OPENING_AREAS);
+  } catch {
+    return [];
+  }
+}
+
+export function setOpeningAreas(ids: readonly string[]): void {
+  const limpo = [...new Set(ids.filter((id) => typeof id === 'string' && id.length > 0 && id.length <= 80))].slice(0, MAX_OPENING_AREAS);
+  if (typeof window === 'undefined') return;
+  try {
+    if (limpo.length === 0) window.localStorage.removeItem(AREAS_KEY);
+    else window.localStorage.setItem(AREAS_KEY, JSON.stringify(limpo));
+  } catch {
+    // Nothing to recover: the choice is simply asked for again in the app.
+  }
+}
+
+/** Called once the choice has been handed to the app, so it is never applied twice. */
+export function clearOpeningAreas(): void {
+  setOpeningAreas([]);
+}
+
 /** The steps of the first open, in order. */
-export type FirstRunStep = 'despertar' | 'pesquisa' | 'entrada';
+export type FirstRunStep = 'despertar' | 'pesquisa' | 'foco' | 'entrada';
 
 /** Someone who has already seen the awakening goes straight to the entry. */
 export const initialFirstRunStep = (seen = hasSeenAwakening()): FirstRunStep =>
@@ -67,5 +103,6 @@ export const initialFirstRunStep = (seen = hasSeenAwakening()): FirstRunStep =>
 
 export function nextFirstRunStep(step: FirstRunStep): FirstRunStep {
   if (step === 'despertar') return 'pesquisa';
+  if (step === 'pesquisa') return 'foco';
   return 'entrada';
 }

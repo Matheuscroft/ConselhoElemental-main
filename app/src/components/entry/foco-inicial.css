@@ -1,0 +1,58 @@
+/*
+ * The fourth question of the opening: four glass spheres and the areas of the one that is open. It lives in the family of
+ * the other questions (`.pesquisa*`): same ground, same header, same glass and the same primary button. The light of the
+ * screen (`--pesq-cor`) follows the open element, so the whole page glows in its colour.
+ * Everything that moves is a transform or an opacity; targets are 44px or more.
+ */
+.foco-palco { gap: 16px; }
+.foco-titulo { display: grid; gap: 8px; animation: pesq-sobe var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 3) backwards; }
+
+.foco-orbes { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; animation: pesq-sobe var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 4) backwards; }
+.foco-aba { display: grid; justify-items: center; gap: 8px; min-block-size: 44px; padding: 4px 0 2px; border: 0; background: transparent; color: rgb(244 236 224 / 62%); cursor: pointer; -webkit-appearance: none; appearance: none; touch-action: manipulation; transition: color var(--ds-duration-feedback) var(--ds-ease); }
+.foco-aba strong { font: 600 var(--ds-text-small)/1 Inter, system-ui, sans-serif; letter-spacing: .04em; }
+.foco-aba[data-ativo='true'] { color: #fff; }
+.foco-aba:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: 2px; border-radius: 16px; }
+
+/* A glass sphere: a coloured body, a soft shade at its foot, a highlight on its shoulder. */
+.foco-esfera {
+  position: relative; display: grid; place-items: center; inline-size: 64px; block-size: 64px; border-radius: 50%; color: #fff;
+  background:
+    radial-gradient(circle at 32% 26%, rgb(255 255 255 / .85) 0 7%, rgb(255 255 255 / .18) 22%, transparent 34%),
+    radial-gradient(circle at 50% 118%, rgb(0 0 0 / .5), transparent 58%),
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--aba-cor) 85%, #fff), var(--aba-cor) 58%, color-mix(in srgb, var(--aba-cor) 45%, #000));
+  box-shadow: inset 0 -6px 12px rgb(0 0 0 / .32), inset 0 2px 4px rgb(255 255 255 / .25), 0 0 0 1px color-mix(in srgb, var(--aba-cor) 55%, transparent);
+  filter: saturate(.7) brightness(.72);
+  transition: scale var(--ds-duration-settle) var(--ds-ease-conjure), filter var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease);
+}
+.foco-esfera svg { filter: drop-shadow(0 1px 3px rgb(0 0 0 / .45)); }
+.foco-aba[data-tem='true'] .foco-esfera { filter: saturate(.95) brightness(.88); }
+.foco-aba[data-ativo='true'] .foco-esfera { scale: 1.16; filter: none; box-shadow: inset 0 -6px 12px rgb(0 0 0 / .32), inset 0 2px 4px rgb(255 255 255 / .3), 0 0 0 1px color-mix(in srgb, var(--aba-cor) 70%, #fff), 0 0 28px 2px color-mix(in srgb, var(--aba-cor) 60%, transparent); }
+.foco-aba:active .foco-esfera { scale: .94; }
+.foco-aba[data-ativo='true']:active .foco-esfera { scale: 1.08; }
+
+/* The count of what was chosen, popped onto the sphere every time it changes. */
+.foco-contagem { position: absolute; inset-block-start: -4px; inset-inline-end: -4px; display: grid; place-items: center; min-inline-size: 22px; block-size: 22px; padding-inline: 5px; border-radius: 50px; background: rgb(var(--el-gold)); color: #1a1206; font: 700 12px/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; box-shadow: 0 2px 8px rgb(0 0 0 / .4); animation: foco-pop var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+@keyframes foco-pop { from { scale: .3; opacity: 0; } to { scale: 1; opacity: 1; } }
+
+.foco-painel { display: grid; gap: 12px; }
+.foco-cabeca { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.foco-cabeca strong { color: var(--foco-acento); font: 500 var(--ds-text-lead)/1.2 Georgia, 'Times New Roman', serif; letter-spacing: .01em; }
+.foco-cabeca small { color: rgb(244 236 224 / 58%); font: 600 var(--ds-text-micro)/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+
+.foco-areas { display: flex; flex-wrap: wrap; gap: 8px; }
+.foco-area {
+  display: inline-flex; align-items: center; gap: 0; min-block-size: 44px; padding: 0 16px; border-radius: 50px; cursor: pointer; -webkit-appearance: none; appearance: none; touch-action: manipulation;
+  border: 1px solid rgb(244 236 224 / 20%); background: rgb(255 255 255 / 5%); color: rgb(244 236 224 / 86%); font: 500 var(--ds-text-small)/1.2 Inter, system-ui, sans-serif;
+  animation: pesq-sobe var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * var(--i)) backwards;
+  transition: background var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-press) var(--ds-ease), padding var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.foco-area:active { scale: .95; }
+.foco-area:focus-visible { outline: 2px solid rgb(var(--el-gold) / .85); outline-offset: 2px; }
+.foco-visto { display: grid; place-items: center; inline-size: 0; block-size: 18px; margin-inline-end: 0; overflow: hidden; border-radius: 50%; background: var(--foco-acento); color: #10151c; opacity: 0; scale: .4; transition: inline-size var(--ds-duration-settle) var(--ds-ease-conjure), margin var(--ds-duration-settle) var(--ds-ease-conjure), opacity var(--ds-duration-feedback) var(--ds-ease), scale var(--ds-duration-settle) var(--ds-ease-conjure); }
+.foco-area[aria-pressed='true'] { color: #fff; border-color: color-mix(in srgb, var(--foco-acento) 75%, transparent); background: color-mix(in srgb, var(--foco-acento) 20%, rgb(255 255 255 / 4%)); box-shadow: 0 0 18px -4px color-mix(in srgb, var(--pesq-cor) 70%, transparent); }
+.foco-area[aria-pressed='true'] .foco-visto { inline-size: 18px; margin-inline-end: 8px; opacity: 1; scale: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .foco-titulo, .foco-orbes, .foco-area, .foco-contagem { animation: none; }
+  .foco-esfera, .foco-area, .foco-visto { transition: none; }
+}
