@@ -1,104 +1,116 @@
-/* Opening scene: a sanctuary lit candle by candle around an altar and a pentagram.
-   Plain CSS and one inline SVG, transforms and opacity only: it paints before the app's code
-   arrives and costs the phone almost nothing. It is in the page itself (index.html), so the
-   first paint is already this scene; the app replaces it when it is ready. */
-html { background: #080b12; }
+/* Opening scene: a candle-lit sanctuary photograph (one 75 KB WebP) and a few light overlays.
+   Everything that moves is opacity or transform: the candles ignite one by one, the veil of dark lifts
+   and the bar fills together, the pentagram on the floor wakes up. It is in the page itself (index.html),
+   so the first paint is already this scene; the app replaces it when it is ready. */
+html { background: #05070c; }
 .abertura {
-  --atraso: calc(.5s + var(--i, 0) * .36s);
+  position: relative;
   box-sizing: border-box;
   min-height: 100vh;
   min-height: 100dvh;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 8px;
-  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  overflow: hidden;
+  background: #05070c;
   color: #eceae3;
+}
+
+/* The picture is 9:16 and covers the screen from its centre; every overlay is placed in % of it. */
+.quadro {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: max(100dvh, 177.78vw);
+  aspect-ratio: 9 / 16;
+  transform: translate(-50%, -50%);
+}
+.quadro__img { position: absolute; inset: 0; inline-size: 100%; block-size: 100%; object-fit: cover; opacity: 0; transition: opacity 700ms ease-out; }
+.quadro__img[data-ok] { opacity: 1; }
+.quadro::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background:
-    radial-gradient(ellipse 70% 42% at 50% 68%, rgb(255 157 60 / .1), transparent 70%),
-    radial-gradient(ellipse 90% 60% at 50% 30%, rgb(36 49 68 / .55), transparent 75%),
-    #080b12;
+    linear-gradient(to top, rgb(3 4 8 / .92) 0, rgb(3 4 8 / .55) 14%, transparent 34%),
+    radial-gradient(ellipse 110% 75% at 50% 46%, transparent 40%, rgb(3 4 8 / .6) 100%);
 }
-.abertura__marca {
-  margin: 0;
-  color: #d5b66f;
-  font: 500 14px/1.2 Cinzel, Georgia, serif;
-  letter-spacing: .32em;
-  text-transform: uppercase;
+
+/* The dark lifts as the load advances. */
+.veu { position: absolute; inset: 0; z-index: 2; background: #05070c; opacity: .82; animation: ab-clarear 9000ms cubic-bezier(.2, .6, .3, 1) forwards; }
+
+/* Fog drifting slowly across the floor */
+.neblina { position: absolute; inline-size: 120%; block-size: 22%; left: -10%; border-radius: 50%; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, rgb(205 215 235 / .13), transparent 68%); }
+.neblina--a { top: 58%; animation: ab-neblina 18000ms ease-in-out infinite alternate; }
+.neblina--b { top: 74%; animation: ab-neblina 24000ms ease-in-out -9000ms infinite alternate; opacity: .8; }
+
+/* The pentagram on the floor wakes up */
+.selo-chao {
+  position: absolute;
+  left: 22.5%;
+  top: 60.5%;
+  inline-size: 61%;
+  block-size: 13%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, rgb(255 205 110 / .55), rgb(255 170 70 / .18) 45%, transparent 72%);
   opacity: 0;
-  animation: ab-aparece 900ms ease-out 100ms forwards;
+  animation: ab-acende 1600ms ease-out 1200ms forwards, ab-pulsar 2800ms ease-in-out 2800ms infinite;
 }
-.abertura__cena { inline-size: min(100%, 24rem); block-size: auto; max-block-size: 62dvh; overflow: visible; }
-.abertura__estado {
-  margin: 0;
-  color: #adb8c8;
-  font: 400 14px/1.5 Inter, system-ui, sans-serif;
+
+/* The candles: a warm glow over each flame of the picture */
+.chama {
+  position: absolute;
+  z-index: 3;
+  inline-size: 8%;
+  aspect-ratio: 1;
+  pointer-events: none;
+  background: radial-gradient(circle at 50% 50%, rgb(255 226 160 / .9) 0, rgb(255 176 80 / .42) 24%, rgb(255 150 60 / .12) 48%, transparent 68%);
   opacity: 0;
-  animation: ab-aparece 900ms ease-out 700ms forwards;
-}
-
-/* The temple */
-.arco { fill: none; stroke: #d5b66f; stroke-opacity: .22; stroke-width: 1.2; }
-.arco--interno { stroke-opacity: .1; }
-.anel-chao { fill: none; stroke: #d5b66f; stroke-opacity: .16; stroke-width: 1; }
-.anel-chao--2 { stroke-opacity: .1; stroke-dasharray: 2 6; }
-.estrela { fill: #eceae3; opacity: 0; animation: ab-cintila 3200ms ease-in-out calc(var(--d, 0) * 420ms) infinite; }
-
-/* The altar and the pentagram */
-.altar__base { fill: url(#ab-pedra); stroke: #d5b66f; stroke-opacity: .25; stroke-width: 1; }
-.altar__tampo { fill: #2b303c; stroke: #d5b66f; stroke-opacity: .4; stroke-width: 1.2; }
-.altar__brasa { fill: #ff9d3c; opacity: .12; animation: ab-brasa 2400ms ease-in-out 3200ms infinite; }
-.pentagrama__aro, .pentagrama__estrela {
-  fill: none;
-  stroke: #d5b66f;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: ab-tracar 2600ms cubic-bezier(.4, 0, .2, 1) 300ms forwards;
-}
-.pentagrama__aro { stroke-opacity: .7; }
-.pentagrama__luz { fill: none; stroke: #ffcf7a; stroke-width: 6; stroke-opacity: .14; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: ab-tracar 2600ms cubic-bezier(.4, 0, .2, 1) 300ms forwards; }
-.pentagrama { animation: ab-desperta 2600ms ease-in-out 3200ms infinite; }
-.halo { opacity: 0; animation: ab-halo 2600ms ease-in-out 3200ms infinite; }
-
-/* The candles */
-.vela__cera { fill: #d8d2c0; opacity: .72; }
-.vela__sombra { fill: #000; opacity: .45; }
-.vela__brilho { opacity: 0; animation: ab-brilho 700ms ease-out var(--atraso) forwards; }
-.vela__chama {
-  fill: #ffd98a;
-  stroke: #ff9d3c;
-  stroke-width: .8;
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  transform: scale(0);
+  transform: translate(-50%, -50%);
   animation:
-    ab-acender 520ms cubic-bezier(.2, 1.4, .4, 1) var(--atraso) forwards,
-    ab-tremer 1300ms ease-in-out calc(var(--atraso) + 520ms) infinite;
+    ab-acende 800ms ease-out calc(500ms + var(--i, 0) * 420ms) forwards,
+    ab-vacila 1100ms ease-in-out calc(700ms + var(--i, 0) * 420ms) infinite;
 }
+.chama:nth-of-type(3n) { animation-duration: 800ms, 1350ms; }
+.chama:nth-of-type(3n + 1) { animation-duration: 800ms, 950ms; }
 
-@keyframes ab-aparece { to { opacity: 1; } }
-@keyframes ab-cintila { 0%, 100% { opacity: 0; } 50% { opacity: .85; } }
-@keyframes ab-tracar { to { stroke-dashoffset: 0; } }
-@keyframes ab-acender { from { transform: scale(0); } to { transform: scale(1); } }
-@keyframes ab-brilho { to { opacity: 1; } }
-@keyframes ab-tremer {
-  0%, 100% { transform: scale(1, 1) skewX(0); }
-  30% { transform: scale(.94, 1.08) skewX(2deg); }
-  60% { transform: scale(1.04, .95) skewX(-2deg); }
+/* The foot: percentage, bar and legend */
+.abertura__rodape {
+  position: absolute;
+  z-index: 4;
+  inset-inline: 0;
+  inset-block-end: max(28px, calc(env(safe-area-inset-bottom) + 18px));
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
 }
-@keyframes ab-desperta { 0%, 100% { opacity: .85; } 50% { opacity: 1; } }
-@keyframes ab-halo { 0%, 100% { opacity: .25; } 50% { opacity: .65; } }
-@keyframes ab-brasa { 0%, 100% { opacity: .12; } 50% { opacity: .4; } }
+.abertura__pct { margin: 0; font: 500 22px/1 Cinzel, Georgia, serif; letter-spacing: .06em; color: #f1ead8; text-shadow: 0 0 14px rgb(255 190 100 / .45), 0 1px 3px #000; font-variant-numeric: tabular-nums; }
+.barra { position: relative; inline-size: min(78%, 23rem); block-size: 14px; }
+.barra::before, .barra::after { content: ''; position: absolute; top: 50%; inline-size: 7px; block-size: 7px; background: #d5b66f; opacity: .7; transform: translateY(-50%) rotate(45deg); }
+.barra::before { left: -12px; }
+.barra::after { right: -12px; }
+.barra__fio { position: absolute; inset-inline: 0; top: 50%; block-size: 3px; margin-top: -1.5px; border-radius: 3px; background: linear-gradient(90deg, rgb(213 182 111 / .25), rgb(213 182 111 / .5), rgb(213 182 111 / .25)); }
+.barra__fio::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #8e6d2f, #f1d68a 70%, #fff1c4); box-shadow: 0 0 10px rgb(255 200 110 / .7); transform-origin: left center; transform: scaleX(0); animation: ab-barra 9000ms cubic-bezier(.2, .6, .3, 1) forwards; }
+.barra__gema { position: absolute; top: 50%; left: 0; inline-size: 14px; block-size: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #fff6d8, #f1d68a 45%, #b8893a); box-shadow: 0 0 12px rgb(255 205 120 / .9); animation: ab-gema 9000ms cubic-bezier(.2, .6, .3, 1) forwards; }
+.abertura__estado { margin: 0; font: 400 13px/1.3 Cinzel, Georgia, serif; letter-spacing: .14em; text-transform: uppercase; color: #e4dcc6; text-shadow: 0 1px 3px #000; }
+
+@keyframes ab-clarear { to { opacity: .04; } }
+@keyframes ab-barra { to { transform: scaleX(.92); } }
+@keyframes ab-gema { to { left: 92%; } }
+@keyframes ab-acende { to { opacity: 1; } }
+@keyframes ab-vacila {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  35% { transform: translate(-50%, -52%) scale(.88); }
+  70% { transform: translate(-50%, -49%) scale(1.1); }
+}
+@keyframes ab-pulsar { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes ab-neblina { from { transform: translateX(-4%); } to { transform: translateX(4%); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .abertura__marca, .abertura__estado { animation: none; opacity: 1; }
-  .pentagrama__aro, .pentagrama__estrela, .pentagrama__luz { animation: none; stroke-dashoffset: 0; }
-  .vela__chama { animation: none; transform: scale(1); }
-  .vela__brilho { animation: none; opacity: 1; }
-  .estrela { animation: none; opacity: .5; }
-  .pentagrama, .halo, .altar__brasa { animation: none; }
-  .halo { opacity: .4; }
+  .veu { animation: none; opacity: .1; }
+  .quadro__img { transition: none; }
+  .chama, .selo-chao { animation: none; opacity: 1; }
+  .neblina { animation: none; }
+  .barra__fio::after { animation: none; transform: scaleX(.92); }
+  .barra__gema { animation: none; left: 92%; }
 }

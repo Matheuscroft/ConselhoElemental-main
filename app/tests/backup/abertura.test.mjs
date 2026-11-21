@@ -14,11 +14,12 @@ test('the opening scene is in the page itself, so it paints before any script', 
   const root = html.slice(html.indexOf('<div id="root">'), html.indexOf('<script'));
   assert.match(root, /class="abertura"/);
   assert.match(root, /role="status"/);
-  assert.equal((root.match(/class="vela"/g) ?? []).length, 8);
+  assert.equal((root.match(/class="chama"/g) ?? []).length, 16);
+  assert.match(root, /\/splash\/santuario\.webp/);
   assert.match(html, /href="\/splash\/abertura\.css"/);
 });
 
-test('the scene costs almost nothing: no filters, no blur, only transforms, opacity and strokes', () => {
+test('the scene costs almost nothing: no filters, no blur, only transforms and opacity', () => {
   assert.doesNotMatch(css, /filter\s*:|backdrop|blur\(/);
   assert.match(css, /prefers-reduced-motion: reduce/);
 });
