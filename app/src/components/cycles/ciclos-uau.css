@@ -254,3 +254,24 @@
 /* The main button has a lip and a top highlight, and sinks when pressed (same depth as the rest of the app). */
 .cycles-workspace .cycle-primary { box-shadow: 0 4px 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }
 .cycles-workspace .cycle-primary:active:not(:disabled) { translate: 0 4px; box-shadow: 0 0 0 color-mix(in srgb, rgb(var(--el-gold)) 48%, #000), inset 0 1px 0 rgb(255 255 255 / .38); }
+
+/* ---------- Compact routine cards: the quiet "add counter" action and "Iniciar" share one row ---------- */
+.cycles-workspace .cycle-card-metadata > .cycle-meta-line { flex: 1 0 100%; }
+.cycles-workspace .cycle-daily-counter:has(> .cycle-counter-enable) { flex: 1 1 0; inline-size: auto; min-inline-size: 0; margin: 0; }
+.cycles-workspace .cycle-daily-counter:has(> .cycle-counter-enable) .cycle-counter-enable {
+  inline-size: auto; justify-content: flex-start; padding-inline: 0; border: 0; background: none;
+  color: rgb(var(--el-muted)); font-size: var(--ds-text-small); font-weight: 500;
+}
+.cycles-workspace .cycle-card-metadata > .cycle-execution-actions { inline-size: auto; flex: 0 0 auto; margin-inline-start: auto; }
+
+/* The row of seals is the day's progress: bigger, joined by a thread, and lit when its cycle is done. */
+.cycles-workspace .cycle-seal-trail { gap: 0; margin-block-end: 14px; }
+.cycles-workspace .cycle-seal-trail > li { inline-size: 20px; block-size: 20px; position: relative; display: grid; place-items: center; margin-inline-end: 14px; }
+.cycles-workspace .cycle-seal-trail > li:not(:last-child)::after { content: ''; position: absolute; inset-inline-start: calc(100% + 1px); inset-block-start: 50%; inline-size: 12px; block-size: 2px; border-radius: 2px; background: rgb(var(--el-muted) / .3); }
+.cycles-workspace .cycle-seal-trail > li[data-done="true"]:not(:last-child)::after { background: var(--cyc-trail); opacity: .8; }
+.cycles-workspace .cycle-seal-trail .cycle-sigil { inline-size: 18px; block-size: 18px; stroke-width: 1.3; }
+.cycles-workspace .cycle-seal-trail > li[data-done="true"] .cycle-sigil { filter: drop-shadow(0 0 5px var(--cyc-trail)); }
+
+/* The day pane is the biggest glass on the screen and scrolls over the animated background: a lighter blur there is
+   the cheapest frame budget the screen has, and it reads the same over a dark ground. */
+.cycles-workspace .cycle-day-panel { --ds-blur-strong: 10px; }

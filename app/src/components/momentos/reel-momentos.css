@@ -13,15 +13,20 @@
   .reel-momentos { --reel-largura: 180px; }
 }
 
-.reel-palco { position: relative; }
+.reel-palco { position: relative; display: flow-root; /* keeps the rail's negative margins inside the stage, so the frame stays on the card */ }
 
 .reel-trilho {
   display: flex;
   gap: 10px;
-  margin: 0;
-  padding: 10px calc((100% - var(--reel-largura)) / 2) 14px;
+  /* Room above and below for the frame's glow and the leap of the open card, taken back with negative margins, since
+     the vertical axis is now clipped. */
+  margin: -40px 0;
+  padding: 50px calc((100% - var(--reel-largura)) / 2) 54px;
   list-style: none;
   overflow-x: auto;
+  /* Without this the browser makes the vertical axis scrollable too, and the transformed cards overflowed it by a few
+     pixels: a diagonal drag then moved the cards up instead of passing the gesture to the page. */
+  overflow-y: hidden;
   overscroll-behavior-x: contain;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
@@ -38,9 +43,10 @@
 }
 
 .reel-cartao[data-distancia='0'] { z-index: 4; }
-.reel-cartao[data-distancia='1'] { z-index: 3; filter: blur(0.5px); }
-.reel-cartao[data-distancia='2'] { z-index: 2; filter: blur(1px); }
-.reel-cartao[data-distancia='3'] { z-index: 1; filter: blur(2px); }
+.reel-cartao[data-distancia='1'] { z-index: 3; }
+.reel-cartao[data-distancia='2'] { z-index: 2; }
+.reel-cartao[data-distancia='3'] { z-index: 1; }
+/* Depth comes from tilt, scale and the dimming per frame: a blur filter on eight moving layers cost more than it showed. */
 
 .reel-moldura {
   position: relative;
@@ -245,4 +251,10 @@
 @media (prefers-reduced-motion: reduce) {
   .reel-trilho { scroll-behavior: auto; }
   .reel-cartao { filter: none !important; will-change: auto; }
+}
+
+/* Phone: the date header already has the two arrows; a second pair under the cards only pushed everything down. */
+@media (max-width: 767.98px) {
+  .reel-navegacao { justify-content: center; margin-block: 0 6px; }
+  .reel-navegacao .reel-seta { display: none; }
 }

@@ -1891,8 +1891,6 @@ export const Ciclos: React.FC = () => {
         <BotaoEstacao nome={season.name} south={ceu.south} fim={ceu.fim} onAbrir={() => navigate('/estacoes')} />
       </div>
 
-      <CycleXpRecovery />
-
       <AbasDeslizantes className="cycles-view-switch" role="group" aria-label="Visão de Ciclos">
         <button type="button" aria-pressed={workspaceView === 'routine'} aria-controls="cycle-routine-panel" onClick={() => setWorkspaceView('routine')}><ArcaneIcon name="ritual" size={20} />Rotina<span>{displayedMixedCards.length}</span></button>
         <button type="button" aria-pressed={workspaceView === 'sequences'} aria-controls="cycle-library-panel" onClick={() => setWorkspaceView('sequences')}><ArcaneIcon name="ciclo" size={20} />Sequências<span>{sequenceSummaries.length}</span></button>
@@ -2479,6 +2477,9 @@ export const Ciclos: React.FC = () => {
       </motion.div>
 
       </section>
+      {/* An occasional notice, not the first thing under the calendar: today's cycles come first. */}
+      <CycleXpRecovery />
+
       <details ref={insightsRef} className="cycles-insights"><summary><ArcaneIcon name="conquista" size={22} /><span>Sua evolução<small>Distribuição dos pontos e atividade recente</small></span><ChevronDown size={20} aria-hidden="true" /></summary><div>
         <div className="cycle-score-showcase"><ScoreHierarchyPanel presentation="explorer" tasks={tasks} habits={habits} customAreas={customAreas} customSubareas={customSubareas} /></div>
       </div></details>
