@@ -47,3 +47,6 @@
 
 /* The main action follows the thumb through a long block, above the dock. */
 .lab-acao[data-fixa] { position: sticky; inset-block-end: calc(5.25rem + env(safe-area-inset-bottom)); z-index: 6; inline-size: 100%; }
+
+/* Diagnóstico do grimório (só no Laboratório) */
+.lab-grimorio-diag { position: fixed; left: 8px; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); z-index: 70; padding: 4px 8px; border-radius: 8px; background: rgb(0 0 0 / .6); color: #f2efe7; font: 12px/1.3 ui-monospace, Menlo, monospace; pointer-events: none; }
