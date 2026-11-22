@@ -12,7 +12,7 @@
 
 export type CueGrimorio =
   | 'fecho.toque' | 'fecho.giro' | 'capa' | 'luz.sobe' | 'lenda.linha'
-  | 'gota.convite' | 'agua.arrasto' | 'agua.solta' | 'terra.firma' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao';
+  | 'gota.convite' | 'agua.arrasto' | 'agua.solta' | 'terra.segura' | 'terra.firma' | 'ar.levanta' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao';
 
 export interface SomGrimorio {
   readonly iniciado: boolean;
@@ -324,6 +324,27 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const g = m.ctx.createGain(); envelope(g.gain, t, 0.002, 0.12, 0.06); g.connect(out);
     ruidoFiltrado(m, t, 0.08, 'bandpass', 1800, 2, g);
     sino(m, t + 0.01, NOTA.D5, 0.035, 0.9, out, 2.0);
+  },
+  /** Offline twin of the Earth hold (for the recorded video): sub and rumble growing for `dur`, stones scraping. */
+  'terra.segura': (m, t, p) => {
+    const dur = p.dur ?? 1.4;
+    const out = saida(m, 0.3);
+    const g = m.ctx.createGain(); g.gain.setValueAtTime(0.06, t); g.gain.linearRampToValueAtTime(0.28, t + dur); g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.1); g.connect(out);
+    const f = ruidoFiltrado(m, t, dur + 0.1, 'lowpass', 120, 0.8, g);
+    f.frequency.setValueAtTime(120, t); f.frequency.linearRampToValueAtTime(340, t + dur);
+    for (const [fr, a] of [[NOTA.D2 * 0.625, 0.9], [NOTA.D2 * 1.25, 0.25]] as const) {
+      const o = m.ctx.createOscillator(); o.frequency.value = fr; const go = m.ctx.createGain(); go.gain.value = a;
+      o.connect(go).connect(g); o.start(t); o.stop(t + dur + 0.12);
+    }
+    for (let k = t + 0.1; k < t + dur; k += 0.06) if (Math.random() < (k - t) / dur * 0.8) raspa(m, k, 0.05 * (k - t) / dur, out);
+  },
+  /** Offline twin of the Air lift: breath opening with the lift over `dur` (`forca` = how high it got). */
+  'ar.levanta': (m, t, p) => {
+    const dur = p.dur ?? 0.6, forca = p.forca ?? 0.7;
+    const out = saida(m, -0.35);
+    const g = m.ctx.createGain(); g.gain.setValueAtTime(0.03, t); g.gain.linearRampToValueAtTime(0.03 + 0.16 * forca, t + dur); g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.25); g.connect(out);
+    const f = ruidoFiltrado(m, t, dur + 0.3, 'bandpass', 300, 0.7, g);
+    f.frequency.setValueAtTime(300, t); f.frequency.linearRampToValueAtTime(300 + 2400 * forca, t + dur);
   },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {
