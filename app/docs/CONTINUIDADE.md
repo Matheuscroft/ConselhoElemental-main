@@ -1,3 +1,17 @@
+## Intro 3D "O Grimório": cerimônia completa e integrada ao primeiro acesso, commitada localmente, aguardando o ok do Fábio no P3 (22/11/2026)
+
+Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` (base `d096dc6`), **sem push**. Registro vivo: `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md`.
+
+Integração (etapa 5): `PrimeiroAcesso` carrega o `GrimorioCena` sob demanda no lugar do `DespertarCena` (mesmo fallback "Abrindo o santuário…", mesmos destinos: concluir → `avancar(true)`, pular → `avancar(false)`, e o pai continua gravando `ce:inicio:despertar-visto`); `DespertarRota` (`/despertar`) usa o Grimório e volta ao Santuário nos dois casos. Novo `AberturaSegura`: se o próprio shell falhar ao carregar, segue como se tivesse pulado. O `DespertarCena` antigo e os testes dele continuam no repositório, sem uso, para rollback; removê-los depois da aprovação.
+
+A cerimônia nos níveis A (WebGPU) e B (WebGL2): abrir o fecho; lenda; Água (seguir o sulco com a gota); Terra (segurar a pedra); Fogo (riscar o fio de luz); Ar (puxar a ponta da página); Conselho (anel de ouro, luz desce ao fecho, cavidades acendem; Dmaj9); final com Começar. Cada gesto tem alternativa de toque e botão acessível que segue o alvo. Nível C (reduzir movimento, aparelho lento, falha de GPU): imagens estáticas da própria cena (fechado, aberto, final com o Selo completo) e avanço por toque. Correção importante desta passada: cada montagem do 3D cria o próprio canvas (no WebGL2, duas montagens dividindo um canvas derrubavam o contexto e caíam para o C).
+
+Verificado no Chrome do Mac em 390 × 844: primeiro acesso real (`/?progresso=inicio`) abre o Grimório; Pular grava a marca, desmonta a cena e mostra "Pergunta 1 de 4"; reduzir movimento leva ao C até o Começar; nível B a 60 qps; vídeo da cerimônia com som em `intro-refs/blender/capturas/P2/cerimonia-P2-com-som.mp4`. `verify:release` e build verdes (registro no PROGRESSO).
+
+Não verificado: iPhone (Safari/WebKit, PWA), dedo real (gestos exercidos com eventos de ponteiro sintéticos), som ouvido por pessoa (só medido), latência de áudio no aparelho, temperatura e bateria, 4G real.
+
+**Parar aqui:** push e publicação na main exigem aprovação expressa do Fábio (P3).
+
 ## Intro 3D "O Grimório": lookdev do livro e checkpoint P1, commitados localmente (22/11/2026)
 
 Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` (base `d096dc6`), **sem push**. Commits `d726392` a `fa23ae8`. Ler primeiro `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md`. Autonomia total (adendo §9): P0 e P1 viraram checkpoints sem parada; P3 (integração e publicação) continua exigindo aprovação expressa do Fábio.
