@@ -128,6 +128,8 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
   'capa': (m, t, p) => {
     const dur = p.dur ?? 1.6;
     const out = saida(m, -0.2);
+    // medido no render offline: sem isto a capa ficava ~9 dB abaixo da cama (o cue sheet pede +6 dB)
+    out.gain.value = 2.6;
     // rangido: dente-de-serra grave numa ressonância estreita, com tremor de atrito
     const serra = m.ctx.createOscillator(); serra.type = 'sawtooth'; serra.frequency.setValueAtTime(78, t); serra.frequency.linearRampToValueAtTime(96, t + dur * 0.6);
     const res = m.ctx.createBiquadFilter(); res.type = 'bandpass'; res.frequency.value = 880; res.Q.value = 14;
@@ -164,13 +166,14 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const filtro = m.ctx.createBiquadFilter(); filtro.type = 'lowpass'; filtro.frequency.value = 700; filtro.Q.value = 0.4;
     const lfo = m.ctx.createOscillator(); lfo.frequency.value = 0.07; const lg = m.ctx.createGain(); lg.gain.value = 260; lfo.connect(lg).connect(filtro.frequency); lfo.start(t);
     filtro.connect(m.cama);
-    for (const [fr, a] of [[NOTA.D3, 0.05], [NOTA.A3, 0.04], [NOTA.D4, 0.018]] as const) {
+    // níveis medidos no render offline: cama ≈ −19 LUFS (meta do 06: −20 a −18)
+    for (const [fr, a] of [[NOTA.D3, 0.11], [NOTA.A3, 0.088], [NOTA.D4, 0.04]] as const) {
       for (const det of [-6, 5]) {
         const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.detune.value = det;
         const g = m.ctx.createGain(); g.gain.value = a; o.connect(g).connect(filtro); o.start(t);
       }
     }
-    m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t); m.cama.gain.linearRampToValueAtTime(0.55, t + 3.5);
+    m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t); m.cama.gain.linearRampToValueAtTime(1.0, t + 3.5);
   },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {

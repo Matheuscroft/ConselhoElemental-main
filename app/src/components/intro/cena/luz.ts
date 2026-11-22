@@ -171,10 +171,11 @@ export function criarLuz(renderer: WebGPURenderer, raizLivro: Object3D, poeiraN:
       const fechado = 1 - abertura;
       quente.position.set(0.11 * fechado, 0.026 + abertura * 0.09, -0.02 * abertura);
       // luz física: difuso = irradiância × albedo / π; com couro de albedo baixo, a fresta precisa ser forte
-      quente.intensity = (0.25 + fresta.value * 0.9) * fechado * fechado; // aberto, a luz da dobra é emissiva (sem mancha redonda)
+      quente.intensity = (0.25 + fresta.value * 0.9) * fechado * fechado * fechado; // aberto, a luz da dobra é emissiva (sem mancha redonda)
       // a poça só existe com o livro aberto (luz caindo da dobra para a pedra da frente)
       poca.intensity = abertura * (0.03 + fresta.value * 0.08);
-      chaveQuente.intensity = (1.2 + fresta.value * 6.0) * (1 - 0.82 * abertura);
+      // cai cedo: com a capa em pé o papel claro já aparece e estourava em branco no meio do giro
+      chaveQuente.intensity = (1.2 + fresta.value * 6.0) * (1 - 0.82 * Math.min(1, abertura * 1.6));
       atenuaAberto.value = 1 - 0.55 * abertura;
       // fechado: o leque nasce atrás do livro, inclinado para a lombada; aberto: nasce atrás da cabeceira e sobe
       origemRaios.position.set(0.03 * fechado, 0.03 - 0.02 * abertura, -0.13 - 0.03 * abertura);
