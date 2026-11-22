@@ -1,0 +1,153 @@
+/*
+ * The grimoire's interface layer. The tokens below are the design system's --mat-* and --intro-*
+ * (DECISOES §5), declared in the scene's own scope until lote 1 brings them to the global sheets;
+ * when it does, these duplicates go. Durations come only from --ds-duration-*; only transform,
+ * opacity and shadow animate here (the 3D lives in the canvas).
+ */
+.grimorio {
+  --mat-couro: #2b1d17;
+  --mat-papel: #e8dcc2;
+  --mat-tinta: #2a211b;
+  --mat-ouro: rgb(213 182 111);
+  --mat-latao: color-mix(in srgb, rgb(121 97 58) 90%, white);
+  --intro-noite: #14122a;
+  --intro-nevoa: #6f68b8;
+  --intro-contraluz: #f3e3c1;
+  --intro-lua: #f2ecff;
+  --grimorio-texto: #f2efe7;
+  --grimorio-apoio: #cbbeae;
+  --grimorio-labio: color-mix(in srgb, var(--mat-ouro) 48%, #000);
+
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  background: var(--intro-noite);
+  color: var(--grimorio-texto);
+  font-family: var(--ds-font-body, Inter, 'Inter Fallback', system-ui, sans-serif);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: opacity var(--ds-duration-reveal, 240ms) var(--ds-ease, ease);
+}
+.grimorio[data-saindo='true'] { opacity: 0; transition-duration: 300ms; }
+
+/* Pôster: o primeiro quadro, antes do 3D. Some quando o canvas está pronto. */
+.grimorio-poster {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(60% 34% at 46% 58%, rgb(243 227 193 / 0.16), transparent 70%),
+    linear-gradient(to bottom, #14122a 0%, #241f4a 42%, #3a3270 58%, #1b1730 76%, #0d0b18 100%);
+  transition: opacity var(--ds-duration-conjure, 720ms) var(--ds-ease, ease);
+}
+.grimorio-poster { background-image: url('/intro/poster-390.webp'), radial-gradient(60% 34% at 46% 58%, rgb(243 227 193 / 0.16), transparent 70%), linear-gradient(to bottom, #14122a 0%, #241f4a 42%, #3a3270 58%, #1b1730 76%, #0d0b18 100%); background-size: cover, auto, auto; background-position: center; }
+.grimorio[data-pronta='true'] .grimorio-poster { opacity: 0; }
+.grimorio[data-nivel='C'] .grimorio-poster { opacity: 1; }
+/* versão estática: da lenda em diante o livro já está aberto (também quando a queda para C acontece no meio) */
+.grimorio[data-nivel='C']:not([data-fase='poster']):not([data-fase='abrindo']) .grimorio-poster { background-image: url('/intro/aberto-390.webp'), linear-gradient(to bottom, #14122a 0%, #241f4a 42%, #3a3270 58%, #1b1730 76%, #0d0b18 100%); background-size: cover, auto; }
+
+.grimorio-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.grimorio-toque { position: absolute; inset: 0; }
+
+/* Alvo acessível sobre a cabeça do fecho: invisível, ≥ 56 px, com um anel de convite que respira. */
+.grimorio-alvo {
+  position: absolute;
+  translate: -50% -50%;
+  min-width: 56px;
+  min-height: 56px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.grimorio-alvo::after {
+  content: '';
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgb(213 182 111 / 0.55), 0 0 18px 4px rgb(243 227 193 / 0.22);
+  animation: grimorio-convite 2.6s var(--ds-ease, ease) infinite;
+}
+.grimorio-alvo:focus-visible { outline: 2px solid #f6ede0; outline-offset: 2px; }
+@keyframes grimorio-convite {
+  0%, 100% { opacity: 0.25; transform: scale(0.92); }
+  50% { opacity: 0.9; transform: scale(1.04); }
+}
+
+.grimorio-topo {
+  position: absolute;
+  inset: 0 0 auto 0;
+  display: flex;
+  justify-content: space-between;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 0;
+  pointer-events: none;
+}
+.grimorio-pilula {
+  pointer-events: auto;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background: rgb(31 25 23 / 0.5);
+  color: var(--grimorio-texto);
+  font: 600 14px/1 var(--ds-font-body, Inter, system-ui, sans-serif);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.grimorio-pilula:active { transform: translateY(1px); }
+.grimorio-pilula:focus-visible { outline: 2px solid #f6ede0; outline-offset: 2px; }
+
+.grimorio-lenda {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(13% + env(safe-area-inset-top, 0px));
+  margin: 0 auto;
+  padding: 0 24px;
+  max-width: 32ch;
+  text-align: center;
+  font: 500 clamp(18px, 5.2vw, 22px) / 1.5 var(--ds-font-heading, Cinzel, Georgia, serif);
+  text-shadow: 0 1px 14px rgb(20 18 42 / 0.95), 0 0 2px rgb(20 18 42 / 0.9);
+  pointer-events: none;
+}
+.grimorio-oracao { transition: opacity var(--ds-duration-conjure, 720ms) var(--ds-ease, ease); }
+.grimorio-oracao[data-visivel='false'] { opacity: 0; }
+.grimorio-final { top: calc(14% + env(safe-area-inset-top, 0px)); }
+.grimorio-nome { display: block; margin-bottom: 14px; font-size: 14px; letter-spacing: 0.04em; color: var(--mat-ouro); }
+
+.grimorio-base {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  pointer-events: none;
+}
+.grimorio-instrucao { margin: 0; font: 400 16px/1.4 var(--ds-font-body, Inter, system-ui, sans-serif); text-shadow: 0 1px 10px rgb(0 0 0 / 0.85); }
+.grimorio-alternativa { margin: 0; font: 400 14px/1.4 var(--ds-font-body, Inter, system-ui, sans-serif); color: var(--grimorio-apoio); text-shadow: 0 1px 8px rgb(0 0 0 / 0.8); }
+.grimorio-comecar {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 420px;
+  min-height: 52px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--mat-ouro);
+  color: #110f0f;
+  font: 600 17px/1 var(--ds-font-body, Inter, system-ui, sans-serif);
+  box-shadow: 0 4px 0 var(--grimorio-labio), inset 0 1px 0 rgb(255 255 255 / 0.38);
+  transition: transform var(--ds-duration-press, 120ms) var(--ds-ease, ease), box-shadow var(--ds-duration-press, 120ms) var(--ds-ease, ease);
+}
+.grimorio-comecar:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--grimorio-labio), inset 0 1px 0 rgb(255 255 255 / 0.38); }
+.grimorio-comecar:focus-visible { outline: 2px solid #f6ede0; outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .grimorio, .grimorio-poster, .grimorio-oracao, .grimorio-comecar { transition-duration: var(--ds-duration-reduced, 0.01ms); }
+  .grimorio-alvo::after { animation: none; opacity: 0.8; }
+}
