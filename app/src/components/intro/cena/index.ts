@@ -6,6 +6,7 @@ import { enquadrar, PLANOS, type Enquadramento, type NomePlano } from './camera'
 import { criarCeu } from './ceu';
 import { carregarLivro, SELO_NA_PAGINA, type Livro } from './livro';
 import { criarAgua, type GestoAgua } from './agua';
+import { criarTerra, type GestoTerra } from './terra';
 import { criarLuz } from './luz';
 import { COR } from './paleta';
 import { criarPos } from './pos';
@@ -33,6 +34,10 @@ export interface ControleGrimorio3D {
   readonly anima: Animador;
   /** First gesture's 3D (drop, ribbon, splash). */
   readonly agua: GestoAgua;
+  /** Second gesture's 3D (stone, fragments, dust). */
+  readonly terra: GestoTerra;
+  /** Camera tremor, 0..1 (the Earth hold). */
+  tremer(intensidade: number): void;
   /** A quadrant wakes without its own 3D yet (or in reduced motion): the ink settles and the quadrant glows. */
   revelarTinta(elemento: 'agua' | 'terra' | 'fogo' | 'ar'): Promise<void>;
   /** Screen position of a point in book root space (for the accessible targets). */
@@ -75,6 +80,8 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   cena.add(livro.cenario, livro.raiz);
   const luz = criarLuz(renderer, livro.raiz, orc.poeira);
   const agua = criarAgua(livro);
+  const terra = criarTerra(livro);
+  let tremor = 0;
   cena.add(luz.grupo);
   cena.environment = luz.ambiente;
   cena.environmentIntensity = 0.7;
@@ -109,7 +116,13 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   const aplicarCamera = (t: number) => {
     // respiração lenta: a câmera nunca está parada, mas nunca distrai
     const r = 0.0025;
-    camera.position.set(atual.pos.x + Math.sin(t * 0.21) * r, atual.pos.y + Math.sin(t * 0.17) * r * 0.6, atual.pos.z + Math.cos(t * 0.19) * r);
+    // tremor da Terra: duas frequências que não se repetem, amplitude de poucos milímetros
+    const tr = tremor * 0.0018;
+    camera.position.set(
+      atual.pos.x + Math.sin(t * 0.21) * r + Math.sin(t * 37.1) * tr,
+      atual.pos.y + Math.sin(t * 0.17) * r * 0.6 + Math.sin(t * 29.3 + 1.7) * tr,
+      atual.pos.z + Math.cos(t * 0.19) * r + Math.cos(t * 33.7) * tr * 0.6,
+    );
     camera.fov = atual.fov; camera.aspect = aspecto; camera.updateProjectionMatrix();
     camera.lookAt(atual.alvo);
   };
@@ -155,6 +168,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
     const t = anima.agora;
     livro.atualizar(t);
     agua.atualizar(t);
+    terra.atualizar(t);
     luz.fresta.value = livro.fresta.value;
     luz.atualizar(livro.abertura.value);
     aplicarCamera(t);
@@ -192,7 +206,8 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   };
 
   return {
-    backend, nivel, livro, anima, irPara, agua,
+    backend, nivel, livro, anima, irPara, agua, terra,
+    tremer(v) { tremor = Math.max(0, Math.min(1, v)); },
     async revelarTinta(el) {
       void anima.animar({ de: 0, para: 1, duracao: 0.6, easing: easeInOutCubic, aplicar: (k) => { livro.brilho[el].value = k; } });
       await anima.animar({ de: 0, para: 1, duracao: 1.3, atraso: 0.1, easing: easeInOutCubic, aplicar: (k) => { livro.tinta[el].value = k; } });
@@ -246,7 +261,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
       document.removeEventListener('visibilitychange', visibilidade);
       canvas.removeEventListener('webglcontextlost', aoPerderGL);
       anima.limpar();
-      pos.dispose(); agua.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
+      pos.dispose(); agua.dispose(); terra.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
       renderer.dispose();
     },
   };
