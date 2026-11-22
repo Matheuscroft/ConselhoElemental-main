@@ -2,7 +2,7 @@ import {
   BackSide, DoubleSide, Group, Mesh, MeshBasicNodeMaterial, NormalBlending, PlaneGeometry, SphereGeometry, AdditiveBlending,
 } from 'three/webgpu';
 import {
-  abs, atan, clamp, color, dot, exp, float, floor, fract, hash, length, mix, mx_fractal_noise_float, normalize, positionLocal, pow,
+  abs, clamp, color, dot, exp, float, floor, fract, hash, length, mix, mx_fractal_noise_float, normalize, positionLocal, pow,
   sin, smoothstep, sqrt, time, uniform, uv, vec2, vec3, max,
 } from 'three/tsl';
 import { COR } from './paleta';
@@ -35,10 +35,10 @@ export function criarCeu(qualidadeNevoa: number): Ceu {
   const altura = dir.y;
   const gradiente = mix(color(COR.horizonte), color(COR.noite), smoothstep(-0.01, 0.3, altura));
   // nuvens: faixas de ruído esticadas na horizontal, escuras, com a borda de baixo tocada pelo lilás do vale
-  const azimute = atan(dir.x, dir.z);
-  const nc = vec2(azimute.mul(2.2), altura.mul(10));
-  const nuvemA = mx_fractal_noise_float(vec3(nc.x, nc.y, time.mul(0.004)), 5, 2.0, 0.55).mul(0.5).add(0.5);
-  const nuvemB = mx_fractal_noise_float(vec3(nc.x, nc.y.add(0.35), time.mul(0.004)), 5, 2.0, 0.55).mul(0.5).add(0.5);
+  // ruído 3D sobre a direção (sem costura): o azimute por atan2 saltava de +π a −π atrás da cena e desenhava uma borda no céu
+  const nc = vec3(dir.x.mul(3.4), altura.mul(10), dir.z.mul(3.4)).add(vec3(time.mul(0.004), 0, 0));
+  const nuvemA = mx_fractal_noise_float(nc, 5, 2.0, 0.55).mul(0.5).add(0.5);
+  const nuvemB = mx_fractal_noise_float(nc.add(vec3(0, 0.35, 0)), 5, 2.0, 0.55).mul(0.5).add(0.5);
   const faixaNuvem = smoothstep(0.02, 0.1, altura).mul(smoothstep(0.7, 0.2, altura));
   const densidade = smoothstep(0.48, 0.72, nuvemA).mul(faixaNuvem);
   const bordaNuvem = clamp(nuvemA.sub(nuvemB).mul(4), 0, 1).mul(faixaNuvem).mul(float(1).sub(densidade.mul(0.5)));
@@ -131,7 +131,8 @@ export function criarCeu(qualidadeNevoa: number): Ceu {
   const xs = p.x.mul(crescente.mul(2).sub(1));
   const limite = float(1).sub(fracao.mul(2)).mul(meiaCorda);
   const iluminado = smoothstep(limite.sub(0.02), limite.add(0.02), xs);
-  const halo2 = exp(r.mul(-3.2)).mul(0.5);
+  // o halo zera antes da borda do quadrado (aditivo, mesmo 2% desenhava o quadrado no céu escuro)
+  const halo2 = exp(r.mul(-3.2)).mul(0.5).mul(smoothstep(1.0, 0.55, r));
   luaMat.colorNode = color(COR.lua).mul(disco.mul(iluminado.mul(0.95).add(0.05)).add(halo2));
   luaMat.opacityNode = clamp(disco.add(halo2), 0, 1);
   const lua = new Mesh(luaGeo, luaMat);

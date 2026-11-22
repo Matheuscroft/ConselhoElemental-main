@@ -53,15 +53,21 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   const [somLigado, setSomLigado] = useState(false);
   const [somIniciado, setSomIniciado] = useState(false);
   const somRef = useRef<SomGrimorio | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const palcoRef = useRef<HTMLDivElement | null>(null);
   const cenaRef = useRef<ControleGrimorio3D | null>(null);
   const entregue = useRef(false);
 
   /* ---------------- 3D sob demanda ---------------- */
   useEffect(() => {
     if (nivel === 'C') return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+    const palco = palcoRef.current;
+    if (!palco) return;
+    // cada instância 3D tem o próprio canvas: duas montagens seguidas (modo estrito, troca de nível) nunca
+    // dividem um contexto; no WebGL2, descartar uma derrubava o contexto da outra
+    const canvas = document.createElement('canvas');
+    canvas.className = 'grimorio-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    palco.appendChild(canvas);
     let vivo = true;
     let controle: ControleGrimorio3D | null = null;
     const monitor = criarMonitorQuadros();
@@ -80,7 +86,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
             setNivel('C');
           }
         },
-        aoPerder: (motivo) => { console.warn('[grimório]', motivo); setNivel('C'); },
+        aoPerder: (motivo) => { if (!vivo) return; console.warn('[grimório]', motivo); setNivel('C'); },
       }))
       .then((c) => {
         if (!vivo) { c.dispose(); return; }
@@ -91,6 +97,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     return () => {
       vivo = false;
       controle?.dispose(); cenaRef.current = null;
+      canvas.remove();
       bancada?.aoControle?.(null);
     };
     // o 3D nasce uma vez por nível; a lua não muda durante a cerimônia
@@ -448,7 +455,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     <section className="grimorio" data-fase={estado.fase} data-nivel={nivel} data-pronta={pronta} data-saindo={saindo} aria-labelledby="grimorio-titulo">
       <h2 id="grimorio-titulo" className="sr-only">{TEXTO.titulo}</h2>
       <div className="grimorio-poster" aria-hidden="true" />
-      {nivel !== 'C' ? <canvas ref={canvasRef} className="grimorio-canvas" aria-hidden="true" /> : null}
+      {nivel !== 'C' ? <div ref={palcoRef} className="grimorio-palco" aria-hidden="true" /> : null}
       <div className="grimorio-toque" onClick={tocarFundo} aria-hidden="true" />
 
       {alvoFecho && estado.fase === 'poster' ? (

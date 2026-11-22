@@ -46,7 +46,10 @@
 .grimorio[data-nivel='C'] .grimorio-poster { opacity: 1; }
 /* versão estática: da lenda em diante o livro já está aberto (também quando a queda para C acontece no meio) */
 .grimorio[data-nivel='C']:not([data-fase='poster']):not([data-fase='abrindo']) .grimorio-poster { background-image: url('/intro/aberto-390.webp'), linear-gradient(to bottom, #14122a 0%, #241f4a 42%, #3a3270 58%, #1b1730 76%, #0d0b18 100%); background-size: cover, auto; }
+/* no final, o Selo completo e as cavidades do fecho acesas (a mesma cena, sem o 3D) */
+.grimorio[data-nivel='C'][data-fase='final'] .grimorio-poster { background-image: url('/intro/final-390.webp'), linear-gradient(to bottom, #14122a 0%, #241f4a 42%, #3a3270 58%, #1b1730 76%, #0d0b18 100%); background-size: cover, auto; }
 
+.grimorio-palco { position: absolute; inset: 0; }
 .grimorio-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .grimorio-toque { position: absolute; inset: 0; }
 /* superfície do gesto: recebe o dedo sobre a página inteira (o alvo da gota fica por cima só para teclado e leitor de tela) */
