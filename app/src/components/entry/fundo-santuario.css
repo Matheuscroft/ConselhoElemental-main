@@ -151,3 +151,10 @@
   .fundo-lampejo,
   .fundo-brasa { display: none; }
 }
+
+/* The grimoire's last frame behind the first-run questions: lifted a little so the open book shows through
+   the glass instead of sinking into the ramp, and the rays sit behind the orb. */
+.fundo-grimorio img {
+  object-position: 50% 50%;
+  transform: translateY(-12%) scale(1.08);
+}

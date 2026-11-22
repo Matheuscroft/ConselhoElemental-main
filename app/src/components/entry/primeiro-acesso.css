@@ -45,6 +45,13 @@
 
 /* ---------- The room ---------- */
 .pesquisa {
+  /*
+   * The welcome path never loads the theme sheet that declares these (as in boas-vindas.css): without them the
+   * main action lost its gold and "Continuar" vanished, dark on dark, and the glass fell back to nothing.
+   */
+  --el-canvas: 8 11 18;
+  --el-surface: 20 27 39;
+  --el-gold: 213 182 111;
   --pesq-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .6 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.1'/%3E%3C/svg%3E");
   --orbe-op: 0.55;
   --orbe-esc: 0.88;

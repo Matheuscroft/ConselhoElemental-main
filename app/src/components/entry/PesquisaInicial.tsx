@@ -7,7 +7,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { FundoSantuario } from '@/components/entry/FundoSantuario';
+import { FundoGrimorio } from '@/components/entry/FundoGrimorio';
 import { SigiloDaCidade } from '@/components/entry/pesquisa-sigilos';
 import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import { MAX_NAME_LENGTH, normaliseName } from '@/lib/sanctuary/first-run';
@@ -153,7 +153,7 @@ export function PesquisaInicial({
       data-selando={selando ? '' : undefined}
       style={estilo}
     >
-      <FundoSantuario opacidade={0.34} />
+      <FundoGrimorio opacidade={0.5} />
 
       <div className="pesquisa-palco">
         <header className="pesquisa-topo">

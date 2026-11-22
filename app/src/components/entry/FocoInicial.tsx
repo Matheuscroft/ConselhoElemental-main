@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { ElementIcon } from '@/components/elemental/ArcaneIcon';
-import { FundoSantuario } from '@/components/entry/FundoSantuario';
+import { FundoGrimorio } from '@/components/entry/FundoGrimorio';
 import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import { ACENTO, AURA } from '@/lib/design/palette';
 import { areasDoElemento, contagemPorElemento, ORDEM_DO_FOCO, sanearAreas, type ElementoDoFoco } from '@/lib/sanctuary/foco-inicial';
@@ -54,7 +54,7 @@ export function FocoInicial({ iniciais = [], despertou = false, aoConcluir, aoVo
 
   return (
     <section ref={raizRef} className="pesquisa foco" aria-label="O que você quer cuidar" data-passo={3} data-signo="nao" style={estilo}>
-      <FundoSantuario opacidade={0.34} />
+      <FundoGrimorio opacidade={0.5} />
       <div className="pesquisa-palco foco-palco">
         <header className="pesquisa-topo">
           <p className="pesquisa-eyebrow">{despertou ? 'Os quatro responderam' : 'Antes de começar'}</p>
