@@ -66,6 +66,8 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
         nivel,
         lua: { fracao: lua.illuminated, crescente: lua.waxing },
         aoQuadro: (ms, visivel) => {
+          // na bancada, um nível escolhido à mão é ensaio daquele nível: sem queda automática
+          if (bancada?.nivel) return;
           // mede só depois do primeiro quadro estável (meio segundo de cena visível)
           if (estavel < 30) { estavel += 1; return; }
           if (monitor.registrar(ms, visivel)) {

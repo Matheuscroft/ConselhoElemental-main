@@ -36,7 +36,7 @@ export function PainelGrimorio() {
 
   return (
     <>
-      <Bloco titulo="Grimório" nota="A abertura de primeiro acesso, ensaiada. Nada aqui marca a abertura como vista nem mexe nos seus dados.">
+      <Bloco titulo="Grimório" nota="A abertura de primeiro acesso, ensaiada. Nada aqui marca a abertura como vista nem mexe nos seus dados. Com um nível escolhido à mão, a queda automática para a versão estática fica desligada.">
         <Escolha rotulo="Nível" valor={nivel} opcoes={NIVEIS} aoMudar={setNivel} />
         <Acao primaria aoClicar={() => { setFim(null); setAberto(true); }}>Abrir o grimório</Acao>
         {fim ? <p className="lab-nota">{fim}</p> : null}
