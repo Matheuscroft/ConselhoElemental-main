@@ -24,15 +24,15 @@ export interface SomGrimorio {
   definirMudo(mudo: boolean): void;
   suspender(): Promise<void>;
   retomar(): Promise<void>;
-  /** A gesture's continuous voice, driven every frame by the finger (0 = silent). Water: drag speed; Earth: hold progress. */
-  continuo(nome: 'agua' | 'terra', valor: number): void;
+  /** A gesture's continuous voice, driven every frame by the finger (0 = silent). Water: drag speed; Earth: hold progress; Air: lift. */
+  continuo(nome: 'agua' | 'terra' | 'ar', valor: number): void;
   /** Fade everything out (≈300 ms) and close. */
   encerrar(fadeMs?: number): Promise<void>;
   /** For the offline render and the laboratory. */
   readonly contexto: BaseAudioContext | null;
 }
 
-const NOTA = { D2: 73.42, D3: 146.83, A3: 220, D4: 293.66, Fs4: 369.99, A4: 440, D5: 587.33, E5: 659.26, Fs5: 739.99, A5: 880, E6: 1318.51, A6: 1760 } as const;
+const NOTA = { D2: 73.42, D3: 146.83, A3: 220, D4: 293.66, E4: 329.63, Fs4: 369.99, A4: 440, B4: 493.88, D5: 587.33, E5: 659.26, Fs5: 739.99, A5: 880, B5: 987.77, E6: 1318.51, A6: 1760 } as const;
 const MARGEM = 0.03; // s: agenda com folga, para o som não chegar antes do quadro
 
 type Ctx = BaseAudioContext;
@@ -285,6 +285,23 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
       s.connect(gs).connect(m.cama); s.start(t + 0.3);
     }
   },
+  /** The wind finishes Air: wind chimes in E, a soft "ah" (formants on a detuned E), and the Air stem (E) joins the bed. */
+  'ar.assenta': (m, t) => {
+    const out = saida(m, -0.35);
+    const sopro = m.ctx.createGain(); sopro.gain.setValueAtTime(0.0001, t); sopro.gain.linearRampToValueAtTime(0.12, t + 0.25); sopro.gain.exponentialRampToValueAtTime(0.0001, t + 1.4); sopro.connect(out);
+    const fs = ruidoFiltrado(m, t, 1.5, 'bandpass', 1200, 0.8, sopro);
+    fs.frequency.setValueAtTime(2600, t); fs.frequency.exponentialRampToValueAtTime(700, t + 1.3);
+    [NOTA.E6, NOTA.B5, NOTA.E5, NOTA.B5, NOTA.E6].forEach((fr, i) => sino(m, t + 0.12 + i * 0.11 + Math.random() * 0.05, fr, 0.04 - i * 0.004, 2.2, out, 3.47));
+    // "ah": duas serras levemente desafinadas em Mi, por dois formantes (≈ 700 e 1150 Hz)
+    const voz = m.ctx.createGain(); voz.gain.setValueAtTime(0.0001, t + 0.15); voz.gain.linearRampToValueAtTime(0.05, t + 0.7); voz.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
+    for (const [fq, q] of [[700, 6], [1150, 8]] as const) { const f = m.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = fq; f.Q.value = q; voz.connect(f).connect(out); }
+    for (const det of [-7, 6]) { const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = NOTA.E4; o.detune.value = det; o.connect(voz); o.start(t + 0.15); o.stop(t + 2.7); }
+    for (const [fr, a] of [[NOTA.E4, 0.02], [NOTA.E5, 0.01]] as const) {
+      const s = m.ctx.createOscillator(); s.frequency.value = fr;
+      const gs = m.ctx.createGain(); gs.gain.setValueAtTime(0.0001, t + 0.4); gs.gain.linearRampToValueAtTime(a, t + 2.4);
+      s.connect(gs).connect(m.cama); s.start(t + 0.4);
+    }
+  },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {
     const out = saida(m, (Math.random() - 0.5) * 0.3);
@@ -303,8 +320,8 @@ export function criarSomGrimorio(): SomGrimorio {
   /** Live voices of the gestures. Water: noise in a band that follows the drag speed, plus bubbles.
    *  Earth: a sub and a low rumble that grow with the hold, plus stones scraping at a rate that grows too. */
   interface Voz { g: GainNode; f: BiquadFilterNode; fontes: AudioScheduledSourceNode[]; out: GainNode; grao: number; valor: number; silencio: number }
-  const vozes: Partial<Record<'agua' | 'terra', Voz>> = {};
-  const parar = (nome: 'agua' | 'terra') => {
+  const vozes: Partial<Record<'agua' | 'terra' | 'ar', Voz>> = {};
+  const parar = (nome: 'agua' | 'terra' | 'ar') => {
     const v = vozes[nome];
     if (!v || !ctx) return;
     delete vozes[nome];
@@ -313,13 +330,14 @@ export function criarSomGrimorio(): SomGrimorio {
     v.g.gain.cancelScheduledValues(t); v.g.gain.setTargetAtTime(0, t, 0.06);
     for (const f of v.fontes) f.stop(t + 0.4);
   };
-  const criarVoz = (nome: 'agua' | 'terra', c: AudioContext, m: Mixer): Voz => {
-    const out = saida(m, nome === 'agua' ? -0.25 : 0.3);
+  const criarVoz = (nome: 'agua' | 'terra' | 'ar', c: AudioContext, m: Mixer): Voz => {
+    const out = saida(m, nome === 'agua' ? -0.25 : nome === 'terra' ? 0.3 : -0.35);
     const g = c.createGain(); g.gain.value = 0; g.connect(out);
     const ruido = c.createBufferSource(); ruido.buffer = m.ruido; ruido.loop = true;
     const f = c.createBiquadFilter();
     const fontes: AudioScheduledSourceNode[] = [ruido];
     if (nome === 'agua') { f.type = 'bandpass'; f.Q.value = 1.4; f.frequency.value = 600; }
+    else if (nome === 'ar') { f.type = 'bandpass'; f.Q.value = 0.7; f.frequency.value = 400; }
     else {
       f.type = 'lowpass'; f.Q.value = 0.8; f.frequency.value = 140;
       const sub = c.createOscillator(); sub.frequency.value = NOTA.D2 * 0.625; // ~46 Hz, abaixo do Ré
@@ -332,7 +350,7 @@ export function criarSomGrimorio(): SomGrimorio {
     voz.grao = window.setInterval(() => {
       if (!ctx || !mixer || voz.valor <= 0.05) return;
       if (nome === 'agua') { if (Math.random() < 0.35 + voz.valor * 0.5) bolha(mixer, ctx.currentTime + 0.01, 0.045 * voz.valor, voz.out); }
-      else if (Math.random() < voz.valor * 0.8) raspa(mixer, ctx.currentTime + 0.01, 0.05 * voz.valor, voz.out);
+      else if (nome === 'terra' && Math.random() < voz.valor * 0.8) raspa(mixer, ctx.currentTime + 0.01, 0.05 * voz.valor, voz.out);
     }, 60);
     return voz;
   };
@@ -369,6 +387,10 @@ export function criarSomGrimorio(): SomGrimorio {
       if (nome === 'agua') {
         v.g.gain.setTargetAtTime(0.2 * v.valor, t, 0.05);
         v.f.frequency.setTargetAtTime(500 + 1300 * v.valor, t, 0.08);
+      } else if (nome === 'ar') {
+        // o sopro abre com a ponta da página: mais alto e mais claro quanto mais ela sobe
+        v.g.gain.setTargetAtTime(0.03 + 0.16 * v.valor, t, 0.06);
+        v.f.frequency.setTargetAtTime(300 + 2400 * v.valor, t, 0.08);
       } else {
         v.g.gain.setTargetAtTime(0.06 + 0.22 * v.valor * v.valor, t, 0.08);
         v.f.frequency.setTargetAtTime(120 + 220 * v.valor, t, 0.1);
@@ -384,7 +406,7 @@ export function criarSomGrimorio(): SomGrimorio {
     async suspender() { if (ctx && ctx.state === 'running') await ctx.suspend().catch(() => undefined); },
     async retomar() { if (ctx && ctx.state === 'suspended') await ctx.resume().catch(() => undefined); },
     async encerrar(fadeMs = 300) {
-      parar('agua'); parar('terra');
+      parar('agua'); parar('terra'); parar('ar');
       encerrado = true;
       if (!ctx || !mixer) return;
       const t = ctx.currentTime;

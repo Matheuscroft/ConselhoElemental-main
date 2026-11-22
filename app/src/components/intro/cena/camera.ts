@@ -67,6 +67,8 @@ export const PLANOS = {
   aberto: { az: -100, el: 48, fov: 70, largura: 0.96, centroV: 0.44 },
   // Gesture shot: the circle sits high (≈ 40% from the top) so the instruction below never lands on paper.
   gesto: { az: -98, el: 44, fov: 73.7, largura: 0.7, centroV: 0.6 },
+  /** Air: the Seal and the lower outer corner of the page, which the finger pulls up. */
+  gestoAr: { az: -98, el: 46, fov: 73.7, largura: 0.8, centroV: 0.56 },
   conselho: { az: -112, el: 22, fov: 78.6, largura: 0.84, centroV: 0.38 },
   fecho: { az: -70, el: 40, fov: 60, largura: 0.42, centroV: 0.5 },
   final: { az: -100, el: 27, fov: 80, largura: 0.9, centroV: 0.36 },
