@@ -1,3 +1,19 @@
+## Intro 3D "O Grimório": lookdev do livro e checkpoint P1, commitados localmente (22/11/2026)
+
+Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` (base `d096dc6`), **sem push**. Commits `d726392` a `fa23ae8`. Ler primeiro `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md`. Autonomia total (adendo §9): P0 e P1 viraram checkpoints sem parada; P3 (integração e publicação) continua exigindo aprovação expressa do Fábio.
+
+O que existe no app (nada ligado ao fluxo de entrada ainda; `PrimeiroAcesso` e `DespertarRota` seguem com o `DespertarCena` atual):
+- `src/lib/intro/`: máquina da cerimônia, regras dos quatro gestos com alternativa de toque, níveis A/B/C com monitor de quadros, textos da lenda e da tela final, motor de som Web Audio (barramento de cues, limitador, render offline). 13 testes em `tests/intro/`.
+- `src/components/intro/GrimorioCena.tsx`: mesmo contrato do `DespertarCena` (`at`, `cityId`, `onSkip`, `onComplete({ soundEnabled })`), 3D sob demanda (`cena/`: WebGPU + TSL, WebGL2 como B), estático como C com o livro fechado antes da abertura e aberto depois. Pular sempre visível; alvo acessível de 56 px sobre o fecho.
+- `public/intro/`: livro e cenário em GLB (meshopt), texturas cozidas no Blender em WebP, pôsteres estáticos; 2,52 MB no total.
+- Laboratório, aba Grimório: ensaio com escolha de nível e diagnóstico ao vivo (nível escolhido à mão não cai para o estático).
+
+Lookdev do livro (pedido do Fábio, nota mínima 8): couro, latão, papel, relevo e luz de borda com nota 8. Checkpoint P1: vídeo com som em `intro-refs/blender/capturas/P1/abertura-P1-com-som.mp4`, scorecard em `SCORECARD-P1.md` (profundidade 6,5, partículas 7, composição e movimento 7,5: continuam nas etapas dos gestos).
+
+Medições: `verify:release` verde (1205 testes) em 22/11; build ok; pacote de entrada inalterado; código da cena ≈ 411 KB gzip no 1º acesso (teto ~400: addons importam `three`); ≈ 58,9 mil triângulos; 55 chamadas de desenho (o livro não chega a ≤ 8, desvio registrado); 60 qps no M1. Som: cama −18,1 LUFS, pico −5,2 dBFS.
+
+Não verificado: iPhone real (PWA), som ouvido por pessoa (só medido), latência de áudio no aparelho, temperatura e bateria, 4G real, nível B depois da passada de luz.
+
 ## Intro 3D "O Grimório": etapa 0 entregue, portão P0 aguardando Fábio (22/11/2026)
 
 Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` criada de `origin/main` (`d096dc6`), sem push. O registro vivo da obra fica fora do repositório: `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md` (ler primeiro ao retomar). Nenhum código do app foi alterado nesta etapa; só este registro.
