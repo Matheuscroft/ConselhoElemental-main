@@ -20,6 +20,23 @@ const BASE = '/intro/';
 /** Page-local frame of the right page: the Seal's centre in the book root's space (three coordinates). */
 export const SELO_NA_PAGINA = { x: 0.11, y: 0.0253, z: -0.035, tamanho: 0.148 };
 
+/**
+ * Height of the open page above its flat block (metres), by distance from the gutter in the book root's
+ * space: a valley at the gutter, a soft belly mid-page, a slight droop at the fore-edge. 0 when closed.
+ * Used for the pages (CPU), the Seal decal (TSL twin) and anything that has to sit on the page.
+ */
+export function alturaDaFolha(x: number, abertura: number): number {
+  const u = Math.min(1, Math.max(0, x / 0.207));
+  const t = Math.min(1, Math.max(0, x / 0.045)); const vale = 1 - t * t * (3 - 2 * t);
+  return abertura * (Math.pow(Math.sin(u * Math.PI), 0.7) * 0.0065 - vale * vale * 0.007);
+}
+
+/** Page-local point (metres from the Seal's centre, +y towards the head) → book root space, on the open page. */
+export function naPagina(x: number, y: number, acima = 0): Vector3 {
+  const X = SELO_NA_PAGINA.x + x;
+  return new Vector3(X, SELO_NA_PAGINA.y + alturaDaFolha(X, 1) + acima, SELO_NA_PAGINA.z - y);
+}
+
 export interface Livro {
   readonly raiz: Object3D;
   readonly cenario: Object3D;
@@ -149,11 +166,7 @@ export async function carregarLivro(): Promise<Livro> {
   /** Height of the open page above its flat block, in metres, by distance from the gutter: a valley at the
    *  gutter, a soft belly mid-page, a slight droop at the fore-edge (like a real open book). 0 when closed.
    *  Same curve on the CPU (pages: positions and normals) and in TSL (the unlit Seal decal). */
-  const curvaFolhaJs = (x: number, a: number) => {
-    const u = Math.min(1, Math.max(0, x / 0.207));
-    const t = Math.min(1, Math.max(0, x / 0.045)); const vale = 1 - t * t * (3 - 2 * t);
-    return a * (Math.pow(Math.sin(u * Math.PI), 0.7) * 0.0065 - vale * vale * 0.007);
-  };
+  const curvaFolhaJs = alturaDaFolha;
   const curvaFolha = (x: Nodo): Nodo => {
     const u = clamp(x.div(0.207), 0, 1);
     const vale = float(1).sub(smoothstep(0.0, 0.045, x));

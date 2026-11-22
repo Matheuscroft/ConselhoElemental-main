@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as PointerEventReact } from 'react';
 import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
 import type { SanctuaryCityId } from '@/lib/temporal/sanctuary-city';
 import {
-  avancar, avancarPorToque, elementoAtual, encerrado, ESTADO_INICIAL, type EstadoGrimorio, type SinalGrimorio,
+  avancar, avancarPorToque, elementoAtual, encerrado, ESTADO_INICIAL, type ElementoCerimonia, type EstadoGrimorio, type SinalGrimorio,
 } from '@/lib/intro/cerimonia';
+import { ARCO_AGUA, iniciarSulco, moverSulco, soltarSulco, SULCO_INICIAL, type EstadoSulco } from '@/lib/intro/gestos';
 import { criarMonitorQuadros, nivelInicial, type NivelGrimorio } from '@/lib/intro/qualidade';
 import { INSTRUCAO, LENDA, LENDA_INTEIRA, oracoesVisiveis, TEXTO, TOTAL_ORACOES } from '@/lib/intro/textos';
 import { criarSomGrimorio, type SomGrimorio } from '@/lib/intro/som';
@@ -174,6 +175,128 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   const pular = useCallback(() => enviar({ tipo: 'pular' }), []);
   const comecar = useCallback(() => enviar({ tipo: 'comecar' }), []);
 
+  /* ---------------- gestos (níveis A e B): câmera, convite, dedo e alternativa de toque ---------------- */
+  const em3D = nivel !== 'C' && pronta;
+  const elementoGesto: ElementoCerimonia | null = estado.fase === 'gesto' ? elementoAtual(estado) : null;
+  const gesto = useRef<{ sulco: EstadoSulco; ponteiro: number | null; t: number; inicio: { x: number; y: number; t: number } | null; arrastou: boolean; ocupado: boolean }>(
+    { sulco: SULCO_INICIAL, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false });
+  const [alvoGesto, setAlvoGesto] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    const c = cenaRef.current;
+    if (!em3D || !c || !elementoGesto) return;
+    if (estado.indice === 0) void c.irPara('gesto', 1.6);
+    gesto.current = { sulco: SULCO_INICIAL, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false };
+    if (elementoGesto !== 'agua') return;
+    c.agua.mostrar();
+    somRef.current?.cue('gota.convite');
+    // a gota volta a chamar a cada 8 s enquanto ninguém a pega; a voz da água se cala se o dedo para
+    const convite = window.setInterval(() => {
+      const g = gesto.current;
+      if (g.sulco.progresso === 0 && g.ponteiro === null && !g.ocupado) somRef.current?.cue('gota.convite');
+    }, 8000);
+    const silencio = window.setInterval(() => { if (performance.now() - gesto.current.t > 160) somRef.current?.continuo('agua', 0); }, 100);
+    return () => { window.clearInterval(convite); window.clearInterval(silencio); somRef.current?.continuo('agua', 0); };
+  }, [em3D, elementoGesto, estado.indice]);
+
+  useEffect(() => {
+    const c = cenaRef.current;
+    if (!em3D || !c || !elementoGesto) { setAlvoGesto(null); return; }
+    let quadro = 0;
+    const seguir = () => {
+      const p = elementoGesto === 'agua' ? c.naTela(c.agua.posicaoGota()) : c.posicaoNaTela('selo');
+      setAlvoGesto((ant) => (ant && p && Math.abs(ant.x - p.x) < 0.5 && Math.abs(ant.y - p.y) < 0.5 ? ant : p ? { x: p.x, y: p.y } : null));
+      quadro = requestAnimationFrame(seguir);
+    };
+    seguir();
+    return () => cancelAnimationFrame(quadro);
+  }, [em3D, elementoGesto]);
+
+  const despertar = useCallback(async (el: ElementoCerimonia) => {
+    const c = cenaRef.current; const g = gesto.current;
+    if (g.ocupado) return;
+    g.ocupado = true;
+    const som = somRef.current;
+    som?.continuo('agua', 0);
+    if (c && el === 'agua') { som?.cue('agua.solta'); await c.agua.concluir(c.anima); }
+    else if (c) await c.revelarTinta(el);
+    enviar({ tipo: 'despertou', elemento: el });
+  }, []);
+
+  /** The touch alternative: one tap and the element completes through its own animation. */
+  const automatico = useCallback(async () => {
+    const c = cenaRef.current; const el = elementoGesto;
+    if (!el || gesto.current.ocupado) return;
+    if (!c || nivel === 'C') { enviar({ tipo: 'despertou', elemento: el }); return; }
+    if (el === 'agua') {
+      gesto.current.ocupado = true;
+      gesto.current.t = performance.now();
+      await c.agua.automatico(c.anima, (_k, vel) => { gesto.current.t = performance.now(); somRef.current?.continuo('agua', Math.min(1, vel * 0.8)); });
+      gesto.current.ocupado = false;
+    }
+    await despertar(el);
+  }, [elementoGesto, nivel, despertar]);
+
+  const aoTocarPagina = useCallback((e: PointerEventReact<HTMLDivElement>) => {
+    const c = cenaRef.current; const g = gesto.current;
+    if (!c || elementoGesto !== 'agua' || g.ocupado) return;
+    if (g.ponteiro !== null) {
+      // segundo dedo: cancela o gesto, sem perder o que já foi feito
+      g.sulco = soltarSulco(g.sulco); g.ponteiro = null; c.agua.definir(g.sulco.progresso, false); somRef.current?.continuo('agua', 0);
+      return;
+    }
+    const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+    if (!ponto) return;
+    const s = iniciarSulco(g.sulco, ARCO_AGUA, ponto);
+    if (!s.ativo) return;
+    g.sulco = s; g.ponteiro = e.pointerId; g.t = performance.now(); g.inicio = { x: e.clientX, y: e.clientY, t: g.t }; g.arrastou = false;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+    c.agua.definir(s.progresso, true);
+  }, [elementoGesto]);
+
+  const aoMover = useCallback((e: PointerEventReact<HTMLDivElement>) => {
+    const c = cenaRef.current; const g = gesto.current;
+    if (!c || g.ponteiro !== e.pointerId) return;
+    if (g.inicio && Math.hypot(e.clientX - g.inicio.x, e.clientY - g.inicio.y) > 8) g.arrastou = true;
+    const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+    if (!ponto) return;
+    const s = moverSulco(g.sulco, ARCO_AGUA, ponto);
+    const agora = performance.now();
+    if (s.progresso > g.sulco.progresso) {
+      // velocidade em "sulcos por segundo": 1 = o arco inteiro em um segundo
+      const vel = (s.progresso - g.sulco.progresso) / Math.max(0.008, (agora - g.t) / 1000);
+      somRef.current?.continuo('agua', Math.min(1, vel / 1.2));
+      g.t = agora;
+    }
+    g.sulco = s;
+    c.agua.definir(s.progresso, !s.concluido);
+    if (s.concluido) { g.ponteiro = null; void despertar('agua'); }
+  }, [despertar]);
+
+  const aoSoltar = useCallback((e: PointerEventReact<HTMLDivElement>) => {
+    const c = cenaRef.current; const g = gesto.current;
+    if (!c || g.ponteiro !== e.pointerId) return;
+    g.ponteiro = null;
+    g.sulco = soltarSulco(g.sulco);
+    c.agua.definir(g.sulco.progresso, false);
+    somRef.current?.continuo('agua', 0);
+    // um toque curto na gota (sem arrastar) é a alternativa: ela corre sozinha
+    if (e.type === 'pointerup' && !g.arrastou && g.inicio && performance.now() - g.inicio.t < 350) void automatico();
+  }, [automatico]);
+
+  /* ---------------- Conselho (provisório até a etapa 4): a câmera recua e assenta ---------------- */
+  useEffect(() => {
+    if (estado.fase !== 'conselho') return;
+    const c = cenaRef.current;
+    if (c && em3D) void c.irPara('conselho', 2.4);
+    const id = window.setTimeout(() => enviar({ tipo: 'conselhoAssentou' }), c && em3D ? 2600 : 0);
+    return () => window.clearTimeout(id);
+  }, [estado.fase, em3D]);
+  useEffect(() => {
+    const c = cenaRef.current;
+    if (estado.fase === 'final' && c && em3D) void c.irPara('final', 2.2);
+  }, [estado.fase, em3D]);
+
   /* ---------------- texto na tela ---------------- */
   const lenda = estado.fase === 'lenda' ? oracoesVisiveis(estado.oracao) : null;
   const elemento = elementoAtual(estado);
@@ -196,6 +319,21 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
           onClick={() => void abrir()}
         >
           <span className="sr-only">{TEXTO.abrirRotulo}</span>
+        </button>
+      ) : null}
+
+      {em3D && elementoGesto === 'agua' ? (
+        <div className="grimorio-gesto" onPointerDown={aoTocarPagina} onPointerMove={aoMover} onPointerUp={aoSoltar} onPointerCancel={aoSoltar} aria-hidden="true" />
+      ) : null}
+      {elementoGesto && alvoGesto ? (
+        <button
+          type="button"
+          className="grimorio-alvo"
+          data-passa={elementoGesto === 'agua' ? 'sim' : undefined}
+          style={{ left: alvoGesto.x, top: alvoGesto.y, width: 56, height: 56 }}
+          onClick={() => void automatico()}
+        >
+          <span className="sr-only">{INSTRUCAO[elementoGesto].alvo}</span>
         </button>
       ) : null}
 

@@ -5,6 +5,7 @@ import { criarAnimador, easeInOutCubic, type Animador, type Easing } from './ani
 import { enquadrar, PLANOS, type Enquadramento, type NomePlano } from './camera';
 import { criarCeu } from './ceu';
 import { carregarLivro, SELO_NA_PAGINA, type Livro } from './livro';
+import { criarAgua, type GestoAgua } from './agua';
 import { criarLuz } from './luz';
 import { COR } from './paleta';
 import { criarPos } from './pos';
@@ -30,6 +31,12 @@ export interface ControleGrimorio3D {
   readonly nivel: 'A' | 'B';
   readonly livro: Livro;
   readonly anima: Animador;
+  /** First gesture's 3D (drop, ribbon, splash). */
+  readonly agua: GestoAgua;
+  /** A quadrant wakes without its own 3D yet (or in reduced motion): the ink settles and the quadrant glows. */
+  revelarTinta(elemento: 'agua' | 'terra' | 'fogo' | 'ar'): Promise<void>;
+  /** Screen position of a point in book root space (for the accessible targets). */
+  naTela(p: Vector3): { x: number; y: number };
   irPara(plano: NomePlano, duracao: number, easing?: Easing): Promise<void>;
   /** The whole opening: clasp, cover, camera rising to the open book. */
   abrir(aoEvento?: (e: 'toque' | 'giro' | 'capa' | 'pousou' | 'luz', dur?: number) => void): Promise<void>;
@@ -67,6 +74,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   const livro = await carregarLivro();
   cena.add(livro.cenario, livro.raiz);
   const luz = criarLuz(renderer, livro.raiz, orc.poeira);
+  const agua = criarAgua(livro);
   cena.add(luz.grupo);
   cena.environment = luz.ambiente;
   cena.environmentIntensity = 0.7;
@@ -146,6 +154,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
     anima.passo(dtMs / 1000);
     const t = anima.agora;
     livro.atualizar(t);
+    agua.atualizar(t);
     luz.fresta.value = livro.fresta.value;
     luz.atualizar(livro.abertura.value);
     aplicarCamera(t);
@@ -183,7 +192,16 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   };
 
   return {
-    backend, nivel, livro, anima, irPara,
+    backend, nivel, livro, anima, irPara, agua,
+    async revelarTinta(el) {
+      void anima.animar({ de: 0, para: 1, duracao: 0.6, easing: easeInOutCubic, aplicar: (k) => { livro.brilho[el].value = k; } });
+      await anima.animar({ de: 0, para: 1, duracao: 1.3, atraso: 0.1, easing: easeInOutCubic, aplicar: (k) => { livro.tinta[el].value = k; } });
+      await anima.animar({ de: 1, para: 0.35, duracao: 0.8, easing: easeInOutCubic, aplicar: (k) => { livro.brilho[el].value = k; } });
+    },
+    naTela(p) {
+      livro.raiz.updateWorldMatrix(true, false);
+      return paraTela(p.clone().applyMatrix4(livro.raiz.matrixWorld));
+    },
     async abrir(aoEvento) {
       const abrindo = livro.abrir(anima, aoEvento);
       // a câmera espera o fecho soltar e sobe para o livro aberto enquanto a capa gira
@@ -228,7 +246,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
       document.removeEventListener('visibilitychange', visibilidade);
       canvas.removeEventListener('webglcontextlost', aoPerderGL);
       anima.limpar();
-      pos.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
+      pos.dispose(); agua.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
       renderer.dispose();
     },
   };

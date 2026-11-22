@@ -12,7 +12,7 @@
 
 export type CueGrimorio =
   | 'fecho.toque' | 'fecho.giro' | 'capa' | 'luz.sobe' | 'lenda.linha'
-  | 'gota.convite' | 'agua.solta' | 'terra.firma' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao';
+  | 'gota.convite' | 'agua.arrasto' | 'agua.solta' | 'terra.firma' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao';
 
 export interface SomGrimorio {
   readonly iniciado: boolean;
@@ -24,13 +24,15 @@ export interface SomGrimorio {
   definirMudo(mudo: boolean): void;
   suspender(): Promise<void>;
   retomar(): Promise<void>;
+  /** A gesture's continuous voice, driven every frame by the finger (0 = silent). Water: drag speed. */
+  continuo(nome: 'agua', valor: number): void;
   /** Fade everything out (≈300 ms) and close. */
   encerrar(fadeMs?: number): Promise<void>;
   /** For the offline render and the laboratory. */
   readonly contexto: BaseAudioContext | null;
 }
 
-const NOTA = { D2: 73.42, D3: 146.83, A3: 220, D4: 293.66, Fs4: 369.99, A4: 440, D5: 587.33, E5: 659.26, A5: 880, E6: 1318.51 } as const;
+const NOTA = { D2: 73.42, D3: 146.83, A3: 220, D4: 293.66, Fs4: 369.99, A4: 440, D5: 587.33, E5: 659.26, Fs5: 739.99, A5: 880, E6: 1318.51, A6: 1760 } as const;
 const MARGEM = 0.03; // s: agenda com folga, para o som não chegar antes do quadro
 
 type Ctx = BaseAudioContext;
@@ -99,6 +101,22 @@ function sino(m: Mixer, t: number, freq: number, pico: number, queda: number, de
   mod.connect(idx).connect(c.frequency);
   const g = m.ctx.createGain(); envelope(g.gain, t, 0.004, pico, queda);
   c.connect(g).connect(destino); c.start(t); mod.start(t); c.stop(t + queda + 0.05); mod.stop(t + queda + 0.05);
+}
+
+/** A bubble: a short sine that rises (water's "blip"). */
+function bolha(m: Mixer, t: number, pico: number, destino: AudioNode) {
+  const f0 = 700 + Math.random() * 1200;
+  const o = m.ctx.createOscillator(); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f0 * 1.6, t + 0.03);
+  const g = m.ctx.createGain(); envelope(g.gain, t, 0.002, pico, 0.035);
+  o.connect(g).connect(destino); o.start(t); o.stop(t + 0.06);
+}
+
+/** A plucked harp-like string: triangle with a fast bright attack and a long decay. */
+function harpa(m: Mixer, t: number, freq: number, pico: number, queda: number, destino: AudioNode) {
+  const o = m.ctx.createOscillator(); o.type = 'triangle'; o.frequency.value = freq;
+  const f = m.ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(freq * 8, t); f.frequency.exponentialRampToValueAtTime(freq * 2, t + queda * 0.5);
+  const g = m.ctx.createGain(); envelope(g.gain, t, 0.003, pico, queda);
+  o.connect(f).connect(g).connect(destino); o.start(t); o.stop(t + queda + 0.05);
 }
 
 /* ------------------------------------------------------------------ cues da abertura (etapa 1) */
@@ -175,6 +193,37 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     }
     m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t); m.cama.gain.linearRampToValueAtTime(1.0, t + 3.5);
   },
+  /** The drop invites: a small glass "plink" that falls a fifth, up and to the left (where the drop waits). */
+  'gota.convite': (m, t) => {
+    const out = saida(m, -0.3);
+    const o = m.ctx.createOscillator(); o.frequency.setValueAtTime(NOTA.A6, t); o.frequency.exponentialRampToValueAtTime(NOTA.A5 * 1.5, t + 0.06);
+    const g = m.ctx.createGain(); envelope(g.gain, t, 0.002, 0.11, 0.22); o.connect(g).connect(out); o.start(t); o.stop(t + 0.3);
+    sino(m, t + 0.012, NOTA.A6, 0.035, 0.9, out, 3.01);
+  },
+  /** Offline twin of the live drag voice (for the recorded video): water running for `dur`, brighter with `forca`. */
+  'agua.arrasto': (m, t, p) => {
+    const dur = p.dur ?? 1.2, forca = p.forca ?? 0.6;
+    const out = saida(m, -0.25);
+    const g = m.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(0.2 * forca, t + 0.12);
+    g.gain.setValueAtTime(0.2 * forca, t + dur - 0.15); g.gain.linearRampToValueAtTime(0.0001, t + dur); g.connect(out);
+    const f = ruidoFiltrado(m, t, dur, 'bandpass', 600 + 1200 * forca, 1.4, g);
+    f.frequency.setValueAtTime(500, t); f.frequency.linearRampToValueAtTime(600 + 1200 * forca, t + dur * 0.5);
+    for (let k = t + 0.05; k < t + dur - 0.05; k += 0.07 + Math.random() * 0.06) bolha(m, k, 0.045 * forca, out);
+  },
+  /** Release at the end of the groove: splash, a harp run up to A, and the Water stem (A) joins the bed. */
+  'agua.solta': (m, t) => {
+    const out = saida(m, -0.3);
+    const sp = m.ctx.createGain(); envelope(sp.gain, t, 0.003, 0.32, 0.38); sp.connect(out);
+    const f = ruidoFiltrado(m, t, 0.45, 'bandpass', 2400, 0.9, sp);
+    f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(420, t + 0.35);
+    [NOTA.Fs4, NOTA.A4, NOTA.D5, NOTA.E5, NOTA.A5].forEach((fr, i) => harpa(m, t + 0.06 + i * 0.055, fr, i === 4 ? 0.12 : 0.08, i === 4 ? 2.2 : 0.9, out));
+    // haste da Água: Lá suave e contínuo, entra na cama (as hastes somam o Dmaj9 até o Selo)
+    for (const [fr, a] of [[NOTA.A4, 0.03], [NOTA.A5, 0.012]] as const) {
+      const o = m.ctx.createOscillator(); o.frequency.value = fr;
+      const g = m.ctx.createGain(); g.gain.setValueAtTime(0.0001, t + 0.3); g.gain.linearRampToValueAtTime(a, t + 2.3);
+      o.connect(g).connect(m.cama); o.start(t + 0.3);
+    }
+  },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {
     const out = saida(m, (Math.random() - 0.5) * 0.3);
@@ -190,6 +239,16 @@ export function criarSomGrimorio(): SomGrimorio {
   let mixer: Mixer | null = null;
   let mudo = false;
   let encerrado = false;
+  /** Water's live voice: noise in a band that follows the drag speed, plus bubbles at a rate that follows it too. */
+  let agua: { g: GainNode; f: BiquadFilterNode; fonte: AudioBufferSourceNode; out: GainNode; bolhas: number; valor: number; silencio: number } | null = null;
+  const pararAgua = () => {
+    if (!agua || !ctx) return;
+    const a = agua; agua = null;
+    window.clearInterval(a.bolhas);
+    const t = ctx.currentTime;
+    a.g.gain.cancelScheduledValues(t); a.g.gain.setTargetAtTime(0, t, 0.06);
+    a.fonte.stop(t + 0.4);
+  };
   return {
     get iniciado() { return ctx !== null; },
     get mudo() { return mudo; },
@@ -209,6 +268,28 @@ export function criarSomGrimorio(): SomGrimorio {
       const t = ctx.currentTime + MARGEM - Math.min(latencia, 0.02);
       CUES[id]?.(mixer, Math.max(ctx.currentTime, t), p);
     },
+    continuo(_nome, valor) {
+      if (!ctx || !mixer || encerrado) return;
+      const t = ctx.currentTime;
+      if (valor <= 0.02) {
+        if (agua && agua.valor > 0) { agua.valor = 0; agua.g.gain.setTargetAtTime(0, t, 0.08); agua.silencio = window.setTimeout(pararAgua, 500); }
+        return;
+      }
+      if (!agua) {
+        const out = saida(mixer, -0.25);
+        const g = ctx.createGain(); g.gain.value = 0; g.connect(out);
+        const fonte = ctx.createBufferSource(); fonte.buffer = mixer.ruido; fonte.loop = true;
+        const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4; f.frequency.value = 600;
+        fonte.connect(f).connect(g); fonte.start();
+        const voz = { g, f, fonte, out, bolhas: 0, valor: 0, silencio: 0 };
+        voz.bolhas = window.setInterval(() => { if (ctx && mixer && voz.valor > 0.05 && Math.random() < 0.35 + voz.valor * 0.5) bolha(mixer, ctx.currentTime + 0.01, 0.045 * voz.valor, voz.out); }, 60);
+        agua = voz;
+      }
+      window.clearTimeout(agua.silencio);
+      agua.valor = Math.min(1, valor);
+      agua.g.gain.setTargetAtTime(0.2 * agua.valor, t, 0.05);
+      agua.f.frequency.setTargetAtTime(500 + 1300 * agua.valor, t, 0.08);
+    },
     definirMudo(m) {
       mudo = m;
       if (!ctx || !mixer) return;
@@ -219,6 +300,7 @@ export function criarSomGrimorio(): SomGrimorio {
     async suspender() { if (ctx && ctx.state === 'running') await ctx.suspend().catch(() => undefined); },
     async retomar() { if (ctx && ctx.state === 'suspended') await ctx.resume().catch(() => undefined); },
     async encerrar(fadeMs = 300) {
+      pararAgua();
       encerrado = true;
       if (!ctx || !mixer) return;
       const t = ctx.currentTime;

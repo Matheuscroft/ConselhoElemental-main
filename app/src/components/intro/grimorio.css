@@ -49,6 +49,9 @@
 
 .grimorio-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .grimorio-toque { position: absolute; inset: 0; }
+/* superfície do gesto: recebe o dedo sobre a página inteira (o alvo da gota fica por cima só para teclado e leitor de tela) */
+.grimorio-gesto { position: absolute; inset: 0; touch-action: none; }
+.grimorio-alvo[data-passa='sim'] { pointer-events: none; }
 
 /* Alvo acessível sobre a cabeça do fecho: invisível, ≥ 56 px, com um anel de convite que respira. */
 .grimorio-alvo {
