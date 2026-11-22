@@ -1,3 +1,13 @@
+## Intro 3D "O Grimório": etapa 0 entregue, portão P0 aguardando Fábio (22/11/2026)
+
+Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` criada de `origin/main` (`d096dc6`), sem push. O registro vivo da obra fica fora do repositório: `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md` (ler primeiro ao retomar). Nenhum código do app foi alterado nesta etapa; só este registro.
+
+Entregue na etapa 0 (tudo em `intro-refs/`, fora do repositório): direção de arte da cena (`blender/00-direcao-de-arte-da-cena.md`), estudo do Selo do Conselho com três variantes (`blender/selo/`), previs no Blender com câmera, tempo e ritmo da sequência inteira (`blender/grimorio.blend`, marco `grimorio_v01_previs.blend`, script `blender/scripts/previs_anim.py`), dez quadros-chave, comparação lado a lado com os keyframes K1a/K2/K3, animatic sem som, prancha `blender/P0-prancha.html`, brief de som e cue sheet (`audio/`).
+
+Propostas aguardando aprovação no P0: Selo variante B (divisórias curvas de 16°); fecho de ouro articulado com cabeça-Selo como único alvo de abrir e pagamento final no fecho; Ar levanta e assenta a ponta da página (sem virar); câmera de gesto próxima; acorde Dmaj9.
+
+Não verificado: nada roda no web ainda (peso, quadros por segundo e alvos de toque são estimativas); tempos de gesto simulados; previs sem som; nenhum teste em iPhone. Recursos pendentes: Higgsfield com 8,5 créditos no plano free (licença comercial não confirmada), Poly Haven desligado no complemento, `toktx` (KTX2) e `numpy` não instalados.
+
 ## Passada UAU: lotes publicados na main de 16 a 17/11/2026 (4587076 a 6dd6146)
 
 Registro só documental, escrito em 17/11/2026 a partir de `git log`, `git show --stat` dos commits e `PESQUISA-UAU.md`. Não alterou código, testes, versão nem manifests; nada foi commitado por ele. Os commits abaixo estão na `main` (HEAD `6dd6146`). A publicação do `2db5167` (Santuário) e as passadas intermediárias de outras telas (`540cb9c` a `a3552db`, entre `118a048` e `4587076`) aparecem no log, mas não foram detalhadas aqui. Evidência de testes (`verify:release`, build) e de CI/Vercel destes lotes não foi reexecutada nem conferida neste registro. Aceite pendente do orquestrador.
