@@ -5,7 +5,8 @@ import {
   avancar, avancarPorToque, elementoAtual, encerrado, ESTADO_INICIAL, type ElementoCerimonia, type EstadoGrimorio, type SinalGrimorio,
 } from '@/lib/intro/cerimonia';
 import {
-  ARCO_AGUA, iniciarSulco, largar, moverSulco, passoSegurar, pressionar, SEGURAR_INICIAL, soltarSulco, SULCO_INICIAL, type EstadoSegurar, type EstadoSulco,
+  ARCO_AGUA, avaliarRisco, iniciarSulco, largar, moverSulco, passoSegurar, pressionar, SEGURAR_INICIAL, soltarSulco, SULCO_INICIAL, TRACO_FOGO,
+  type Amostra, type EstadoSegurar, type EstadoSulco,
 } from '@/lib/intro/gestos';
 import { criarMonitorQuadros, nivelInicial, type NivelGrimorio } from '@/lib/intro/qualidade';
 import { INSTRUCAO, LENDA, LENDA_INTEIRA, oracoesVisiveis, TEXTO, TOTAL_ORACOES } from '@/lib/intro/textos';
@@ -180,8 +181,10 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   /* ---------------- gestos (níveis A e B): câmera, convite, dedo e alternativa de toque ---------------- */
   const em3D = nivel !== 'C' && pronta;
   const elementoGesto: ElementoCerimonia | null = estado.fase === 'gesto' ? elementoAtual(estado) : null;
-  const gesto = useRef<{ sulco: EstadoSulco; segurar: EstadoSegurar; ponteiro: number | null; t: number; inicio: { x: number; y: number; t: number } | null; arrastou: boolean; ocupado: boolean }>(
-    { sulco: SULCO_INICIAL, segurar: SEGURAR_INICIAL, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false });
+  const gesto = useRef<{
+    sulco: EstadoSulco; segurar: EstadoSegurar; amostras: Amostra[]; direcao: -1 | 0 | 1; pan: number;
+    ponteiro: number | null; t: number; inicio: { x: number; y: number; t: number } | null; arrastou: boolean; ocupado: boolean;
+  }>({ sulco: SULCO_INICIAL, segurar: SEGURAR_INICIAL, amostras: [], direcao: 1, pan: 0.35, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false });
   const [alvoGesto, setAlvoGesto] = useState<{ x: number; y: number } | null>(null);
 
   const despertar = useCallback(async (el: ElementoCerimonia) => {
@@ -192,6 +195,10 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     som?.continuo('agua', 0); som?.continuo('terra', 0);
     if (c && el === 'agua') { som?.cue('agua.solta'); await c.agua.concluir(c.anima); }
     else if (c && el === 'terra') { c.tremer(0); som?.cue('terra.firma'); await c.terra.concluir(c.anima); }
+    else if (c && el === 'fogo') {
+      som?.cue('fogo.risco', { forca: 1, pan: g.pan });
+      await c.fogo.acender(c.anima, g.direcao, () => som?.cue('fogo.assenta'));
+    }
     else if (c) await c.revelarTinta(el);
     enviar({ tipo: 'despertou', elemento: el });
   }, []);
@@ -200,7 +207,8 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     const c = cenaRef.current;
     if (!em3D || !c || !elementoGesto) return;
     if (estado.indice === 0) void c.irPara('gesto', 1.6);
-    gesto.current = { sulco: SULCO_INICIAL, segurar: SEGURAR_INICIAL, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false };
+    gesto.current = { sulco: SULCO_INICIAL, segurar: SEGURAR_INICIAL, amostras: [], direcao: 1, pan: 0.35, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false };
+    if (elementoGesto === 'fogo') { c.fogo.mostrar(); return; }
     if (elementoGesto === 'terra') {
       c.terra.mostrar();
       // o segurar anda a cada quadro: sobe com o dedo, recua (mais rápido) sem ele
@@ -240,6 +248,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     const seguir = () => {
       const p = elementoGesto === 'agua' ? c.naTela(c.agua.posicaoGota())
         : elementoGesto === 'terra' ? c.naTela(c.terra.posicaoPedra())
+        : elementoGesto === 'fogo' ? c.naTela(c.fogo.posicaoBrasa())
         : c.posicaoNaTela('selo');
       setAlvoGesto((ant) => (ant && p && Math.abs(ant.x - p.x) < 0.5 && Math.abs(ant.y - p.y) < 0.5 ? ant : p ? { x: p.x, y: p.y } : null));
       quadro = requestAnimationFrame(seguir);
@@ -259,6 +268,12 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
       gesto.current.t = performance.now();
       await c.agua.automatico(c.anima, (_k, vel) => { gesto.current.t = performance.now(); somRef.current?.continuo('agua', Math.min(1, vel * 0.8)); });
       gesto.current.ocupado = false;
+    } else if (el === 'fogo') {
+      // o risco sozinho: faíscas correm o fio de dentro para fora, e ele acende
+      gesto.current.ocupado = true;
+      await c.anima.animar({ de: 0, para: 1, duracao: 0.28, aplicar: (k) => c.fogo.faisca(TRACO_FOGO.de.x + (TRACO_FOGO.ate.x - TRACO_FOGO.de.x) * k, TRACO_FOGO.de.y + (TRACO_FOGO.ate.y - TRACO_FOGO.de.y) * k, 1) });
+      gesto.current.direcao = 1;
+      gesto.current.ocupado = false;
     } else if (el === 'terra') {
       // as pedras sobem num tempo só, com o mesmo ronco e tremor do segurar
       gesto.current.ocupado = true;
@@ -271,7 +286,16 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
 
   const aoTocarPagina = useCallback((e: PointerEventReact<HTMLDivElement>) => {
     const c = cenaRef.current; const g = gesto.current;
-    if (!c || g.ocupado || (elementoGesto !== 'agua' && elementoGesto !== 'terra')) return;
+    if (!c || g.ocupado || !elementoGesto || elementoGesto === 'ar') return;
+    if (elementoGesto === 'fogo') {
+      if (g.ponteiro !== null) { g.ponteiro = null; g.amostras = []; return; }
+      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+      if (!ponto) return;
+      g.ponteiro = e.pointerId; g.amostras = [{ ...ponto, t: performance.now() }]; g.inicio = { x: e.clientX, y: e.clientY, t: performance.now() }; g.arrastou = false;
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+      c.fogo.faisca(ponto.x, ponto.y, 0.3);
+      return;
+    }
     if (elementoGesto === 'terra') {
       if (g.ponteiro !== null) { g.segurar = largar(g.segurar); g.ponteiro = null; return; }
       const ponto = c.projetarNaPagina(e.clientX, e.clientY);
@@ -299,6 +323,17 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     const c = cenaRef.current; const g = gesto.current;
     if (!c || g.ponteiro !== e.pointerId) return;
     if (g.inicio && Math.hypot(e.clientX - g.inicio.x, e.clientY - g.inicio.y) > 8) g.arrastou = true;
+    if (elementoGesto === 'fogo') {
+      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+      if (!ponto) return;
+      const agora = performance.now(); const ant = g.amostras[g.amostras.length - 1];
+      const vel = ant ? Math.hypot(ponto.x - ant.x, ponto.y - ant.y) / Math.max(0.008, (agora - ant.t) / 1000) : 0;
+      g.amostras.push({ ...ponto, t: agora });
+      // as faíscas saem do dedo, mais vivas quanto mais rápido o risco
+      c.fogo.faisca(ponto.x, ponto.y, Math.min(1, vel / 0.3));
+      g.pan = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1));
+      return;
+    }
     const ponto = c.projetarNaPagina(e.clientX, e.clientY);
     if (!ponto) return;
     const s = moverSulco(g.sulco, ARCO_AGUA, ponto);
@@ -312,12 +347,23 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     g.sulco = s;
     c.agua.definir(s.progresso, !s.concluido);
     if (s.concluido) { g.ponteiro = null; void despertar('agua'); }
-  }, [despertar]);
+  }, [despertar, elementoGesto]);
 
   const aoSoltar = useCallback((e: PointerEventReact<HTMLDivElement>) => {
     const c = cenaRef.current; const g = gesto.current;
     if (!c || g.ponteiro !== e.pointerId) return;
     g.ponteiro = null;
+    if (elementoGesto === 'fogo') {
+      const r = avaliarRisco(TRACO_FOGO, g.amostras);
+      g.amostras = [];
+      if (r.aceso) { g.direcao = r.direcao; void despertar('fogo'); return; }
+      // um toque curto perto da brasa é a alternativa; um risco fraco só faz a brasa piscar
+      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+      const pertoDaBrasa = ponto && Math.hypot(ponto.x - TRACO_FOGO.de.x, ponto.y - TRACO_FOGO.de.y) < 0.022;
+      if (e.type === 'pointerup' && !g.arrastou && pertoDaBrasa && g.inicio && performance.now() - g.inicio.t < 350) { void automatico(); return; }
+      if (g.arrastou) { c.fogo.falhar(); somRef.current?.cue('fogo.risco', { forca: Math.max(0.2, r.cobertura * 0.6), pan: g.pan }); }
+      return;
+    }
     if (elementoGesto === 'terra') {
       g.segurar = largar(g.segurar);
       // um toque curto (soltou antes de 300 ms) é a alternativa: as pedras sobem sozinhas
@@ -329,7 +375,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     somRef.current?.continuo('agua', 0);
     // um toque curto na gota (sem arrastar) é a alternativa: ela corre sozinha
     if (e.type === 'pointerup' && !g.arrastou && g.inicio && performance.now() - g.inicio.t < 350) void automatico();
-  }, [automatico, elementoGesto]);
+  }, [automatico, elementoGesto, despertar]);
 
   /* ---------------- Conselho (provisório até a etapa 4): a câmera recua e assenta ---------------- */
   useEffect(() => {
@@ -369,14 +415,14 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
         </button>
       ) : null}
 
-      {em3D && (elementoGesto === 'agua' || elementoGesto === 'terra') ? (
+      {em3D && (elementoGesto === 'agua' || elementoGesto === 'terra' || elementoGesto === 'fogo') ? (
         <div className="grimorio-gesto" onPointerDown={aoTocarPagina} onPointerMove={aoMover} onPointerUp={aoSoltar} onPointerCancel={aoSoltar} aria-hidden="true" />
       ) : null}
       {elementoGesto && alvoGesto ? (
         <button
           type="button"
           className="grimorio-alvo"
-          data-passa={em3D && (elementoGesto === 'agua' || elementoGesto === 'terra') ? 'sim' : undefined}
+          data-passa={em3D && elementoGesto !== 'ar' ? 'sim' : undefined}
           style={{ left: alvoGesto.x, top: alvoGesto.y, width: 56, height: 56 }}
           onClick={() => void automatico()}
         >

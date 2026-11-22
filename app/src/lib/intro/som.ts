@@ -246,6 +246,45 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
       s.connect(gs).connect(m.cama); s.start(t + 0.3);
     }
   },
+  /** A strike on the line: flint scrape, spark clicks at the finger (pan = finger x), and, if it lit (forca ≥ 0.8), the whump of ignition. */
+  'fogo.risco': (m, t, p) => {
+    const forca = p.forca ?? 1;
+    const out = saida(m, p.pan ?? 0.35);
+    const ra = m.ctx.createGain(); envelope(ra.gain, t, 0.002, 0.22 * (0.5 + forca * 0.5), 0.09); ra.connect(out);
+    const f = ruidoFiltrado(m, t, 0.12, 'highpass', 2500, 0.8, ra);
+    f.frequency.setValueAtTime(1800, t); f.frequency.exponentialRampToValueAtTime(6000, t + 0.08);
+    const cliques = 3 + Math.round(forca * 5);
+    for (let k = 0; k < cliques; k += 1) {
+      const tt = t + 0.01 + Math.random() * 0.12;
+      const g = m.ctx.createGain(); envelope(g.gain, tt, 0.0008, 0.12 + Math.random() * 0.1, 0.012); g.connect(out);
+      ruidoFiltrado(m, tt, 0.02, 'bandpass', 5000 + Math.random() * 3000, 4, g);
+    }
+    if (forca < 0.8) return;
+    // whump: ar puxado para dentro da chama
+    const w = m.ctx.createGain(); w.gain.setValueAtTime(0.0001, t + 0.1); w.gain.linearRampToValueAtTime(0.42, t + 0.2); w.gain.exponentialRampToValueAtTime(0.0001, t + 0.75); w.connect(out);
+    const fw = ruidoFiltrado(m, t + 0.1, 0.7, 'lowpass', 300, 0.9, w);
+    fw.frequency.setValueAtTime(180, t + 0.1); fw.frequency.exponentialRampToValueAtTime(900, t + 0.25); fw.frequency.exponentialRampToValueAtTime(260, t + 0.7);
+    const o = m.ctx.createOscillator(); o.frequency.setValueAtTime(62, t + 0.1); o.frequency.exponentialRampToValueAtTime(88, t + 0.3);
+    const go = m.ctx.createGain(); envelope(go.gain, t + 0.1, 0.06, 0.3, 0.4); o.connect(go).connect(out); o.start(t + 0.1); o.stop(t + 0.6);
+  },
+  /** The flame burns down to embers: crackles that thin out, a pizzicato F♯, and the Fire stem (F♯) joins the bed. */
+  'fogo.assenta': (m, t) => {
+    const out = saida(m, 0.35);
+    for (let k = 0; k < 14; k += 1) {
+      const tt = t + Math.pow(Math.random(), 1.8) * 1.6;
+      const g = m.ctx.createGain(); envelope(g.gain, tt, 0.0008, 0.05 + Math.random() * 0.07, 0.015); g.connect(out);
+      ruidoFiltrado(m, tt, 0.03, 'bandpass', 2500 + Math.random() * 3500, 3, g);
+    }
+    const crepita = m.ctx.createGain(); crepita.gain.setValueAtTime(0.06, t); crepita.gain.exponentialRampToValueAtTime(0.0001, t + 1.8); crepita.connect(out);
+    ruidoFiltrado(m, t, 1.8, 'bandpass', 900, 0.7, crepita);
+    harpa(m, t + 0.05, NOTA.Fs4, 0.13, 0.5, out);
+    harpa(m, t + 0.05, NOTA.Fs5, 0.05, 0.35, out);
+    for (const [fr, a] of [[NOTA.Fs4, 0.022], [NOTA.Fs5, 0.008]] as const) {
+      const s = m.ctx.createOscillator(); s.frequency.value = fr;
+      const gs = m.ctx.createGain(); gs.gain.setValueAtTime(0.0001, t + 0.3); gs.gain.linearRampToValueAtTime(a, t + 2.3);
+      s.connect(gs).connect(m.cama); s.start(t + 0.3);
+    }
+  },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {
     const out = saida(m, (Math.random() - 0.5) * 0.3);

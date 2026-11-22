@@ -7,6 +7,7 @@ import { criarCeu } from './ceu';
 import { carregarLivro, SELO_NA_PAGINA, type Livro } from './livro';
 import { criarAgua, type GestoAgua } from './agua';
 import { criarTerra, type GestoTerra } from './terra';
+import { criarFogo, type GestoFogo } from './fogo';
 import { criarLuz } from './luz';
 import { COR } from './paleta';
 import { criarPos } from './pos';
@@ -36,6 +37,8 @@ export interface ControleGrimorio3D {
   readonly agua: GestoAgua;
   /** Second gesture's 3D (stone, fragments, dust). */
   readonly terra: GestoTerra;
+  /** Third gesture's 3D (charred line, ember, sparks, flame). */
+  readonly fogo: GestoFogo;
   /** Camera tremor, 0..1 (the Earth hold). */
   tremer(intensidade: number): void;
   /** A quadrant wakes without its own 3D yet (or in reduced motion): the ink settles and the quadrant glows. */
@@ -81,6 +84,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   const luz = criarLuz(renderer, livro.raiz, orc.poeira);
   const agua = criarAgua(livro);
   const terra = criarTerra(livro);
+  const fogo = criarFogo(livro);
   let tremor = 0;
   cena.add(luz.grupo);
   cena.environment = luz.ambiente;
@@ -169,6 +173,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
     livro.atualizar(t);
     agua.atualizar(t);
     terra.atualizar(t);
+    fogo.atualizar(t, dtMs / 1000);
     luz.fresta.value = livro.fresta.value;
     luz.atualizar(livro.abertura.value);
     aplicarCamera(t);
@@ -206,7 +211,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   };
 
   return {
-    backend, nivel, livro, anima, irPara, agua, terra,
+    backend, nivel, livro, anima, irPara, agua, terra, fogo,
     tremer(v) { tremor = Math.max(0, Math.min(1, v)); },
     async revelarTinta(el) {
       void anima.animar({ de: 0, para: 1, duracao: 0.6, easing: easeInOutCubic, aplicar: (k) => { livro.brilho[el].value = k; } });
@@ -261,7 +266,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
       document.removeEventListener('visibilitychange', visibilidade);
       canvas.removeEventListener('webglcontextlost', aoPerderGL);
       anima.limpar();
-      pos.dispose(); agua.dispose(); terra.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
+      pos.dispose(); agua.dispose(); terra.dispose(); fogo.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
       renderer.dispose();
     },
   };

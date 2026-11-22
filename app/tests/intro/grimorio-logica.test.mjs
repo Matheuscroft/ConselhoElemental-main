@@ -162,3 +162,18 @@ test('quality: two consecutive slow 2-second windows drop to C; one slow window 
   assert.equal(janela(33), true);
   assert.equal(m.registrar(16, true), true, 'once dropped it stays dropped');
 });
+
+test('Fogo: um risco rápido sobre o fio de luz acende; um toque parado no meio dele não', () => {
+  const g = load('src/lib/intro/gestos.ts');
+  const T = g.TRACO_FOGO;
+  const passada = (n, ms, inverso = false) => Array.from({ length: n + 1 }, (_, i) => {
+    const k = inverso ? 1 - i / n : i / n;
+    return { x: T.de.x + (T.ate.x - T.de.x) * k, y: T.de.y + (T.ate.y - T.de.y) * k, t: (ms * i) / n };
+  });
+  const rapido = g.avaliarRisco(T, passada(12, 180));
+  assert.equal(rapido.aceso, true);
+  assert.equal(rapido.direcao, 1);
+  assert.equal(g.avaliarRisco(T, passada(12, 180, true)).direcao, -1);
+  const meio = { x: (T.de.x + T.ate.x) / 2, y: (T.de.y + T.ate.y) / 2 };
+  assert.equal(g.avaliarRisco(T, [{ ...meio, t: 0 }, { ...meio, t: 120 }]).aceso, false);
+});

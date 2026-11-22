@@ -114,6 +114,9 @@ export interface Risco {
   readonly aceso: boolean;
 }
 
+/** The unlit trace of Fire: the "line of light" at the top of the Fire quadrant (Seal B), from its inner end outwards. */
+export const TRACO_FOGO: Traco = { de: { x: 0.008, y: -0.009 }, ate: { x: 0.055, y: -0.0155 }, tolerancia: 0.014 };
+
 /** A strike is a fast pass over most of the trace, like a match on its box. */
 export const RISCO_COBERTURA = 0.6;
 export const RISCO_VELOCIDADE = 0.18; // m/s on the page: about 280 px/s on a phone
