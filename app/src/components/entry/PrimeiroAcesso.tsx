@@ -2,6 +2,7 @@ import { lazy, Suspense, useCallback, useState } from 'react';
 import { EntryWelcome } from '@/components/entry/EntryWelcome';
 import { FocoInicial } from '@/components/entry/FocoInicial';
 import { PesquisaInicial } from '@/components/entry/PesquisaInicial';
+import { AberturaSegura } from '@/components/intro/AberturaSegura';
 import {
   type FirstRunStep,
   initialFirstRunStep,
@@ -19,8 +20,8 @@ import {
 import { setBirthDatePreference } from '@/lib/sanctuary/zodiac';
 import './primeiro-acesso.css';
 
-/** The awakening is the heaviest part of the opening, so it loads on its own. */
-const DespertarCena = lazy(() => import('@/components/sanctuary/DespertarCena'));
+/** The awakening (the grimoire) is the heaviest part of the opening, so it loads on its own; its 3D loads later still. */
+const GrimorioCena = lazy(() => import('@/components/intro/GrimorioCena'));
 
 /**
  * The first open, in order: the awakening, four questions (name, sky, birth, focus), then the entry that
@@ -50,16 +51,18 @@ export function PrimeiroAcesso() {
 
   if (step === 'despertar') {
     return (
-      <Suspense
-        fallback={(
-          <div className="primeiro-acesso-carregando" role="status">
-            <span className="primeiro-acesso-brasa" aria-hidden="true" />
-            Abrindo o santuário…
-          </div>
-        )}
-      >
-        <DespertarCena onComplete={() => avancar(true)} onSkip={() => avancar(false)} />
-      </Suspense>
+      <AberturaSegura aoFalhar={() => avancar(false)}>
+        <Suspense
+          fallback={(
+            <div className="primeiro-acesso-carregando" role="status">
+              <span className="primeiro-acesso-brasa" aria-hidden="true" />
+              Abrindo o santuário…
+            </div>
+          )}
+        >
+          <GrimorioCena onComplete={() => avancar(true)} onSkip={() => avancar(false)} />
+        </Suspense>
+      </AberturaSegura>
     );
   }
 
