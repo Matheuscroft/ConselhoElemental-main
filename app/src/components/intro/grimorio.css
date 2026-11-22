@@ -28,6 +28,9 @@
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
+  /* iOS: segurar (Terra) não abre lupa nem menu; puxar (Ar) não arrasta a página */
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
   transition: opacity var(--ds-duration-reveal, 240ms) var(--ds-ease, ease);
 }
 .grimorio[data-saindo='true'] { opacity: 0; transition-duration: 300ms; }
