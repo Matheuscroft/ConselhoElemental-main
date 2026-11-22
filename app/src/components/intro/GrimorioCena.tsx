@@ -177,7 +177,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   }, [estado, nivel]);
 
   const pular = useCallback(() => enviar({ tipo: 'pular' }), []);
-  const comecar = useCallback(() => enviar({ tipo: 'comecar' }), []);
+  const comecar = useCallback(() => { somRef.current?.cue('final.botao'); enviar({ tipo: 'comecar' }); }, []);
 
   /* ---------------- gestos (níveis A e B): câmera, convite, dedo e alternativa de toque ---------------- */
   const em3D = nivel !== 'C' && pronta;
@@ -415,18 +415,27 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     if (e.type === 'pointerup' && !g.arrastou && g.inicio && performance.now() - g.inicio.t < 350) void automatico();
   }, [automatico, elementoGesto, despertar]);
 
-  /* ---------------- Conselho (provisório até a etapa 4): a câmera recua e assenta ---------------- */
+  /* ---------------- Conselho: o Selo se completa e a luz desce ao fecho; depois a tela final ---------------- */
   useEffect(() => {
     if (estado.fase !== 'conselho') return;
     const c = cenaRef.current;
-    if (c && em3D) void c.irPara('conselho', 2.4);
-    const id = window.setTimeout(() => enviar({ tipo: 'conselhoAssentou' }), c && em3D ? 2600 : 0);
-    return () => window.clearTimeout(id);
+    let vivo = true;
+    if (c && em3D) {
+      somRef.current?.cue('selo.completo');
+      // a câmera visita o fecho enquanto a luz desce e as cavidades acendem; depois recua para o quadro final
+      const visita = window.setTimeout(() => { if (vivo) void c.irPara('fecho', 1.1); }, 550);
+      void (async () => {
+        await c.conselho();
+        if (!vivo) return;
+        await c.irPara('final', 2.0);
+        if (vivo) enviar({ tipo: 'conselhoAssentou' });
+      })();
+      return () => { vivo = false; window.clearTimeout(visita); };
+    }
+    enviar({ tipo: 'conselhoAssentou' });
+    return () => { vivo = false; };
   }, [estado.fase, em3D]);
-  useEffect(() => {
-    const c = cenaRef.current;
-    if (estado.fase === 'final' && c && em3D) void c.irPara('final', 2.2);
-  }, [estado.fase, em3D]);
+
 
   /* ---------------- texto na tela ---------------- */
   const lenda = estado.fase === 'lenda' ? oracoesVisiveis(estado.oracao) : null;

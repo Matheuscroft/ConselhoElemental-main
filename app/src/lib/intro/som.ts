@@ -302,6 +302,29 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
       s.connect(gs).connect(m.cama); s.start(t + 0.4);
     }
   },
+  /** The Seal completes: Dmaj9 resolves (bells and a harp strum), a sub-drop, a gold shimmer, the bed ducks 3 dB and
+   *  comes back, and the four cavities chime in the ceremony's order at the times the scene lights them (1.4 s + 0.22 s). */
+  'selo.completo': (m, t) => {
+    const out = saida(m, 0);
+    m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t);
+    m.cama.gain.linearRampToValueAtTime(0.7, t + 0.2); m.cama.gain.linearRampToValueAtTime(1.0, t + 2.6);
+    [NOTA.D3, NOTA.A3, NOTA.Fs4, NOTA.A4, NOTA.E5].forEach((fr, i) => harpa(m, t + i * 0.07, fr, 0.11 - i * 0.012, 2.8, out));
+    [NOTA.D5, NOTA.Fs5, NOTA.A5, NOTA.E6].forEach((fr, i) => sino(m, t + 0.35 + i * 0.09, fr, 0.04, 2.6, out, 3.01));
+    const sub = m.ctx.createOscillator(); sub.frequency.setValueAtTime(58, t); sub.frequency.exponentialRampToValueAtTime(34, t + 0.9);
+    const gs = m.ctx.createGain(); envelope(gs.gain, t, 0.02, 0.45, 1.0); sub.connect(gs).connect(out); sub.start(t); sub.stop(t + 1.1);
+    const br = m.ctx.createGain(); br.gain.setValueAtTime(0.0001, t + 0.2); br.gain.linearRampToValueAtTime(0.05, t + 0.7); br.gain.exponentialRampToValueAtTime(0.0001, t + 2.2); br.connect(out);
+    ruidoFiltrado(m, t + 0.2, 2.1, 'highpass', 6500, 0.7, br);
+    // as cavidades do fecho: Lá, Ré, Fá♯, Mi (Água, Terra, Fogo, Ar), à direita, onde o fecho está
+    const cav = saida(m, 0.45);
+    [NOTA.A5, NOTA.D5, NOTA.Fs5, NOTA.E6].forEach((fr, i) => sino(m, t + 1.4 + i * 0.22, fr, 0.05, 1.8, cav, 2.0));
+  },
+  /** Começar: a soft warm click with a quiet D. */
+  'final.botao': (m, t) => {
+    const out = saida(m, 0);
+    const g = m.ctx.createGain(); envelope(g.gain, t, 0.002, 0.12, 0.06); g.connect(out);
+    ruidoFiltrado(m, t, 0.08, 'bandpass', 1800, 2, g);
+    sino(m, t + 0.01, NOTA.D5, 0.035, 0.9, out, 2.0);
+  },
   /** A line of the legend settles: very soft ink. */
   'lenda.linha': (m, t) => {
     const out = saida(m, (Math.random() - 0.5) * 0.3);

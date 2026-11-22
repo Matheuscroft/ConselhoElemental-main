@@ -9,6 +9,7 @@ import { criarAgua, type GestoAgua } from './agua';
 import { criarTerra, type GestoTerra } from './terra';
 import { criarFogo, type GestoFogo } from './fogo';
 import { criarAr, type GestoAr } from './ar';
+import { criarConselho } from './conselho';
 import { criarLuz } from './luz';
 import { COR } from './paleta';
 import { criarPos } from './pos';
@@ -42,6 +43,8 @@ export interface ControleGrimorio3D {
   readonly fogo: GestoFogo;
   /** Fourth gesture's 3D (page corner flap, wisps). */
   readonly ar: GestoAr;
+  /** The payoff: quadrants flare, gold ring lifts, light travels to the clasp, cavities light (≈ 2.9 s). */
+  conselho(): Promise<void>;
   /** Camera tremor, 0..1 (the Earth hold). */
   tremer(intensidade: number): void;
   /** A quadrant wakes without its own 3D yet (or in reduced motion): the ink settles and the quadrant glows. */
@@ -89,6 +92,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   const terra = criarTerra(livro);
   const fogo = criarFogo(livro);
   const ar = criarAr(livro);
+  const conselho = criarConselho(livro);
   let tremor = 0;
   cena.add(luz.grupo);
   cena.environment = luz.ambiente;
@@ -218,6 +222,14 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
 
   return {
     backend, nivel, livro, anima, irPara, agua, terra, fogo, ar,
+    async conselho() {
+      // a cabeça do fecho, no espaço da raiz do livro (os pontos vêm no mundo)
+      const pts = livro.pontos('cabecaFecho');
+      const centro = pts.reduce((a, p) => a.add(p), new Vector3()).multiplyScalar(1 / Math.max(1, pts.length));
+      livro.raiz.updateWorldMatrix(true, false);
+      const local = centro.applyMatrix4(livro.raiz.matrixWorld.clone().invert());
+      await conselho.executar(anima, local);
+    },
     tremer(v) { tremor = Math.max(0, Math.min(1, v)); },
     async revelarTinta(el) {
       void anima.animar({ de: 0, para: 1, duracao: 0.6, easing: easeInOutCubic, aplicar: (k) => { livro.brilho[el].value = k; } });
@@ -272,7 +284,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
       document.removeEventListener('visibilitychange', visibilidade);
       canvas.removeEventListener('webglcontextlost', aoPerderGL);
       anima.limpar();
-      pos.dispose(); agua.dispose(); terra.dispose(); fogo.dispose(); ar.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
+      pos.dispose(); agua.dispose(); terra.dispose(); fogo.dispose(); ar.dispose(); conselho.dispose(); livro.dispose(); luz.dispose(); ceu.dispose();
       renderer.dispose();
     },
   };
