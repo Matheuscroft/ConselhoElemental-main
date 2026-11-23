@@ -4,8 +4,10 @@
  * A: WebGPU (compute particles, full post). B: the same scene on the WebGL2 backend, lighter.
  * C: static pages, advanced by tap. One rule for C, the same as the design system's light mode
  * (07-movimento): the person asks for it, reduced motion is on, the 3D backends fail, or two
- * consecutive 2-second windows of visible 3D have a median frame interval above 25 ms, measured
- * after the first stable frame with the tab visible. Interrupted windows are discarded.
+ * consecutive 2-second windows of visible 3D have a median frame interval above 25 ms (or 1.5× the
+ * paced frame period, whichever is longer, so iOS Low Power Mode at 30 Hz is not mistaken for a slow
+ * device), measured after the first stable frame with the tab visible, and only once the adaptive
+ * quality (ritmo.ts) has run out of steps. Interrupted windows are discarded.
  */
 
 export type NivelGrimorio = 'A' | 'B' | 'C';
@@ -34,6 +36,8 @@ export interface MonitorQuadros {
   registrar(intervaloMs: number, visivel: boolean): boolean;
   readonly janelasRuins: number;
   readonly ultimaMediana: number | null;
+  /** The paced frame period (ms): the limit follows it (1000/30 in Low Power Mode → 50 ms). */
+  definirPeriodo(ms: number): void;
 }
 
 export function mediana(valores: readonly number[]): number {
@@ -43,7 +47,8 @@ export function mediana(valores: readonly number[]): number {
   return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
 }
 
-export function criarMonitorQuadros(): MonitorQuadros {
+export function criarMonitorQuadros(periodoMs = 1000 / 60): MonitorQuadros {
+  let limite = Math.max(LIMITE_MEDIANA_MS, periodoMs * 1.5);
   let janela: number[] = [];
   let soma = 0;
   let ruins = 0;
@@ -52,6 +57,7 @@ export function criarMonitorQuadros(): MonitorQuadros {
   return {
     get janelasRuins() { return ruins; },
     get ultimaMediana() { return ultima; },
+    definirPeriodo(ms) { limite = Math.max(LIMITE_MEDIANA_MS, ms * 1.5); },
     registrar(intervaloMs, visivel) {
       if (caiu) return true;
       // A hidden tab or a huge gap (the tab was backgrounded) interrupts the window: start over.
@@ -60,7 +66,7 @@ export function criarMonitorQuadros(): MonitorQuadros {
       if (soma < JANELA_MS) return false;
       ultima = mediana(janela);
       janela = []; soma = 0;
-      ruins = ultima > LIMITE_MEDIANA_MS ? ruins + 1 : 0;
+      ruins = ultima > limite ? ruins + 1 : 0;
       if (ruins >= JANELAS_RUINS_PARA_CAIR) caiu = true;
       return caiu;
     },

@@ -32,6 +32,7 @@ const C = load('src/lib/intro/cerimonia.ts');
 const G = load('src/lib/intro/gestos.ts');
 const Q = load('src/lib/intro/qualidade.ts');
 const T = load('src/lib/intro/textos.ts');
+const R = load('src/lib/intro/ritmo.ts');
 
 test('the ceremony keeps the approved order: water, earth, fire, air', () => {
   assert.deepEqual([...C.ORDEM_CERIMONIA], ['agua', 'terra', 'fogo', 'ar']);
@@ -176,4 +177,49 @@ test('Fogo: um risco rápido sobre o fio de luz acende; um toque parado no meio 
   assert.equal(g.avaliarRisco(T, passada(12, 180, true)).direcao, -1);
   const meio = { x: (T.de.x + T.ate.x) / 2, y: (T.de.y + T.ate.y) / 2 };
   assert.equal(g.avaliarRisco(T, [{ ...meio, t: 0 }, { ...meio, t: 120 }]).aceso, false);
+});
+
+test('quality: at 30 Hz (iOS Low Power Mode) a steady 33 ms cadence never drops to C', () => {
+  const m = Q.criarMonitorQuadros(1000 / 30);
+  let caiu = false;
+  for (let s = 0; s < Q.JANELA_MS * 4; s += 33.3) caiu = m.registrar(33.3, true);
+  assert.equal(caiu, false);
+});
+
+const rodar = (r, hz, ms, custo = () => 0) => {
+  // ticks de uma tela a `hz` durante `ms`; devolve os intervalos desenhados
+  const periodo = 1000 / hz; const desenhados = [];
+  for (let t = 0; t <= ms; t += periodo) { const dt = r.tick(t, true); if (dt >= 0) { desenhados.push(dt); r.custo(custo(t)); } }
+  return desenhados;
+};
+
+test('ritmo: detects the display rate from the rAF ticks (60, 120, 30)', () => {
+  for (const hz of [60, 120, 30]) { const r = R.criarRitmo(); rodar(r, hz, 2000); assert.equal(r.estatisticas().telaHz, hz); }
+});
+
+test('ritmo: forced to 60 on a 120 Hz screen, it draws every other tick, evenly', () => {
+  const r = R.criarRitmo(); r.forcar(60);
+  const d = rodar(r, 120, 3000).slice(40);
+  assert.ok(d.every((x) => Math.abs(x - 1000 / 60) < 0.5), 'every drawn interval is ~16.7 ms');
+});
+
+test('ritmo: a 120 Hz screen that cannot sustain 120 locks to an even 60, once', () => {
+  const r = R.criarRitmo();
+  // a tela a 120; o aparelho entrega quadro ora em 1 tick, ora em 2 (irregular: o pior caso para o olho)
+  let t = 0, k = 0;
+  while (t < 6000) { t += (1000 / 120) * (k++ % 3 === 0 ? 1 : 2); r.tick(t, true); }
+  const e = r.estatisticas();
+  assert.equal(e.travado60, true);
+  assert.equal(e.alvoHz, 60);
+});
+
+test('ritmo: sustained bad windows step quality down before anything else; good windows bring it back slowly', () => {
+  const r = R.criarRitmo(); const passos = []; r.aoEscalar = (e) => passos.push(e);
+  let t = 0;
+  for (let i = 0; i < 600; i += 1) { t += (1000 / 60) * [1, 2, 3][i % 3]; r.tick(t, true); } // tela de 60 perdendo quadros
+  assert.ok(r.escala >= 2, `escala ${r.escala}`);
+  const antes = r.escala;
+  for (let i = 0; i < 60 * 20; i += 1) { t += 1000 / 60; r.tick(t, true); }
+  assert.ok(r.escala < antes, 'recovers after a long good stretch');
+  assert.ok(passos.length >= 3);
 });
