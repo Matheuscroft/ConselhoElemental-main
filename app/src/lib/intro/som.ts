@@ -7,7 +7,8 @@
  * the same without any of this. Master: compressor as a limiter (peak ≤ −3 dBFS), a pad bus that can
  * duck, and an effects bus.
  *
- * Signature chord Dmaj9: Water A, Earth D, Fire F♯, Air E; the pad holds D and A until the Seal.
+ * Signature chord Dmaj9: Water A, Earth D, Fire F♯, Air E. The bed is a composed score (files under
+ * /intro/som, loaded after the first gesture): a loop that each element's stem joins, and a resolution at the Seal.
  */
 
 export type CueGrimorio =
@@ -43,6 +44,127 @@ interface Mixer {
   efeitos: GainNode;
   cama: GainNode;
   ruido: AudioBuffer;
+  trilha: Trilha;
+}
+
+/* ------------------------------------------------------------------ trilha composta (arquivos) */
+
+/**
+ * The score: an original piece rendered offline (intro-refs/audio/compor_trilha.py, no samples), a 32 s loop in
+ * D (Dmaj9 → Bm9 → Gmaj7♯11 → Asus4) plus one stem per element, all in phase, so the music grows with each
+ * gesture, and a resolution for the Seal. Each loop file holds one period with 1 s of margin on both sides, so
+ * `loopStart`/`loopEnd` loop inside continuous audio (no click at the seam, AAC priming included).
+ */
+type Faixa = 'base' | 'agua' | 'terra' | 'fogo' | 'ar';
+const ARQUIVO: Record<Faixa | 'selo', string> = {
+  base: '/intro/som/trilha-base.m4a', agua: '/intro/som/haste-agua.m4a', terra: '/intro/som/haste-terra.m4a',
+  fogo: '/intro/som/haste-fogo.m4a', ar: '/intro/som/haste-ar.m4a', selo: '/intro/som/selo-resolucao.m4a',
+};
+const LOOP = { inicio: 1, fim: 33, periodo: 32 } as const;
+/** Measured (ebur128, with the master at 0.7): base alone ≈ −20.8 LUFS, base + four stems ≈ −18.7 LUFS, peak −6 dBFS. */
+const GANHO: Record<Faixa, number> = { base: 1.3, agua: 0.7, terra: 0.7, fogo: 0.7, ar: 0.7 };
+const SELO_GANHO = 0.85;
+
+interface Geracao { g: GainNode; t0: number; fontes: Partial<Record<Faixa, AudioBufferSourceNode>> }
+interface Trilha {
+  buffers: Partial<Record<Faixa | 'selo', AudioBuffer>>;
+  /** What the scene asked for so far, and from when (a stem asked before its file arrived starts when it does). */
+  pedidas: Map<Faixa, number>;
+  atual: Geracao | null;
+  /** Synthesised stand-in bed, only while the base file has not arrived (slow network); fades out when it does. */
+  reserva: GainNode | null;
+}
+
+function novaTrilha(): Trilha { return { buffers: {}, pedidas: new Map(), atual: null, reserva: null }; }
+
+/** Fetch and decode the score (the base first: it is the one needed soonest); each file that arrives starts at once if the scene already asked for it. */
+async function carregarTrilha(m: Mixer): Promise<void> {
+  const carregar = async (nome: Faixa | 'selo') => {
+    try {
+      const r = await fetch(ARQUIVO[nome]);
+      if (!r.ok) return;
+      const dados = await r.arrayBuffer();
+      m.trilha.buffers[nome] = await m.ctx.decodeAudioData(dados);
+      sincronizar(m);
+    } catch { /* sem o arquivo, a cena segue com a cama sintetizada de reserva */ }
+  };
+  await carregar('base');
+  await Promise.all((['agua', 'terra', 'fogo', 'ar', 'selo'] as const).map(carregar));
+}
+
+/** Start every asked-for track whose buffer is ready, in phase with the base loop of the current generation. */
+function sincronizar(m: Mixer) {
+  const tr = m.trilha;
+  const base = tr.buffers.base;
+  if (!base || !tr.pedidas.has('base')) return;
+  const agora = m.ctx.currentTime;
+  if (!tr.atual) {
+    const g = m.ctx.createGain(); g.gain.value = 1; g.connect(m.cama);
+    tr.atual = { g, t0: Math.max(agora + 0.02, tr.pedidas.get('base') ?? agora), fontes: {} };
+    if (tr.reserva) {
+      const r = tr.reserva; tr.reserva = null;
+      r.gain.cancelScheduledValues(agora); r.gain.setValueAtTime(r.gain.value, agora); r.gain.linearRampToValueAtTime(0, agora + 3);
+    }
+  }
+  const ger = tr.atual;
+  for (const [faixa, pedida] of tr.pedidas) {
+    const buf = tr.buffers[faixa];
+    if (!buf || ger.fontes[faixa]) continue;
+    const t = Math.max(agora + 0.02, pedida, ger.t0);
+    const s = m.ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.loopStart = LOOP.inicio; s.loopEnd = LOOP.fim;
+    const g = m.ctx.createGain();
+    const subida = faixa === 'base' ? 3.5 : 2.0;
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(GANHO[faixa], t + subida);
+    s.connect(g).connect(ger.g);
+    s.start(t, LOOP.inicio + ((((t - ger.t0) % LOOP.periodo) + LOOP.periodo) % LOOP.periodo));
+    ger.fontes[faixa] = s;
+  }
+}
+
+/** Bring an element's stem into the bed. Until the score arrives, `reservaNotas` (sine partials) hold its note in the stand-in bed. */
+function pedirFaixa(m: Mixer, faixa: Faixa, t: number, reservaNotas: readonly (readonly [number, number])[] = []) {
+  if (!m.trilha.pedidas.has(faixa)) m.trilha.pedidas.set(faixa, t);
+  if (!m.trilha.buffers.base) {
+    const r = reserva(m);
+    for (const [fr, a] of reservaNotas) {
+      const o = m.ctx.createOscillator(); o.frequency.value = fr;
+      const g = m.ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(a, t + 2);
+      o.connect(g).connect(r); o.start(t);
+    }
+  }
+  sincronizar(m);
+}
+
+/** The stand-in bed: D3 + A3 (+ D4), filtered detuned saws that breathe slowly (the old pad, ≈ −19 LUFS). */
+function reserva(m: Mixer): GainNode {
+  if (m.trilha.reserva) return m.trilha.reserva;
+  const t = m.ctx.currentTime;
+  const r = m.ctx.createGain(); r.gain.value = 1; r.connect(m.cama);
+  const filtro = m.ctx.createBiquadFilter(); filtro.type = 'lowpass'; filtro.frequency.value = 700; filtro.Q.value = 0.4;
+  const lfo = m.ctx.createOscillator(); lfo.frequency.value = 0.07; const lg = m.ctx.createGain(); lg.gain.value = 260; lfo.connect(lg).connect(filtro.frequency); lfo.start(t);
+  filtro.connect(r);
+  for (const [fr, a] of [[NOTA.D3, 0.11], [NOTA.A3, 0.088], [NOTA.D4, 0.04]] as const) {
+    for (const det of [-6, 5]) {
+      const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.detune.value = det;
+      const g = m.ctx.createGain(); g.gain.value = a; o.connect(g).connect(filtro); o.start(t);
+    }
+  }
+  m.trilha.reserva = r;
+  return r;
+}
+
+/** At the Seal the loop fades under the resolution and comes back from its first bar (Dmaj9, the tonic) with every stem, as it ends. */
+const RETORNO = 4.6;
+function recomecarNoSelo(m: Mixer, t: number) {
+  const tr = m.trilha;
+  const velha = tr.atual;
+  if (velha) {
+    velha.g.gain.cancelScheduledValues(t); velha.g.gain.setValueAtTime(velha.g.gain.value, t); velha.g.gain.linearRampToValueAtTime(0.0001, t + 0.9);
+    for (const s of Object.values(velha.fontes)) s?.stop(t + 1);
+  }
+  tr.atual = null;
+  for (const k of tr.pedidas.keys()) tr.pedidas.set(k, t + RETORNO);
+  sincronizar(m);
 }
 
 function criarRuido(ctx: Ctx): AudioBuffer {
@@ -59,7 +181,7 @@ export function montarMixer(ctx: Ctx, destino: AudioNode): Mixer {
   const efeitos = ctx.createGain(); efeitos.gain.value = 1;
   const cama = ctx.createGain(); cama.gain.value = 0;
   efeitos.connect(mestre); cama.connect(mestre); mestre.connect(limitador); limitador.connect(destino);
-  return { ctx, mestre, efeitos, cama, ruido: criarRuido(ctx) };
+  return { ctx, mestre, efeitos, cama, ruido: criarRuido(ctx), trilha: novaTrilha() };
 }
 
 /* ------------------------------------------------------------------ peças de síntese */
@@ -186,17 +308,9 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     ar.connect(out);
     const f = ruidoFiltrado(m, t, 3.2, 'bandpass', 1800, 3, ar);
     f.frequency.setValueAtTime(900, t); f.frequency.exponentialRampToValueAtTime(5200, t + 2.6);
-    // cama: D3 + A3 (+ D4 suave), dente-de-serra filtrado, que respira devagar
-    const filtro = m.ctx.createBiquadFilter(); filtro.type = 'lowpass'; filtro.frequency.value = 700; filtro.Q.value = 0.4;
-    const lfo = m.ctx.createOscillator(); lfo.frequency.value = 0.07; const lg = m.ctx.createGain(); lg.gain.value = 260; lfo.connect(lg).connect(filtro.frequency); lfo.start(t);
-    filtro.connect(m.cama);
-    // níveis medidos no render offline: cama ≈ −19 LUFS (meta do 06: −20 a −18)
-    for (const [fr, a] of [[NOTA.D3, 0.11], [NOTA.A3, 0.088], [NOTA.D4, 0.04]] as const) {
-      for (const det of [-6, 5]) {
-        const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = fr; o.detune.value = det;
-        const g = m.ctx.createGain(); g.gain.value = a; o.connect(g).connect(filtro); o.start(t);
-      }
-    }
+    // a trilha entra aqui (o laço de 32 s em Ré); se o arquivo ainda não chegou, a cama sintetizada segura o lugar
+    if (!m.trilha.buffers.base) reserva(m);
+    pedirFaixa(m, 'base', t);
     m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t); m.cama.gain.linearRampToValueAtTime(1.0, t + 3.5);
   },
   /** The drop invites: a small glass "plink" that falls a fifth, up and to the left (where the drop waits). */
@@ -223,12 +337,8 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const f = ruidoFiltrado(m, t, 0.45, 'bandpass', 2400, 0.9, sp);
     f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(420, t + 0.35);
     [NOTA.Fs4, NOTA.A4, NOTA.D5, NOTA.E5, NOTA.A5].forEach((fr, i) => harpa(m, t + 0.06 + i * 0.055, fr, i === 4 ? 0.12 : 0.08, i === 4 ? 2.2 : 0.9, out));
-    // haste da Água: Lá suave e contínuo, entra na cama (as hastes somam o Dmaj9 até o Selo)
-    for (const [fr, a] of [[NOTA.A4, 0.03], [NOTA.A5, 0.012]] as const) {
-      const o = m.ctx.createOscillator(); o.frequency.value = fr;
-      const g = m.ctx.createGain(); g.gain.setValueAtTime(0.0001, t + 0.3); g.gain.linearRampToValueAtTime(a, t + 2.3);
-      o.connect(g).connect(m.cama); o.start(t + 0.3);
-    }
+    // haste da Água: a celesta e a harpa em colcheias correndo entram na trilha, no compasso da base
+    pedirFaixa(m, 'agua', t + 0.3, [[NOTA.A4, 0.03], [NOTA.A5, 0.012]]);
   },
   /** The hold completes: the stones drop with a thud, a low D with its harmonics, and the Earth stem (D) joins the bed. */
   'terra.firma': (m, t) => {
@@ -240,11 +350,8 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     for (let k = 0; k < 4; k += 1) raspa(m, t + 0.05 + k * 0.06 + Math.random() * 0.03, 0.06, out);
     // o Ré: fundamental grave e os harmônicos D4/A4 que o alto-falante pequeno consegue tocar
     for (const [fr, a, q] of [[NOTA.D3, 0.14, 2.4], [NOTA.D4, 0.07, 2.0], [NOTA.A4, 0.035, 1.6]] as const) parcial(m, t + 0.04, fr, a, q, out, 'triangle');
-    for (const [fr, a] of [[NOTA.D2, 0.05], [NOTA.D3, 0.025]] as const) {
-      const s = m.ctx.createOscillator(); s.frequency.value = fr;
-      const gs = m.ctx.createGain(); gs.gain.setValueAtTime(0.0001, t + 0.3); gs.gain.linearRampToValueAtTime(a, t + 2.3);
-      s.connect(gs).connect(m.cama); s.start(t + 0.3);
-    }
+    // haste da Terra: o violoncelo nas raízes dos acordes e o tambor de moldura
+    pedirFaixa(m, 'terra', t + 0.3, [[NOTA.D2, 0.05], [NOTA.D3, 0.025]]);
   },
   /** A strike on the line: flint scrape, spark clicks at the finger (pan = finger x), and, if it lit (forca ≥ 0.8), the whump of ignition. */
   'fogo.risco': (m, t, p) => {
@@ -279,11 +386,8 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     ruidoFiltrado(m, t, 1.8, 'bandpass', 900, 0.7, crepita);
     harpa(m, t + 0.05, NOTA.Fs4, 0.13, 0.5, out);
     harpa(m, t + 0.05, NOTA.Fs5, 0.05, 0.35, out);
-    for (const [fr, a] of [[NOTA.Fs4, 0.022], [NOTA.Fs5, 0.008]] as const) {
-      const s = m.ctx.createOscillator(); s.frequency.value = fr;
-      const gs = m.ctx.createGain(); gs.gain.setValueAtTime(0.0001, t + 0.3); gs.gain.linearRampToValueAtTime(a, t + 2.3);
-      s.connect(gs).connect(m.cama); s.start(t + 0.3);
-    }
+    // haste do Fogo: a marimba em síncope sobre as notas do acorde
+    pedirFaixa(m, 'fogo', t + 0.3, [[NOTA.Fs4, 0.022], [NOTA.Fs5, 0.008]]);
   },
   /** The wind finishes Air: wind chimes in E, a soft "ah" (formants on a detuned E), and the Air stem (E) joins the bed. */
   'ar.assenta': (m, t) => {
@@ -296,22 +400,28 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const voz = m.ctx.createGain(); voz.gain.setValueAtTime(0.0001, t + 0.15); voz.gain.linearRampToValueAtTime(0.05, t + 0.7); voz.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
     for (const [fq, q] of [[700, 6], [1150, 8]] as const) { const f = m.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = fq; f.Q.value = q; voz.connect(f).connect(out); }
     for (const det of [-7, 6]) { const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = NOTA.E4; o.detune.value = det; o.connect(voz); o.start(t + 0.15); o.stop(t + 2.7); }
-    for (const [fr, a] of [[NOTA.E4, 0.02], [NOTA.E5, 0.01]] as const) {
-      const s = m.ctx.createOscillator(); s.frequency.value = fr;
-      const gs = m.ctx.createGain(); gs.gain.setValueAtTime(0.0001, t + 0.4); gs.gain.linearRampToValueAtTime(a, t + 2.4);
-      s.connect(gs).connect(m.cama); s.start(t + 0.4);
-    }
+    // haste do Ar: a flauta com a melodia longa e o vento entre as frases
+    pedirFaixa(m, 'ar', t + 0.4, [[NOTA.E4, 0.02], [NOTA.E5, 0.01]]);
   },
   /** The Seal completes: Dmaj9 resolves (bells and a harp strum), a sub-drop, a gold shimmer, the bed ducks 3 dB and
    *  comes back, and the four cavities chime in the ceremony's order at the times the scene lights them (1.4 s + 0.22 s). */
   'selo.completo': (m, t) => {
     const out = saida(m, 0);
-    m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t);
-    m.cama.gain.linearRampToValueAtTime(0.7, t + 0.2); m.cama.gain.linearRampToValueAtTime(1.0, t + 2.6);
-    [NOTA.D3, NOTA.A3, NOTA.Fs4, NOTA.A4, NOTA.E5].forEach((fr, i) => harpa(m, t + i * 0.07, fr, 0.11 - i * 0.012, 2.8, out));
-    [NOTA.D5, NOTA.Fs5, NOTA.A5, NOTA.E6].forEach((fr, i) => sino(m, t + 0.35 + i * 0.09, fr, 0.04, 2.6, out, 3.01));
-    const sub = m.ctx.createOscillator(); sub.frequency.setValueAtTime(58, t); sub.frequency.exponentialRampToValueAtTime(34, t + 0.9);
-    const gs = m.ctx.createGain(); envelope(gs.gain, t, 0.02, 0.45, 1.0); sub.connect(gs).connect(out); sub.start(t); sub.stop(t + 1.1);
+    const resolucao = m.trilha.buffers.selo;
+    if (resolucao && m.trilha.atual) {
+      // a resolução composta: rufo de tímpano, golpe na tônica com as cordas, o coro e os sinos em Dmaj9;
+      // o laço some por baixo e volta do primeiro compasso quando ela termina
+      const s = m.ctx.createBufferSource(); s.buffer = resolucao;
+      const g = m.ctx.createGain(); g.gain.value = SELO_GANHO; s.connect(g).connect(out); s.start(t);
+      recomecarNoSelo(m, t);
+    } else {
+      m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t);
+      m.cama.gain.linearRampToValueAtTime(0.7, t + 0.2); m.cama.gain.linearRampToValueAtTime(1.0, t + 2.6);
+      [NOTA.D3, NOTA.A3, NOTA.Fs4, NOTA.A4, NOTA.E5].forEach((fr, i) => harpa(m, t + i * 0.07, fr, 0.11 - i * 0.012, 2.8, out));
+      [NOTA.D5, NOTA.Fs5, NOTA.A5, NOTA.E6].forEach((fr, i) => sino(m, t + 0.35 + i * 0.09, fr, 0.04, 2.6, out, 3.01));
+      const sub = m.ctx.createOscillator(); sub.frequency.setValueAtTime(58, t); sub.frequency.exponentialRampToValueAtTime(34, t + 0.9);
+      const gs = m.ctx.createGain(); envelope(gs.gain, t, 0.02, 0.45, 1.0); sub.connect(gs).connect(out); sub.start(t); sub.stop(t + 1.1);
+    }
     const br = m.ctx.createGain(); br.gain.setValueAtTime(0.0001, t + 0.2); br.gain.linearRampToValueAtTime(0.05, t + 0.7); br.gain.exponentialRampToValueAtTime(0.0001, t + 2.2); br.connect(out);
     ruidoFiltrado(m, t + 0.2, 2.1, 'highpass', 6500, 0.7, br);
     // as cavidades do fecho: Lá, Ré, Fá♯, Mi (Água, Terra, Fogo, Ar), à direita, onde o fecho está
@@ -408,6 +518,7 @@ export function criarSomGrimorio(): SomGrimorio {
       if (!Ctor) return;
       ctx = new Ctor({ latencyHint: 'interactive' });
       mixer = montarMixer(ctx, ctx.destination);
+      void carregarTrilha(mixer);
       if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
       mixer.mestre.gain.value = mudo ? 0 : 0.7;
     },
@@ -467,6 +578,7 @@ export async function renderizarOffline(linha: readonly { t: number; id: CueGrim
   const taxa = 48000;
   const off = new OfflineAudioContext(2, Math.ceil(duracao * taxa), taxa);
   const m = montarMixer(off, off.destination);
+  await carregarTrilha(m);
   for (const c of linha) CUES[c.id]?.(m, c.t, c.p ?? {});
   return off.startRendering();
 }
