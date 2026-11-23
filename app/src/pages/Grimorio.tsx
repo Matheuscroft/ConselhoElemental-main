@@ -24,7 +24,7 @@ import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Responsi
 import './grimorio.css';
 import { hpDoDia } from '@/lib/recursos/vitalidade';
 
-const SECOES = [["grimoire-character", "Personagem"], ["grimoire-elements", "Elementos"], ["grimoire-history", "Histórico"], ["grimoire-backup", "Cópia de segurança"]] as const;
+const SECOES = [["grimoire-character", "Personagem", "Personagem"], ["grimoire-elements", "Elementos", "Elementos"], ["grimoire-history", "Histórico", "Histórico"], ["grimoire-backup", "Cópia", "Cópia de segurança"]] as const;
 const format = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
 export function Grimorio() {
@@ -34,10 +34,6 @@ export function Grimorio() {
 
 function GrimorioContent() {
   const secaoAtiva = useSecaoAtiva(SECOES.map(([id]) => id));
-  // The active tab is brought into view in its own bar: with four tabs on a phone the last one hides at the edge.
-  useEffect(() => {
-    document.querySelector<HTMLElement>('.gr-cena .ds-abas > a[aria-current]')?.scrollIntoView({ inline: 'center', block: 'nearest' });
-  }, [secaoAtiva]);
   useGrimoireAnchor();
   const { entrada, acesa } = useEntradaGrimorio();
   const reduzido = useMotionPreference();
@@ -98,7 +94,7 @@ function GrimorioContent() {
   return <AppLayout>
     <CenaGrimorio entrada={entrada}>
       <header className="ds-cabecalho gr-cabecalho"><h1>Meu Grimório</h1><p>Seu personagem. Cada conquista, uma nova página.</p></header>
-      <nav className="ds-abas" aria-label="Seções do Grimório">{SECOES.map(([id, rotulo]) => <a key={id} href={`#${id}`} aria-current={secaoAtiva === id ? 'location' : undefined}>{rotulo}</a>)}</nav>
+      <nav className="gr-abas ds-glass-float" aria-label="Seções do Grimório" data-ativa={Math.max(0, SECOES.findIndex(([id]) => id === secaoAtiva))}><span className="gr-abas-indicador" aria-hidden="true" />{SECOES.map(([id, rotulo, nome]) => <a key={id} href={`#${id}`} aria-label={nome} aria-current={secaoAtiva === id ? 'location' : undefined}>{rotulo}</a>)}</nav>
 
       <section id="grimoire-character" tabIndex={-1} className="grimoire-sheet ds-glass-float" data-luz="" aria-labelledby="grimoire-character-name">
         <div className="grimoire-portrait" aria-hidden="true">

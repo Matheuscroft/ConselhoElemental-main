@@ -366,7 +366,7 @@
 .gr-cena[data-entrada="plena"] .gr-luz { animation: gr-aparecer var(--ds-duration-conjure) var(--ds-ease) backwards; }
 .gr-cena[data-entrada="plena"] .gr-cabecalho > * { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) var(--ds-duration-reveal) backwards; }
 .gr-cena[data-entrada="plena"] .gr-cabecalho > :nth-child(2) { animation-delay: calc(var(--ds-duration-reveal) + var(--ds-stagger) * 2); }
-.gr-cena[data-entrada="plena"] > .ds-abas { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
+.gr-cena[data-entrada="plena"] > .gr-abas { animation: gr-subir var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
 .gr-cena[data-entrada="plena"] .grimoire-sheet { animation: gr-chegar var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 4) backwards; }
 .gr-cena[data-entrada="plena"] .grimoire-portrait-ring { animation: gr-anel-chegar var(--ds-duration-conjure) var(--ds-ease-conjure) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 6) backwards; }
 .gr-cena[data-entrada="plena"] .grimoire-portrait > img { animation: gr-subir var(--ds-duration-conjure) var(--ds-ease) calc(var(--ds-duration-reveal) + var(--ds-stagger) * 8) backwards, gr-respirar calc(var(--ds-duration-conjure) * 7) ease-in-out calc(var(--ds-duration-conjure) * 2) infinite alternate; }
@@ -395,10 +395,37 @@
   .gr-anel-cometa, .gr-fio { display: none; }
 }
 
-/* The section tabs stay under the top bar while the page is read, and light the section being read. */
-.gr-cena .ds-abas {
-  position: sticky; z-index: 20; inset-block-start: calc(52px + env(safe-area-inset-top));
-  margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; background: rgb(var(--el-canvas) / .94);
+/* The section selector: the same glass pill as Treinos, with the lit mark that slides to the section being read. Sticky under the top bar. */
+.gr-abas {
+  --aba-i: 0;
+  position: sticky; z-index: 20; inset-block-start: calc(56px + env(safe-area-inset-top));
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  width: 100%; margin: 0 0 var(--ds-ritmo-secao); padding: 4px;
+  border-radius: var(--ds-raio-runa);
+  background-color: rgb(var(--el-canvas) / 88%);
 }
-.gr-cena .ds-abas > a { transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
-@media (min-width: 768px) { .gr-cena .ds-abas { inset-block-start: 0; margin-inline: 0; padding-inline: 0; } }
+.gr-abas[data-ativa="1"] { --aba-i: 1; }
+.gr-abas[data-ativa="2"] { --aba-i: 2; }
+.gr-abas[data-ativa="3"] { --aba-i: 3; }
+.gr-abas-indicador {
+  position: absolute; z-index: 0; inset-block: 4px; inset-inline-start: 4px; width: calc((100% - 8px) / 4);
+  border: 1px solid color-mix(in srgb, var(--semana-acento) 45%, transparent);
+  border-radius: var(--ds-raio-controle);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--semana-acento) 24%, transparent), color-mix(in srgb, var(--semana-acento) 10%, transparent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%), 0 6px 18px color-mix(in srgb, var(--semana-acento) 18%, transparent);
+  transform: translateX(calc(var(--aba-i, 0) * 100%));
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure);
+  pointer-events: none;
+}
+.gr-abas > a {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 4px; border-radius: var(--ds-raio-controle);
+  color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: var(--ds-text-small); font-weight: 500; white-space: nowrap; text-decoration: none;
+  transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.gr-abas > a[aria-current] { color: rgb(var(--el-text)); }
+.gr-abas > a:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.gr-abas > a:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: -2px; }
+@media (hover: hover) { .gr-abas > a:hover { color: rgb(var(--el-text)); } }
+@media (min-width: 768px) { .gr-abas { inset-block-start: 0; } }
+@media (prefers-reduced-motion: reduce) { .gr-abas-indicador { transition: none; } }
