@@ -10,7 +10,10 @@ import {
   type Amostra, type EstadoSegurar, type EstadoSulco,
 } from '@/lib/intro/gestos';
 import { criarMonitorQuadros, nivelInicial, type NivelGrimorio } from '@/lib/intro/qualidade';
-import { INSTRUCAO, LENDA, LENDA_INTEIRA, oracoesVisiveis, TEXTO, TOTAL_ORACOES } from '@/lib/intro/textos';
+import {
+  INSTRUCAO, LEGENDA_CONTINUO, LEGENDA_RISCO_FRACO, LEGENDA_SOM, LENDA, LENDA_INTEIRA, NOME_ELEMENTO, oracoesVisiveis, TEXTO, TOTAL_ORACOES,
+} from '@/lib/intro/textos';
+import { ELEMENTO } from './cena/paleta';
 import { criarSomGrimorio, type SomGrimorio } from '@/lib/intro/som';
 import type { ControleGrimorio3D, PontoTela } from './cena';
 import './grimorio.css';
@@ -52,6 +55,17 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   const [saindo, setSaindo] = useState(false);
   const [somLigado, setSomLigado] = useState(false);
   const [somIniciado, setSomIniciado] = useState(false);
+  /** Caption of the last sound, in brackets, for ~1.8 s (only while the sound is on). */
+  const [legendaSom, setLegendaSom] = useState<{ texto: string; chave: number } | null>(null);
+  const legendaTimer = useRef(0);
+  const legendar = useCallback((texto: string) => {
+    const som = somRef.current;
+    if (!som?.iniciado || som.mudo) return;
+    window.clearTimeout(legendaTimer.current);
+    setLegendaSom((ant) => ({ texto, chave: (ant?.chave ?? 0) + 1 }));
+    legendaTimer.current = window.setTimeout(() => setLegendaSom(null), 1800);
+  }, []);
+  useEffect(() => () => window.clearTimeout(legendaTimer.current), []);
   const somRef = useRef<SomGrimorio | null>(null);
   const palcoRef = useRef<HTMLDivElement | null>(null);
   const cenaRef = useRef<ControleGrimorio3D | null>(null);
@@ -138,7 +152,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   const abrir = useCallback(async () => {
     if (estado.fase !== 'poster' || ocupado) return;
     // o primeiro toque é o gesto que o iOS exige: o som nasce aqui, e o próprio trinco já soa
-    if (!somRef.current) somRef.current = criarSomGrimorio();
+    if (!somRef.current) somRef.current = comLegendas(criarSomGrimorio(), legendar);
     const som = somRef.current;
     const iniciando = som.iniciar().then(() => { setSomIniciado(som.iniciado); setSomLigado(som.iniciado && !som.mudo); });
     enviar({ tipo: 'abrir' });
@@ -154,7 +168,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     });
     setOcupado(false);
     enviar({ tipo: 'aberto' });
-  }, [estado.fase, ocupado]);
+  }, [estado.fase, ocupado, legendar]);
 
   /* ---------------- lenda: uma oração por vez; o toque adianta ---------------- */
   useEffect(() => {
@@ -492,29 +506,56 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
       </div>
 
       {lenda ? (
-        <p className="grimorio-lenda" key={lenda.paragrafo} aria-live="polite">
+        <div className="grimorio-lenda" key={lenda.paragrafo} aria-live="polite">
           <span className="sr-only">{LENDA_INTEIRA[lenda.paragrafo]}</span>
-          <span aria-hidden="true">
+          {/* uma oração por linha, centrada; as que ainda não apareceram já guardam o lugar (nada pula) */}
+          <p className="grimorio-oracoes" aria-hidden="true">
             {LENDA[lenda.paragrafo].map((oracao, i) => (
-              <span key={oracao} className="grimorio-oracao" data-visivel={i < lenda.ate}>{oracao} </span>
+              <span key={oracao} className="grimorio-oracao" data-visivel={i < lenda.ate}>{oracao}</span>
             ))}
-          </span>
-        </p>
+          </p>
+        </div>
       ) : null}
 
       {estado.fase === 'final' ? (
-        <p className="grimorio-lenda grimorio-final"><span className="grimorio-nome">{TEXTO.nome}</span>{TEXTO.frase}</p>
+        <div className="grimorio-lenda grimorio-final">
+          <p className="grimorio-frase">{TEXTO.frase}</p>
+          <span className="grimorio-filete" aria-hidden="true" />
+          <p className="grimorio-nome">{TEXTO.nome}</p>
+        </div>
       ) : null}
 
+      {/* rodapé, de cima para baixo: legenda do som, elemento da vez, o gesto, a alternativa de toque */}
       <div className="grimorio-base">
+        {legendaSom ? <p className="grimorio-legenda-som" key={legendaSom.chave} aria-hidden="true">[{legendaSom.texto}]</p> : null}
+        {estado.fase === 'gesto' && elemento ? (
+          <p className="grimorio-elemento" style={{ color: ELEMENTO[elemento].acento }}>{NOME_ELEMENTO[elemento]}</p>
+        ) : null}
         {instrucao ? <p className="grimorio-instrucao" aria-live="polite">{instrucao}</p> : null}
         {estado.fase === 'gesto' && elemento ? <p className="grimorio-alternativa">{INSTRUCAO[elemento].toque}</p> : null}
-        {nivel === 'C' && !encerrado(estado) && estado.fase !== 'final' ? <p className="grimorio-alternativa">{TEXTO.avancar}</p> : null}
+        {estado.fase === 'lenda' || (nivel === 'C' && !encerrado(estado) && estado.fase !== 'final') ? <p className="grimorio-alternativa">{TEXTO.avancar}</p> : null}
         {estado.fase === 'final' ? <button type="button" className="grimorio-comecar" onClick={comecar}>{TEXTO.comecar}</button> : null}
       </div>
       <p className="sr-only" aria-live="polite">{TEXTO.progresso(estado.despertos.length)}</p>
     </section>
   );
+}
+
+/** Wraps the sound so every cue, and every gesture voice as it starts, also shows its caption. */
+function comLegendas(som: SomGrimorio, legendar: (texto: string) => void): SomGrimorio {
+  const ativos = new Set<string>();
+  const embrulho: SomGrimorio = Object.create(som);
+  embrulho.cue = (id, p) => {
+    som.cue(id, p);
+    const texto = id === 'fogo.risco' && (p?.forca ?? 1) < 0.8 ? LEGENDA_RISCO_FRACO : LEGENDA_SOM[id];
+    if (texto) legendar(texto);
+  };
+  embrulho.continuo = (nome, valor) => {
+    som.continuo(nome, valor);
+    if (valor > 0.05 && !ativos.has(nome)) { ativos.add(nome); legendar(LEGENDA_CONTINUO[nome]); }
+    else if (valor <= 0.02) ativos.delete(nome);
+  };
+  return embrulho;
 }
 
 /** The static version moves one beat per tap; this turns that into the signal the reducer expects. */

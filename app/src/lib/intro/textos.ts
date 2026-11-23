@@ -50,3 +50,29 @@ export const TEXTO = {
   despertou: (el: ElementoCerimonia) => `${NOME_ELEMENTO[el]} desperta.`,
   progresso: (n: number) => `${n} de 4 elementos despertos.`,
 } as const;
+
+/**
+ * Captions for the sounds, shown in brackets while the sound is on (DECISOES: captions always; the sound is never
+ * essential). Short, concrete, in the present; the legend itself needs none, its words are on screen.
+ */
+export const LEGENDA_SOM: Partial<Record<string, string>> = {
+  'fecho.toque': 'trinco de latão',
+  'fecho.giro': 'o Selo gira e destrava',
+  capa: 'o couro range, a capa se abre',
+  'luz.sobe': 'um brilho sobe, acorde suave',
+  'gota.convite': 'gota de vidro',
+  'agua.solta': 'respingo e harpa',
+  'terra.firma': 'baque de pedra',
+  'fogo.risco': 'faísca e chama',
+  'fogo.assenta': 'brasas estalam',
+  'ar.assenta': 'sinos de vento',
+  'selo.completo': 'o acorde se resolve',
+};
+
+/** A strike that did not light, and the live voices of the gestures while the finger works. */
+export const LEGENDA_RISCO_FRACO = 'raspar seco';
+export const LEGENDA_CONTINUO: Record<'agua' | 'terra' | 'ar', string> = {
+  agua: 'água correndo',
+  terra: 'a terra ronca',
+  ar: 'sopro de vento',
+};
