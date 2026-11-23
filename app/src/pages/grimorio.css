@@ -418,12 +418,14 @@
   pointer-events: none;
 }
 .gr-abas > a {
-  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
-  min-height: 44px; padding: 0 4px; border-radius: var(--ds-raio-controle);
-  color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: clamp(.78rem, 3.5vw, .875rem); font-weight: 500; white-space: nowrap; text-decoration: none;
+  position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; gap: 3px;
+  min-height: 58px; padding: 6px 2px; border-radius: var(--ds-raio-controle);
+  color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: clamp(.72rem, 3.2vw, .8125rem); font-weight: 500; line-height: 1.2; white-space: nowrap; text-decoration: none;
   transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
 }
+.gr-abas > a > svg { transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure), filter var(--ds-duration-feedback) var(--ds-ease); }
 .gr-abas > a[aria-current] { color: rgb(var(--el-text)); }
+.gr-abas > a[aria-current] > svg { color: var(--semana-acento); transform: translateY(-1px) scale(1.08); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--semana-acento) 55%, transparent)); }
 .gr-abas > a:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
 .gr-abas > a:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: -2px; }
 @media (hover: hover) { .gr-abas > a:hover { color: rgb(var(--el-text)); } }
