@@ -37,6 +37,7 @@ import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-sema
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
+import { CycleCategoryPicker } from '@/components/cycles/CycleCategoryPicker';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
@@ -226,6 +227,8 @@ export const Ciclos: React.FC = () => {
   const [editTimeSeconds, setEditTimeSeconds] = useState<number>(0);
   const [hasTime, setHasTime] = useState(false);
   const [showQuickCreateCycle, setShowQuickCreateCycle] = useState(false);
+  const [quickCreateElement, setQuickCreateElement] = useState<ElementoId | null>(null);
+  const [quickCreateAreaId, setQuickCreateAreaId] = useState<string | null>(null);
   const [quickCreateCycleName, setQuickCreateCycleName] = useState('');
   const [quickCreateCycleSchedule, setQuickCreateCycleSchedule] = useState<RecurrenceEditorValue>({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
   const [quickCreateCycleError, setQuickCreateCycleError] = useState('');
@@ -336,13 +339,16 @@ export const Ciclos: React.FC = () => {
     if (!quickCreateCycleName.trim()) return false;
     try {
       validateRecurrence(quickCreateCycleSchedule.type, quickCreateCycleSchedule.config, selectedDate);
+      const quickCreateArea = quickCreateAreaId ? allAreasForEdit.find((area) => area.id === quickCreateAreaId) : undefined;
       addHabit({
-        name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: 'sem-categoria', elementId: 'terra',
+        name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: quickCreateArea?.id ?? 'sem-categoria', areaPrimaryId: quickCreateArea?.id ?? 'sem-categoria', elementId: quickCreateArea?.elementId ?? 'terra',
         startDate: new Date(selectedDate), recurrenceType: quickCreateCycleSchedule.type,
         recurrenceConfig: quickCreateCycleSchedule.config, plannedPoints: 1, plannedTimeMinutes: 0,
       });
     } catch (error) { setQuickCreateCycleError(error instanceof Error ? error.message : 'Não foi possível criar o ciclo. Seu preenchimento foi mantido.'); return false; }
     setQuickCreateCycleName('');
+    setQuickCreateElement(null);
+    setQuickCreateAreaId(null);
     setQuickCreateCycleSchedule({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
     setQuickCreateCycleError('');
     setShowQuickCreateCycle(false);
@@ -3099,6 +3105,9 @@ export const Ciclos: React.FC = () => {
             startLabel={selectedDate.toLocaleDateString('pt-BR')} agendaResumo={resumoDaAgenda(quickCreateCycleSchedule, selectedDate)}
             onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}
             onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}>
+            <CycleCategoryPicker areas={allAreasForEdit} elemento={quickCreateElement} areaId={quickCreateAreaId}
+              onElemento={(elemento) => { setQuickCreateElement(elemento); setQuickCreateAreaId(null); }}
+              onArea={(area) => { setQuickCreateAreaId(area?.id ?? null); if (area) setQuickCreateElement(area.elementId); }} />
             {quickCreateCycleError && <p role="alert">{quickCreateCycleError}</p>}
           </CycleCreationForm>
         </DialogContent>
