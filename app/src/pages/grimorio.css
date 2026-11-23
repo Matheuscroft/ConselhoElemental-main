@@ -7,7 +7,7 @@
 .grimoire-workspace :is(h1, h2, h3) { font-family: Cinzel, Georgia, serif; font-weight: 500; }
 .grimoire-workspace :is(a, button, summary, input, select):focus-visible,
 .grimoire-dialog :is(a, button, input):focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 4px; }
-.grimoire-workspace :is(section, h2)[id] { scroll-margin-top: 100px; }
+.grimoire-workspace :is(section, h2)[id] { scroll-margin-top: 136px; }
 .grimoire-workspace .ds-nota { margin-top: -8px; margin-bottom: var(--ds-ritmo-cabeca); }
 /* The sheet is the screen's one real pane of glass: the system's own .ds-glass-float on the markup, so this file declares no blur. It only dresses the glass (clearer fill, specular edge, grain; see the UAU block below). */
 .grimoire-workspace .grimoire-sheet {
@@ -25,7 +25,7 @@
 .grimoire-rank { display: flex; align-items: center; gap: 7px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); line-height: 1.6; }
 .grimoire-identity h2 { margin-top: 10px; font-size: var(--ds-fluid-display-cq); line-height: 1.25; overflow-wrap: anywhere; }
 .grimoire-profile-actions { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 2px 0 18px; }
-.grimoire-profile-actions .ds-botao { min-height: 44px; justify-content: center; font-weight: 500; white-space: normal; border: 1px solid rgb(var(--el-gold) / .28); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / .35); }
+.grimoire-profile-actions .ds-botao { min-height: 44px; justify-content: center; gap: 6px; padding-inline: 8px; font-size: clamp(.8rem, 3.6vw, .875rem); font-weight: 500; white-space: nowrap; border: 1px solid rgb(var(--el-gold) / .28); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / .35); }
 .grimoire-streak { display: grid; gap: 2px; margin: 10px 0 0; }
 .grimoire-streak > span:first-child { color: var(--elem-acento); }
 .grimoire-portrait { position: absolute; z-index: 0; pointer-events: none; top: 24px; right: 7px; width: 106px; height: 205px; display: flex; align-items: center; justify-content: center; color: rgb(var(--el-gold)); }
@@ -420,7 +420,7 @@
 .gr-abas > a {
   position: relative; z-index: 1; display: flex; align-items: center; justify-content: center;
   min-height: 44px; padding: 0 4px; border-radius: var(--ds-raio-controle);
-  color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: var(--ds-text-small); font-weight: 500; white-space: nowrap; text-decoration: none;
+  color: rgb(var(--el-muted)); font-family: var(--ds-font-body); font-size: clamp(.78rem, 3.5vw, .875rem); font-weight: 500; white-space: nowrap; text-decoration: none;
   transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
 }
 .gr-abas > a[aria-current] { color: rgb(var(--el-text)); }
