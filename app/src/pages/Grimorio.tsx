@@ -109,9 +109,9 @@ function GrimorioContent() {
         <div className="grimoire-identity">
           <p className="grimoire-rank ds-meta"><ArcaneIcon name="conquista" size={18} /><span>{levelProgress.title}</span><span>Nível {levelProgress.level}</span></p>
           <h2 id="grimoire-character-name">{user.name}</h2>
-          <div className="grimoire-profile-actions"><button ref={nameTrigger} className="ds-botao" data-tipo="fantasma" type="button" onClick={() => { setNewName(user.name); setEditName(true); }}><ArcaneIcon name="editar" size={16} />Editar nome</button><button ref={avatarTrigger} className="ds-botao" data-tipo="fantasma" type="button" onClick={() => setShowAvatarDialog(true)}><ArcaneIcon name="santuario" size={16} />Ícone do perfil</button></div>
           <div className="grimoire-streak ds-meta" data-element="fogo"><span><ArcaneIcon name="ofensiva" size={17} />{user.streak} {user.streak === 1 ? 'dia seguido' : 'dias seguidos'}</span><span>Recorde: {user.longestStreak} {user.longestStreak === 1 ? 'dia' : 'dias'}</span></div>
         </div>
+        <div className="grimoire-profile-actions"><button ref={nameTrigger} className="ds-botao" data-tipo="secundario" type="button" onClick={() => { setNewName(user.name); setEditName(true); }}><ArcaneIcon name="editar" size={16} />Editar nome</button><button ref={avatarTrigger} className="ds-botao" data-tipo="secundario" type="button" onClick={() => setShowAvatarDialog(true)}><ArcaneIcon name="santuario" size={16} />Ícone do perfil</button></div>
         <div className="grimoire-resources ds-pane">
           <div className="grimoire-resource-grid">
             <ResourceMeter label="Vitalidade · HP" value={hp} maximum={100} color={ACENTO.terra} icon={<ArcaneIcon name="vida" size={18} />} chegou={acesa} ordem={0} />

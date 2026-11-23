@@ -214,12 +214,15 @@
 .dg-corpo {
   display: grid;
   flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 22px;
   min-height: 0;
   padding: 18px var(--dg-pad) 24px;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
   scrollbar-width: thin;
   scrollbar-color: rgb(255 255 255 / 22%) transparent;
 }
@@ -564,7 +567,7 @@
 @media (hover: hover) {
   .dialogo-treino .dg-chip:hover:not(:disabled) { border-color: color-mix(in srgb, var(--dg-acento) 60%, transparent); }
 }
-.dg-catalogo { display: grid; gap: 6px; max-height: 264px; padding: 6px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border: var(--ds-edge); border-radius: var(--ds-raio-controle); background: var(--ds-surface-sunken); }
+.dg-catalogo { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; max-height: 264px; padding: 6px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; border: var(--ds-edge); border-radius: var(--ds-raio-controle); background: var(--ds-surface-sunken); }
 .dialogo-treino .dg-item {
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) 36px;

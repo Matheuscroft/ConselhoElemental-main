@@ -24,9 +24,9 @@
 .grimoire-identity { position: relative; z-index: 1; padding-right: 96px; min-height: 205px; }
 .grimoire-rank { display: flex; align-items: center; gap: 7px; color: rgb(var(--el-gold)); font-size: var(--ds-text-micro); line-height: 1.6; }
 .grimoire-identity h2 { margin-top: 10px; font-size: var(--ds-fluid-display-cq); line-height: 1.25; overflow-wrap: anywhere; }
-.grimoire-profile-actions { display: flex; flex-wrap: wrap; gap: 0 8px; margin-top: 8px; margin-left: -12px; }
-.grimoire-profile-actions .ds-botao { min-height: 44px; font-weight: 500; }
-.grimoire-streak { margin: 8px 0 20px; }
+.grimoire-profile-actions { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 2px 0 18px; }
+.grimoire-profile-actions .ds-botao { min-height: 44px; justify-content: center; font-weight: 500; white-space: normal; border: 1px solid rgb(var(--el-gold) / .28); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / .35); }
+.grimoire-streak { display: grid; gap: 2px; margin: 10px 0 0; }
 .grimoire-streak > span:first-child { color: var(--elem-acento); }
 .grimoire-portrait { position: absolute; z-index: 0; pointer-events: none; top: 24px; right: 7px; width: 106px; height: 205px; display: flex; align-items: center; justify-content: center; color: rgb(var(--el-gold)); }
 .grimoire-portrait > img { position: relative; width: 100%; height: 100%; object-fit: contain; object-position: center; filter: drop-shadow(0 0 22px color-mix(in srgb, var(--semana-aura) 34%, transparent)); }
@@ -105,6 +105,7 @@
   .grimoire-portrait > img { width: 100%; height: 360px; }
   .grimoire-portrait-seal { bottom: 12px; }
   .grimoire-identity { grid-column: 2; padding-right: 0; min-height: 0; }
+  .grimoire-profile-actions { grid-column: 2; }
   .grimoire-resources { grid-column: 2; padding: 20px; }
   .grimoire-sheet-footer { grid-column: 1 / -1; border-top: 1px solid var(--grimoire-line); padding-top: 10px; }
   .grimoire-history-controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: end; gap: 12px 20px; }
@@ -397,7 +398,7 @@
 /* The section tabs stay under the top bar while the page is read, and light the section being read. */
 .gr-cena .ds-abas {
   position: sticky; z-index: 20; inset-block-start: calc(52px + env(safe-area-inset-top));
-  margin-inline: -16px; padding-inline: 16px; background: rgb(var(--el-canvas) / .94);
+  margin-inline: -16px; padding-inline: 16px; scroll-padding-inline: 16px; background: rgb(var(--el-canvas) / .94);
 }
 .gr-cena .ds-abas > a { transition: color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
 @media (min-width: 768px) { .gr-cena .ds-abas { inset-block-start: 0; margin-inline: 0; padding-inline: 0; } }
