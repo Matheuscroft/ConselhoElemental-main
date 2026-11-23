@@ -608,6 +608,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     <button type="button" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}Abrir o app</button>
     {feedback('Não deu para abrir agora. Seu progresso continua guardado.')}
     {error && <a className="restore-workspace-secondary account-outline-link" href="/?progresso=local">Continuar só neste aparelho</a>}
+    {error && <a className="account-text-link" href="/?progresso=reparar">Não abre de jeito nenhum? Reparar este aparelho</a>}
   </> });
   const stepMetade = () => resolution ? { title: 'Terminar o que ficou pela metade', lead: 'Uma escolha de progresso foi interrompida. Seu progresso está protegido.', body: <>
     {closedTabs}

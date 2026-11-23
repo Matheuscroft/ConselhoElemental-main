@@ -1,3 +1,11 @@
+## Reparar este aparelho: `/?progresso=reparar` (23/11/2026)
+
+Motivo: em 23/11 a conta de Fábio teve o núcleo esvaziado por duas gravações (03:15 e 03:19) depois de criar um perfil, e o Safari e o Chrome ficaram presos em "O progresso online mudou ou não corresponde ao vínculo salvo", sem saída (a comparação por arquivos falhava no iPhone com "Este arquivo não corresponde à versão conferida", e "Continuar só neste aparelho" voltava à mesma tela). A conta foi restaurada pelo fluxo oficial com o save de 14/11; a causa do reset **não** foi confirmada.
+
+Mudança (só cliente, sem tocar em conta, banco, pontuação ou contratos): nova rota `/?progresso=reparar` (`src/mount-device-repair.ts`, lógica em `src/lib/backup/device-repair.ts`). Duas ações: baixar uma cópia bruta de tudo o que este navegador guarda (sem interpretar nada, inclui vínculo e pendências) e limpar `localStorage`, `sessionStorage` e os bancos IndexedDB **deste navegador**, indo para `/auth`. Depois do login, um aparelho sem progresso recebe o da conta sozinho (`connectJourney` → `receiveReviewedAccountProgress`, sem arquivos). Também há um link para a rota na tela "Este aparelho já está ligado à sua conta" quando ela mostra erro. Testes: `tests/backup/device-repair.test.mjs`.
+
+Não verificado: iPhone real (Safari/PWA) e o comportamento do login e do "trazer" no aparelho limpo; a causa do reset; recuperação da semana de 14 a 21/11 (o plano gratuito do Supabase não tem backup).
+
 ## Intro 3D "O Grimório": cerimônia completa e integrada ao primeiro acesso, commitada localmente, aguardando o ok do Fábio no P3 (22/11/2026)
 
 Ponto de retomada: worktree `.claude/worktrees/conselho-elemental-intro-3d-bbe8ba`, branch `claude/intro-grimorio` (base `d096dc6`), **sem push**. Registro vivo: `/Users/fabioandre/Pictures/PRINT/intro-refs/PROGRESSO-INTRO.md`.

@@ -61,6 +61,7 @@ else {
   try {
     const notice=captureAccountReturn(window.location.href,url=>window.history.replaceState(null,'',url));
     if(notice!=='none')void openAccountWorkspace(notice);
+    else if(progressView==='reparar')void openRepair();
     else if(progressView==='conta')void openAccountWorkspace();
     else if(progressView==='restaurar'){
       try {
@@ -81,6 +82,12 @@ else {
       else void openProgress();
     }
   }catch{showProgressStartup(root,'startup-failed');}
+}
+/** Escape hatch for a browser that cannot open the app because its saved link to the account no longer matches it:
+ *  keeps a raw copy, clears this browser only and goes to sign-in. The account is never touched. */
+async function openRepair() {
+  try { const { mountDeviceRepair } = await import('./mount-device-repair'); mountDeviceRepair(root); }
+  catch { showProgressStartup(root, 'startup-failed'); }
 }
 /** Escape hatch: opens the app on this device's own progress, with no account, no sync and no writes to the account.
  *  Nothing is sent, replaced or deleted; the online version stays exactly where it is. */
