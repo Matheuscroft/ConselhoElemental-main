@@ -640,6 +640,13 @@ const createEmptyAccountData = (profile: AccountProfile): AccountScopedData => (
   drafts: [],
 });
 
+/** True when the device holds progress that belongs to no profile yet (the top-level lists). */
+const hasProgressWithoutProfile = (state: AppState): boolean =>
+  [state.actions, state.tasks, state.habits, state.projects, state.quests, state.drafts, state.executionLogs, state.cycleSequences, state.commitments]
+    .some((list) => Array.isArray(list) && list.length > 0)
+  || state.customAreas.length > 0
+  || (state.user.totalScore ?? 0) > 0;
+
 const captureAccountData = (state: AppState, profile: AccountProfile): AccountScopedData => ({
   executionLogs: state.executionLogs,
   user: {
@@ -696,16 +703,31 @@ export const useAppStore = create<AppState>()(
 
         set((state) => {
           const accountDataById = { ...state.accountDataById };
+          let accounts = state.accounts;
           const currentProfile = state.accounts.find((account) => account.id === state.currentAccountId);
           if (currentProfile) {
             accountDataById[currentProfile.id] = captureAccountData(state, currentProfile);
+          } else if (!importCurrentData && hasProgressWithoutProfile(state)) {
+            // A device that has progress but no profile keeps it only in the top-level lists. An empty new
+            // profile overwrites those lists, so the earlier progress would be dropped and the next sync
+            // would send an empty journey to the account (incident of 23/11/2026). Keep it as a profile of
+            // its own instead, reachable from the profile menu.
+            const kept: AccountProfile = {
+              id: crypto.randomUUID(),
+              name: state.user.name?.trim() || 'Perfil anterior',
+              avatar: AVATARS[0],
+              createdAt: new Date(),
+              lastLoginAt: new Date(),
+            };
+            accountDataById[kept.id] = captureAccountData(state, kept);
+            accounts = [...accounts, kept];
           }
           const accountData = importCurrentData
             ? captureAccountData(state, profile)
             : createEmptyAccountData(profile);
 
           return {
-            accounts: [...state.accounts, profile],
+            accounts: [...accounts, profile],
             currentAccountId: profile.id,
             accountDataById: {
               ...accountDataById,

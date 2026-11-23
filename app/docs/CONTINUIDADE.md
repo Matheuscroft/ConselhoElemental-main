@@ -1,3 +1,11 @@
+## Causa provável do reset de 23/11 e correção: criar o primeiro perfil não descarta mais o progresso (23/11/2026)
+
+Causa (reproduzida por teste, `tests/backup/new-profile-keeps-progress.test.mjs`): `createAccount(nome, false)` (botão "Criar e ativar perfil" da barra superior, `TopBar.tsx`) numa conta **sem perfil** com progresso guardava o perfil ativo só `if (currentProfile)`. Sem perfil ativo, o progresso fica apenas nas listas de nível superior, e o perfil vazio as **sobrescrevia sem guardar nada**. A sincronização seguinte enviou o núcleo vazio à conta (duas gravações em 23/11 às 03:15 e 03:19), e o servidor guarda só a última revisão. Bate com a conta de Fábio: `currentAccountId` apontando para o perfil novo e o núcleo vazio.
+
+Correção (só cliente, `src/stores/appStore.ts`): nesse caso o progresso anterior vira um perfil próprio ("Perfil anterior" ou o nome do personagem), alcançável pelo menu de perfis. Quem não tem progresso ou já tem perfil ativo não muda de comportamento. Nenhuma regra de pontuação, de dados ou de formato do arquivo foi alterada.
+
+Ainda **não** feito, fora do escopo do cliente e dependente do Matheus e do dono do produto: (1) histórico das últimas N revisões no servidor, em vez de só a última; (2) trava no `commit_account` contra uma gravação que esvazia o núcleo de uma conta que tinha dados; (3) backup (o plano gratuito do Supabase não tem). Também **não** verificado: iPhone real e a criação de perfil na interface.
+
 ## Reparar este aparelho: `/?progresso=reparar` (23/11/2026)
 
 Motivo: em 23/11 a conta de Fábio teve o núcleo esvaziado por duas gravações (03:15 e 03:19) depois de criar um perfil, e o Safari e o Chrome ficaram presos em "O progresso online mudou ou não corresponde ao vínculo salvo", sem saída (a comparação por arquivos falhava no iPhone com "Este arquivo não corresponde à versão conferida", e "Continuar só neste aparelho" voltava à mesma tela). A conta foi restaurada pelo fluxo oficial com o save de 14/11; a causa do reset **não** foi confirmada.
