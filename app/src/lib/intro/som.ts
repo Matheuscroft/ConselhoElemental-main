@@ -68,7 +68,7 @@ const LOOP = { inicio: 1, fim: 33, periodo: 32 } as const;
 const GANHO: Record<Faixa, number> = { base: 1.6, agua: 0.6, terra: 0.6, fogo: 0.6, ar: 0.6 };
 const SELO_GANHO = 0.85;
 
-interface Geracao { g: GainNode; t0: number; fontes: Partial<Record<Faixa, AudioBufferSourceNode>> }
+interface Geracao { g: GainNode; t0: number; fontes: Partial<Record<Faixa, AudioBufferSourceNode>>; ganhos: Partial<Record<Faixa, GainNode>> }
 interface Trilha {
   buffers: Partial<Record<Faixa | 'selo', AudioBuffer>>;
   /** What the scene asked for so far, and from when (a stem asked before its file arrived starts when it does). */
@@ -103,7 +103,7 @@ function sincronizar(m: Mixer) {
   const agora = m.ctx.currentTime;
   if (!tr.atual) {
     const g = m.ctx.createGain(); g.gain.value = 1; g.connect(m.cama);
-    tr.atual = { g, t0: Math.max(agora + 0.02, tr.pedidas.get('base') ?? agora), fontes: {} };
+    tr.atual = { g, t0: Math.max(agora + 0.02, tr.pedidas.get('base') ?? agora), fontes: {}, ganhos: {} };
     if (tr.reserva) {
       const r = tr.reserva; tr.reserva = null;
       r.gain.cancelScheduledValues(agora); r.gain.setValueAtTime(r.gain.value, agora); r.gain.linearRampToValueAtTime(0, agora + 3);
@@ -120,7 +120,7 @@ function sincronizar(m: Mixer) {
     g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(GANHO[faixa], t + subida);
     s.connect(g).connect(ger.g);
     s.start(t, LOOP.inicio + ((((t - ger.t0) % LOOP.periodo) + LOOP.periodo) % LOOP.periodo));
-    ger.fontes[faixa] = s;
+    ger.fontes[faixa] = s; ger.ganhos[faixa] = g;
   }
 }
 
@@ -580,6 +580,81 @@ export function criarSomGrimorio(): SomGrimorio {
 }
 
 /** Render a timeline of cues offline (the laboratory exports it to pair with a screen recording). */
+/* ------------------------------------------------------------------ ensaio da trilha (laboratório) */
+
+export type FaixaTrilha = Faixa;
+export const COMPASSO_TRILHA = LOOP.periodo / 12;
+export const ACORDES_TRILHA = ['D', 'D', 'Bm', 'Bm', 'G', 'G', 'A', 'A', 'B♭', 'B♭', 'C', 'C'] as const;
+
+/** The score alone, for the laboratory: the base loop, each stem switched on and off in phase, and the Seal. */
+export interface EnsaioTrilha {
+  /** Call inside a user gesture; resolves when every file is decoded. */
+  iniciar(): Promise<void>;
+  tocar(): void;
+  /** Bring a stem in (in phase) or take it out; returns whether it is now playing. */
+  alternar(faixa: Exclude<FaixaTrilha, 'base'>): boolean;
+  selo(): void;
+  /** Seconds into the 32 s loop, or null before the loop starts (also during the Seal's pause). */
+  posicao(): number | null;
+  encerrar(): Promise<void>;
+}
+
+export function criarEnsaioTrilha(): EnsaioTrilha {
+  let ctx: AudioContext | null = null;
+  let m: Mixer | null = null;
+  return {
+    async iniciar() {
+      if (ctx) return;
+      const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!Ctor) throw new Error('Web Audio indisponível');
+      ctx = new Ctor({ latencyHint: 'interactive' });
+      m = montarMixer(ctx, ctx.destination);
+      m.cama.gain.value = 1;
+      if (ctx.state === 'suspended') await ctx.resume().catch(() => undefined);
+      await carregarTrilha(m);
+      if (!m.trilha.buffers.base) throw new Error('trilha não carregou');
+    },
+    tocar() { if (m) pedirFaixa(m, 'base', m.ctx.currentTime + 0.05); },
+    alternar(faixa) {
+      if (!m) return false;
+      const tr = m.trilha, t = m.ctx.currentTime;
+      if (tr.pedidas.has(faixa)) {
+        tr.pedidas.delete(faixa);
+        const ger = tr.atual, s = ger?.fontes[faixa], g = ger?.ganhos[faixa];
+        if (ger && s && g) {
+          g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(g.gain.value, t); g.gain.linearRampToValueAtTime(0.0001, t + 1.2);
+          s.stop(t + 1.3); delete ger.fontes[faixa]; delete ger.ganhos[faixa];
+        }
+        return false;
+      }
+      pedirFaixa(m, faixa, t + 0.05);
+      return true;
+    },
+    selo() {
+      if (!m || !m.trilha.buffers.selo || !m.trilha.atual) return;
+      const t = m.ctx.currentTime + 0.05;
+      const s = m.ctx.createBufferSource(); s.buffer = m.trilha.buffers.selo;
+      const g = m.ctx.createGain(); g.gain.value = SELO_GANHO; s.connect(g).connect(m.efeitos); s.start(t);
+      recomecarNoSelo(m, t);
+    },
+    posicao() {
+      const ger = m?.trilha.atual;
+      if (!m || !ger) return null;
+      const d = m.ctx.currentTime - ger.t0;
+      return d < 0 ? null : d % LOOP.periodo;
+    },
+    async encerrar() {
+      const c = ctx; ctx = null;
+      if (!c || !m) return;
+      const t = c.currentTime;
+      m.mestre.gain.cancelScheduledValues(t); m.mestre.gain.setValueAtTime(m.mestre.gain.value, t); m.mestre.gain.linearRampToValueAtTime(0, t + 0.3);
+      m = null;
+      await new Promise((r) => window.setTimeout(r, 350));
+      await c.close().catch(() => undefined);
+    },
+  };
+}
+
 export async function renderizarOffline(linha: readonly { t: number; id: CueGrimorio; p?: { dur?: number; pan?: number; forca?: number } }[], duracao: number): Promise<AudioBuffer> {
   const taxa = 48000;
   const off = new OfflineAudioContext(2, Math.ceil(duracao * taxa), taxa);

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Acao, Bloco, Escolha } from '@/components/laboratorio/controles';
 import type { NivelGrimorio } from '@/lib/intro/qualidade';
 import type { ControleGrimorio3D } from '@/components/intro/cena';
+import type { EnsaioTrilha, FaixaTrilha } from '@/lib/intro/som';
 
 /** The grimoire, rehearsed: same component the first run will use, opened here on demand. */
 const GrimorioCena = lazy(() => import('@/components/intro/GrimorioCena'));
@@ -10,6 +11,73 @@ const GrimorioCena = lazy(() => import('@/components/intro/GrimorioCena'));
 const NIVEIS: ReadonlyArray<{ valor: NivelGrimorio | 'auto'; texto: string }> = [
   { valor: 'auto', texto: 'Automático' }, { valor: 'A', texto: 'A · WebGPU' }, { valor: 'B', texto: 'B · WebGL2' }, { valor: 'C', texto: 'C · estático' },
 ];
+
+type Haste = Exclude<FaixaTrilha, 'base'>;
+const HASTES: ReadonlyArray<{ id: Haste; texto: string }> = [
+  { id: 'agua', texto: 'Água' }, { id: 'terra', texto: 'Terra' }, { id: 'fogo', texto: 'Fogo' }, { id: 'ar', texto: 'Ar' },
+];
+
+/** The score alone: base loop, each element's stem on and off (in phase), and the Seal's resolution. */
+function BlocoTrilha() {
+  const [fase, setFase] = useState<'parada' | 'carregando' | 'tocando' | 'erro'>('parada');
+  const [ativas, setAtivas] = useState<ReadonlySet<Haste>>(new Set());
+  const [pos, setPos] = useState('');
+  const ensaio = useRef<EnsaioTrilha | null>(null);
+  const acordes = useRef<readonly string[]>([]);
+  const compasso = useRef(1);
+
+  useEffect(() => () => { void ensaio.current?.encerrar(); ensaio.current = null; }, []);
+  useEffect(() => {
+    if (fase !== 'tocando') return;
+    const id = window.setInterval(() => {
+      const p = ensaio.current?.posicao();
+      if (p == null) { setPos('Selo: a resolução toca; o laço volta do 1º compasso…'); return; }
+      const c = Math.floor(p / compasso.current);
+      setPos(`Compasso ${c + 1} de 12 · ${acordes.current[c] ?? ''} · ${p.toFixed(1).replace('.', ',')} s de 32`);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [fase]);
+
+  const tocar = async () => {
+    setFase('carregando');
+    try {
+      const som = await import('@/lib/intro/som');
+      acordes.current = som.ACORDES_TRILHA; compasso.current = som.COMPASSO_TRILHA;
+      const e = som.criarEnsaioTrilha();
+      ensaio.current = e;
+      await e.iniciar();
+      e.tocar();
+      setAtivas(new Set());
+      setFase('tocando');
+    } catch {
+      setFase('erro');
+    }
+  };
+  const parar = () => { void ensaio.current?.encerrar(); ensaio.current = null; setFase('parada'); setAtivas(new Set()); setPos(''); };
+  const alternar = (h: Haste) => {
+    const ligada = ensaio.current?.alternar(h) ?? false;
+    setAtivas((a) => { const n = new Set(a); if (ligada) n.add(h); else n.delete(h); return n; });
+  };
+
+  return (
+    <Bloco titulo="Trilha" nota="A música sozinha, sem os efeitos: a base em laço (tema nas trompas) e a haste de cada elemento, que entra e sai no compasso. O Selo toca a resolução e o laço volta do começo. Use fone ou o alto-falante do aparelho.">
+      {fase === 'tocando'
+        ? <Acao aoClicar={parar}>Parar a trilha</Acao>
+        : <Acao primaria aoClicar={() => { void tocar(); }}>{fase === 'carregando' ? 'Carregando…' : 'Tocar a trilha'}</Acao>}
+      <div className="lab-campo" role="group" aria-label="Hastes dos elementos">
+        <span className="lab-rotulo">Hastes</span>
+        <div className="lab-segmentos">
+          {HASTES.map((h) => (
+            <button key={h.id} type="button" aria-pressed={ativas.has(h.id)} disabled={fase !== 'tocando'} onClick={() => alternar(h.id)}>{h.texto}</button>
+          ))}
+        </div>
+      </div>
+      <Acao aoClicar={() => ensaio.current?.selo()}>Tocar o Selo</Acao>
+      {pos ? <p className="lab-trilha-pos" aria-live="off">{pos}</p> : null}
+      {fase === 'erro' ? <p className="lab-nota">A trilha não carregou (Web Audio indisponível ou arquivos fora do ar).</p> : null}
+    </Bloco>
+  );
+}
 
 interface Diag { fps: number; triangulos: number; chamadas: number; backend: string; px: string }
 
@@ -41,6 +109,7 @@ export function PainelGrimorio() {
         <Acao primaria aoClicar={() => { setFim(null); setAberto(true); }}>Abrir o grimório</Acao>
         {fim ? <p className="lab-nota">{fim}</p> : null}
       </Bloco>
+      <BlocoTrilha />
       {aberto ? createPortal(
         <Suspense fallback={null}>
           <GrimorioCena
