@@ -147,7 +147,8 @@ test('quick cycle uses explicit monthly/yearly input, retains form on error and 
     const f = fixture(), previousUser = JSON.stringify(f.store.getState().user);
     let closed = false, cleared = false, error;
     const scope = { quickCreateCycleName: 'Minha atividade', quickCreateCycleSchedule: { type, config }, selectedDate: date, validateRecurrence,
-      addHabit: f.store.getState().addHabit, setQuickCreateCycleName: () => { cleared = true; }, setQuickCreateCycleSchedule: () => {},
+      addHabit: f.store.getState().addHabit, quickCreateAreaId: null, allAreasForEdit: [], setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {},
+      setQuickCreateCycleName: () => { cleared = true; }, setQuickCreateCycleSchedule: () => {},
       setQuickCreateCycleError: value => { error = value; }, setShowQuickCreateCycle: value => { closed = !value; },
     };
     const result = new Function(...Object.keys(scope), `${js}; return handler;`)(...Object.values(scope))();
@@ -159,6 +160,25 @@ test('quick cycle uses explicit monthly/yearly input, retains form on error and 
       assert.equal(habit.recurrenceType, type); assert.deepEqual(habit.recurrenceConfig, config);
       assert.equal(habit.plannedPoints, 1); assert.equal(habit.plannedTimeMinutes, 0);
     } else assert.match(error, /dia do mês/);
+  }
+});
+
+test('quick cycle is born with the element and category chosen in the form, and without them it stays uncategorised', () => {
+  const source = readFileSync(new URL('../../src/pages/Ciclos.tsx', import.meta.url), 'utf8');
+  const ast = ts.createSourceFile('Ciclos.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let initializer;
+  function visit(node) { if (ts.isVariableDeclaration(node) && node.name.getText(ast) === 'handleQuickCreateCycle') initializer = node.initializer.getText(ast); ts.forEachChild(node, visit); }
+  visit(ast);
+  const js = ts.transpileModule(`const handler = ${initializer};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  for (const [areaId, expected] of [['area-carreira', { areaId: 'area-carreira', elementId: 'fogo' }], [null, { areaId: 'sem-categoria', elementId: 'terra' }]]) {
+    const f = fixture();
+    const scope = { quickCreateCycleName: 'Revisar metas', quickCreateCycleSchedule: { type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } }, selectedDate: date, validateRecurrence,
+      addHabit: f.store.getState().addHabit, quickCreateAreaId: areaId, allAreasForEdit: [{ id: 'area-carreira', elementId: 'fogo' }],
+      setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {}, setQuickCreateCycleName: () => {}, setQuickCreateCycleSchedule: () => {},
+      setQuickCreateCycleError: () => {}, setShowQuickCreateCycle: () => {} };
+    assert.equal(new Function(...Object.keys(scope), `${js}; return handler;`)(...Object.values(scope))(), true);
+    const habit = f.store.getState().habits[0];
+    assert.equal(habit.areaId, expected.areaId); assert.equal(habit.elementId, expected.elementId);
   }
 });
 
