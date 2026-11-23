@@ -1,11 +1,13 @@
 import {
   BackSide, DoubleSide, Group, Mesh, MeshBasicNodeMaterial, NormalBlending, PlaneGeometry, SphereGeometry, AdditiveBlending,
+  type WebGPURenderer,
 } from 'three/webgpu';
 import {
   abs, clamp, color, dot, exp, float, floor, fract, hash, length, mix, mx_fractal_noise_float, normalize, positionLocal, pow,
-  sin, smoothstep, sqrt, time, uniform, uv, vec2, vec3, max,
+  sin, smoothstep, sqrt, time, uniform, uv, vec2, vec3, max, texture, atan, asin,
 } from 'three/tsl';
 import { COR } from './paleta';
+import { assar } from './assar';
 
 /**
  * The third plane: dusk sky, the valley's ridges, the river of mist and the Moon. All procedural
@@ -22,7 +24,7 @@ export interface Ceu {
   dispose(): void;
 }
 
-export function criarCeu(qualidadeNevoa: number): Ceu {
+export function criarCeu(renderer: WebGPURenderer, qualidadeNevoa: number): Ceu {
   const grupo = new Group();
   grupo.name = 'Ceu';
   const descartaveis: { dispose(): void }[] = [];
@@ -36,12 +38,24 @@ export function criarCeu(qualidadeNevoa: number): Ceu {
   const gradiente = mix(color(COR.horizonte), color(COR.noite), smoothstep(-0.01, 0.3, altura));
   // nuvens: faixas de ruído esticadas na horizontal, escuras, com a borda de baixo tocada pelo lilás do vale
   // ruído 3D sobre a direção (sem costura): o azimute por atan2 saltava de +π a −π atrás da cena e desenhava uma borda no céu
-  const nc = vec3(dir.x.mul(3.4), altura.mul(10), dir.z.mul(3.4)).add(vec3(time.mul(0.004), 0, 0));
-  const nuvemA = mx_fractal_noise_float(nc, 5, 2.0, 0.55).mul(0.5).add(0.5);
-  const nuvemB = mx_fractal_noise_float(nc.add(vec3(0, 0.35, 0)), 5, 2.0, 0.55).mul(0.5).add(0.5);
-  const faixaNuvem = smoothstep(0.02, 0.1, altura).mul(smoothstep(0.7, 0.2, altura));
-  const densidade = smoothstep(0.48, 0.72, nuvemA).mul(faixaNuvem);
-  const bordaNuvem = clamp(nuvemA.sub(nuvemB).mul(4), 0, 1).mul(faixaNuvem).mul(float(1).sub(densidade.mul(0.5)));
+  // As nuvens (ruído 3D sobre a direção, sem costura) são assadas uma vez numa textura equiretangular que cobre só a faixa
+  // de latitude onde há nuvem; por quadro o domo só lê a textura. A deriva de 0,004/s era imperceptível na cerimônia.
+  const LAT0 = -5 * Math.PI / 180, LAT1 = 50 * Math.PI / 180;
+  const uvB = uv();
+  const lon = uvB.x.sub(0.5).mul(Math.PI * 2), lat = uvB.y.mul(LAT1 - LAT0).add(LAT0);
+  const dirB = vec3(lat.cos().mul(lon.cos()), lat.sin(), lat.cos().mul(lon.sin()));
+  const alturaB = dirB.y;
+  const ncB = vec3(dirB.x.mul(3.4), alturaB.mul(10), dirB.z.mul(3.4));
+  const nuvemAB = mx_fractal_noise_float(ncB, 5, 2.0, 0.55).mul(0.5).add(0.5);
+  const nuvemBB = mx_fractal_noise_float(ncB.add(vec3(0, 0.35, 0)), 5, 2.0, 0.55).mul(0.5).add(0.5);
+  const faixaB = smoothstep(0.02, 0.1, alturaB).mul(smoothstep(0.7, 0.2, alturaB));
+  const densidadeB = smoothstep(0.48, 0.72, nuvemAB).mul(faixaB);
+  const bordaB = clamp(nuvemAB.sub(nuvemBB).mul(4), 0, 1).mul(faixaB).mul(float(1).sub(densidadeB.mul(0.5)));
+  const nuvensAssadas = assar(renderer, vec3(densidadeB, bordaB, 0), float(1), { largura: 4096, altura: 1024, precisao: 'oito', repetirU: true });
+  descartaveis.push(nuvensAssadas);
+  const lido = texture(nuvensAssadas.textura, vec2(atan(dir.z, dir.x).div(Math.PI * 2).add(0.5), clamp(asin(clamp(altura, -1, 1)).sub(LAT0).div(LAT1 - LAT0), 0, 1)));
+  const densidade = lido.r;
+  const bordaNuvem = lido.g;
   // brilho do horizonte, mais forte do lado da lua (direita) e muito suave
   const ladoLua = clamp(dot(dir, vec3(0.57, 0.0, -0.82)), 0, 1);
   const halo = exp(abs(altura).mul(-14)).mul(0.22).add(pow(ladoLua, 6).mul(exp(abs(altura).mul(-6))).mul(0.12)).mul(brilhoHorizonte);
@@ -84,8 +98,12 @@ export function criarCeu(qualidadeNevoa: number): Ceu {
     const veios = mx_fractal_noise_float(vec2(u.mul(c.freq * 14), v.mul(5).add(c.semente)), 3, 2.0, 0.5).mul(0.5).add(0.5);
     // borda de contraluz larga e suave (um fio fino lia como linha desenhada)
     const bordaLuz = smoothstep(picos.sub(0.06), picos, v).mul(0.12);
-    mat.colorNode = corBase.mul(veios.mul(0.3).add(0.85)).add(color(COR.contraluzFria).mul(bordaLuz));
-    mat.opacityNode = solido.mul(smoothstep(0.0, 0.18, v));
+    // a silhueta e os veios são fixos: assados uma vez, lidos por quadro
+    const assada = assar(renderer, corBase.mul(veios.mul(0.3).add(0.85)).add(color(COR.contraluzFria).mul(bordaLuz)), solido.mul(smoothstep(0.0, 0.18, v)), { largura: 4096, altura: 512, precisao: 'meia' });
+    descartaveis.push(assada);
+    const lidaC = texture(assada.textura, uv());
+    mat.colorNode = lidaC.rgb;
+    mat.opacityNode = lidaC.a;
     const m = new Mesh(geo, mat);
     m.position.set(i === 0 ? 40 : i === 1 ? 10 : -6, c.base + c.altura * 1.1 - c.altura * 2.2 / 2 + c.altura * 0.2, -c.dist);
     m.renderOrder = -9 + i;
@@ -103,14 +121,19 @@ export function criarCeu(qualidadeNevoa: number): Ceu {
     const geo = new PlaneGeometry(n.w, n.h);
     const mat = new MeshBasicNodeMaterial({ transparent: true, depthWrite: false, side: DoubleSide, fog: false, blending: NormalBlending });
     const u = uv().x, v = uv().y;
-    const deriva = time.mul(0.004 + i * 0.002);
+    const deriva = float(0);
     const ruido = mx_fractal_noise_float(vec2(u.mul(n.tipo === 'rio' ? 6 : 9).add(deriva), v.mul(n.tipo === 'rio' ? 4 : 1.5).add(i * 3.1)), 4, 2.0, 0.5).mul(0.5).add(0.5);
     const perfil = n.tipo === 'rio'
       ? smoothstep(0.0, 0.25, v).mul(smoothstep(1.0, 0.55, v))
       : pow(sin(v.mul(Math.PI)), 2.0);
     const op = perfil.mul(smoothstep(0.32, 0.78, ruido)).mul(n.tipo === 'rio' ? 0.42 : 0.2);
-    mat.colorNode = mix(color(COR.nevoa), color(COR.nevoaClara), ruido.mul(0.5));
-    mat.opacityNode = op;
+    // a névoa também: a deriva de 0,004/s não aparece numa cerimônia de segundos
+    const assadaN = assar(renderer, mix(color(COR.nevoa), color(COR.nevoaClara), ruido.mul(0.5)), op,
+      n.tipo === 'rio' ? { largura: 1024, altura: 512, precisao: 'meia' } : { largura: 2048, altura: 128, precisao: 'meia' });
+    descartaveis.push(assadaN);
+    const lidaN = texture(assadaN.textura, uv());
+    mat.colorNode = lidaN.rgb;
+    mat.opacityNode = lidaN.a;
     const m = new Mesh(geo, mat);
     if (n.tipo === 'rio') { m.rotation.x = -Math.PI / 2; m.position.set(0, n.y, -n.dist); }
     else m.position.set(0, n.y, -n.dist);

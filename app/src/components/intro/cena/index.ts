@@ -99,7 +99,7 @@ export async function criarGrimorio3D(canvas: HTMLCanvasElement, opcoes: OpcoesG
   cena.fogNode = fog(color(COR.horizonte), rangeFogFactor(2.5, 40));
   const camera = new PerspectiveCamera(65, 1, 0.01, 800);
 
-  const ceu = criarCeu(orc.nevoaCamadas);
+  const ceu = criarCeu(renderer, orc.nevoaCamadas);
   ceu.definirLua(opcoes.lua.fracao, opcoes.lua.crescente);
   cena.add(ceu.grupo);
 
