@@ -50,10 +50,13 @@ interface Mixer {
 /* ------------------------------------------------------------------ trilha composta (arquivos) */
 
 /**
- * The score: an original piece rendered offline (intro-refs/audio/compor_trilha.py, no samples), a 32 s loop in
- * D (Dmaj9 → Bm9 → Gmaj7♯11 → Asus4) plus one stem per element, all in phase, so the music grows with each
- * gesture, and a resolution for the Seal. Each loop file holds one period with 1 s of margin on both sides, so
- * `loopStart`/`loopEnd` loop inside continuous audio (no click at the seam, AAC priming included).
+ * The score: an original epic piece (intro-refs/audio/compor_epico.py), played note by note from recorded
+ * orchestral samples of VSCO 2 Community Edition (CC0, Versilian Studios). A 32 s loop at 90 bpm in D
+ * (D–Bm–G–A–B♭–C, back to D) with the horn theme already in the base; each element's stem joins in phase
+ * (Water: violin spiccato and harp; Earth: cello ostinato, timpani, bass drum; Fire: trumpets and trombones on the
+ * theme; Air: violin and flute descant, glockenspiel), and the Seal gets a timpani roll and a tutti with gong.
+ * Each loop file holds one period with 1 s of margin on both sides, so `loopStart`/`loopEnd` loop inside
+ * continuous audio (no click at the seam, AAC priming included).
  */
 type Faixa = 'base' | 'agua' | 'terra' | 'fogo' | 'ar';
 const ARQUIVO: Record<Faixa | 'selo', string> = {
@@ -61,8 +64,8 @@ const ARQUIVO: Record<Faixa | 'selo', string> = {
   fogo: '/intro/som/haste-fogo.m4a', ar: '/intro/som/haste-ar.m4a', selo: '/intro/som/selo-resolucao.m4a',
 };
 const LOOP = { inicio: 1, fim: 33, periodo: 32 } as const;
-/** Measured (ebur128, with the master at 0.7): base alone ≈ −20.8 LUFS, base + four stems ≈ −18.7 LUFS, peak −6 dBFS. */
-const GANHO: Record<Faixa, number> = { base: 1.3, agua: 0.7, terra: 0.7, fogo: 0.7, ar: 0.7 };
+/** Louder than the first score at Fábio's request. Measured (ebur128, master 0.7, before the limiter): base alone ≈ −18.5 LUFS, base + four stems ≈ −15.3 LUFS. */
+const GANHO: Record<Faixa, number> = { base: 1.6, agua: 0.6, terra: 0.6, fogo: 0.6, ar: 0.6 };
 const SELO_GANHO = 0.85;
 
 interface Geracao { g: GainNode; t0: number; fontes: Partial<Record<Faixa, AudioBufferSourceNode>> }
@@ -180,7 +183,10 @@ export function montarMixer(ctx: Ctx, destino: AudioNode): Mixer {
   const mestre = ctx.createGain(); mestre.gain.value = 0.7;
   const efeitos = ctx.createGain(); efeitos.gain.value = 1;
   const cama = ctx.createGain(); cama.gain.value = 0;
-  efeitos.connect(mestre); cama.connect(mestre); mestre.connect(limitador); limitador.connect(destino);
+  // o DynamicsCompressor aplica ganho de compensação automático (≈ +3,6 dB com limiar −6 dB): este corte depois dele
+  // mantém o pico de saída ≤ −3 dBFS (medido no render offline da cerimônia inteira)
+  const corte = ctx.createGain(); corte.gain.value = 0.84;
+  efeitos.connect(mestre); cama.connect(mestre); mestre.connect(limitador); limitador.connect(corte); corte.connect(destino);
   return { ctx, mestre, efeitos, cama, ruido: criarRuido(ctx), trilha: novaTrilha() };
 }
 
@@ -337,7 +343,7 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const f = ruidoFiltrado(m, t, 0.45, 'bandpass', 2400, 0.9, sp);
     f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(420, t + 0.35);
     [NOTA.Fs4, NOTA.A4, NOTA.D5, NOTA.E5, NOTA.A5].forEach((fr, i) => harpa(m, t + 0.06 + i * 0.055, fr, i === 4 ? 0.12 : 0.08, i === 4 ? 2.2 : 0.9, out));
-    // haste da Água: a celesta e a harpa em colcheias correndo entram na trilha, no compasso da base
+    // haste da Água: os violinos em spiccato correndo e a harpa nas viradas entram na trilha, no compasso da base
     pedirFaixa(m, 'agua', t + 0.3, [[NOTA.A4, 0.03], [NOTA.A5, 0.012]]);
   },
   /** The hold completes: the stones drop with a thud, a low D with its harmonics, and the Earth stem (D) joins the bed. */
@@ -350,7 +356,7 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     for (let k = 0; k < 4; k += 1) raspa(m, t + 0.05 + k * 0.06 + Math.random() * 0.03, 0.06, out);
     // o Ré: fundamental grave e os harmônicos D4/A4 que o alto-falante pequeno consegue tocar
     for (const [fr, a, q] of [[NOTA.D3, 0.14, 2.4], [NOTA.D4, 0.07, 2.0], [NOTA.A4, 0.035, 1.6]] as const) parcial(m, t + 0.04, fr, a, q, out, 'triangle');
-    // haste da Terra: o violoncelo nas raízes dos acordes e o tambor de moldura
+    // haste da Terra: o ostinato dos celos, o tímpano e o bumbo
     pedirFaixa(m, 'terra', t + 0.3, [[NOTA.D2, 0.05], [NOTA.D3, 0.025]]);
   },
   /** A strike on the line: flint scrape, spark clicks at the finger (pan = finger x), and, if it lit (forca ≥ 0.8), the whump of ignition. */
@@ -386,7 +392,7 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     ruidoFiltrado(m, t, 1.8, 'bandpass', 900, 0.7, crepita);
     harpa(m, t + 0.05, NOTA.Fs4, 0.13, 0.5, out);
     harpa(m, t + 0.05, NOTA.Fs5, 0.05, 0.35, out);
-    // haste do Fogo: a marimba em síncope sobre as notas do acorde
+    // haste do Fogo: trompetes e trombones dobram o tema das trompas
     pedirFaixa(m, 'fogo', t + 0.3, [[NOTA.Fs4, 0.022], [NOTA.Fs5, 0.008]]);
   },
   /** The wind finishes Air: wind chimes in E, a soft "ah" (formants on a detuned E), and the Air stem (E) joins the bed. */
@@ -400,7 +406,7 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const voz = m.ctx.createGain(); voz.gain.setValueAtTime(0.0001, t + 0.15); voz.gain.linearRampToValueAtTime(0.05, t + 0.7); voz.gain.exponentialRampToValueAtTime(0.0001, t + 2.6);
     for (const [fq, q] of [[700, 6], [1150, 8]] as const) { const f = m.ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = fq; f.Q.value = q; voz.connect(f).connect(out); }
     for (const det of [-7, 6]) { const o = m.ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = NOTA.E4; o.detune.value = det; o.connect(voz); o.start(t + 0.15); o.stop(t + 2.7); }
-    // haste do Ar: a flauta com a melodia longa e o vento entre as frases
+    // haste do Ar: o descante dos violinos e da flauta, e o glockenspiel
     pedirFaixa(m, 'ar', t + 0.4, [[NOTA.E4, 0.02], [NOTA.E5, 0.01]]);
   },
   /** The Seal completes: Dmaj9 resolves (bells and a harp strum), a sub-drop, a gold shimmer, the bed ducks 3 dB and
@@ -409,7 +415,7 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     const out = saida(m, 0);
     const resolucao = m.trilha.buffers.selo;
     if (resolucao && m.trilha.atual) {
-      // a resolução composta: rufo de tímpano, golpe na tônica com as cordas, o coro e os sinos em Dmaj9;
+      // a resolução composta: rufo de tímpano e harpa, golpe em tutti de Ré maior com gongo, prato e bumbo;
       // o laço some por baixo e volta do primeiro compasso quando ela termina
       const s = m.ctx.createBufferSource(); s.buffer = resolucao;
       const g = m.ctx.createGain(); g.gain.value = SELO_GANHO; s.connect(g).connect(out); s.start(t);
