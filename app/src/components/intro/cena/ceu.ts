@@ -99,7 +99,7 @@ export function criarCeu(renderer: WebGPURenderer, qualidadeNevoa: number): Ceu 
     // borda de contraluz larga e suave (um fio fino lia como linha desenhada)
     const bordaLuz = smoothstep(picos.sub(0.06), picos, v).mul(0.12);
     // a silhueta e os veios são fixos: assados uma vez, lidos por quadro
-    const assada = assar(renderer, corBase.mul(veios.mul(0.3).add(0.85)).add(color(COR.contraluzFria).mul(bordaLuz)), solido.mul(smoothstep(0.0, 0.18, v)), { largura: 4096, altura: 512, precisao: 'meia' });
+    const assada = assar(renderer, corBase.mul(veios.mul(0.3).add(0.85)).add(color(COR.contraluzFria).mul(bordaLuz)), solido.mul(smoothstep(0.0, 0.18, v)), { largura: [2048, 3072, 4096][i], altura: [256, 384, 512][i], precisao: 'meia' });
     descartaveis.push(assada);
     const lidaC = texture(assada.textura, uv());
     mat.colorNode = lidaC.rgb;
