@@ -280,10 +280,14 @@
   animation: pesq-sobe var(--ds-duration-settle) var(--ds-ease) calc(var(--ds-stagger) * 6) backwards;
 }
 
-/* Light behind the pane, so the blur has something to bend. It ends inside its own box. */
+/* Light behind the pane, so the blur has something to bend. It starts inside the pane and fades in from its top:
+   it used to rise 36px above the glass, where nothing blurred it, and the box cut two of its ellipses into a hard
+   bright band behind the greeting. */
 .pesquisa-luz {
   position: absolute;
-  inset: -36px -12px -24px;
+  inset: 8px -12px -24px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 56px);
+  mask-image: linear-gradient(to bottom, transparent, #000 56px);
   pointer-events: none;
   background:
     radial-gradient(ellipse 36% 38% at 24% 30%, color-mix(in srgb, var(--pesq-cor) 44%, transparent), transparent 100%),
