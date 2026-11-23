@@ -109,14 +109,15 @@ export async function carregarLivro(): Promise<Livro> {
   const tl = new TextureLoader();
   const CONJ = ['couro', 'metal', 'papel'] as const;
   type Conj = (typeof CONJ)[number];
-  const [gLivro, gCenario, texPedra, texPedraN, texReg, texTra, texAr, ...cozidas] = await Promise.all([
+  const [gLivro, gCenario, texPedra, texPedraN, altarBase, altarNormal, altarOrm, texReg, texTra, texAr, ...cozidas] = await Promise.all([
     loader.loadAsync(BASE + 'livro.glb'), loader.loadAsync(BASE + 'cenario.glb'),
     carregarTextura(tl, 'pedra-base.jpg', true), carregarTextura(tl, 'pedra-normal.jpg', false),
+    carregarTextura(tl, 'altar-base.webp', true, true), carregarTextura(tl, 'altar-normal.webp', false, true), carregarTextura(tl, 'altar-orm.webp', false, true),
     carregarTextura(tl, 'selo-regioes.png', false), carregarTextura(tl, 'selo-tracos.png', false), carregarTextura(tl, 'selo-ar-relevo.png', false),
     ...CONJ.flatMap((c) => (['base', 'normal', 'orm'] as const).map((k) => carregarTextura(tl, `${c}-${k}.webp`, k === 'base', true))),
   ]);
   const tex = Object.fromEntries(CONJ.map((c, i) => [c, { base: cozidas[i * 3], normal: cozidas[i * 3 + 1], orm: cozidas[i * 3 + 2] }])) as Record<Conj, { base: Texture; normal: Texture; orm: Texture }>;
-  const descartaveis: { dispose(): void }[] = [texPedra, texPedraN, texReg, texTra, texAr, ...cozidas];
+  const descartaveis: { dispose(): void }[] = [texPedra, texPedraN, altarBase, altarNormal, altarOrm, texReg, texTra, texAr, ...cozidas];
   const raiz = gLivro.scene.getObjectByName('Book_Root') ?? gLivro.scene;
   // sempre a partir da raiz: ao entrar na cena principal, a raiz sai de gLivro.scene
   const no = (n: string) => {
@@ -333,16 +334,31 @@ export async function carregarLivro(): Promise<Livro> {
   raiz.add(decal);
   descartaveis.push(decalGeo, decalMat);
 
-  /* ---------------- cenário: plinto e rochas ---------------- */
+  /* ---------------- cenário: o altar (cozido no Blender) e as rochas ---------------- */
   const cenario = gCenario.scene;
   const pedra = new MeshStandardNodeMaterial({ roughness: 0.92, metalness: 0 });
   // a textura dá o desenho da pedra; o token dá a cor (escura, levemente lilás, como no K1a)
   pedra.colorNode = texture(texPedra, uv().mul(2.4)).rgb.mul(color(COR.pedra)).mul(1.9);
   pedra.normalNode = normalMap(texture(texPedraN, uv().mul(2.4)), vec2(1.2));
   descartaveis.push(pedra);
+  // o altar: desgaste, sujeira nas reentrâncias e sulco entalhado vêm do cozimento; um detalhe fino de rocha,
+  // repetido, dá grão de perto (o cozido em 1024 sozinho ficava liso no tampo, onde a câmera chega)
+  const altar = new MeshStandardNodeMaterial({ metalness: 0 });
+  const altarOrmT = texture(altarOrm);
+  const graoPedra = texture(texPedra, uv().mul(9)).rgb.dot(vec3(0.33, 0.34, 0.33));
+  altar.colorNode = texture(altarBase).rgb.mul(graoPedra.mul(0.55).add(0.62)).mul(1.15);
+  altar.normalNode = normalMap(texture(altarNormal), vec2(1.3));
+  altar.roughnessNode = altarOrmT.g;
+  altar.aoNode = altarOrmT.r;
+  // luz de borda fria: a coluna (que a fresta não alcança) mostra a silhueta e as caneluras contra o céu
+  altar.emissiveNode = color(COR.contraluzFria).mul(fresnel(2.6)).mul(0.16);
+  descartaveis.push(altar);
   const rochas: Object3D[] = [];
   cenario.traverse((o) => {
-    if ((o as Mesh).isMesh) { ((o as Mesh).material as Material).dispose?.(); (o as Mesh).material = pedra; }
+    if ((o as Mesh).isMesh) {
+      ((o as Mesh).material as Material).dispose?.();
+      (o as Mesh).material = o.name === 'Altar' || o.parent?.name === 'Altar' ? altar : pedra;
+    }
     if (/^Rocha/.test(o.name)) rochas.push(o);
   });
   // rochas flutuantes compostas para o pôster 9:16 (câmera a −112°): pequenas, longe, dentro da névoa,
