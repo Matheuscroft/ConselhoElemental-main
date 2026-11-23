@@ -13,7 +13,7 @@
 
 export type CueGrimorio =
   | 'fecho.toque' | 'fecho.giro' | 'capa' | 'luz.sobe' | 'lenda.linha'
-  | 'gota.convite' | 'agua.arrasto' | 'agua.solta' | 'terra.segura' | 'terra.firma' | 'ar.levanta' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao';
+  | 'gota.convite' | 'agua.arrasto' | 'agua.solta' | 'terra.segura' | 'terra.firma' | 'ar.levanta' | 'fogo.risco' | 'fogo.assenta' | 'ar.assenta' | 'selo.completo' | 'final.botao' | 'historia.entrada';
 
 export interface SomGrimorio {
   readonly iniciado: boolean;
@@ -433,6 +433,29 @@ const CUES: Partial<Record<CueGrimorio, (m: Mixer, t: number, p: { dur?: number;
     // as cavidades do fecho: Lá, Ré, Fá♯, Mi (Água, Terra, Fogo, Ar), à direita, onde o fecho está
     const cav = saida(m, 0.45);
     [NOTA.A5, NOTA.D5, NOTA.Fs5, NOTA.E6].forEach((fr, i) => sino(m, t + 1.4 + i * 0.22, fr, 0.05, 1.8, cav, 2.0));
+  },
+  /** "Entrar na história" (p.dur = time to the light's peak): a whoosh that rises with the dive, a soft D major
+   *  swell that resolves into a shimmer at the peak and fades to silence, and the score ducks under it. */
+  'historia.entrada': (m, t, p) => {
+    const dur = p.dur ?? 2.05;
+    const out = saida(m, 0);
+    // ducking: a música abaixa enquanto a câmera mergulha (o encerrar depois a leva ao silêncio)
+    m.cama.gain.cancelScheduledValues(t); m.cama.gain.setValueAtTime(m.cama.gain.value, t);
+    m.cama.gain.linearRampToValueAtTime(0.22, t + dur * 0.8);
+    // whoosh: ruído numa banda que sobe com a velocidade, cresce até o pico e some depressa
+    const w = m.ctx.createGain(); w.gain.setValueAtTime(0.0001, t); w.gain.exponentialRampToValueAtTime(0.05, t + dur * 0.4);
+    w.gain.exponentialRampToValueAtTime(0.34, t + dur * 0.97); w.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.55); w.connect(out);
+    const f = ruidoFiltrado(m, t, dur + 0.6, 'bandpass', 280, 0.9, w);
+    f.frequency.setValueAtTime(280, t); f.frequency.exponentialRampToValueAtTime(3600, t + dur);
+    // swell em Ré maior, macio, que resolve no pico
+    const sw = m.ctx.createGain(); sw.gain.setValueAtTime(0.0001, t + 0.2); sw.gain.exponentialRampToValueAtTime(0.06, t + dur);
+    sw.gain.exponentialRampToValueAtTime(0.0001, t + dur + 2.6); sw.connect(out);
+    for (const [fr, tipo] of [[NOTA.D4, 'triangle'], [NOTA.A4, 'sine'], [NOTA.D5, 'sine'], [NOTA.Fs5, 'sine']] as const) {
+      const o = m.ctx.createOscillator(); o.type = tipo; o.frequency.value = fr;
+      o.connect(sw); o.start(t + 0.2); o.stop(t + dur + 2.7);
+    }
+    // no pico, o brilho: sinos que se abrem e assentam no silêncio
+    [NOTA.D5, NOTA.A5, NOTA.Fs5 * 2, NOTA.A6].forEach((fr, i) => sino(m, t + dur - 0.05 + i * 0.07, fr, 0.04, 2.4, out, 3.01));
   },
   /** Começar: a soft warm click with a quiet D. */
   'final.botao': (m, t) => {

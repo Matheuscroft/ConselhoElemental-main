@@ -33,7 +33,11 @@
   overscroll-behavior: none;
   transition: opacity var(--ds-duration-reveal, 240ms) var(--ds-ease, ease);
 }
-.grimorio[data-saindo='true'] { opacity: 0; transition-duration: 300ms; }
+
+/* "Entrar na história": o texto e os botões saem enquanto a câmera mergulha; o toque no fundo acelera */
+.grimorio[data-transicao='historia'] .grimorio-topo,
+.grimorio[data-transicao='historia'] .grimorio-base,
+.grimorio[data-transicao='historia'] .grimorio-final { opacity: 0; pointer-events: none; transition: opacity 420ms var(--ds-ease, ease); }
 
 /* Pôster: o primeiro quadro, antes do 3D. Some quando o canvas está pronto. */
 .grimorio-poster {

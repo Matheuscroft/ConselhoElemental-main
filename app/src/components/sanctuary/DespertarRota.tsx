@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AberturaSegura } from '@/components/intro/AberturaSegura';
 import { GrimorioCena } from '@/components/intro/GrimorioCena';
@@ -11,6 +11,8 @@ import { GrimorioCena } from '@/components/intro/GrimorioCena';
 export function DespertarRota() {
   const navigate = useNavigate();
   const voltar = useCallback(() => navigate('/santuario', { replace: true }), [navigate]);
+  // o Santuário já carregado enquanto a cerimônia roda: na transição ele monta pintado debaixo do véu, sem "Preparando"
+  useEffect(() => { void import('@/pages/ElementalPreview').catch(() => undefined); }, []);
 
   return (
     <AberturaSegura aoFalhar={voltar}>

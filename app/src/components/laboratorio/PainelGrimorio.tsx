@@ -79,47 +79,96 @@ function BlocoTrilha() {
   );
 }
 
-interface Diag { fps: number; triangulos: number; chamadas: number; backend: string; px: string }
+interface Diag { linhas: string[] }
+
+const HZ: ReadonlyArray<{ valor: 'auto' | '60' | '120'; texto: string }> = [
+  { valor: 'auto', texto: 'Medido' }, { valor: '60', texto: '60 Hz' }, { valor: '120', texto: '120 Hz' },
+];
+const TRANSICOES: ReadonlyArray<{ valor: 'historia' | 'fade'; texto: string }> = [
+  { valor: 'historia', texto: 'Entrar na história' }, { valor: 'fade', texto: 'Fade simples' },
+];
+const VELOCIDADES: ReadonlyArray<{ valor: '1' | '0.5' | '0.25'; texto: string }> = [
+  { valor: '1', texto: 'Normal' }, { valor: '0.5', texto: 'Lenta ½' }, { valor: '0.25', texto: 'Lenta ¼' },
+];
+const INICIOS: ReadonlyArray<{ valor: 'inicio' | 'final'; texto: string }> = [
+  { valor: 'inicio', texto: 'Cerimônia inteira' }, { valor: 'final', texto: 'Só a transição' },
+];
+
+const ms = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1).replace('.', ',')} ms`);
 
 export function PainelGrimorio() {
   const [aberto, setAberto] = useState(false);
   const [nivel, setNivel] = useState<NivelGrimorio | 'auto'>('auto');
+  const [hz, setHz] = useState<'auto' | '60' | '120'>('auto');
+  const [transicao, setTransicao] = useState<'historia' | 'fade'>('historia');
+  const [velocidade, setVelocidade] = useState<'1' | '0.5' | '0.25'>('1');
+  const [inicio, setInicio] = useState<'inicio' | 'final'>('inicio');
   const [fim, setFim] = useState<string | null>(null);
+  const [medida, setMedida] = useState<string | null>(null);
   const [diag, setDiag] = useState<Diag | null>(null);
   const controle = useRef<ControleGrimorio3D | null>(null);
 
   useEffect(() => {
     if (!aberto) return;
-    let quadros = 0, inicio = performance.now(), raf = 0;
-    const contar = () => { quadros += 1; raf = requestAnimationFrame(contar); };
-    raf = requestAnimationFrame(contar);
+    // tarefas longas (> 50 ms na thread principal): o Safari não tem esta API, então aparece "n/d"
+    let longas = 0, maior = 0, suportado = false;
+    let obs: PerformanceObserver | null = null;
+    try {
+      if (PerformanceObserver.supportedEntryTypes?.includes('longtask')) {
+        obs = new PerformanceObserver((lista) => { for (const e of lista.getEntries()) { longas += 1; maior = Math.max(maior, e.duration); } });
+        obs.observe({ type: 'longtask', buffered: false }); suportado = true;
+      }
+    } catch { suportado = false; }
     const id = window.setInterval(() => {
-      const agora = performance.now();
-      const fps = (quadros * 1000) / (agora - inicio); quadros = 0; inicio = agora;
-      const d = controle.current?.diagnostico();
-      setDiag(d ? { fps, triangulos: d.triangulos, chamadas: d.chamadas, backend: d.backend, px: `${d.largura}×${d.altura} @${d.pixelRatio}` } : { fps, triangulos: 0, chamadas: 0, backend: '—', px: '—' });
-    }, 1000);
-    return () => { cancelAnimationFrame(raf); window.clearInterval(id); };
+      const c = controle.current;
+      const d = c?.diagnostico();
+      if (!c || !d) { setDiag({ linhas: ['nível C · estático (sem 3D)'] }); return; }
+      const r = d.ritmo;
+      setDiag({
+        linhas: [
+          `nível ${c.nivel} · ${d.backend} · ${d.triangulos.toLocaleString('pt-BR')} tri · ${d.chamadas} chamadas`,
+          `tela ${r.telaHz ?? '…'} Hz → alvo ${r.alvoHz} Hz${r.travado60 ? ' (travado em 60)' : ''}`,
+          `quadro p50 ${ms(r.p50)} · p95 ${ms(r.p95)} · perdidos ${r.perdidos}`,
+          `CPU p95 ${ms(r.custoP95)} · tarefas longas ${suportado ? `${longas}${longas ? ` (máx ${Math.round(maior)} ms)` : ''}` : 'n/d'}`,
+          `entrada→quadro p50 ${ms(r.entradaP50)} · p95 ${ms(r.entradaP95)}`,
+          `escala ${r.escala} · ${d.largura}×${d.altura} @${d.pixelRatio.toFixed(2).replace('.', ',')}`,
+        ],
+      });
+    }, 500);
+    return () => { window.clearInterval(id); obs?.disconnect(); };
   }, [aberto]);
 
   return (
     <>
-      <Bloco titulo="Grimório" nota="A abertura de primeiro acesso, ensaiada. Nada aqui marca a abertura como vista nem mexe nos seus dados. Com um nível escolhido à mão, a queda automática para a versão estática fica desligada.">
+      <Bloco titulo="Grimório" nota="A abertura de primeiro acesso, ensaiada. Nada aqui marca a abertura como vista nem mexe nos seus dados. Com um nível escolhido à mão, a queda automática para a versão estática fica desligada. O medidor aparece no canto da cerimônia.">
         <Escolha rotulo="Nível" valor={nivel} opcoes={NIVEIS} aoMudar={setNivel} />
-        <Acao primaria aoClicar={() => { setFim(null); setAberto(true); }}>Abrir o grimório</Acao>
+        <Escolha rotulo="Taxa de quadros" valor={hz} opcoes={HZ} aoMudar={setHz} />
+        <Escolha rotulo="Transição final" valor={transicao} opcoes={TRANSICOES} aoMudar={setTransicao} />
+        <Escolha rotulo="Velocidade da transição" valor={velocidade} opcoes={VELOCIDADES} aoMudar={setVelocidade} />
+        <Escolha rotulo="Começar" valor={inicio} opcoes={INICIOS} aoMudar={setInicio} />
+        <Acao primaria aoClicar={() => { setFim(null); setMedida(null); setAberto(true); }}>Abrir o grimório</Acao>
         {fim ? <p className="lab-nota">{fim}</p> : null}
+        {medida ? <p className="lab-trilha-pos">{medida}</p> : null}
       </Bloco>
       <BlocoTrilha />
       {aberto ? createPortal(
         <Suspense fallback={null}>
           <GrimorioCena
-            bancada={{ nivel: nivel === 'auto' ? undefined : nivel, aoControle: (c) => { controle.current = c; (window as unknown as { __grimorio?: unknown }).__grimorio = c; } }}
-            onSkip={() => { setAberto(false); setFim('Pulado.'); }}
-            onComplete={({ soundEnabled }) => { setAberto(false); setFim(`Concluído${soundEnabled ? ', com som' : ''}.`); }}
+            bancada={{
+              nivel: nivel === 'auto' ? undefined : nivel,
+              hz: hz === 'auto' ? null : (Number(hz) as 60 | 120),
+              transicao,
+              velocidade: Number(velocidade),
+              inicio: inicio === 'final' ? 'final' : undefined,
+              aoControle: (c) => { controle.current = c; (window as unknown as { __grimorio?: unknown }).__grimorio = c; },
+              aoMedirTransicao: (m) => setMedida(`Transição a ${m.alvoHz} Hz: p95 ${ms(m.p95)} · ${m.perdidos} perdidos · CPU p95 ${ms(m.custoP95)} · ${m.quadros} quadros`),
+            }}
+            onSkip={() => { setAberto(false); setDiag(null); setFim('Pulado.'); }}
+            onComplete={({ soundEnabled }) => { setAberto(false); setDiag(null); setFim(`Concluído${soundEnabled ? ', com som' : ''}.`); }}
           />
           {diag ? (
             <output className="lab-grimorio-diag" aria-live="off">
-              {diag.backend} · {Math.round(diag.fps)} qps · {diag.triangulos.toLocaleString('pt-BR')} tri · {diag.chamadas} chamadas · {diag.px}
+              {diag.linhas.map((l) => <span key={l.slice(0, 6)}>{l}</span>)}
             </output>
           ) : null}
         </Suspense>,

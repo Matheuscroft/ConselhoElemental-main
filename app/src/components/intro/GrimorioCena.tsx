@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type PointerEvent as PointerEventReact } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { lunarSnapshot } from '@/components/temporal/celestial/lunar-presentation';
 import type { SanctuaryCityId } from '@/lib/temporal/sanctuary-city';
 import {
-  avancar, avancarPorToque, elementoAtual, encerrado, ESTADO_INICIAL, type ElementoCerimonia, type EstadoGrimorio, type SinalGrimorio,
+  avancar, avancarPorToque, elementoAtual, encerrado, ESTADO_INICIAL, ORDEM_CERIMONIA, type ElementoCerimonia, type EstadoGrimorio, type SinalGrimorio,
 } from '@/lib/intro/cerimonia';
 import {
   ARCO_AGUA, avaliarRisco, iniciarSulco, largar, levantouOSuficiente, moverSulco, passoSegurar, pressionar, progressoLevantar, SEGURAR_INICIAL,
@@ -15,7 +15,10 @@ import {
 } from '@/lib/intro/textos';
 import { ELEMENTO } from './cena/paleta';
 import { criarSomGrimorio, type SomGrimorio } from '@/lib/intro/som';
-import type { ControleGrimorio3D, PontoTela } from './cena';
+import type { ControleGrimorio3D } from './cena';
+import { TEMPOS_HISTORIA } from './cena/tempos';
+import type { HzForcado } from '@/lib/intro/ritmo';
+import { criarVeu, type Veu } from './veu';
 import './grimorio.css';
 
 /**
@@ -30,8 +33,20 @@ export interface GrimorioCenaProps {
   readonly cityId?: SanctuaryCityId;
   readonly onSkip?: () => void;
   readonly onComplete?: (detail: { soundEnabled: boolean }) => void;
-  /** Laboratory only: start straight on a beat, or force a level. */
-  readonly bancada?: { readonly nivel?: NivelGrimorio; readonly aoControle?: (c: ControleGrimorio3D | null) => void };
+  /** Laboratory only: force a level or a paced rate, pick the closing transition, slow it down. */
+  readonly bancada?: {
+    readonly nivel?: NivelGrimorio;
+    readonly aoControle?: (c: ControleGrimorio3D | null) => void;
+    readonly hz?: HzForcado;
+    /** 'historia' (default) or the plain fade. */
+    readonly transicao?: 'historia' | 'fade';
+    /** Scene speed during the transition (0.25 = slow motion). */
+    readonly velocidade?: number;
+    /** Start on the final screen (book open, Seal complete), to rehearse only the closing transition. */
+    readonly inicio?: 'final';
+    /** Measured cost of the transition, when it ends. */
+    readonly aoMedirTransicao?: (m: { p95: number; perdidos: number; custoP95: number; quadros: number; alvoHz: number }) => void;
+  };
 }
 
 const reduzMovimento = () => typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -51,8 +66,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   const [estado, enviar] = useReducer(reducer, ESTADO_INICIAL);
   const [pronta, setPronta] = useState(false);
   const [ocupado, setOcupado] = useState(false);
-  const [alvoFecho, setAlvoFecho] = useState<PontoTela | null>(null);
-  const [saindo, setSaindo] = useState(false);
+  const [transicao, setTransicao] = useState(false);
   const [somLigado, setSomLigado] = useState(false);
   const [somIniciado, setSomIniciado] = useState(false);
   /** Caption of the last sound, in brackets, for ~1.8 s (only while the sound is on). */
@@ -89,12 +103,17 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     import('./cena')
       .then(({ criarGrimorio3D }) => criarGrimorio3D(canvas, {
         nivel,
+        hz: bancada?.hz ?? null,
         lua: { fracao: lua.illuminated, crescente: lua.waxing },
         aoQuadro: (ms, visivel) => {
           // na bancada, um nível escolhido à mão é ensaio daquele nível: sem queda automática
-          if (bancada?.nivel) return;
+          if (bancada?.nivel || !controle) return;
           // mede só depois do primeiro quadro estável (meio segundo de cena visível)
           if (estavel < 30) { estavel += 1; return; }
+          // a queda para C é o último recurso: só conta depois que a qualidade adaptativa esgotou os degraus,
+          // e o limite segue o ritmo medido (30 Hz do modo de baixo consumo do iOS não é aparelho lento)
+          monitor.definirPeriodo(controle.ritmo.periodoAlvo);
+          if (controle.ritmo.escala < 3) { monitor.registrar(ms, false); return; }
           if (monitor.registrar(ms, visivel)) {
             console.warn('[grimório] quadros lentos: passando para a versão estática', monitor.ultimaMediana);
             setNivel('C');
@@ -118,30 +137,58 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nivel]);
 
-  /* ---------------- alvo acessível sobre o fecho ---------------- */
-  useEffect(() => {
-    if (!pronta || estado.fase !== 'poster') { setAlvoFecho(null); return; }
-    let quadro = 0;
-    const seguir = () => {
-      const p = cenaRef.current?.posicaoNaTela('cabecaFecho') ?? null;
-      setAlvoFecho((ant) => (ant && p && Math.abs(ant.x - p.x) < 0.5 && Math.abs(ant.y - p.y) < 0.5 && Math.abs(ant.raio - p.raio) < 0.5 ? ant : p));
-      quadro = requestAnimationFrame(seguir);
-    };
-    seguir();
-    return () => cancelAnimationFrame(quadro);
-  }, [pronta, estado.fase]);
+  /* ---------------- alvos acessíveis: posição escrita direto no DOM a partir do laço (sem estado do React) ---------------- */
+  const alvoFechoRef = useRef<HTMLButtonElement | null>(null);
+  const alvoGestoRef = useRef<HTMLButtonElement | null>(null);
 
-  /* ---------------- entrega (uma vez) ---------------- */
+  /* ---------------- entrega (uma vez): "entrar na história" ou o fade curto ---------------- */
+  const veuRef = useRef<Veu | null>(null);
   const entregar = useCallback((como: 'pular' | 'concluir') => {
     if (entregue.current) return;
     entregue.current = true;
-    setSaindo(true);
-    window.setTimeout(() => {
-      if (como === 'pular') onSkip?.();
-      else onComplete?.({ soundEnabled: somLigado });
-    }, 300);
-    void somRef.current?.encerrar(300);
-  }, [onSkip, onComplete, somLigado]);
+    const som = somRef.current;
+    const c = cenaRef.current;
+    const sair = () => { if (como === 'pular') onSkip?.(); else onComplete?.({ soundEnabled: somLigado }); };
+    const veu = criarVeu();
+    veuRef.current = veu;
+    const historia = como === 'concluir' && (bancada?.transicao ?? 'historia') === 'historia' && nivel !== 'C' && !!c && !reduzMovimento();
+    if (!historia || !c) {
+      // movimento reduzido, nível C, falha do 3D ou Pular: um fade rápido para a noite e de volta (Pular ≈ 300 ms)
+      const curto = como === 'pular';
+      void som?.encerrar(curto ? 300 : 500);
+      void veu.cobrir({ tom: 'noite', ms: curto ? 90 : 220 }).then(() => { sair(); void veu.revelar({ tom: 'noite', ms: curto ? 150 : 320 }); });
+      return;
+    }
+    const lenta = Math.max(0.05, bancada?.velocidade ?? 1);
+    const T = TEMPOS_HISTORIA;
+    setTransicao(true);
+    c.escalaTempo(lenta);
+    som?.cue('historia.entrada', { dur: T.pico / lenta });
+    const trecho = c.ritmo.trecho();
+    let coberto: Promise<void> | null = null;
+    let picou = false;
+    const pico = () => {
+      if (picou) return;
+      picou = true;
+      window.clearTimeout(seguranca);
+      const medida = trecho.fim();
+      const alvoHz = c.ritmo.alvoHz;
+      bancada?.aoMedirTransicao?.({ ...medida, alvoHz });
+      if (import.meta.env.DEV) console.info('[grimório] transição', { ...medida, alvoHz });
+      // a luz cobre tudo: a próxima tela monta por baixo (onComplete, uma vez) e o 3D é desmontado
+      void som?.encerrar(1600);
+      const tSair = performance.now();
+      sair();
+      if (import.meta.env.DEV) console.info(`[grimório] onComplete devolveu em ${Math.round(performance.now() - tSair)} ms`);
+      void veu.revelar({ tom: 'luz', ms: (T.dissolver * 1000) / lenta });
+    };
+    const cobrir = () => { coberto ??= veu.cobrir({ tom: 'luz', ms: ((T.pico - T.cobrir) * 1000) / lenta }); return coberto; };
+    // segurança: se a cena travar no meio, o relógio de parede leva ao pico mesmo assim
+    const seguranca = window.setTimeout(() => { void cobrir().then(pico); }, ((T.pico / lenta) * 1000) + 1500);
+    c.entrarNaHistoria({ aoCobrir: () => { void cobrir(); }, aoPico: () => { void cobrir().then(pico); } })
+      .catch(() => { void cobrir().then(pico); });
+  }, [onSkip, onComplete, somLigado, bancada, nivel]);
+  useEffect(() => () => { veuRef.current = null; }, []);
 
   useEffect(() => {
     if (estado.fase === 'pulado') entregar('pular');
@@ -193,12 +240,22 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   }, []);
 
   const tocarFundo = useCallback(() => {
+    // durante a transição, o toque acelera (a cena e o véu juntos)
+    if (transicao) { cenaRef.current?.escalaTempo(Math.max(1, bancada?.velocidade ?? 1) * 2.5); veuRef.current?.acelerar(2.5); return; }
     if (nivel === 'C') { enviar(avancarPorToqueSinal(estado)); return; }
     if (estado.fase === 'lenda') enviar({ tipo: 'oracao' });
-  }, [estado, nivel]);
+  }, [estado, nivel, transicao, bancada]);
 
   const pular = useCallback(() => enviar({ tipo: 'pular' }), []);
-  const comecar = useCallback(() => { somRef.current?.cue('final.botao'); enviar({ tipo: 'comecar' }); }, []);
+  const comecar = useCallback(() => {
+    if (!somRef.current && bancada?.inicio === 'final') {
+      // ensaio que começou no final: o toque do Começar é o gesto que libera o áudio
+      const som = comLegendas(criarSomGrimorio(), legendar);
+      somRef.current = som;
+      void som.iniciar().then(() => { setSomIniciado(som.iniciado); setSomLigado(som.iniciado && !som.mudo); });
+    }
+    somRef.current?.cue('final.botao'); enviar({ tipo: 'comecar' });
+  }, [bancada, legendar]);
 
   /* ---------------- gestos (níveis A e B): câmera, convite, dedo e alternativa de toque ---------------- */
   const em3D = nivel !== 'C' && pronta;
@@ -207,7 +264,8 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     sulco: EstadoSulco; segurar: EstadoSegurar; amostras: Amostra[]; direcao: -1 | 0 | 1; pan: number; levanta: number;
     ponteiro: number | null; t: number; inicio: { x: number; y: number; t: number } | null; arrastou: boolean; ocupado: boolean;
   }>({ sulco: SULCO_INICIAL, segurar: SEGURAR_INICIAL, amostras: [], direcao: 1, pan: 0.35, levanta: 0, ponteiro: null, t: 0, inicio: null, arrastou: false, ocupado: false });
-  const [alvoGesto, setAlvoGesto] = useState<{ x: number; y: number } | null>(null);
+  const superficieAtiva = em3D && !!elementoGesto;
+  const superficieRef = useRef<HTMLDivElement | null>(null);
 
   const despertar = useCallback(async (el: ElementoCerimonia) => {
     const c = cenaRef.current; const g = gesto.current;
@@ -241,24 +299,9 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
       return () => somRef.current?.continuo('ar', 0);
     }
     if (elementoGesto === 'terra') {
+      // o segurar anda dentro do laço de render (antesDoQuadro), no mesmo quadro que desenha as pedras
       c.terra.mostrar();
-      // o segurar anda a cada quadro: sobe com o dedo, recua (mais rápido) sem ele
-      let quadro = 0, antes = performance.now();
-      const passo = () => {
-        const agora = performance.now(); const dt = Math.min(64, agora - antes); antes = agora;
-        const g = gesto.current;
-        if (!g.ocupado) {
-          g.segurar = passoSegurar(g.segurar, dt);
-          const k = g.segurar.progresso;
-          c.terra.definir(k, g.segurar.segurando);
-          c.tremer(g.segurar.segurando ? k : k * 0.3);
-          somRef.current?.continuo('terra', k);
-          if (g.segurar.concluido) { g.ponteiro = null; void despertar('terra'); }
-        }
-        quadro = requestAnimationFrame(passo);
-      };
-      quadro = requestAnimationFrame(passo);
-      return () => { cancelAnimationFrame(quadro); c.tremer(0); somRef.current?.continuo('terra', 0); };
+      return () => { c.tremer(0); somRef.current?.continuo('terra', 0); };
     }
     if (elementoGesto !== 'agua') return;
     c.agua.mostrar();
@@ -271,24 +314,6 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     const silencio = window.setInterval(() => { if (performance.now() - gesto.current.t > 160) somRef.current?.continuo('agua', 0); }, 100);
     return () => { window.clearInterval(convite); window.clearInterval(silencio); somRef.current?.continuo('agua', 0); };
   }, [em3D, elementoGesto, estado.indice, despertar]);
-
-  useEffect(() => {
-    const c = cenaRef.current;
-    if (!em3D || !c || !elementoGesto) { setAlvoGesto(null); return; }
-    let quadro = 0;
-    const seguir = () => {
-      const p = elementoGesto === 'agua' ? c.naTela(c.agua.posicaoGota())
-        : elementoGesto === 'terra' ? c.naTela(c.terra.posicaoPedra())
-        : elementoGesto === 'fogo' ? c.naTela(c.fogo.posicaoBrasa())
-        : elementoGesto === 'ar' ? c.naTela(c.ar.posicaoCanto())
-        : c.posicaoNaTela('selo');
-      setAlvoGesto((ant) => (ant && p && Math.abs(ant.x - p.x) < 0.5 && Math.abs(ant.y - p.y) < 0.5 ? ant : p ? { x: p.x, y: p.y } : null));
-      quadro = requestAnimationFrame(seguir);
-    };
-    seguir();
-    return () => cancelAnimationFrame(quadro);
-  }, [em3D, elementoGesto]);
-
 
   /** The touch alternative: one tap and the element completes through its own animation. */
   const automatico = useCallback(async () => {
@@ -321,34 +346,35 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     await despertar(el);
   }, [elementoGesto, nivel, despertar]);
 
-  const aoTocarPagina = useCallback((e: PointerEventReact<HTMLDivElement>) => {
-    const c = cenaRef.current; const g = gesto.current;
-    if (!c || g.ocupado || !elementoGesto) return;
+  /* ---------------- o dedo: fila nativa, aplicada no laço de render antes do quadro ----------------
+   * Os eventos de ponteiro só anotam (com todos os pontos agrupados e o ponto previsto); quem age é o laço,
+   * no começo do próximo quadro, antes de qualquer movimento ou desenho: o toque aparece no quadro seguinte
+   * ao evento, sem passar pelo estado do React. Nada é alocado por evento além do que o navegador entrega. */
+  const tocar = useCallback((c: ControleGrimorio3D, x: number, y: number, id: number, t: number) => {
+    const g = gesto.current;
+    if (g.ocupado || !elementoGesto) return;
+    const ponto = c.projetarNaPagina(x, y);
+    // resposta visual no contato, antes de qualquer regra do gesto
+    if (ponto) c.toque.tocar(ponto.x, ponto.y);
     if (elementoGesto === 'ar') {
       if (g.ponteiro !== null) { g.ponteiro = null; void c.ar.cair(c.anima); somRef.current?.continuo('ar', 0); return; }
-      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
       // generoso: o canto e uns 4 cm em volta dele começam o puxar
       if (!ponto || Math.hypot(ponto.x - c.ar.canto.x, ponto.y - c.ar.canto.y) > 0.045) return;
-      g.ponteiro = e.pointerId; g.inicio = { x: e.clientX, y: e.clientY, t: performance.now() }; g.arrastou = false; g.levanta = 0;
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+      g.ponteiro = id; g.inicio = { x, y, t }; g.arrastou = false; g.levanta = 0;
       return;
     }
     if (elementoGesto === 'fogo') {
       if (g.ponteiro !== null) { g.ponteiro = null; g.amostras = []; return; }
-      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
       if (!ponto) return;
-      g.ponteiro = e.pointerId; g.amostras = [{ ...ponto, t: performance.now() }]; g.inicio = { x: e.clientX, y: e.clientY, t: performance.now() }; g.arrastou = false;
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+      g.ponteiro = id; g.amostras = [{ x: ponto.x, y: ponto.y, t }]; g.inicio = { x, y, t }; g.arrastou = false;
       c.fogo.faisca(ponto.x, ponto.y, 0.3);
       return;
     }
     if (elementoGesto === 'terra') {
       if (g.ponteiro !== null) { g.segurar = largar(g.segurar); g.ponteiro = null; return; }
-      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
       // generoso: qualquer ponto a ~3 cm da pedra (o quadrante inteiro) começa o segurar
       if (!ponto || Math.hypot(ponto.x - c.terra.centro.x, ponto.y - c.terra.centro.y) > 0.032) return;
-      g.segurar = pressionar(g.segurar); g.ponteiro = e.pointerId; g.inicio = { x: e.clientX, y: e.clientY, t: performance.now() }; g.arrastou = false;
-      try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+      g.segurar = pressionar(g.segurar); g.ponteiro = id; g.inicio = { x, y, t }; g.arrastou = false;
       return;
     }
     if (g.ponteiro !== null) {
@@ -356,58 +382,71 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
       g.sulco = soltarSulco(g.sulco); g.ponteiro = null; c.agua.definir(g.sulco.progresso, false); somRef.current?.continuo('agua', 0);
       return;
     }
-    const ponto = c.projetarNaPagina(e.clientX, e.clientY);
     if (!ponto) return;
     const s = iniciarSulco(g.sulco, ARCO_AGUA, ponto);
     if (!s.ativo) return;
-    g.sulco = s; g.ponteiro = e.pointerId; g.t = performance.now(); g.inicio = { x: e.clientX, y: e.clientY, t: g.t }; g.arrastou = false;
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ }
+    g.sulco = s; g.ponteiro = id; g.t = t; g.inicio = { x, y, t }; g.arrastou = false;
     c.agua.definir(s.progresso, true);
   }, [elementoGesto]);
 
-  const aoMover = useCallback((e: PointerEventReact<HTMLDivElement>) => {
-    const c = cenaRef.current; const g = gesto.current;
-    if (!c || g.ponteiro !== e.pointerId) return;
-    if (g.inicio && Math.hypot(e.clientX - g.inicio.x, e.clientY - g.inicio.y) > 8) g.arrastou = true;
+  const mover = useCallback((c: ControleGrimorio3D, x: number, y: number, id: number, t: number) => {
+    const g = gesto.current;
+    if (g.ponteiro !== id) return;
+    if (g.inicio && Math.hypot(x - g.inicio.x, y - g.inicio.y) > 8) g.arrastou = true;
     if (elementoGesto === 'ar' && g.inicio) {
-      g.levanta = progressoLevantar(e.clientY - g.inicio.y, window.innerHeight);
+      g.levanta = progressoLevantar(y - g.inicio.y, window.innerHeight);
       c.ar.definir(g.levanta);
       somRef.current?.continuo('ar', g.levanta);
       return;
     }
+    const ponto = c.projetarNaPagina(x, y);
+    if (!ponto) return;
+    c.toque.seguir(ponto.x, ponto.y);
     if (elementoGesto === 'fogo') {
-      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
-      if (!ponto) return;
-      const agora = performance.now(); const ant = g.amostras[g.amostras.length - 1];
-      const vel = ant ? Math.hypot(ponto.x - ant.x, ponto.y - ant.y) / Math.max(0.008, (agora - ant.t) / 1000) : 0;
-      g.amostras.push({ ...ponto, t: agora });
+      const ant = g.amostras[g.amostras.length - 1];
+      const vel = ant ? Math.hypot(ponto.x - ant.x, ponto.y - ant.y) / Math.max(0.004, (t - ant.t) / 1000) : 0;
+      g.amostras.push({ x: ponto.x, y: ponto.y, t });
       // as faíscas saem do dedo, mais vivas quanto mais rápido o risco
       c.fogo.faisca(ponto.x, ponto.y, Math.min(1, vel / 0.3));
-      g.pan = Math.max(-1, Math.min(1, (e.clientX / window.innerWidth) * 2 - 1));
+      g.pan = Math.max(-1, Math.min(1, (x / window.innerWidth) * 2 - 1));
       return;
     }
-    const ponto = c.projetarNaPagina(e.clientX, e.clientY);
-    if (!ponto) return;
+    if (elementoGesto === 'terra') return;
     const s = moverSulco(g.sulco, ARCO_AGUA, ponto);
-    const agora = performance.now();
     if (s.progresso > g.sulco.progresso) {
       // velocidade em "sulcos por segundo": 1 = o arco inteiro em um segundo
-      const vel = (s.progresso - g.sulco.progresso) / Math.max(0.008, (agora - g.t) / 1000);
+      const vel = (s.progresso - g.sulco.progresso) / Math.max(0.004, (t - g.t) / 1000);
       somRef.current?.continuo('agua', Math.min(1, vel / 1.2));
-      g.t = agora;
+      g.t = t;
     }
     g.sulco = s;
     c.agua.definir(s.progresso, !s.concluido);
     if (s.concluido) { g.ponteiro = null; void despertar('agua'); }
   }, [despertar, elementoGesto]);
 
-  const aoSoltar = useCallback((e: PointerEventReact<HTMLDivElement>) => {
-    const c = cenaRef.current; const g = gesto.current;
-    if (!c || g.ponteiro !== e.pointerId) return;
+  /** The predicted point (pointer prediction, where the browser offers it) only moves what is drawn, never the rule. */
+  const prever = useCallback((c: ControleGrimorio3D, x: number, y: number, id: number) => {
+    const g = gesto.current;
+    if (g.ponteiro !== id || g.ocupado) return;
+    if (elementoGesto === 'ar' && g.inicio) { c.ar.definir(Math.max(g.levanta, progressoLevantar(y - g.inicio.y, window.innerHeight))); return; }
+    const ponto = c.projetarNaPagina(x, y);
+    if (!ponto) return;
+    c.toque.seguir(ponto.x, ponto.y);
+    if (elementoGesto === 'agua' && g.sulco.ativo) {
+      const s = moverSulco(g.sulco, ARCO_AGUA, ponto);
+      // a gota pode ir até um pouco à frente do dedo, nunca concluir por previsão
+      if (s.progresso > g.sulco.progresso && !s.concluido) c.agua.definir(Math.min(s.progresso, g.sulco.progresso + 0.06), true);
+    }
+  }, [elementoGesto]);
+
+  const soltar = useCallback((c: ControleGrimorio3D, x: number, y: number, id: number, t: number, cancelado: boolean) => {
+    const g = gesto.current;
+    if (g.ponteiro !== id) return;
     g.ponteiro = null;
+    const toqueCurto = (ms: number) => !cancelado && !g.arrastou && !!g.inicio && t - g.inicio.t < ms;
     if (elementoGesto === 'ar') {
       if (levantouOSuficiente(g.levanta)) { void despertar('ar'); return; }
-      if (e.type === 'pointerup' && !g.arrastou && g.inicio && performance.now() - g.inicio.t < 350) { void automatico(); return; }
+      if (toqueCurto(350)) { void automatico(); return; }
       somRef.current?.continuo('ar', 0);
       void c.ar.cair(c.anima);
       return;
@@ -417,24 +456,126 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
       g.amostras = [];
       if (r.aceso) { g.direcao = r.direcao; void despertar('fogo'); return; }
       // um toque curto perto da brasa é a alternativa; um risco fraco só faz a brasa piscar
-      const ponto = c.projetarNaPagina(e.clientX, e.clientY);
+      const ponto = c.projetarNaPagina(x, y);
       const pertoDaBrasa = ponto && Math.hypot(ponto.x - TRACO_FOGO.de.x, ponto.y - TRACO_FOGO.de.y) < 0.022;
-      if (e.type === 'pointerup' && !g.arrastou && pertoDaBrasa && g.inicio && performance.now() - g.inicio.t < 350) { void automatico(); return; }
+      if (pertoDaBrasa && toqueCurto(350)) { void automatico(); return; }
       if (g.arrastou) { c.fogo.falhar(); somRef.current?.cue('fogo.risco', { forca: Math.max(0.2, r.cobertura * 0.6), pan: g.pan }); }
       return;
     }
     if (elementoGesto === 'terra') {
       g.segurar = largar(g.segurar);
       // um toque curto (soltou antes de 300 ms) é a alternativa: as pedras sobem sozinhas
-      if (e.type === 'pointerup' && g.inicio && performance.now() - g.inicio.t < 300) void automatico();
+      if (!cancelado && g.inicio && t - g.inicio.t < 300) void automatico();
       return;
     }
     g.sulco = soltarSulco(g.sulco);
     c.agua.definir(g.sulco.progresso, false);
     somRef.current?.continuo('agua', 0);
     // um toque curto na gota (sem arrastar) é a alternativa: ela corre sozinha
-    if (e.type === 'pointerup' && !g.arrastou && g.inicio && performance.now() - g.inicio.t < 350) void automatico();
+    if (toqueCurto(350)) void automatico();
   }, [automatico, elementoGesto, despertar]);
+
+  // a lógica mais recente, lida pelo laço (que é registrado uma vez só)
+  const logica = useRef({ tocar, mover, prever, soltar, elementoGesto, estado, em3D });
+  logica.current = { tocar, mover, prever, soltar, elementoGesto, estado, em3D };
+
+  /** Pending pointer events: a fixed ring of reusable records (0 down, 1 move, 2 up, 3 cancel). */
+  const fila = useRef<{ itens: { tipo: number; id: number; x: number; y: number; t: number }[]; n: number; previsto: { id: number; x: number; y: number } | null }>({
+    itens: Array.from({ length: 96 }, () => ({ tipo: 0, id: 0, x: 0, y: 0, t: 0 })), n: 0, previsto: null,
+  });
+
+  useEffect(() => {
+    const el = superficieRef.current;
+    if (!el) return;
+    const f = fila.current;
+    const anotar = (tipo: number, e: PointerEvent) => {
+      // fila cheia: o último movimento é substituído (nunca perde um down ou um up)
+      const i = f.n < f.itens.length ? f.n++ : f.itens.length - 1;
+      const it = f.itens[i];
+      it.tipo = tipo; it.id = e.pointerId; it.x = e.clientX; it.y = e.clientY; it.t = e.timeStamp;
+    };
+    const baixo = (e: PointerEvent) => {
+      if (e.isPrimary) { try { el.setPointerCapture(e.pointerId); } catch { /* ponteiro sintético ou já solto */ } }
+      anotar(0, e);
+    };
+    const move = (e: PointerEvent) => {
+      const agrupados = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : [];
+      if (agrupados.length > 1) for (const a of agrupados) anotar(1, a); else anotar(1, e);
+      const previstos = typeof e.getPredictedEvents === 'function' ? e.getPredictedEvents() : [];
+      const p = previstos.length ? previstos[previstos.length - 1] : null;
+      if (p) { f.previsto ??= { id: 0, x: 0, y: 0 }; f.previsto.id = e.pointerId; f.previsto.x = p.clientX; f.previsto.y = p.clientY; }
+      else if (f.previsto) f.previsto.id = -1;
+    };
+    const cima = (e: PointerEvent) => anotar(2, e);
+    const cancela = (e: PointerEvent) => anotar(3, e);
+    el.addEventListener('pointerdown', baixo);
+    el.addEventListener('pointermove', move);
+    el.addEventListener('pointerup', cima);
+    el.addEventListener('pointercancel', cancela);
+    return () => {
+      el.removeEventListener('pointerdown', baixo);
+      el.removeEventListener('pointermove', move);
+      el.removeEventListener('pointerup', cima);
+      el.removeEventListener('pointercancel', cancela);
+      f.n = 0;
+    };
+  }, [superficieAtiva]);
+
+  /* ---------------- o laço: entrada, Terra e alvos acessíveis, antes de cada quadro ---------------- */
+  useEffect(() => {
+    const c = cenaRef.current;
+    if (!pronta || !c) return;
+    let conta = 0;
+    const posicionar = (botao: HTMLButtonElement | null, x: number, y: number, lado?: number) => {
+      if (!botao) return;
+      botao.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`;
+      if (lado !== undefined) { botao.style.width = `${lado.toFixed(0)}px`; botao.style.height = `${lado.toFixed(0)}px`; }
+      botao.style.visibility = 'visible';
+    };
+    return c.antesDoQuadro((agora, dtMs) => {
+      const L = logica.current;
+      const f = fila.current;
+      if (f.n > 0) {
+        // latência medida do evento mais antigo deste lote até o quadro que o aplica
+        c.ritmo.entrada(Math.max(0, agora - f.itens[0].t));
+        for (let i = 0; i < f.n; i += 1) {
+          const it = f.itens[i];
+          if (it.tipo === 0) L.tocar(c, it.x, it.y, it.id, it.t);
+          else if (it.tipo === 1) L.mover(c, it.x, it.y, it.id, it.t);
+          else L.soltar(c, it.x, it.y, it.id, it.t, it.tipo === 3);
+        }
+        f.n = 0;
+        if (f.previsto && f.previsto.id >= 0) { L.prever(c, f.previsto.x, f.previsto.y, f.previsto.id); f.previsto.id = -1; }
+      }
+      // Terra: o segurar anda com o tempo real do quadro
+      if (L.elementoGesto === 'terra' && L.em3D) {
+        const g = gesto.current;
+        if (!g.ocupado) {
+          g.segurar = passoSegurar(g.segurar, dtMs);
+          const k = g.segurar.progresso;
+          c.terra.definir(k, g.segurar.segurando);
+          c.tremer(g.segurar.segurando ? k : k * 0.3);
+          somRef.current?.continuo('terra', k);
+          if (g.segurar.concluido) { g.ponteiro = null; void despertar('terra'); }
+        }
+      }
+      // alvos acessíveis (teclado e leitor de tela): a cada 6 quadros basta
+      conta = (conta + 1) % 6;
+      if (conta !== 0) return;
+      if (L.estado.fase === 'poster') {
+        const p = c.posicaoNaTela('cabecaFecho');
+        if (p) posicionar(alvoFechoRef.current, p.x, p.y, Math.max(56, p.raio * 2.4));
+      }
+      const el = L.elementoGesto;
+      if (el && L.em3D) {
+        const p = el === 'agua' ? c.naTela(c.agua.posicaoGota())
+          : el === 'terra' ? c.naTela(c.terra.posicaoPedra())
+          : el === 'fogo' ? c.naTela(c.fogo.posicaoBrasa())
+          : c.naTela(c.ar.posicaoCanto());
+        posicionar(alvoGestoRef.current, p.x, p.y);
+      }
+    });
+  }, [pronta, despertar]);
 
   /* ---------------- Conselho: o Selo se completa e a luz desce ao fecho; depois a tela final ---------------- */
   useEffect(() => {
@@ -458,6 +599,35 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
   }, [estado.fase, em3D]);
 
 
+  /* ---------------- bancada: começar no quadro final (o livro aberto, o Selo completo) para ensaiar a transição ---------------- */
+  useEffect(() => {
+    if (bancada?.inicio !== 'final' || !pronta) return;
+    const c = cenaRef.current;
+    if (!c) return;
+    let vivo = true;
+    void (async () => {
+      c.escalaTempo(14);
+      await c.abrir();
+      if (!vivo) return;
+      for (const el of ORDEM_CERIMONIA) { c.livro.tinta[el].value = 1; c.livro.brilho[el].value = 0.35; c.livro.fecho[el].value = 1; }
+      await c.irPara('final', 0.05);
+      c.escalaTempo(1);
+      if (!vivo) return;
+      const sinais: SinalGrimorio[] = [{ tipo: 'abrir' }, { tipo: 'aberto' }, { tipo: 'lendaLida' }, ...ORDEM_CERIMONIA.map((elemento) => ({ tipo: 'despertou', elemento }) as SinalGrimorio), { tipo: 'conselhoAssentou' }];
+      for (const sinal of sinais) enviar(sinal);
+    })();
+    return () => { vivo = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pronta]);
+
+  /* ---------------- a próxima tela já decodificada antes da transição (o fundo das perguntas) ---------------- */
+  useEffect(() => {
+    if (estado.fase !== 'final') return;
+    const img = new Image();
+    img.src = '/intro/final-390.webp';
+    void img.decode?.().catch(() => undefined);
+  }, [estado.fase]);
+
   /* ---------------- texto na tela ---------------- */
   const lenda = estado.fase === 'lenda' ? oracoesVisiveis(estado.oracao) : null;
   const elemento = elementoAtual(estado);
@@ -466,32 +636,32 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
     : null;
 
   return (
-    <section className="grimorio" data-fase={estado.fase} data-nivel={nivel} data-pronta={pronta} data-saindo={saindo} aria-labelledby="grimorio-titulo">
+    <section className="grimorio" data-fase={estado.fase} data-nivel={nivel} data-pronta={pronta} data-transicao={transicao ? 'historia' : undefined} aria-labelledby="grimorio-titulo">
       <h2 id="grimorio-titulo" className="sr-only">{TEXTO.titulo}</h2>
       <div className="grimorio-poster" aria-hidden="true" />
       {nivel !== 'C' ? <div ref={palcoRef} className="grimorio-palco" aria-hidden="true" /> : null}
       <div className="grimorio-toque" onClick={tocarFundo} aria-hidden="true" />
 
-      {alvoFecho && estado.fase === 'poster' ? (
+      {pronta && nivel !== 'C' && estado.fase === 'poster' ? (
         <button
+          ref={alvoFechoRef}
           type="button"
           className="grimorio-alvo"
-          style={{ left: alvoFecho.x, top: alvoFecho.y, width: Math.max(56, alvoFecho.raio * 2.4), height: Math.max(56, alvoFecho.raio * 2.4) }}
+          style={{ left: 0, top: 0, visibility: 'hidden' }}
           onClick={() => void abrir()}
         >
           <span className="sr-only">{TEXTO.abrirRotulo}</span>
         </button>
       ) : null}
 
-      {em3D && elementoGesto ? (
-        <div className="grimorio-gesto" onPointerDown={aoTocarPagina} onPointerMove={aoMover} onPointerUp={aoSoltar} onPointerCancel={aoSoltar} aria-hidden="true" />
-      ) : null}
-      {elementoGesto && alvoGesto ? (
+      {superficieAtiva ? <div ref={superficieRef} className="grimorio-gesto" aria-hidden="true" /> : null}
+      {superficieAtiva && elementoGesto ? (
         <button
+          ref={alvoGestoRef}
           type="button"
           className="grimorio-alvo"
-          data-passa={em3D ? 'sim' : undefined}
-          style={{ left: alvoGesto.x, top: alvoGesto.y, width: 56, height: 56 }}
+          data-passa="sim"
+          style={{ left: 0, top: 0, width: 56, height: 56, visibility: 'hidden' }}
           onClick={() => void automatico()}
         >
           <span className="sr-only">{INSTRUCAO[elementoGesto].alvo}</span>
@@ -517,7 +687,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
         </div>
       ) : null}
 
-      {estado.fase === 'final' ? (
+      {estado.fase === 'final' || transicao ? (
         <div className="grimorio-lenda grimorio-final">
           <p className="grimorio-frase">{TEXTO.frase}</p>
           <span className="grimorio-filete" aria-hidden="true" />
@@ -534,7 +704,7 @@ export function GrimorioCena({ at, onSkip, onComplete, bancada }: GrimorioCenaPr
         {instrucao ? <p className="grimorio-instrucao" aria-live="polite">{instrucao}</p> : null}
         {estado.fase === 'gesto' && elemento ? <p className="grimorio-alternativa">{INSTRUCAO[elemento].toque}</p> : null}
         {estado.fase === 'lenda' || (nivel === 'C' && !encerrado(estado) && estado.fase !== 'final') ? <p className="grimorio-alternativa">{TEXTO.avancar}</p> : null}
-        {estado.fase === 'final' ? <button type="button" className="grimorio-comecar" onClick={comecar}>{TEXTO.comecar}</button> : null}
+        {estado.fase === 'final' || transicao ? <button type="button" className="grimorio-comecar" onClick={comecar} disabled={transicao}>{TEXTO.comecar}</button> : null}
       </div>
       <p className="sr-only" aria-live="polite">{TEXTO.progresso(estado.despertos.length)}</p>
     </section>

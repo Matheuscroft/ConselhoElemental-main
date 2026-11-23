@@ -67,6 +67,7 @@ export const LEGENDA_SOM: Partial<Record<string, string>> = {
   'fogo.assenta': 'brasas estalam',
   'ar.assenta': 'sinos de vento',
   'selo.completo': 'o acorde se resolve',
+  'historia.entrada': 'a luz atravessa o Selo',
 };
 
 /** A strike that did not light, and the live voices of the gestures while the finger works. */

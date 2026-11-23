@@ -28,6 +28,8 @@ export interface Luz {
   readonly ambiente: Texture;
   /** Called every frame with the opening (0 closed → 1 open) to move the warm light. */
   atualizar(abertura: number): void;
+  /** 0..1 share of the dust motes drawn (the adaptive quality trims it under load). */
+  densidade(f: number): void;
   dispose(): void;
 }
 
@@ -135,6 +137,7 @@ export function criarLuz(renderer: WebGPURenderer, raizLivro: Object3D, poeiraN:
   descartaveis.push(haloGeo, haloMat);
 
   // ---------- poeira de luz em três distâncias (sprites instanciados, movimento analítico) ----------
+  let poeiraS: { count: number } | null = null;
   if (poeiraN > 0) {
     const poeiraMat = new SpriteNodeMaterial({ transparent: true, depthWrite: false, blending: AdditiveBlending, fog: false });
     const i = float(instanceIndex);
@@ -156,6 +159,7 @@ export function criarLuz(renderer: WebGPURenderer, raizLivro: Object3D, poeiraN:
     poeiraMat.opacityNode = disco.mul(brilho);
     const poeira = new Sprite(poeiraMat);
     poeira.count = poeiraN;
+    poeiraS = poeira;
     poeira.frustumCulled = false;
     poeira.renderOrder = 6;
     raizLivro.add(poeira);
@@ -164,6 +168,7 @@ export function criarLuz(renderer: WebGPURenderer, raizLivro: Object3D, poeiraN:
 
   return {
     grupo, fresta, raios, origemRaios, ambiente,
+    densidade(f) { if (poeiraS) poeiraS.count = Math.max(8, Math.round(poeiraN * f)); },
     atualizar(abertura) {
       // fechado: a luz vaza pela lombada (x≈0, alto); aberto: nasce na dobra e sobe
       // fechado: no meio do bloco de folhas (a pedra em volta acende); aberto: sobe da dobra

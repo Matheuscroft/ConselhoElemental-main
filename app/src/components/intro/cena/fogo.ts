@@ -128,10 +128,11 @@ export function criarFogo(livro: Livro): GestoFogo {
   chamaMat.opacityNode = forma.mul(chamaK).mul(0.95);
   const chama = new Mesh(chamaGeo, chamaMat); chama.renderOrder = 7; chama.visible = false;
   const pontoChama = naPagina(CHAMA.x, CHAMA.y, 0.0);
+  const mundoChama = new Vector3();
   chama.onBeforeRender = (_r, _s, cam) => {
-    // gira só em volta do eixo vertical: a chama fica de pé sobre o papel
-    const ang = Math.atan2(cam.position.x - chama.getWorldPosition(new Vector3()).x, cam.position.z - chama.getWorldPosition(new Vector3()).z);
-    chama.rotation.set(0, ang, 0);
+    // gira só em volta do eixo vertical: a chama fica de pé sobre o papel (sem alocar por quadro)
+    chama.getWorldPosition(mundoChama);
+    chama.rotation.set(0, Math.atan2(cam.position.x - mundoChama.x, cam.position.z - mundoChama.z), 0);
   };
   grupo.add(chama);
   descartaveis.push(chamaGeo, chamaMat);

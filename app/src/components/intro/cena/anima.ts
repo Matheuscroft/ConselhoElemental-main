@@ -8,6 +8,7 @@ export type Easing = (t: number) => number;
 
 export const linear: Easing = (t) => t;
 export const easeOutCubic: Easing = (t) => 1 - (1 - t) ** 3;
+export const easeInQuad: Easing = (t) => t * t;
 export const easeInOutCubic: Easing = (t) => (t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2);
 export const easeOutQuint: Easing = (t) => 1 - (1 - t) ** 5;
 export const easeInOutSine: Easing = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
@@ -29,6 +30,8 @@ interface Tween {
   readonly aplicar: (v: number) => void;
   readonly resolver: () => void;
   readonly chave?: string;
+  /** Replaced by a tween with the same key: skipped and dropped on the next step. */
+  morto: boolean;
 }
 
 export interface Animador {
@@ -46,40 +49,41 @@ export interface Animador {
 
 export function criarAnimador(): Animador {
   let agora = 0;
-  let tweens: Tween[] = [];
+  // um único array, compactado no lugar: nenhuma alocação por quadro; tweens criados durante o passo
+  // (num aplicar ou num resolver) entram no fim e são vistos no mesmo laço
+  const tweens: Tween[] = [];
   const esperas: { ate: number; resolver: () => void }[] = [];
   return {
     get agora() { return agora; },
     passo(dt) {
       agora += dt;
-      const vivos: Tween[] = [];
-      for (const tw of tweens) {
+      let n = 0;
+      for (let i = 0; i < tweens.length; i += 1) {
+        const tw = tweens[i];
+        if (tw.morto) continue;
         const t = tw.duracao <= 0 ? 1 : clamp01((agora - tw.inicio) / tw.duracao);
         if (agora >= tw.inicio) tw.aplicar(lerp(tw.de, tw.para, tw.easing(t)));
-        if (t >= 1 && agora >= tw.inicio) tw.resolver(); else vivos.push(tw);
+        if (t >= 1 && agora >= tw.inicio) tw.resolver(); else if (!tw.morto) tweens[n++] = tw;
       }
-      tweens = vivos;
+      tweens.length = n;
       for (let i = esperas.length - 1; i >= 0; i -= 1) {
-        if (agora >= esperas[i].ate) { esperas[i].resolver(); esperas.splice(i, 1); }
+        if (agora >= esperas[i].ate) { const e = esperas[i]; esperas.splice(i, 1); e.resolver(); }
       }
     },
     animar({ de, para, duracao, easing = easeInOutCubic, aplicar, atraso = 0, chave }) {
-      if (chave) {
-        for (const tw of tweens) if (tw.chave === chave) tw.resolver();
-        tweens = tweens.filter((tw) => tw.chave !== chave);
-      }
+      if (chave) for (const tw of tweens) if (tw.chave === chave && !tw.morto) { tw.morto = true; tw.resolver(); }
       return new Promise<void>((resolver) => {
-        tweens.push({ inicio: agora + atraso, duracao, de, para, easing, aplicar, resolver, chave });
+        tweens.push({ inicio: agora + atraso, duracao, de, para, easing, aplicar, resolver, chave, morto: false });
       });
     },
     esperar(segundos) {
       return new Promise<void>((resolver) => esperas.push({ ate: agora + segundos, resolver }));
     },
     concluirTudo() {
-      for (const tw of tweens) { tw.aplicar(tw.para); tw.resolver(); }
-      tweens = [];
+      const lista = tweens.splice(0);
+      for (const tw of lista) if (!tw.morto) { tw.aplicar(tw.para); tw.resolver(); }
       for (const e of esperas.splice(0)) e.resolver();
     },
-    limpar() { tweens = []; esperas.splice(0); },
+    limpar() { tweens.length = 0; esperas.splice(0); },
   };
 }
