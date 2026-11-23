@@ -8,6 +8,8 @@ A cerimônia nos níveis A (WebGPU) e B (WebGL2): abrir o fecho; lenda; Água (s
 
 Verificado no Chrome do Mac em 390 × 844: primeiro acesso real (`/?progresso=inicio`) abre o Grimório; Pular grava a marca, desmonta a cena e mostra "Pergunta 1 de 4"; reduzir movimento leva ao C até o Começar; nível B a 60 qps; vídeo da cerimônia com som em `intro-refs/blender/capturas/P2/cerimonia-P2-com-som.mp4`. `verify:release` e build verdes (registro no PROGRESSO).
 
+Retornos do Fábio no iPhone (22–23/11), commitados: botão "Continuar" legível e fundo do Grimório nas perguntas 1–4 (`da5dea0`); legendas revistas (lenda por linha, rodapé ordenado, legendas de som, frase final assinada) (`3060f05`); vazamento de brilho acima de "Bem-vindo" (`48e7ec4`); altar de pedra novo (`76bc62c`); trilha composta original no lugar do pad (`d521903`: laço de 32 s em Ré, uma haste por elemento em fase, resolução no Selo; 884 KB em `public/intro/som`, baixados depois do primeiro toque; medido −18,7 LUFS com a cama cheia, pico −3,1 dBFS no render offline).
+
 Não verificado: iPhone (Safari/WebKit, PWA), dedo real (gestos exercidos com eventos de ponteiro sintéticos), som ouvido por pessoa (só medido), latência de áudio no aparelho, temperatura e bateria, 4G real.
 
 **Parar aqui:** push e publicação na main exigem aprovação expressa do Fábio (P3).
