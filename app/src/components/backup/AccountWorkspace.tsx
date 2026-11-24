@@ -777,6 +777,6 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     </section>
     {!view && <><p role="status" aria-live="polite">{busy?'Aguarde, não feche esta página…':message}</p>{error&&<p role="alert" className="restore-workspace-error">{error}</p>}</>}
   </main></div>
-    <footer className="entry-footer"><a href="/privacidade.html">Privacidade</a></footer>
+    <footer className="entry-footer"><a href="/privacidade.html">Privacidade</a><span aria-hidden="true"> · </span><a href="/?progresso=reparar">Reparar este aparelho</a></footer>
   </div>;
 }

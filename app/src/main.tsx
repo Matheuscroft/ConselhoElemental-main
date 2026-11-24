@@ -61,7 +61,7 @@ else {
   try {
     const notice=captureAccountReturn(window.location.href,url=>window.history.replaceState(null,'',url));
     if(notice!=='none')void openAccountWorkspace(notice);
-    else if(progressView==='reparar')void openRepair();
+    else if(progressView==='reparar'||window.location.pathname==='/reparar')void openRepair();
     else if(progressView==='conta')void openAccountWorkspace();
     else if(progressView==='restaurar'){
       try {
