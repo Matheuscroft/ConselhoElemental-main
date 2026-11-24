@@ -308,21 +308,6 @@
 .cycle-composer-sugestoes { display: flex; flex-wrap: wrap; gap: 8px; margin-block-start: -8px; }
 .cycle-composer-sugestoes button { min-block-size: 44px; padding-inline: 14px; border: 1px solid rgb(var(--el-gold) / .3); border-radius: 50px; background: rgb(var(--el-gold) / .08); color: rgb(var(--el-gold)); font-size: var(--ds-text-small); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease); }
 .cycle-composer-sugestoes button:active { transform: scale(.95); background: rgb(var(--el-gold) / .18); }
-/* Elemento e categoria escolhidos já na criação */
-.cycle-picker { display: grid; gap: 16px; }
-.cycle-picker-grupo { display: grid; gap: 10px; min-inline-size: 0; margin: 0; padding: 0; border: 0; }
-.cycle-picker-grupo > legend { padding: 0; font-size: var(--ds-text-small); color: rgb(var(--el-muted)); }
-.cycle-picker-grupo > legend small { margin-inline-start: 6px; font-size: var(--ds-text-micro); opacity: .8; }
-.cycle-picker-elementos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.cycle-picker-elementos button { display: grid; justify-items: center; align-content: center; gap: 4px; min-block-size: 64px; padding: 8px 4px; border: 1px solid rgb(255 255 255 / 12%); border-radius: var(--ds-raio-controle); background: rgb(var(--el-canvas) / .35); color: var(--acento); font-size: var(--ds-text-micro); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease); }
-.cycle-picker-elementos button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--acento) 70%, transparent); background: color-mix(in srgb, var(--acento) 16%, transparent); box-shadow: 0 0 18px color-mix(in srgb, var(--acento) 22%, transparent); }
-.cycle-picker-elementos button:active { transform: scale(.95); }
-.cycle-picker-elementos .cycle-sigil { color: var(--acento); }
-.cycle-picker-categorias { display: flex; flex-wrap: wrap; gap: 8px; }
-.cycle-picker-categorias button { min-block-size: 44px; padding-inline: 14px; border: 1px solid color-mix(in srgb, var(--acento) 35%, transparent); border-radius: 50px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease); }
-.cycle-picker-categorias button[aria-pressed="true"] { border-color: var(--acento); background: color-mix(in srgb, var(--acento) 20%, transparent); color: var(--acento); }
-.cycle-picker-categorias button:active { transform: scale(.95); }
-.cycle-picker-grupo > p { margin: 0; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); }
 .cycle-weekdays > p strong { display: block; margin-block-end: 2px; color: rgb(var(--el-gold)); font-weight: 600; }
 .cycle-composer-ajuda { border-radius: 16px; border: 1px solid rgb(var(--el-muted) / .18); background: rgb(var(--el-canvas) / .4); }
 .cycle-composer-ajuda summary { min-block-size: 44px; display: flex; align-items: center; padding-inline: 14px; cursor: pointer; list-style: none; color: rgb(var(--el-muted)); font-size: var(--ds-text-small); }
@@ -366,3 +351,65 @@
 }
 @keyframes cycle-composer-brilho { from { inset-inline-start: -60%; } to { inset-inline-start: 130%; } }
 @media (prefers-reduced-motion: reduce) { .cycle-composer footer button[type="submit"]::after { display: none; } }
+
+/* ==========================================================================
+   Criar ciclo, repaginado: o formulário inteiro acompanha o que você escolhe.
+   --cc-acento é a cor do elemento (ou o dourado, sem elemento) e muda em
+   transição; o cartão, as orbes, os chips e o botão final bebem dela.
+   Só transform, opacity e cor se movem; toda duração vem dos tokens.
+   ========================================================================== */
+@property --cc-acento { syntax: '<color>'; inherits: true; initial-value: #d5b66f; }
+.cycle-composer { --cc-acento: rgb(var(--el-gold)); position: relative; isolation: isolate; transition: --cc-acento var(--ds-duration-settle) var(--ds-ease); }
+.cycle-composer::before { content: ''; position: absolute; inset: -28px -28px auto; block-size: 280px; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 70% 100% at 50% 0%, color-mix(in srgb, var(--cc-acento) 20%, transparent), transparent 72%); }
+
+/* cartão vivo */
+.cycle-composer .cycle-composer-preview { position: relative; overflow: hidden; padding: 14px 16px; gap: 14px; border-color: color-mix(in srgb, var(--cc-acento) 45%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--cc-acento) 16%, transparent), rgb(var(--el-canvas) / .55) 70%); box-shadow: 0 0 28px color-mix(in srgb, var(--cc-acento) 16%, transparent), inset 0 1px 0 rgb(255 255 255 / 10%); transition: border-color var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease); }
+.cycle-composer .cycle-composer-preview::after { content: ''; position: absolute; inset-block: 0; inset-inline-start: -40%; inline-size: 40%; background: linear-gradient(100deg, transparent, rgb(255 255 255 / 9%), transparent); transform: skewX(-18deg); pointer-events: none; opacity: 0; }
+.cycle-composer .cycle-composer-preview[data-pronto="true"]::after { animation: cc-varre calc(var(--ds-duration-conjure) * 1.6) var(--ds-ease) both; }
+@keyframes cc-varre { from { inset-inline-start: -40%; opacity: 1; } to { inset-inline-start: 120%; opacity: 0; } }
+.cycle-composer .cycle-composer-preview > .cc-orbe { inline-size: 56px; block-size: 56px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--cc-acento) 55%, transparent); background: color-mix(in srgb, var(--cc-acento) 12%, rgb(var(--el-canvas))); color: var(--cc-acento); box-shadow: 0 0 22px color-mix(in srgb, var(--cc-acento) 35%, transparent); animation: cc-orbe var(--ds-duration-settle) var(--ds-ease-conjure) both; }
+.cycle-composer .cc-orbe img { inline-size: 100%; block-size: 100%; object-fit: contain; border-radius: 50%; }
+@keyframes cc-orbe { from { transform: scale(.6) rotate(-12deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.cycle-composer .cycle-composer-preview small { color: var(--cc-acento); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; }
+.cycle-composer .cycle-composer-preview p b { color: rgb(var(--el-text)); }
+
+/* campo do nome */
+.cycle-composer .cycle-composer-name input:focus-visible { border-color: var(--cc-acento); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cc-acento) 22%, transparent); }
+
+/* orbes de elemento */
+.cycle-picker { display: grid; gap: 18px; }
+.cycle-picker-grupo { display: grid; gap: 12px; min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.cycle-picker-grupo > legend { padding: 0; font-size: var(--ds-text-small); font-weight: 500; color: rgb(var(--el-muted)); }
+.cycle-picker-grupo > legend small { margin-inline-start: 6px; font-size: var(--ds-text-micro); opacity: .8; }
+.cycle-picker-elementos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.cycle-picker-elementos > button { display: grid; justify-items: center; align-content: start; gap: 6px; min-block-size: 96px; padding: 10px 2px 8px; border: 1px solid transparent; border-radius: 18px; background: transparent; color: rgb(var(--el-muted)); font-size: var(--ds-text-micro); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), background var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease), opacity var(--ds-duration-feedback) var(--ds-ease); }
+.cycle-picker-elementos .cp-orbe { display: grid; place-items: center; inline-size: 56px; block-size: 56px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--acento) 18%, transparent), transparent 70%); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), filter var(--ds-duration-feedback) var(--ds-ease); }
+.cycle-picker-elementos .cp-orbe img { inline-size: 100%; block-size: 100%; object-fit: contain; filter: saturate(.85); }
+.cycle-picker-elementos[data-escolhido] > button[aria-pressed="false"] { opacity: .55; }
+.cycle-picker-elementos > button[aria-pressed="true"] { color: var(--acento); border-color: color-mix(in srgb, var(--acento) 60%, transparent); background: color-mix(in srgb, var(--acento) 12%, transparent); transform: translateY(-2px); box-shadow: 0 8px 24px color-mix(in srgb, var(--acento) 24%, transparent); }
+.cycle-picker-elementos > button[aria-pressed="true"] .cp-orbe { transform: scale(1.1); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--acento) 70%, transparent)); }
+.cycle-picker-elementos > button[aria-pressed="true"] .cp-orbe img { filter: none; }
+.cycle-picker-elementos > button:active { transform: scale(.94); transition-duration: var(--ds-duration-press); }
+
+/* categorias entram em cascata */
+.cycle-picker-categorias { display: flex; flex-wrap: wrap; gap: 8px; }
+.cycle-picker-categorias > button { min-block-size: 44px; padding-inline: 14px; border: 1px solid color-mix(in srgb, var(--acento) 35%, transparent); border-radius: 50px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); animation: cc-chip var(--ds-duration-settle) var(--ds-ease-conjure) calc(var(--i, 0) * var(--ds-stagger)) both; transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease); }
+@keyframes cc-chip { from { opacity: 0; transform: translateY(8px) scale(.92); } to { opacity: 1; transform: none; } }
+.cycle-picker-categorias > button[aria-pressed="true"] { border-color: var(--acento); background: color-mix(in srgb, var(--acento) 22%, transparent); color: var(--acento); font-weight: 600; }
+.cycle-picker-categorias > button:active { transform: scale(.95); }
+.cycle-picker-grupo > p { margin: 0; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); }
+
+/* ritmos rápidos */
+.cycle-ritmo { display: flex; flex-wrap: wrap; gap: 8px; margin-block-end: 14px; }
+.cycle-ritmo > button { min-block-size: 44px; padding-inline: 16px; border: 1px solid color-mix(in srgb, var(--cc-acento) 35%, transparent); border-radius: 50px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease); }
+.cycle-ritmo > button[aria-pressed="true"] { border-color: var(--cc-acento); background: color-mix(in srgb, var(--cc-acento) 22%, transparent); color: var(--cc-acento); font-weight: 600; }
+.cycle-ritmo > button:active { transform: scale(.95); }
+
+/* rodapé inteligente */
+.cycle-composer footer { grid-template-columns: 1fr 1.5fr; }
+.cycle-composer footer .cc-resumo { grid-column: 1 / -1; margin: 0; font-size: var(--ds-text-micro); line-height: 1.4; color: rgb(var(--el-muted)); overflow-wrap: anywhere; text-wrap: balance; }
+.cycle-composer footer button[type="submit"] { background: var(--cc-acento); color: rgb(var(--el-canvas)); font-weight: 600; transition: background var(--ds-duration-settle) var(--ds-ease), transform var(--ds-duration-press) var(--ds-ease); }
+.cycle-composer footer button[type="submit"]:not(:disabled):active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) {
+  .cycle-composer, .cycle-composer * { animation: none !important; transition: none !important; }
+}

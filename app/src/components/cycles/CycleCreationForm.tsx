@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
+import { ELEMENTS } from '@/constants';
+import { ACENTO, type ElementoId } from '@/lib/design/palette';
 
 const SUGESTOES = ['Ler 20 minutos', 'Treinar', 'Meditar', 'Beber água', 'Estudar'];
 const WEEK = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -10,20 +12,44 @@ export function CycleWeekdays({ days, onToggle }: { days: number[]; onToggle: (d
   </fieldset>;
 }
 
-/** Controlled composer. It never creates, persists, or calculates a cycle. */
-export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, agendaResumo, onSubmit, onCancel, children, agenda }: {
+/** The element's art, or the cycle mark when there is none (or the image fails). A child so the form itself stays hook-free. */
+function OrbeDoCiclo({ elemento }: { elemento: ElementoId | null }) {
+  const [falhou, setFalhou] = useState(false);
+  return elemento && !falhou
+    ? <img src={`/sanctuary/elements/${elemento}-v1.webp`} alt="" width={56} height={56} onError={() => setFalhou(true)} />
+    : <ArcaneIcon name="ciclo" size={34} />;
+}
+
+/** Controlled composer. It never creates, persists, or calculates a cycle. It only reflects, live, what was chosen. */
+export function CycleCreationForm({ kind, name, onNameChange, days, onToggleDay, startLabel, agendaResumo, onSubmit, onCancel, children, agenda, elemento = null, categoriaNome }: {
   kind: 'cycle' | 'sequence'; name: string; onNameChange: (name: string) => void;
   days?: number[]; onToggleDay?: (day: number) => void; startLabel: string; agendaResumo?: string;
   onSubmit: () => void; onCancel: () => void; children?: ReactNode; agenda?: ReactNode;
+  /** The element chosen so far: tints the whole form and the preview. */
+  elemento?: ElementoId | null;
+  categoriaNome?: string;
 }) {
   const sequence = kind === 'sequence';
-  return <form className="cycle-composer" onSubmit={event => { event.preventDefault(); if (name.trim()) onSubmit(); }}>
-    <div className="cycle-composer-preview"><span><ArcaneIcon name="ciclo" size={34} /></span><div><small>{sequence ? 'Um ciclo por vez' : 'Uma atividade que se repete'}</small><strong>{name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo')}</strong><p>A partir de {startLabel}{agendaResumo ? <> · <b>{agendaResumo}</b></> : null}</p></div></div>
+  const titulo = name.trim() || (sequence ? 'Sua nova sequência' : 'Seu novo ciclo');
+  const resumo = !name.trim() ? '' : [name.trim(), elemento ? ELEMENTS[elemento].name : '', categoriaNome ?? '', agendaResumo ?? ''].filter(Boolean).join(' · ');
+  const estilo = { '--cc-acento': elemento ? ACENTO[elemento] : 'rgb(var(--el-gold))' } as CSSProperties;
+  return <form className="cycle-composer" data-elemento={elemento ?? undefined} style={estilo} onSubmit={event => { event.preventDefault(); if (name.trim()) onSubmit(); }}>
+    <div className="cycle-composer-preview" data-pronto={Boolean(name.trim())}>
+      <span key={elemento ?? 'ciclo'} className="cc-orbe"><OrbeDoCiclo elemento={elemento} /></span>
+      <div>
+        <small>{elemento ? <>{ELEMENTS[elemento].name}{categoriaNome ? ` · ${categoriaNome}` : ''}</> : sequence ? 'Um ciclo por vez' : 'Uma atividade que se repete'}</small>
+        <strong>{titulo}</strong>
+        <p>A partir de {startLabel}{agendaResumo ? <> · <b>{agendaResumo}</b></> : null}</p>
+      </div>
+    </div>
     <label className="cycle-composer-name">{sequence ? 'Nome da sequência' : 'O que você quer praticar?'}<input autoFocus required value={name} onChange={event => onNameChange(event.target.value)} placeholder={sequence ? 'Ex.: Alternar treino A e B' : 'Ex.: Ler por 20 minutos'} /></label>
     {!sequence && !name.trim() ? <div className="cycle-composer-sugestoes" role="group" aria-label="Sugestões de ciclo">{SUGESTOES.map(item => <button key={item} type="button" onClick={() => onNameChange(item)}>{item}</button>)}</div> : null}
     {children}
     <div className="cycle-composer-agenda">{agenda ?? (days && onToggleDay ? <CycleWeekdays days={days} onToggle={onToggleDay} /> : null)}</div>
     <details className="cycle-composer-ajuda"><summary>Como funciona?</summary><p className="cycle-composer-help">{sequence ? 'Alterna um ciclo por data programada. Concluir hoje deixa o próximo para o próximo dia da agenda. Para atividades que você quer fazer no mesmo dia, crie ciclos separados.' : 'Cada data programada tem sua própria conclusão. Use subitens para etapas fixas e o contador do cartão para somar repetições ou qualquer medida que você escolher.'}</p></details>
-    <footer><button type="button" onClick={onCancel}>Cancelar</button><button type="submit" disabled={!name.trim()}>{sequence ? 'Criar sequência' : 'Criar ciclo'}</button></footer>
+    <footer>
+      <p className="cc-resumo" aria-live="polite">{resumo || (sequence ? 'Dê um nome para criar a sequência' : 'Dê um nome para conjurar o ciclo')}</p>
+      <button type="button" onClick={onCancel}>Cancelar</button><button type="submit" disabled={!name.trim()}>{sequence ? 'Criar sequência' : 'Conjurar ciclo'}</button>
+    </footer>
   </form>;
 }

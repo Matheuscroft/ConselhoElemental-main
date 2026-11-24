@@ -38,6 +38,7 @@ import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
 import { CycleCategoryPicker } from '@/components/cycles/CycleCategoryPicker';
+import { CycleRhythmPresets } from '@/components/cycles/CycleRhythmPresets';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
@@ -3101,7 +3102,8 @@ export const Ciclos: React.FC = () => {
         <DialogContent onCloseAutoFocus={(event) => { event.preventDefault(); newCycleTriggerRef.current?.focus(); }} aria-labelledby="cycles-create-title" aria-describedby="cycles-create-description" className="cycle-dialog cycle-composer-dialog">
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
           <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
-            agenda={<RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} />}
+            agenda={<><CycleRhythmPresets value={quickCreateCycleSchedule} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /><RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /></>}
+            elemento={quickCreateElement} categoriaNome={allAreasForEdit.find((area) => area.id === quickCreateAreaId)?.name}
             startLabel={selectedDate.toLocaleDateString('pt-BR')} agendaResumo={resumoDaAgenda(quickCreateCycleSchedule, selectedDate)}
             onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}
             onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}>

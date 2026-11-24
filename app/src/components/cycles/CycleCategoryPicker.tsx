@@ -1,10 +1,17 @@
-import type { CSSProperties } from 'react';
-import { CycleSigil } from './CycleSigil';
+import { useState, type CSSProperties } from 'react';
 import { ELEMENTS } from '@/constants';
 import { ACENTO } from '@/lib/design/palette';
 import type { Area, ElementId } from '@/types';
+import { CycleSigil } from './CycleSigil';
 
 const ORDEM: readonly ElementId[] = ['terra', 'fogo', 'agua', 'ar'];
+
+function Orbe({ id }: { id: ElementId }) {
+  const [falhou, setFalhou] = useState(false);
+  return falhou
+    ? <CycleSigil element={id} size="card" filled />
+    : <img src={`/sanctuary/elements/${id}-v1.webp`} alt="" width={64} height={64} loading="lazy" onError={() => setFalhou(true)} />;
+}
 
 /**
  * Element and category chosen where the cycle is born, so nothing has to be edited afterwards.
@@ -22,20 +29,20 @@ export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onAre
   const doElemento = elemento ? areas.filter((area) => area.elementId === elemento) : [];
   return <div className="cycle-picker">
     <fieldset className="cycle-picker-grupo">
-      <legend>Elemento <small>opcional</small></legend>
-      <div className="cycle-picker-elementos">
-        {ORDEM.map((id) => <button key={id} type="button" aria-pressed={elemento === id} style={{ '--acento': ACENTO[id] } as CSSProperties}
+      <legend>Qual elemento rege este ciclo? <small>opcional</small></legend>
+      <div className="cycle-picker-elementos" data-escolhido={elemento ?? undefined}>
+        {ORDEM.map((id) => <button key={id} type="button" aria-pressed={elemento === id} aria-label={ELEMENTS[id].name} style={{ '--acento': ACENTO[id] } as CSSProperties}
           onClick={() => onElemento(elemento === id ? null : id)}>
-          <CycleSigil element={id} size="child" filled={elemento === id} /><span>{ELEMENTS[id].name}</span>
+          <span className="cp-orbe"><Orbe id={id} /></span><span className="cp-nome">{ELEMENTS[id].name}</span>
         </button>)}
       </div>
     </fieldset>
     {elemento ? <fieldset className="cycle-picker-grupo" key={elemento}>
       <legend>Categoria de {ELEMENTS[elemento].name}</legend>
       <div className="cycle-picker-categorias" style={{ '--acento': ACENTO[elemento] } as CSSProperties}>
-        {doElemento.map((area) => <button key={area.id} type="button" aria-pressed={areaId === area.id} onClick={() => onArea(areaId === area.id ? null : area)}>{area.name}</button>)}
+        {doElemento.map((area, i) => <button key={area.id} type="button" aria-pressed={areaId === area.id} style={{ '--i': i } as CSSProperties} onClick={() => onArea(areaId === area.id ? null : area)}>{area.name}</button>)}
       </div>
-      {!areaId ? <p>Sem categoria por enquanto: o ciclo é criado sem elemento e você escolhe depois.</p> : null}
+      {!areaId ? <p>Sem categoria por enquanto: o ciclo nasce sem elemento e você escolhe depois.</p> : null}
     </fieldset> : null}
   </div>;
 }
