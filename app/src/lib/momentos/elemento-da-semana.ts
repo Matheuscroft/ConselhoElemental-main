@@ -63,10 +63,12 @@ export function elementoDaSemana(
 
 interface HabitoLido {
   readonly elementId: string;
+  readonly sourceModule?: string;
   readonly completions?: readonly { readonly completionDate: Date | string; readonly xpElementId?: string }[];
 }
 interface AcaoLida {
   readonly elementId: string;
+  readonly sourceModule?: string;
   readonly isCompleted?: boolean;
   readonly completedAt?: Date | string | null;
   readonly completionXp?: { readonly elementId: string };
@@ -97,13 +99,14 @@ export function conclusoesDoApp(
   const conclusoes: ConclusaoDoElemento[] = [];
   for (const habito of habitos) {
     for (const conclusao of habito.completions ?? []) {
-      const elemento = comoElemento(conclusao.xpElementId ?? habito.elementId);
+      // A workout cycle pays its XP to Terra, whatever element the cycle was filed under.
+      const elemento = comoElemento(conclusao.xpElementId ?? (habito.sourceModule === 'modulo_treino' ? 'terra' : habito.elementId));
       if (elemento) conclusoes.push({ data: new Date(conclusao.completionDate), elemento });
     }
   }
   for (const acao of acoes) {
     if (!acao.completedAt || acao.isCompleted === false) continue;
-    const elemento = comoElemento(acao.completionXp?.elementId ?? acao.elementId);
+    const elemento = comoElemento(acao.completionXp?.elementId ?? (acao.sourceModule === 'modulo_treino' ? 'terra' : acao.elementId));
     if (elemento) conclusoes.push({ data: new Date(acao.completedAt), elemento });
   }
   for (const conquista of conquistas) {

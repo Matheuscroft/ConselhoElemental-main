@@ -80,3 +80,34 @@ test('a bonus set on purpose to zero stays zero, and an old trail with no bonus 
   store.getState().updateQuest(quest.id, { bonusAutomatico: undefined });
   assert.ok(achievementPlan(store.getState(), 'quest', quest.id).amount >= 50);
 });
+
+// Leva 2 (23/11/2026): audit of every kind of action. Workouts pay Terra and must say so; a parent that paid nothing of
+// its own must not announce "+0"; every completion reaches the frame.
+const { detectarEventos } = loadComponent('src/lib/progresso/eventos.ts');
+const lido = s => ({ habits: s().habits, actions: s().actions, user: s().user, conquistas: [...s().quests, ...s().projects] });
+const conclusoes = (a, b) => detectarEventos(a, b).filter(e => e.tipo === 'conclusao');
+
+test('a workout (loose action or workout cycle) announces the XP it paid, in Terra', () => {
+  for (const make of [
+    s => s().completeNativeAction({ sessionId: crypto.randomUUID(), effortLevel: 2, title: 'Treino', baseValue: 10, durationSeconds: 1800, completedAt: new Date().toISOString() }),
+    s => { const h = s().addHabit({ name: 'Treino A', elementId: 'fogo', areaId: 'sem-categoria', plannedPoints: 3, plannedTimeMinutes: 20, sourceModule: 'modulo_treino' });
+      s().completeNativeAction({ habitId: h.id, sessionId: crypto.randomUUID(), title: 'Treino', baseValue: 2, durationSeconds: 600, completedAt: new Date().toISOString() }); },
+  ]) {
+    const { store } = fixture(); const s = () => store.getState();
+    const antes = lido(s); make(s); const novas = conclusoes(antes, lido(s));
+    assert.equal(novas.length, 1);
+    assert.equal(novas[0].elemento, 'terra');
+    assert.ok(novas[0].xp > 0, 'the notice carries the XP the workout paid');
+    assert.equal(conclusoesDoApp(s().habits, s().actions).every(c => c.elemento === 'terra'), true);
+  }
+});
+
+test('a cycle parent that paid nothing of its own does not announce "+0", its child does announce its XP', () => {
+  const { store } = fixture(); const s = () => store.getState();
+  const h = s().addHabit({ name: 'Pai', elementId: 'fogo', areaId: 'sem-categoria', plannedPoints: 3, plannedTimeMinutes: 5 });
+  s().addHabitChild(h.id, { name: 'Filho', elementId: 'fogo', areaId: 'sem-categoria', plannedPoints: 2 });
+  const antes = lido(s); s().completeHabitChild(s().habits[0].childHabits[0].id, 2, new Date());
+  const novas = conclusoes(antes, lido(s));
+  assert.deepEqual(novas.map(n => n.nome), ['Filho']);
+  assert.ok(novas[0].xp > 0);
+});

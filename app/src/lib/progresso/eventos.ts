@@ -38,7 +38,8 @@ interface HabitoLido {
   readonly id: string;
   readonly name?: string;
   readonly elementId: string;
-  readonly completions?: readonly { readonly id: string; readonly xpAwarded?: number; readonly xpElementId?: string }[];
+  readonly sourceModule?: string;
+  readonly completions?: readonly { readonly id: string; readonly xpAwarded?: number; readonly xpElementId?: string; readonly executedScore?: number }[];
   readonly childHabits?: readonly HabitoLido[];
 }
 interface AcaoLida {
@@ -48,6 +49,8 @@ interface AcaoLida {
   readonly elementId: string;
   readonly completedAt?: Date | string | null;
   readonly completionXp?: { readonly amount: number; readonly elementId: string };
+  readonly sourceModule?: string;
+  readonly completedScore?: number | null;
 }
 interface UsuarioLido {
   readonly xp_fire: number;
@@ -87,10 +90,16 @@ function recibos(estado: EstadoLido): Map<string, ConclusaoNova> {
   const visitar = (habitos: readonly HabitoLido[]) => {
     for (const habito of habitos) {
       for (const c of habito.completions ?? []) {
+        // A workout cycle pays its XP to Terra (the body) and records the score instead of a paid snapshot.
+        const treino = habito.sourceModule === 'modulo_treino' && typeof c.xpAwarded !== 'number';
+        const xp = typeof c.xpAwarded === 'number' && Number.isFinite(c.xpAwarded) ? c.xpAwarded
+          : treino && typeof c.executedScore === 'number' && Number.isFinite(c.executedScore) ? Math.round(c.executedScore * 10) / 10 : 0;
+        // A parent whose children already paid carries an explicit 0 of its own: it must not announce "+0".
+        if (c.xpAwarded === 0) continue;
         mapa.set(`ciclo:${c.id}`, {
           tipo: 'conclusao', id: `ciclo:${c.id}`, nome: habito.name ?? '',
-          elemento: comoElemento(c.xpElementId ?? habito.elementId),
-          xp: typeof c.xpAwarded === 'number' && Number.isFinite(c.xpAwarded) ? c.xpAwarded : 0,
+          elemento: treino ? 'terra' : comoElemento(c.xpElementId ?? habito.elementId),
+          xp,
         });
       }
       visitar(habito.childHabits ?? []);
@@ -109,10 +118,12 @@ function recibos(estado: EstadoLido): Map<string, ConclusaoNova> {
     if (!acao.completedAt) continue;
     // A parent whose subitems already paid carries no XP of its own: it must not announce "+0".
     if (acao.completionXp && acao.completionXp.amount === 0) continue;
+    // A workout action pays its score to Terra without a paid snapshot.
+    const treino = acao.sourceModule === 'modulo_treino' && !acao.completionXp;
     mapa.set(`acao:${acao.id}`, {
       tipo: 'conclusao', id: `acao:${acao.id}`, nome: acao.name ?? acao.title ?? '',
-      elemento: comoElemento(acao.completionXp?.elementId ?? acao.elementId),
-      xp: acao.completionXp?.amount ?? 0,
+      elemento: treino ? 'terra' : comoElemento(acao.completionXp?.elementId ?? acao.elementId),
+      xp: treino ? (typeof acao.completedScore === 'number' && Number.isFinite(acao.completedScore) ? Math.round(acao.completedScore * 10) / 10 : 0) : acao.completionXp?.amount ?? 0,
     });
   }
   return mapa;
