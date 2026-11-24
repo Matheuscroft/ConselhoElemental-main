@@ -15,6 +15,9 @@ const BRACKETS: Array<{ min: number; max: number; title: MasteryTitle; multiplie
   { min: 200, max: Number.POSITIVE_INFINITY, title: 'Lenda', multiplier: 8 },
 ];
 
+/** The titles of the mastery ladder, from the first level to the open-ended top. Read-only for the screens that show the way up. */
+export const MASTERY_LADDER = BRACKETS.map(({ min, title }) => ({ min, title }));
+
 export interface LevelProgress { level: number; title: MasteryTitle; xpTotal: number; xpAtLevelStart: number; xpToNextLevel: number; progressFraction: number }
 const bracketFor = (level: number) => BRACKETS.find((bracket) => level >= bracket.min && level <= bracket.max) ?? BRACKETS[0];
 const xpForNextLevel = (level: number): number => Math.max(1, Math.ceil(BASE_XP * Math.pow(level, EXPONENT) * bracketFor(level + 1).multiplier));

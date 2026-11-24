@@ -20,6 +20,7 @@ import { Contagem } from '@/components/motion/Contagem';
 import { useLuzDoToque, useParalaxe } from '@/components/sanctuary/useCenaViva';
 import { useEntradaCiclos } from '@/components/cycles/useEntradaCiclos';
 import { PlacarElemental } from '@/components/cycles/PlacarElemental';
+import { MaestriaDosCiclos } from '@/components/cycles/MaestriaDosCiclos';
 import { AbasDeslizantes } from '@/components/cycles/AbasDeslizantes';
 import { ACENTO, AURA, TINTA, type ElementoId } from '@/lib/design/palette';
 import { CycleSigil } from '@/components/cycles/CycleSigil';
@@ -37,8 +38,7 @@ import { subitemKind, summarizeSubitems } from '@/components/cycles/subitem-sema
 import { CycleSubitemIdentity } from '@/components/cycles/CycleSubitemIdentity';
 import { CycleExecutionActions } from '@/components/cycles/CycleExecutionActions';
 import { CycleCreationForm } from '@/components/cycles/CycleCreationForm';
-import { CycleCategoryPicker } from '@/components/cycles/CycleCategoryPicker';
-import { CycleRhythmPresets } from '@/components/cycles/CycleRhythmPresets';
+import { CycleCreationWizard } from '@/components/cycles/CycleCreationWizard';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { getSequencePositionForDate } from '@/lib/temporal/sequence-position';
@@ -230,6 +230,8 @@ export const Ciclos: React.FC = () => {
   const [showQuickCreateCycle, setShowQuickCreateCycle] = useState(false);
   const [quickCreateElement, setQuickCreateElement] = useState<ElementoId | null>(null);
   const [quickCreateAreaId, setQuickCreateAreaId] = useState<string | null>(null);
+  const [quickCreateEffort, setQuickCreateEffort] = useState(1);
+  const [quickCreateMinutes, setQuickCreateMinutes] = useState(0);
   const [quickCreateCycleName, setQuickCreateCycleName] = useState('');
   const [quickCreateCycleSchedule, setQuickCreateCycleSchedule] = useState<RecurrenceEditorValue>({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
   const [quickCreateCycleError, setQuickCreateCycleError] = useState('');
@@ -344,12 +346,14 @@ export const Ciclos: React.FC = () => {
       addHabit({
         name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: quickCreateArea?.id ?? 'sem-categoria', areaPrimaryId: quickCreateArea?.id ?? 'sem-categoria', elementId: quickCreateArea?.elementId ?? 'terra',
         startDate: new Date(selectedDate), recurrenceType: quickCreateCycleSchedule.type,
-        recurrenceConfig: quickCreateCycleSchedule.config, plannedPoints: 1, plannedTimeMinutes: 0,
+        recurrenceConfig: quickCreateCycleSchedule.config, plannedPoints: quickCreateEffort, plannedTimeMinutes: quickCreateMinutes,
       });
     } catch (error) { setQuickCreateCycleError(error instanceof Error ? error.message : 'Não foi possível criar o ciclo. Seu preenchimento foi mantido.'); return false; }
     setQuickCreateCycleName('');
     setQuickCreateElement(null);
     setQuickCreateAreaId(null);
+    setQuickCreateEffort(1);
+    setQuickCreateMinutes(0);
     setQuickCreateCycleSchedule({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
     setQuickCreateCycleError('');
     setShowQuickCreateCycle(false);
@@ -1854,6 +1858,7 @@ export const Ciclos: React.FC = () => {
         section.querySelector('summary')?.focus({ preventScroll: true });
         section.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
       }} />
+      <MaestriaDosCiclos />
       {/* Day Card: the one real pane of glass of this screen, with the week's light behind it. */}
       <div className="cycle-day-altar">
       <div className="cycle-day-luz" aria-hidden="true" />
@@ -3103,18 +3108,18 @@ export const Ciclos: React.FC = () => {
       <Dialog open={showQuickCreateCycle} onOpenChange={setShowQuickCreateCycle}>
         <DialogContent onCloseAutoFocus={(event) => { event.preventDefault(); newCycleTriggerRef.current?.focus(); }} aria-labelledby="cycles-create-title" aria-describedby="cycles-create-description" className="cycle-dialog cycle-composer-dialog">
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
-          <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
-            agenda={<><CycleRhythmPresets value={quickCreateCycleSchedule} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /><RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /></>}
+          <CycleCreationWizard name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
+            areas={allAreasForEdit} elemento={quickCreateElement} areaId={quickCreateAreaId}
+            onElemento={(elemento) => { setQuickCreateElement(elemento); setQuickCreateAreaId(null); }}
+            onArea={(area) => { setQuickCreateAreaId(area?.id ?? null); if (area) setQuickCreateElement(area.elementId); }}
             onSugestao={({ texto, areaId }) => { setQuickCreateCycleName(texto); const area = allAreasForEdit.find((entry) => entry.id === areaId); if (area) { setQuickCreateElement(area.elementId); setQuickCreateAreaId(area.id); } }}
-            elemento={quickCreateElement} categoriaNome={allAreasForEdit.find((area) => area.id === quickCreateAreaId)?.name}
+            ritmo={quickCreateCycleSchedule} onRitmo={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }}
+            editor={<RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} />}
+            esforco={quickCreateEffort} onEsforco={setQuickCreateEffort} minutos={quickCreateMinutes} onMinutos={setQuickCreateMinutes}
             startLabel={selectedDate.toLocaleDateString('pt-BR')} agendaResumo={resumoDaAgenda(quickCreateCycleSchedule, selectedDate)}
             onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}
-            onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}>
-            <CycleCategoryPicker areas={allAreasForEdit} elemento={quickCreateElement} areaId={quickCreateAreaId}
-              onElemento={(elemento) => { setQuickCreateElement(elemento); setQuickCreateAreaId(null); }}
-              onArea={(area) => { setQuickCreateAreaId(area?.id ?? null); if (area) setQuickCreateElement(area.elementId); }} />
-            {quickCreateCycleError && <p role="alert">{quickCreateCycleError}</p>}
-          </CycleCreationForm>
+            onCancel={() => { setShowQuickCreateCycle(false); setQuickCreateCycleError(''); }}
+            erro={quickCreateCycleError ? <p role="alert">{quickCreateCycleError}</p> : null} />
         </DialogContent>
       </Dialog>
       </div>

@@ -147,7 +147,7 @@ test('quick cycle uses explicit monthly/yearly input, retains form on error and 
     const f = fixture(), previousUser = JSON.stringify(f.store.getState().user);
     let closed = false, cleared = false, error;
     const scope = { quickCreateCycleName: 'Minha atividade', quickCreateCycleSchedule: { type, config }, selectedDate: date, validateRecurrence,
-      addHabit: f.store.getState().addHabit, quickCreateAreaId: null, allAreasForEdit: [], setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {},
+      addHabit: f.store.getState().addHabit, quickCreateAreaId: null, quickCreateEffort: 1, quickCreateMinutes: 0, allAreasForEdit: [], setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {}, setQuickCreateEffort: () => {}, setQuickCreateMinutes: () => {},
       setQuickCreateCycleName: () => { cleared = true; }, setQuickCreateCycleSchedule: () => {},
       setQuickCreateCycleError: value => { error = value; }, setShowQuickCreateCycle: value => { closed = !value; },
     };
@@ -173,8 +173,8 @@ test('quick cycle is born with the element and category chosen in the form, and 
   for (const [areaId, expected] of [['area-carreira', { areaId: 'area-carreira', elementId: 'fogo' }], [null, { areaId: 'sem-categoria', elementId: 'terra' }]]) {
     const f = fixture();
     const scope = { quickCreateCycleName: 'Revisar metas', quickCreateCycleSchedule: { type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } }, selectedDate: date, validateRecurrence,
-      addHabit: f.store.getState().addHabit, quickCreateAreaId: areaId, allAreasForEdit: [{ id: 'area-carreira', elementId: 'fogo' }],
-      setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {}, setQuickCreateCycleName: () => {}, setQuickCreateCycleSchedule: () => {},
+      addHabit: f.store.getState().addHabit, quickCreateAreaId: areaId, quickCreateEffort: 1, quickCreateMinutes: 0, allAreasForEdit: [{ id: 'area-carreira', elementId: 'fogo' }],
+      setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {}, setQuickCreateEffort: () => {}, setQuickCreateMinutes: () => {}, setQuickCreateCycleName: () => {}, setQuickCreateCycleSchedule: () => {},
       setQuickCreateCycleError: () => {}, setShowQuickCreateCycle: () => {} };
     assert.equal(new Function(...Object.keys(scope), `${js}; return handler;`)(...Object.values(scope))(), true);
     const habit = f.store.getState().habits[0];
@@ -226,4 +226,27 @@ test('compact month preserves leap-year dates, weekday alignment and exact day-s
     assert.equal(nodes(tree, 'span').filter(node => String(node.props['aria-hidden']) === 'true').length, weekStartsOn === 0 ? 2 : 1);
     buttons[28].props.onClick(); assert.equal(selected, days[28].dayStamp);
   }
+});
+
+test('quick cycle is born with the effort and time chosen in the form, which decide what each completion pays', () => {
+  const source = readFileSync(new URL('../../src/pages/Ciclos.tsx', import.meta.url), 'utf8');
+  const ast = ts.createSourceFile('Ciclos.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let initializer;
+  function visit(node) { if (ts.isVariableDeclaration(node) && node.name.getText(ast) === 'handleQuickCreateCycle') initializer = node.initializer.getText(ast); ts.forEachChild(node, visit); }
+  visit(ast);
+  const js = ts.transpileModule(`const handler = ${initializer};`, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
+  const pagamentos = [];
+  for (const [esforco, minutos] of [[1, 0], [3, 15], [5, 60]]) {
+    const f = fixture();
+    const scope = { quickCreateCycleName: 'Estudar', quickCreateCycleSchedule: { type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } }, selectedDate: date, validateRecurrence,
+      addHabit: f.store.getState().addHabit, quickCreateAreaId: null, quickCreateEffort: esforco, quickCreateMinutes: minutos, allAreasForEdit: [],
+      setQuickCreateElement: () => {}, setQuickCreateAreaId: () => {}, setQuickCreateEffort: () => {}, setQuickCreateMinutes: () => {}, setQuickCreateCycleName: () => {}, setQuickCreateCycleSchedule: () => {},
+      setQuickCreateCycleError: () => {}, setShowQuickCreateCycle: () => {} };
+    assert.equal(new Function(...Object.keys(scope), `${js}; return handler;`)(...Object.values(scope))(), true);
+    const habit = f.store.getState().habits[0];
+    assert.equal(habit.plannedPoints, esforco); assert.equal(habit.plannedTimeMinutes, minutos);
+    f.store.getState().completeHabit(habit.id, minutos, date);
+    pagamentos.push(f.store.getState().user.xp_earth);
+  }
+  assert.ok(pagamentos[1] > pagamentos[0] && pagamentos[2] > pagamentos[1], 'a harder, longer cycle pays more XP per completion: ' + pagamentos.join(' < '));
 });

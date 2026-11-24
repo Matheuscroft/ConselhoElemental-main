@@ -107,3 +107,74 @@ select:not([multiple]):not([data-slot]) {
 [role="alertdialog"] button:not(:disabled) { box-shadow: 0 3px 0 var(--ds-labio-fio), var(--ds-realce-suave); }
 [role="alertdialog"] button:last-of-type:not(:disabled) { box-shadow: 0 4px 0 var(--ds-labio-ouro), var(--ds-realce); }
 [role="alertdialog"] button:active:not(:disabled) { transform: translateY(3px); box-shadow: none; }
+
+/* ==========================================================================
+   Segunda camada: mais volume, brilho e mola. O botão principal ganha uma face
+   com gloss, um lábio mais fundo, uma sombra projetada na cor do ouro e um brilho
+   que passa de tempos em tempos; ao soltar, volta com a mola do sistema.
+   Só transform, box-shadow, cor e a posição do brilho se movem.
+   ========================================================================== */
+:root {
+  --ds-labio-fundo: color-mix(in srgb, rgb(var(--el-gold)) 34%, #000);
+  --ds-gloss: linear-gradient(180deg, rgb(255 255 255 / .36), rgb(255 255 255 / .07) 42%, rgb(255 255 255 / 0) 56%, rgb(0 0 0 / .16));
+  --ds-passa: linear-gradient(105deg, transparent 38%, rgb(255 255 255 / .6) 50%, transparent 62%);
+}
+[class].ds-botao[data-tipo="primario"]:not(:disabled),
+[class].elemental-action:not(.elemental-action-secondary):not(:disabled),
+[class].quest-primary:not(.quest-botao3d):not(:disabled),
+[class].cycle-primary:not(:disabled),
+[class].tr-novo,
+[class].cycle-composer footer button[type="submit"]:not(:disabled),
+[data-slot="button"][data-variant="default"]:not(:disabled) {
+  background-image: var(--ds-passa), var(--ds-gloss);
+  background-size: 260% 100%, 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 160% 0, 0 0;
+  box-shadow: 0 6px 0 var(--ds-labio-fundo), 0 16px 24px -10px color-mix(in srgb, var(--cc-acento, rgb(var(--el-gold))) 60%, transparent), inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -2px 0 rgb(0 0 0 / .14);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease);
+  animation: ds-brilho-passa 6s ease-in-out infinite;
+}
+@keyframes ds-brilho-passa { 0%, 68% { background-position: 160% 0, 0 0; } 100% { background-position: -60% 0, 0 0; } }
+@media (hover: hover) {
+  [class].ds-botao[data-tipo="primario"]:hover:not(:disabled),
+  [class].cycle-primary:hover:not(:disabled),
+  [class].quest-primary:not(.quest-botao3d):hover:not(:disabled),
+  [class].cycle-composer footer button[type="submit"]:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ds-labio-fundo), 0 20px 28px -10px color-mix(in srgb, var(--cc-acento, rgb(var(--el-gold))) 70%, transparent), inset 0 1px 0 rgb(255 255 255 / .6), inset 0 -2px 0 rgb(0 0 0 / .14); }
+}
+[class].ds-botao[data-tipo="primario"]:active:not(:disabled),
+[class].elemental-action:not(.elemental-action-secondary):active:not(:disabled),
+[class].quest-primary:not(.quest-botao3d):active:not(:disabled),
+[class].cycle-primary:active:not(:disabled),
+[class].tr-novo:active,
+[class].cycle-composer footer button[type="submit"]:active:not(:disabled),
+[data-slot="button"][data-variant="default"]:active:not(:disabled) {
+  transform: translateY(6px) scale(.985);
+  box-shadow: 0 0 0 var(--ds-labio-fundo), 0 3px 8px -3px color-mix(in srgb, var(--cc-acento, rgb(var(--el-gold))) 50%, transparent), inset 0 2px 6px rgb(0 0 0 / .22);
+  transition-duration: var(--ds-duration-press);
+  animation: none;
+}
+
+/* secundário: face com gloss leve, lábio de 4px, afunda e volta com mola */
+[class].ds-botao[data-tipo="secundario"]:not(:disabled),
+[class].elemental-action-secondary:not(:disabled),
+[class].quest-secondary:not(:disabled),
+[class].cycle-composer footer button[type="button"]:not(:disabled),
+[data-slot="button"][data-variant="outline"]:not(:disabled) {
+  background-image: linear-gradient(180deg, rgb(255 255 255 / .08), rgb(255 255 255 / 0) 55%);
+  box-shadow: 0 4px 0 var(--ds-labio-fio), 0 10px 16px -10px rgb(0 0 0 / .6), inset 0 1px 0 rgb(255 255 255 / .16);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-settle) var(--ds-ease-conjure), background-color var(--ds-duration-feedback) var(--ds-ease), border-color var(--ds-duration-feedback) var(--ds-ease);
+}
+[class].ds-botao[data-tipo="secundario"]:active:not(:disabled),
+[class].elemental-action-secondary:active:not(:disabled),
+[class].quest-secondary:active:not(:disabled),
+[class].cycle-composer footer button[type="button"]:active:not(:disabled),
+[data-slot="button"][data-variant="outline"]:active:not(:disabled) {
+  transform: translateY(4px) scale(.985); box-shadow: 0 0 0 var(--ds-labio-fio), inset 0 2px 6px rgb(0 0 0 / .25); transition-duration: var(--ds-duration-press);
+}
+/* botões de alternar (chips de elemento, filtros): o escolhido tem volume e brilho */
+[class].ds-botao[aria-pressed="true"]:not(:disabled) { background-image: var(--ds-gloss); box-shadow: 0 4px 0 color-mix(in srgb, currentColor 34%, #000), 0 12px 18px -10px color-mix(in srgb, currentColor 55%, transparent), inset 0 1px 0 rgb(255 255 255 / .2); }
+
+@media (prefers-reduced-motion: reduce) {
+  [class].ds-botao[data-tipo="primario"], [class].elemental-action, [class].quest-primary, [class].cycle-primary, [class].tr-novo,
+  [class].cycle-composer footer button[type="submit"], [data-slot="button"][data-variant="default"] { animation: none; background-position: 160% 0, 0 0; }
+}
