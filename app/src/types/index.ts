@@ -301,6 +301,8 @@ export interface Quest extends BaseItem {
   // Recompensa
   reward?: string;
   xpBonus: number;
+  /** False when the bonus was set on purpose (even to 0). Otherwise a zero bonus means "not set": finishing pays the trail's default bonus. */
+  bonusAutomatico?: boolean;
   completionBonus?: AchievementBonus;
 }
 
@@ -341,6 +343,8 @@ export interface Project extends BaseItem {
   // Recompensa
   reward?: string;
   xpBonus: number;
+  /** False when the bonus was set on purpose (even to 0). Otherwise a zero bonus means "not set": finishing pays the trail's default bonus. */
+  bonusAutomatico?: boolean;
   completionBonus?: AchievementBonus;
 }
 

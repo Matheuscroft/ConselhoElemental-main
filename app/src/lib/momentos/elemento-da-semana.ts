@@ -72,6 +72,15 @@ interface AcaoLida {
   readonly completionXp?: { readonly elementId: string };
 }
 
+/** A finished trail (quest or Great Work): it carries the bonus it paid, with its element and moment. */
+interface ConquistaLida {
+  readonly isCompleted?: boolean;
+  readonly elementId: string;
+  readonly completionBonus?: { readonly elementId: string; readonly completedAt: string };
+}
+/** Finishing a whole trail weighs like this many ordinary completions in the week's element. */
+export const PESO_DE_TRILHA = 3;
+
 const comoElemento = (id: string | undefined): ElementoDoDia | null =>
   id !== undefined && ELEMENTOS_VALIDOS.has(id) ? (id as ElementoDoDia) : null;
 
@@ -83,6 +92,7 @@ const comoElemento = (id: string | undefined): ElementoDoDia | null =>
 export function conclusoesDoApp(
   habitos: readonly HabitoLido[],
   acoes: readonly AcaoLida[],
+  conquistas: readonly ConquistaLida[] = [],
 ): ConclusaoDoElemento[] {
   const conclusoes: ConclusaoDoElemento[] = [];
   for (const habito of habitos) {
@@ -95,6 +105,12 @@ export function conclusoesDoApp(
     if (!acao.completedAt || acao.isCompleted === false) continue;
     const elemento = comoElemento(acao.completionXp?.elementId ?? acao.elementId);
     if (elemento) conclusoes.push({ data: new Date(acao.completedAt), elemento });
+  }
+  for (const conquista of conquistas) {
+    if (!conquista.isCompleted || !conquista.completionBonus?.completedAt) continue;
+    const elemento = comoElemento(conquista.completionBonus.elementId ?? conquista.elementId);
+    const data = new Date(conquista.completionBonus.completedAt);
+    if (elemento) for (let i = 0; i < PESO_DE_TRILHA; i += 1) conclusoes.push({ data, elemento });
   }
   return conclusoes;
 }

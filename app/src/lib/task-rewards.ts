@@ -5,7 +5,7 @@ const keys = { terra: 'xp_earth', fogo: 'xp_fire', agua: 'xp_water', ar: 'xp_air
 type Node = Task | TaskItem;
 
 /** Wrap the existing completion updates. Only fresh leaf transitions pay; parents do not pay again. */
-export function withTaskXpUpdate<T extends { tasks?: Task[]; user?: User }>(state: { tasks: Task[]; user: User }, update: T): T {
+export function withTaskXpUpdate<T extends { tasks?: Task[]; user?: User; actions?: Action[] }>(state: { tasks: Task[]; user: User; actions?: Action[] }, update: T): T {
   if (!update.tasks || update.tasks === state.tasks) return update;
   const before = new Map<string, Action>();
   const index = (items: Node[]) => items.forEach(item => { before.set(item.id, item); index(item.childItems ?? []); });
@@ -38,5 +38,19 @@ export function withTaskXpUpdate<T extends { tasks?: Task[]; user?: User }>(stat
     }
     return { ...item, completionXp: reward, childItems: walk(item.childItems ?? [], false, isNative, element) };
   });
-  return { ...update, tasks: walk(update.tasks), user };
+  const tasks = walk(update.tasks);
+  // The canonical `actions` list is what the frame, the week's element and the reward notices read: keep each ritual's
+  // completion (and the XP it paid, with its element) mirrored there, so finishing a trail step shows up everywhere.
+  const baseActions = update.actions ?? state.actions;
+  if (!baseActions) return { ...update, tasks, user };
+  const done = new Map<string, Node>();
+  const collect = (items: Node[]) => items.forEach(item => { done.set(item.id, item); collect(item.childItems ?? []); });
+  collect(tasks);
+  const actions = baseActions.map(action => {
+    const item = done.get(action.id);
+    if (!item || action.sourceModule === 'modulo_treino') return action;
+    if (action.isCompleted === item.isCompleted && action.completionXp === item.completionXp && (!item.isCompleted || action.completedAt)) return action;
+    return { ...action, isCompleted: item.isCompleted, completedAt: item.completedAt ?? (item.isCompleted ? action.completedAt ?? new Date() : null), completedScore: item.completedScore ?? null, completionXp: item.completionXp };
+  });
+  return { ...update, tasks, user, actions };
 }

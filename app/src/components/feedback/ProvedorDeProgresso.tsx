@@ -12,8 +12,8 @@ import {
 import { NoticiaElemental } from './NoticiaElemental';
 import { empilhar, intensidadeDoXp, noticiasDeConclusoes, remover, type Noticia } from './fila';
 
-const lerEstado = (s: { habits: unknown; actions: unknown; user: unknown }) =>
-  ({ habits: s.habits, actions: s.actions, user: s.user }) as unknown as EstadoLido;
+const lerEstado = (s: { habits: unknown; actions: unknown; user: unknown; quests?: unknown[]; projects?: unknown[] }) =>
+  ({ habits: s.habits, actions: s.actions, user: s.user, conquistas: [...(s.quests ?? []), ...(s.projects ?? [])] }) as unknown as EstadoLido;
 
 type Disparo = (de: number, para: number, titulo: string) => void;
 let disparoDeTeste: Disparo | null = null;
@@ -61,7 +61,7 @@ export function ProvedorDeProgresso() {
     const parar = useAppStore.subscribe((depois, antes) => {
       if (depois.currentAccountId !== antes.currentAccountId) { setFila([]); setCerimonias([]); return; }
       if (hidratando) return;
-      if (depois.habits === antes.habits && depois.actions === antes.actions && depois.user === antes.user) return;
+      if (depois.habits === antes.habits && depois.actions === antes.actions && depois.user === antes.user && depois.quests === antes.quests && depois.projects === antes.projects) return;
       let eventos;
       try { eventos = detectarEventos(lerEstado(antes), lerEstado(depois)); } catch { return; }
       if (!eventos.length) return;

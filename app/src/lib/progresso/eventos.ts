@@ -55,9 +55,18 @@ interface UsuarioLido {
   readonly xp_air: number;
   readonly xp_earth: number;
 }
+interface ConquistaLida {
+  readonly id: string;
+  readonly title?: string;
+  readonly elementId: string;
+  readonly isCompleted?: boolean;
+  readonly completionBonus?: { readonly amount: number; readonly elementId: string };
+}
 export interface EstadoLido {
   readonly habits: readonly HabitoLido[];
   readonly actions: readonly AcaoLida[];
+  /** Quests and Great Works: finishing one is a completion of its own, paying its bonus to its element. */
+  readonly conquistas?: readonly ConquistaLida[];
   readonly user: UsuarioLido;
 }
 
@@ -88,8 +97,18 @@ function recibos(estado: EstadoLido): Map<string, ConclusaoNova> {
     }
   };
   visitar(estado.habits);
+  for (const conquista of estado.conquistas ?? []) {
+    if (!conquista.isCompleted || !conquista.completionBonus) continue;
+    mapa.set(`conquista:${conquista.id}`, {
+      tipo: 'conclusao', id: `conquista:${conquista.id}`, nome: conquista.title ?? '',
+      elemento: comoElemento(conquista.completionBonus.elementId ?? conquista.elementId),
+      xp: Number.isFinite(conquista.completionBonus.amount) ? conquista.completionBonus.amount : 0,
+    });
+  }
   for (const acao of estado.actions) {
     if (!acao.completedAt) continue;
+    // A parent whose subitems already paid carries no XP of its own: it must not announce "+0".
+    if (acao.completionXp && acao.completionXp.amount === 0) continue;
     mapa.set(`acao:${acao.id}`, {
       tipo: 'conclusao', id: `acao:${acao.id}`, nome: acao.name ?? acao.title ?? '',
       elemento: comoElemento(acao.completionXp?.elementId ?? acao.elementId),

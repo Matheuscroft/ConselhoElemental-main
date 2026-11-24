@@ -1496,7 +1496,9 @@ export const Ciclos: React.FC = () => {
   // The frame's colour is the element the person finished most in the day's week
   // (Monday to Sunday), so it resets every Monday and follows where the week goes.
   const acoesDoApp = useAppStore(state => state.actions);
-  const conclusoes = useMemo(() => conclusoesDoApp(habits, acoesDoApp), [habits, acoesDoApp]);
+  const questsDoApp = useAppStore(state => state.quests);
+  const projetosDoApp = useAppStore(state => state.projects);
+  const conclusoes = useMemo(() => conclusoesDoApp(habits, acoesDoApp, [...questsDoApp, ...projetosDoApp]), [habits, acoesDoApp, questsDoApp, projetosDoApp]);
 
   // The room's light is the element leading the person's week, read from what
   // they already finished (same helper as the Sanctuary and Pillars; read-only,

@@ -4178,6 +4178,7 @@ export const useAppStore = create<AppState>()(
           dueDate: projectData.dueDate || null,
           reward: projectData.reward,
           xpBonus: projectData.xpBonus || 0,
+          bonusAutomatico: projectData.xpBonus === undefined,
         };
         set((state) => ({
           projects: [newProject, ...state.projects],
@@ -4359,6 +4360,7 @@ export const useAppStore = create<AppState>()(
           dueDate: questData.dueDate || null,
           reward: questData.reward,
           xpBonus: questData.xpBonus || 0,
+          bonusAutomatico: questData.xpBonus === undefined,
         };
         set((state) => ({
           quests: [newQuest, ...state.quests],
@@ -4626,13 +4628,21 @@ export const useAppStore = create<AppState>()(
         };
         
         // Somar pontos de tarefas completadas
+        // Subitens concluídos pagam à parte (o mesmo valor que o XP deles usa); a parte concluída de um ritual com
+        // subitens vale a soma deles, e um ritual ainda aberto já conta o que seus subitens entregaram.
+        const leafPoints = (items: TaskItem[]): number => items.reduce((sum, item) => sum + (item.childItems?.length
+          ? leafPoints(item.childItems)
+          : item.isCompleted ? Math.round((item.baseValue || 1) * EFFORT_MULTIPLIERS[2]) : 0), 0);
         tasks.forEach((task) => {
+          const fromItems = task.childItems?.length ? leafPoints(task.childItems) : 0;
           if (task.isCompleted) {
             const baseValue = task.baseValue || 1;
             const effortMultiplier = EFFORT_MULTIPLIERS[task.effortLevel || 1];
-            const points = task.sourceModule === 'modulo_treino' ? task.completedScore ?? 0 : Math.round(baseValue * effortMultiplier);
+            const points = task.sourceModule === 'modulo_treino' ? task.completedScore ?? 0 : fromItems > 0 ? fromItems : Math.round(baseValue * effortMultiplier);
             scores[task.elementId].score += points;
             scores[task.elementId].taskCount++;
+          } else if (fromItems > 0) {
+            scores[task.elementId].score += fromItems;
           }
         });
         
