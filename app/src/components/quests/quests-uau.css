@@ -497,3 +497,66 @@
 .quest-path > li[data-complete='true'] .quest-connector path { stroke-width: 4px; animation: cq-conector-acende calc(var(--ds-duration-conjure) * 2) var(--ds-ease) both; }
 @keyframes cq-conector-acende { from { opacity: .2; filter: drop-shadow(0 0 0 transparent); } 40% { opacity: 1; filter: drop-shadow(0 0 10px var(--quest-accent)); } to { opacity: .65; } }
 @media (prefers-reduced-motion: reduce) { .quest-step-xp, .quest-path > li[data-complete='true'] .quest-connector path { animation: none; } .quest-step-xp { display: none; } }
+
+/* ==========================================================================
+   Etapas que saltam da tela. Cada pedra é um disco em relevo, com lábio fundo, brilho no topo e um grão leve; a
+   concluída sobe mais alto (um degrau acima das que faltam), a próxima chama a atenção. Uma régua de subida mostra
+   a escalada, e o caminho entre pedras concluídas se acende e corre. Só transform, sombras e cor se movem.
+   ========================================================================== */
+.quest-map {
+  --quest-lip: color-mix(in srgb, var(--quest-accent) 38%, #000);
+  --quest-grao: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 .55 0 0 0 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.16'/%3E%3C/svg%3E");
+}
+.quest-map .quest-step-stone {
+  inline-size: 84px; block-size: 78px;
+  background-image: var(--quest-grao), radial-gradient(ellipse 80% 70% at 35% 22%, rgb(255 255 255 / .3), transparent 62%), linear-gradient(180deg, transparent 55%, rgb(0 0 0 / .22));
+  background-size: 120px 120px, 100% 100%, 100% 100%;
+  box-shadow: 0 7px 0 var(--quest-lip), 0 18px 22px -10px rgb(0 0 0 / .65), inset 0 2px 0 rgb(255 255 255 / .34), inset 0 -8px 12px rgb(0 0 0 / .22);
+}
+/* pending steps sit low; the finished ones are lifted, so the climb reads at a glance */
+.quest-path > li[data-complete="true"] .quest-step-stone {
+  box-shadow: 0 11px 0 var(--quest-lip), 0 0 28px color-mix(in srgb, var(--quest-accent) 46%, transparent), 0 24px 26px -10px color-mix(in srgb, var(--quest-accent) 40%, transparent), inset 0 2px 0 rgb(255 255 255 / .4), inset 0 -8px 12px rgb(0 0 0 / .2);
+  translate: 0 -4px;
+}
+.quest-path > li[data-next="true"] .quest-step-stone {
+  box-shadow: 0 9px 0 var(--quest-lip), 0 0 34px color-mix(in srgb, var(--quest-accent) 60%, transparent), 0 22px 28px -10px color-mix(in srgb, var(--quest-accent) 50%, transparent), inset 0 2px 0 rgb(255 255 255 / .5), inset 0 -8px 12px rgb(0 0 0 / .18);
+}
+.quest-path > li[data-available="false"] .quest-step-stone { box-shadow: 0 4px 0 rgb(0 0 0 / .5), inset 0 1px 0 rgb(255 255 255 / .12); }
+.quest-map .quest-step:active .quest-step-stone { translate: 0 6px; box-shadow: 0 1px 0 var(--quest-lip), inset 0 3px 8px rgb(0 0 0 / .3); transition-duration: var(--ds-duration-press); }
+.quest-map .quest-step-stone { transition: translate var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-settle) var(--ds-ease-conjure); }
+.quest-path > li[data-complete="true"] .quest-step-face { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--quest-accent) 70%, transparent)); }
+
+/* the path between finished stones is lit and runs forward */
+.quest-path > li[data-complete="true"] .quest-connector path { stroke-dasharray: 10 8; stroke-width: 5px; animation: cq-conector-corre calc(var(--ds-duration-conjure) * 5) linear infinite, cq-conector-acende calc(var(--ds-duration-conjure) * 2) var(--ds-ease) both; }
+@keyframes cq-conector-corre { to { stroke-dashoffset: -36; } }
+
+/* the climb: a ruler of steps above the path (last in the markup, first on screen) */
+.quest-map { display: flex; flex-direction: column; }
+.quest-subida { order: -1; }
+.quest-subida { display: grid; gap: 8px; margin-block: 4px 18px; padding: 12px 14px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--quest-accent) 30%, transparent); background: linear-gradient(180deg, color-mix(in srgb, var(--quest-accent) 10%, transparent), transparent), rgb(var(--el-canvas) / .55); box-shadow: 0 4px 0 rgb(0 0 0 / .3), inset 0 1px 0 rgb(255 255 255 / .1); }
+.quest-subida-rotulo { font: 600 var(--ds-text-micro)/1.2 Inter, system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--quest-accent); }
+.quest-subida-degraus { display: flex; align-items: flex-end; gap: 4px; block-size: 28px; }
+.quest-subida-degraus > i { flex: 1 1 0; min-inline-size: 6px; border-radius: 4px 4px 2px 2px; block-size: calc(8px + var(--i, 0) * 1.7px); background: rgb(var(--el-muted) / .22); transition: background var(--ds-duration-settle) var(--ds-ease), box-shadow var(--ds-duration-settle) var(--ds-ease); }
+.quest-subida-degraus > i[data-feito='true'] { background: linear-gradient(180deg, color-mix(in srgb, var(--quest-accent) 75%, #fff), var(--quest-accent)); box-shadow: 0 0 8px color-mix(in srgb, var(--quest-accent) 55%, transparent); }
+.quest-subida-degraus > i[data-atual='true'] { background: color-mix(in srgb, var(--quest-accent) 35%, transparent); outline: 1px solid var(--quest-accent); animation: cq-degrau-pisca calc(var(--ds-duration-conjure) * 2.5) ease-in-out infinite alternate; }
+@keyframes cq-degrau-pisca { from { opacity: .55; } to { opacity: 1; } }
+.quest-subida[data-completa] { border-color: rgb(var(--el-gold) / .6); }
+.quest-subida[data-completa] .quest-subida-rotulo { color: rgb(var(--el-gold)); }
+
+/* the buttons of a step: raised, with a deep lip, a lit top edge and a light grain */
+.quest-step-detail { background-image: var(--quest-grao); background-size: 120px 120px; }
+.quest-step-detail .quest-primary {
+  min-block-size: 56px; background-image: var(--quest-grao); background-size: 120px 120px;
+  box-shadow: 0 8px 0 color-mix(in srgb, var(--quest-gold) 42%, #000), 0 16px 22px -10px color-mix(in srgb, var(--quest-gold) 55%, transparent), inset 0 2px 0 rgb(255 255 255 / .6), inset 0 14px 14px -10px rgb(255 255 255 / .3), inset 0 -4px 6px rgb(0 0 0 / .14);
+  transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.quest-step-detail .quest-primary:active:not(:disabled) { transform: translateY(8px) scale(.985); box-shadow: 0 0 0 color-mix(in srgb, var(--quest-gold) 42%, #000), inset 0 3px 8px rgb(0 0 0 / .25); transition-duration: var(--ds-duration-press); }
+.quest-step-detail .quest-secondary { min-block-size: 52px; box-shadow: 0 6px 0 rgb(0 0 0 / .4), inset 0 1px 0 rgb(255 255 255 / .14), inset 0 10px 12px -10px rgb(255 255 255 / .12); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure), box-shadow var(--ds-duration-settle) var(--ds-ease-conjure); }
+.quest-step-detail .quest-secondary:active:not(:disabled) { transform: translateY(6px); box-shadow: 0 0 0 transparent, inset 0 3px 8px rgb(0 0 0 / .3); transition-duration: var(--ds-duration-press); }
+
+@media (prefers-reduced-motion: reduce) {
+  .quest-path > li[data-complete="true"] .quest-connector path, .quest-subida-degraus > i[data-atual='true'] { animation: none; }
+  .quest-map .quest-step-stone, .quest-step-detail .quest-primary, .quest-step-detail .quest-secondary { transition: none; }
+}
+
+.quest-xp-chip { display: inline-block; margin-inline-start: 4px; padding: 1px 8px; border-radius: 50px; white-space: nowrap; font: 700 var(--ds-text-micro)/1.5 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; color: rgb(8 11 18); background: var(--quest-accent); box-shadow: 0 0 10px color-mix(in srgb, var(--quest-accent) 50%, transparent); }

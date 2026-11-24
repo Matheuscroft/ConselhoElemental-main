@@ -37,10 +37,11 @@ function OrbeDoCiclo({ elemento }: { elemento: ElementoId | null }) {
  * and category rule it, and the rhythm; the last step shows the whole sentence and conjures it. It owns only the step
  * you are on: the name, element, category and rhythm are the caller's, so creating still goes through the same command.
  */
-export function CycleCreationWizard({ name, onNameChange, areas, elemento, areaId, onElemento, onArea, onSugestao, ritmo, onRitmo, editor, esforco, onEsforco, minutos, onMinutos, startLabel, agendaResumo, onSubmit, onCancel, erro }: {
+export function CycleCreationWizard({ name, onNameChange, areas, elemento, areaId, onElemento, onArea, subareas, subareaId, onSubarea, onSugestao, ritmo, onRitmo, editor, esforco, onEsforco, minutos, onMinutos, startLabel, agendaResumo, onSubmit, onCancel, erro }: {
   name: string; onNameChange: (nome: string) => void;
   areas: readonly Area[]; elemento: ElementoId | null; areaId: string | null;
   onElemento: (elemento: ElementoId | null) => void; onArea: (area: Area | null) => void;
+  subareas: readonly Area[]; subareaId: string | null; onSubarea: (subarea: Area | null) => void;
   onSugestao: (sugestao: { texto: string; areaId: string }) => void;
   ritmo: RecurrenceEditorValue; onRitmo: (valor: RecurrenceEditorValue) => void;
   /** The full schedule editor, kept for anything custom. */
@@ -57,12 +58,13 @@ export function CycleCreationWizard({ name, onNameChange, areas, elemento, areaI
   const tituloRef = useRef<HTMLHeadingElement>(null);
   const nome = name.trim();
   const area = areas.find((a) => a.id === areaId);
+  const subarea = subareas.find((a) => a.id === subareaId);
   const ir = (proximo: number) => { setDirecao(proximo > passo ? 'avanca' : 'volta'); setPasso(proximo); };
   // Each step announces itself and takes the focus, so a screen reader and the keyboard follow the screen.
   useEffect(() => { if (passo > 0) tituloRef.current?.focus({ preventScroll: true }); }, [passo]);
   const estilo = { '--cc-acento': elemento ? ACENTO[elemento] : 'rgb(var(--el-gold))' } as CSSProperties;
   const nomeEsforco = ESFORCOS.find((e) => e.pontos === esforco)?.nome ?? '';
-  const resumo = [nome, elemento ? ELEMENTS[elemento].name : '', area?.name ?? '', agendaResumo, esforco !== 1 ? nomeEsforco : '', minutos > 0 ? rotuloDuracao(minutos) : ''].filter(Boolean).join(' · ');
+  const resumo = [nome, elemento ? ELEMENTS[elemento].name : '', area?.name ?? '', subarea?.name ?? '', agendaResumo, esforco !== 1 ? nomeEsforco : '', minutos > 0 ? rotuloDuracao(minutos) : ''].filter(Boolean).join(' · ');
   const ultimo = passo === PASSOS.length - 1;
 
   return (
@@ -71,7 +73,7 @@ export function CycleCreationWizard({ name, onNameChange, areas, elemento, areaI
       <div className="ca-cartao" data-pronto={Boolean(nome)}>
         <span key={elemento ?? 'ciclo'} className="ca-orbe"><OrbeDoCiclo elemento={elemento} /></span>
         <div>
-          <small>{elemento ? <>{ELEMENTS[elemento].name}{area ? ` · ${area.name}` : ''}</> : 'Um novo ciclo'}</small>
+          <small>{elemento ? <>{ELEMENTS[elemento].name}{area ? ` · ${area.name}` : ''}{subarea ? ` · ${subarea.name}` : ''}</> : 'Um novo ciclo'}</small>
           <strong>{nome || 'Seu novo ciclo'}</strong>
           <p>A partir de {startLabel} · <b>{agendaResumo}</b></p>
         </div>
@@ -105,7 +107,7 @@ export function CycleCreationWizard({ name, onNameChange, areas, elemento, areaI
           {passo === 1 ? (
             <>
               <h3 id="ca-titulo" ref={tituloRef} tabIndex={-1}>Qual elemento rege este ciclo?</h3>
-              <CycleCategoryPicker grande areas={areas} elemento={elemento} areaId={areaId} onElemento={onElemento} onArea={onArea} />
+              <CycleCategoryPicker grande areas={areas} elemento={elemento} areaId={areaId} onElemento={onElemento} onArea={onArea} subareas={subareas} subareaId={subareaId} onSubarea={onSubarea} />
             </>
           ) : null}
 

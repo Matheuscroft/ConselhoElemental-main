@@ -230,6 +230,7 @@ export const Ciclos: React.FC = () => {
   const [showQuickCreateCycle, setShowQuickCreateCycle] = useState(false);
   const [quickCreateElement, setQuickCreateElement] = useState<ElementoId | null>(null);
   const [quickCreateAreaId, setQuickCreateAreaId] = useState<string | null>(null);
+  const [quickCreateSubareaId, setQuickCreateSubareaId] = useState<string | null>(null);
   const [quickCreateEffort, setQuickCreateEffort] = useState(1);
   const [quickCreateMinutes, setQuickCreateMinutes] = useState(0);
   const [quickCreateCycleName, setQuickCreateCycleName] = useState('');
@@ -344,7 +345,7 @@ export const Ciclos: React.FC = () => {
       validateRecurrence(quickCreateCycleSchedule.type, quickCreateCycleSchedule.config, selectedDate);
       const quickCreateArea = quickCreateAreaId ? allAreasForEdit.find((area) => area.id === quickCreateAreaId) : undefined;
       addHabit({
-        name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: quickCreateArea?.id ?? 'sem-categoria', areaPrimaryId: quickCreateArea?.id ?? 'sem-categoria', elementId: quickCreateArea?.elementId ?? 'terra',
+        name: quickCreateCycleName.trim(), title: quickCreateCycleName.trim(), areaId: quickCreateArea?.id ?? 'sem-categoria', areaPrimaryId: quickCreateArea?.id ?? 'sem-categoria', subareaId: quickCreateSubareaId, subareaPrimaryId: quickCreateSubareaId, elementId: quickCreateArea?.elementId ?? 'terra',
         startDate: new Date(selectedDate), recurrenceType: quickCreateCycleSchedule.type,
         recurrenceConfig: quickCreateCycleSchedule.config, plannedPoints: quickCreateEffort, plannedTimeMinutes: quickCreateMinutes,
       });
@@ -352,6 +353,7 @@ export const Ciclos: React.FC = () => {
     setQuickCreateCycleName('');
     setQuickCreateElement(null);
     setQuickCreateAreaId(null);
+    setQuickCreateSubareaId(null);
     setQuickCreateEffort(1);
     setQuickCreateMinutes(0);
     setQuickCreateCycleSchedule({ type: 'DAILY', config: { daysOfWeek: [0, 1, 2, 3, 4, 5, 6] } });
@@ -3110,9 +3112,10 @@ export const Ciclos: React.FC = () => {
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
           <CycleCreationWizard name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
             areas={allAreasForEdit} elemento={quickCreateElement} areaId={quickCreateAreaId}
-            onElemento={(elemento) => { setQuickCreateElement(elemento); setQuickCreateAreaId(null); }}
-            onArea={(area) => { setQuickCreateAreaId(area?.id ?? null); if (area) setQuickCreateElement(area.elementId); }}
-            onSugestao={({ texto, areaId }) => { setQuickCreateCycleName(texto); const area = allAreasForEdit.find((entry) => entry.id === areaId); if (area) { setQuickCreateElement(area.elementId); setQuickCreateAreaId(area.id); } }}
+            onElemento={(elemento) => { setQuickCreateElement(elemento); setQuickCreateAreaId(null); setQuickCreateSubareaId(null); }}
+            onArea={(area) => { setQuickCreateAreaId(area?.id ?? null); setQuickCreateSubareaId(null); if (area) setQuickCreateElement(area.elementId); }}
+            subareas={quickCreateAreaId ? getMergedSubareasForArea(quickCreateAreaId) : []} subareaId={quickCreateSubareaId} onSubarea={(subarea) => setQuickCreateSubareaId(subarea?.id ?? null)}
+            onSugestao={({ texto, areaId }) => { setQuickCreateCycleName(texto); setQuickCreateSubareaId(null); const area = allAreasForEdit.find((entry) => entry.id === areaId); if (area) { setQuickCreateElement(area.elementId); setQuickCreateAreaId(area.id); } }}
             ritmo={quickCreateCycleSchedule} onRitmo={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }}
             editor={<RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} />}
             esforco={quickCreateEffort} onEsforco={setQuickCreateEffort} minutos={quickCreateMinutes} onMinutos={setQuickCreateMinutes}

@@ -9,6 +9,8 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
   trail: QuestTrail; selectedKey?: string; onSelect: (key: string) => void; detail: (step: QuestStep) => ReactNode;
 }) {
   const progresso = trail.total > 0 ? trail.done / trail.total : 0;
+  const marcos = Math.min(trail.total, 12);
+  const feitos = trail.total > 0 ? Math.round((trail.done / trail.total) * marcos) : 0;
   return <div className="quest-map" data-element={trail.element} style={{ '--passo-total': Math.min(trail.steps.length, 14) } as CSSProperties}>
     <ol className="quest-path" aria-label={`Etapas de ${trail.title}`}>
       {trail.steps.map((step, index) => {
@@ -21,7 +23,7 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
           {index < trail.steps.length - 1 && <svg className="quest-connector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 C0 50 100 50 100 100" /></svg>}
           <button type="button" className="quest-step" onClick={() => onSelect(step.key)} aria-expanded={selected} aria-controls={selected ? detailId : undefined} aria-current={next ? 'step' : undefined}>
             <PedraDaEtapa concluida={step.available && step.completed} proxima={next} xp={step.xp ?? 0}><span className="quest-step-face">{!step.available ? <ArcaneIcon name="alerta" size={27} /> : step.completed ? <ArcaneIcon name="concluir" size={27} /> : step.kind === 'habit' ? <ArcaneIcon name="ciclo" size={27} /> : <QuestRune element={trail.element} size={46} />}</span></PedraDaEtapa>
-            <span className="quest-step-label"><small className="ds-meta">{step.chapter && <span>{step.chapter}</span>}<span>Etapa {index + 1}</span></small><strong>{step.title}</strong><span>{!step.available ? 'Indisponível' : step.completed ? 'Concluído' : step.kind === 'habit' ? 'Ciclo recorrente' : next ? 'Próxima etapa' : 'Disponível'}</span></span>
+            <span className="quest-step-label"><small className="ds-meta">{step.chapter && <span>{step.chapter}</span>}<span>Etapa {index + 1}</span></small><strong>{step.title}</strong><span>{!step.available ? 'Indisponível' : step.completed ? (step.xp ? <>Concluído <b className="quest-xp-chip">+{Number.isInteger(step.xp) ? step.xp : step.xp.toFixed(1)} XP</b></> : 'Concluído') : step.kind === 'habit' ? 'Ciclo recorrente' : next ? 'Próxima etapa' : 'Disponível'}</span></span>
             <ArcaneIcon name="chevron" className="quest-step-chevron" size={17} />
           </button>
           {selected && <div id={detailId} className="quest-step-detail">{detail(step)}</div>}
@@ -29,6 +31,10 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
       })}
     </ol>
     {trail.steps.length > 0 && <div className="quest-finish-line" data-completa={trail.total > 0 && trail.done === trail.total ? '' : undefined}><span><ArcaneIcon name="conquista" size={26} /></span><div><strong>{trail.total > 0 && trail.done === trail.total ? 'Rituais da trilha concluídos' : 'Sua conquista, passo a passo'}</strong><p>{trail.reward || 'Cada etapa faz parte da sua jornada.'}</p></div><ElementIcon element={trail.element} size={23} /></div>}
+    {trail.total > 0 && <div className="quest-subida" data-completa={trail.done === trail.total ? '' : undefined}>
+      <span className="quest-subida-rotulo">{trail.done === trail.total ? 'Trilha completa' : `Subindo · etapa ${trail.done + 1} de ${trail.total}`}</span>
+      <span className="quest-subida-degraus" aria-hidden="true">{Array.from({ length: marcos }, (_, i) => <i key={i} data-feito={i < feitos} data-atual={i === feitos && trail.done < trail.total} style={{ '--i': i } as CSSProperties} />)}</span>
+    </div>}
   </div>;
 }
 

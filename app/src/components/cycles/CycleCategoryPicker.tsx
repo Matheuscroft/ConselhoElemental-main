@@ -18,13 +18,17 @@ function Orbe({ id }: { id: ElementId }) {
  * Controlled: it creates nothing. The category decides the element; picking an element only shows its categories.
  * "Sem categoria" is a real answer (the cycle can be sorted later), never a blocking error.
  */
-export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onArea, grande = false, rotulo = 'Qual elemento rege este ciclo?' }: {
+export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onArea, subareas = [], subareaId = null, onSubarea, grande = false, rotulo = 'Qual elemento rege este ciclo?' }: {
   /** Top-level categories, built-in and the person's own. */
   areas: readonly Area[];
   elemento: ElementId | null;
   areaId: string | null;
   onElemento: (elemento: ElementId | null) => void;
   onArea: (area: Area | null) => void;
+  /** The subcategories of the chosen category, when the caller offers them. */
+  subareas?: readonly Area[];
+  subareaId?: string | null;
+  onSubarea?: (subarea: Area | null) => void;
   /** The big, tilting version for the creation steps. */
   grande?: boolean;
   /** The question above the orbs. */
@@ -54,6 +58,12 @@ export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onAre
         {doElemento.map((area, i) => <button key={area.id} type="button" aria-pressed={areaId === area.id} style={{ '--i': i } as CSSProperties} onClick={() => onArea(areaId === area.id ? null : area)}>{area.name}</button>)}
       </div>
       {!areaId ? <p>Sem categoria por enquanto: você escolhe depois.</p> : null}
+    </fieldset> : null}
+    {elemento && areaId && onSubarea && subareas.length > 0 ? <fieldset className="cycle-picker-grupo" key={areaId}>
+      <legend>Subcategoria <small>opcional</small></legend>
+      <div className="cycle-picker-categorias cycle-picker-sub" style={{ '--acento': ACENTO[elemento] } as CSSProperties}>
+        {subareas.map((sub, i) => <button key={sub.id} type="button" aria-pressed={subareaId === sub.id} style={{ '--i': i } as CSSProperties} onClick={() => onSubarea(subareaId === sub.id ? null : sub)}>{sub.name}</button>)}
+      </div>
     </fieldset> : null}
   </div>;
 }
