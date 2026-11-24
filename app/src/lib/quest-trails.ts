@@ -2,7 +2,7 @@ import type { ElementId, Habit, Project, Quest, Task, TaskItem } from '@/types';
 
 export interface QuestStep {
   key: string; id: string; title: string; kind: 'task' | 'habit'; element: ElementId;
-  completed: boolean; available: boolean; native: boolean; hasChildren: boolean;
+  completed: boolean; available: boolean; native: boolean; hasChildren: boolean; /** XP this ritual paid when it was finished. */ xp?: number;
   chapter: string; chapterId?: string; plannedMinutes: number | null;
 }
 export interface QuestTrail {
@@ -34,7 +34,7 @@ export function buildQuestTrails(source: QuestSource): QuestTrail[] {
       const ref = task ?? taskRefs.find(t => t.id === id);
       if (!ref) return;
       steps.push({ key: `task:${id}`, id, title: ref.title, kind: 'task', element: ref.elementId, completed: !!task && taskTreeCompleted(task),
-        available: !!task, native: ref.sourceModule === 'modulo_treino', hasChildren: !!ref.childItems?.length,
+        available: !!task, native: ref.sourceModule === 'modulo_treino', hasChildren: !!ref.childItems?.length, xp: task?.completionXp?.amount ?? 0,
         chapter, chapterId: parentId, plannedMinutes: task?.plannedTimeMinutes ?? null });
     });
     habitIds.forEach(id => {

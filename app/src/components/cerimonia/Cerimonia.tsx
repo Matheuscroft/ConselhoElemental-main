@@ -12,6 +12,21 @@ const NOME = { terra: 'Terra', fogo: 'Fogo', agua: 'Água', ar: 'Ar' } as const;
 const OURO = '#d6b66f';
 const OURO_VIVO = '#f0cf86';
 
+/** Confetti of light and three rings leaving the sigil: only for finishing something whole. Decoration, deterministic. */
+const FESTA = Array.from({ length: 30 }, (_, i) => {
+  const r = (k: number) => ((Math.sin((i + 1) * k) * 43758.5453) % 1 + 1) % 1;
+  return { x: 3 + r(12.9898) * 94, giro: Math.round(r(78.233) * 540 - 270), queda: 0.9 + r(37.719) * 1.1, atraso: r(4.581) * 0.9, w: 5 + Math.round(r(9.131) * 6), cor: i % 3 };
+});
+function Festa({ cor, aura }: { cor: string; aura: string }) {
+  const tons = [cor, aura, OURO_VIVO];
+  return (
+    <div className="cerimonia-festa" aria-hidden="true">
+      <i className="cerimonia-festa-anel" /><i className="cerimonia-festa-anel" data-eco="1" /><i className="cerimonia-festa-anel" data-eco="2" />
+      {FESTA.map((c, i) => <b key={i} style={{ '--x': `${c.x}%`, '--giro': `${c.giro}deg`, '--queda': `${c.queda}`, '--atraso': `${c.atraso}s`, '--w': `${c.w}px`, '--tom': tons[c.cor] } as CSSProperties} />)}
+    </div>
+  );
+}
+
 /** The count on the number beat starts at the old value and runs to the new one, so it is seen being earned. */
 function useContar(de: number, para: number, parado: boolean) {
   const [valor, setValor] = useState(parado ? para : de);
@@ -54,7 +69,8 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
   const sairRef = useRef<HTMLButtonElement>(null);
   const cor = premio.elemento ? ACENTO[premio.elemento] : OURO;
   const aura = premio.elemento ? AURA[premio.elemento] : OURO_VIVO;
-  const kicker = premio.elemento ? NOME[premio.elemento] : 'Conquista';
+  const kicker = premio.sobretitulo ?? (premio.elemento ? NOME[premio.elemento] : 'Conquista');
+  const grande = premio.grandeza === 'grande';
 
   // Reduced motion gets the whole thing at once, and once the sequence lands everything stays on screen:
   // a ceremony that ends on an empty screen takes back what it just gave.
@@ -63,6 +79,8 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
   const passos = beatsDe(premio).filter((b) => b !== 'fim');
 
   useEffect(() => { sairRef.current?.focus(); }, []);
+  // A hand-felt thump on arrival where the device has one (not iOS Safari); never with reduced motion.
+  useEffect(() => { if (grande && !reduced) try { navigator.vibrate?.([40, 50, 90]); } catch { /* no haptics */ } }, [grande, reduced]);
 
   useEffect(() => {
     const aoTeclar = (evento: KeyboardEvent) => { if (evento.key === 'Escape') onFechar(); };
@@ -92,9 +110,11 @@ export function Cerimonia({ premio, onFechar }: { premio: Premio; onFechar: () =
       data-beat={beat}
       data-pronto={pronto}
       data-parado={reduced}
+      data-grandeza={premio.grandeza}
       style={{ '--cerimonia-cor': cor, '--cerimonia-aura': aura } as CSSProperties}
     >
       <CenaMagica cor={cor} aura={aura} cy={cy} />
+      {grande && !reduced ? <Festa cor={cor} aura={aura} /> : null}
 
       <div className="cerimonia-corpo">
         {visiveis.includes('chegada') ? (

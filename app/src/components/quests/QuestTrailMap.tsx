@@ -20,7 +20,7 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
         return <li key={step.key} style={{ '--step-offset': offset, '--step-direction': delta, '--passo': Math.min(index, 14), '--prog': progresso } as CSSProperties} data-complete={step.available && step.completed} data-next={next} data-available={step.available} data-selected={selected}>
           {index < trail.steps.length - 1 && <svg className="quest-connector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 C0 50 100 50 100 100" /></svg>}
           <button type="button" className="quest-step" onClick={() => onSelect(step.key)} aria-expanded={selected} aria-controls={selected ? detailId : undefined} aria-current={next ? 'step' : undefined}>
-            <PedraDaEtapa concluida={step.available && step.completed} proxima={next}><span className="quest-step-face">{!step.available ? <ArcaneIcon name="alerta" size={27} /> : step.completed ? <ArcaneIcon name="concluir" size={27} /> : step.kind === 'habit' ? <ArcaneIcon name="ciclo" size={27} /> : <QuestRune element={trail.element} size={46} />}</span></PedraDaEtapa>
+            <PedraDaEtapa concluida={step.available && step.completed} proxima={next} xp={step.xp ?? 0}><span className="quest-step-face">{!step.available ? <ArcaneIcon name="alerta" size={27} /> : step.completed ? <ArcaneIcon name="concluir" size={27} /> : step.kind === 'habit' ? <ArcaneIcon name="ciclo" size={27} /> : <QuestRune element={trail.element} size={46} />}</span></PedraDaEtapa>
             <span className="quest-step-label"><small className="ds-meta">{step.chapter && <span>{step.chapter}</span>}<span>Etapa {index + 1}</span></small><strong>{step.title}</strong><span>{!step.available ? 'Indisponível' : step.completed ? 'Concluído' : step.kind === 'habit' ? 'Ciclo recorrente' : next ? 'Próxima etapa' : 'Disponível'}</span></span>
             <ArcaneIcon name="chevron" className="quest-step-chevron" size={17} />
           </button>
@@ -34,21 +34,22 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
 
 /** The stone of one step. When the step becomes done while it is on screen, it leaps and bursts sparks;
  *  mounting an already finished step celebrates nothing. Hooks live here so the map stays a plain function. */
-function PedraDaEtapa({ concluida, proxima, children }: { concluida: boolean; proxima: boolean; children: ReactNode }) {
+function PedraDaEtapa({ concluida, proxima, xp = 0, children }: { concluida: boolean; proxima: boolean; xp?: number; children: ReactNode }) {
   const [antes, setAntes] = useState(concluida);
   const [acabou, setAcabou] = useState(false);
   // Adjusted while rendering (React's own pattern for state that follows a prop), not in an effect.
   if (concluida !== antes) { setAntes(concluida); if (concluida) setAcabou(true); }
   useEffect(() => {
     if (!acabou) return;
-    const fim = window.setTimeout(() => setAcabou(false), 1800);
+    const fim = window.setTimeout(() => setAcabou(false), 2200);
     return () => window.clearTimeout(fim);
   }, [acabou]);
   return <span className="quest-step-stone" aria-hidden="true" data-acabou={acabou ? '' : undefined}>
     {proxima && <span className="quest-step-raios" />}
     {proxima && <svg className="quest-step-anel" viewBox="0 0 100 100"><circle className="quest-step-anel-trilho" cx="50" cy="50" r="46" pathLength="1" /><circle className="quest-step-anel-fio" cx="50" cy="50" r="46" pathLength="1" /><circle className="quest-step-anel-brilho" cx="50" cy="50" r="46" pathLength="1" /></svg>}
     {proxima && <span className="quest-step-dica">Começar</span>}
-    {acabou && <span className="quest-step-fagulhas">{[0, 1, 2, 3, 4, 5, 6, 7].map(n => <i key={n} style={{ '--faisca': n } as CSSProperties} />)}</span>}
+    {acabou && <span className="quest-step-fagulhas">{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(n => <i key={n} data-tom={n % 3} style={{ '--faisca': n } as CSSProperties} />)}</span>}
+    {acabou && xp > 0 && <span className="quest-step-xp">+{Number.isInteger(xp) ? xp : xp.toFixed(1)} XP</span>}
     {children}
   </span>;
 }

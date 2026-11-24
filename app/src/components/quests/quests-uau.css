@@ -478,3 +478,22 @@
   .quest-step-anel-brilho, .quest-step-raios, .quest-botao3d::after { animation: none; }
   .quest-botao3d::after { display: none; }
 }
+
+/* ---- Etapa concluída, segunda passada: faíscas na cor do elemento, o ganho sobe da pedra e o caminho adiante se acende ---- */
+.quest-step-fagulhas i { --giro: calc(var(--faisca) * 30deg); }
+.quest-step-fagulhas i[data-tom='0'] { background: var(--quest-accent); box-shadow: 0 0 10px var(--quest-accent); }
+.quest-step-fagulhas i[data-tom='1'] { background: rgb(var(--el-gold)); }
+.quest-step-fagulhas i[data-tom='2'] { inline-size: 5px; block-size: 5px; margin: -2.5px 0 0 -2.5px; background: #fff; box-shadow: 0 0 8px var(--quest-accent); animation-duration: calc(var(--ds-duration-conjure) * 2); }
+@keyframes cq-fagulha { from { opacity: 1; transform: rotate(var(--giro)) translateY(-10px) scale(1); } to { opacity: 0; transform: rotate(var(--giro)) translateY(-78px) scale(.3); } }
+.quest-step-xp {
+  position: absolute; z-index: 4; inset-inline-start: 50%; inset-block-start: 0; translate: -50% 0; padding: 4px 10px; border-radius: 50px; white-space: nowrap; pointer-events: none;
+  font: 700 var(--ds-text-small)/1 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; color: rgb(5 7 12);
+  background: linear-gradient(180deg, #fff3cf, var(--quest-accent)); box-shadow: 0 0 18px color-mix(in srgb, var(--quest-accent) 70%, transparent);
+  animation: cq-xp-sobe calc(var(--ds-duration-conjure) * 3) var(--ds-ease) both;
+}
+@keyframes cq-xp-sobe { 0% { opacity: 0; transform: translateY(8px) scale(.6); } 18% { opacity: 1; transform: translateY(-14px) scale(1.12); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-64px) scale(1); } }
+/* the stone keeps a glow once done, and the path ahead lights up */
+.quest-path > li[data-complete='true'] .quest-step-stone { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--quest-accent) 45%, transparent)); }
+.quest-path > li[data-complete='true'] .quest-connector path { stroke-width: 4px; animation: cq-conector-acende calc(var(--ds-duration-conjure) * 2) var(--ds-ease) both; }
+@keyframes cq-conector-acende { from { opacity: .2; filter: drop-shadow(0 0 0 transparent); } 40% { opacity: 1; filter: drop-shadow(0 0 10px var(--quest-accent)); } to { opacity: .65; } }
+@media (prefers-reduced-motion: reduce) { .quest-step-xp, .quest-path > li[data-complete='true'] .quest-connector path { animation: none; } .quest-step-xp { display: none; } }

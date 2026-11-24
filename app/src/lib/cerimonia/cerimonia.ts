@@ -25,6 +25,10 @@ export interface NumeroDaCerimonia {
 export interface Premio {
   /** Which element answers. Its colour and material carry the first beat. */
   readonly elemento?: ElementoId;
+  /** The line above the title. Without it, the element's name. */
+  readonly sobretitulo?: string;
+  /** 'grande' is for finishing a whole journey, trail or Great Work: the arrival adds a burst of colour and rings of light. */
+  readonly grandeza?: 'comum' | 'grande';
   readonly titulo: string;
   readonly numero?: NumeroDaCerimonia;
   readonly destrave?: { readonly titulo: string; readonly detalhe: string };

@@ -14,7 +14,7 @@ function fixture() {
   const react={useMemo:fn=>fn(),useEffect:fn=>fn(),useRef:v=>refs[ri++]??={current:v},useState:v=>{const i=si++;if(!(i in slots))slots[i]=v;return [slots[i],next=>slots[i]=typeof next==='function'?next(slots[i]):next];}};
   const mod={exports:{}};
   const output=ts.transpileModule(readFileSync('src/components/quests/AchievementCompletion.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText;
-  new Function('require','module','exports',output)(id=>id==='react'?react:id==='zustand/react/shallow'?{useShallow:fn=>fn}:id==='react/jsx-runtime'?require(id):id==='@/stores/appStore'?{useAppStore:fn=>fn?fn(store.getState()):store.getState()}:id==='@/lib/achievement-completion'?loadComponent('src/lib/achievement-completion.ts'):id==='./quest-path'?loadComponent('src/lib/quest-trails.ts'):new Proxy({},{get:(_,key)=>key}),mod,mod.exports);
+  new Function('require','module','exports',output)(id=>id==='react'?react:id==='zustand/react/shallow'?{useShallow:fn=>fn}:id==='react/jsx-runtime'?require(id):id==='@/stores/appStore'?{useAppStore:fn=>fn?fn(store.getState()):store.getState()}:id==='@/lib/achievement-completion'?loadComponent('src/lib/achievement-completion.ts'):id==='./quest-path'?loadComponent('src/lib/quest-trails.ts'):id==='@/lib/cerimonia/conquista'?loadComponent('src/lib/cerimonia/conquista.ts'):new Proxy({},{get:(_,key)=>key}),mod,mod.exports);
   const Component=mod.exports.AchievementCompletion({kind:'quest',id:q.id}).type;
   function render(){si=ri=0;tree=Component({kind:'quest',id:q.id});}
   render();

@@ -105,11 +105,38 @@
 .cerimonia-sair[data-pronto='true']:active { box-shadow: 0 1px 0 color-mix(in srgb, var(--cerimonia-cor) 45%, #000); }
 .cerimonia-sair:focus-visible { outline: 2px solid rgb(var(--el-gold)); outline-offset: 3px; }
 
+/* ---------- A whole journey, trail or Great Work: confetti of light and three rings from the sigil ---------- */
+.cerimonia-festa { position: absolute; inset: 0; z-index: 1; overflow: clip; pointer-events: none; }
+.cerimonia-festa > b {
+  position: absolute; inset-block-start: -16px; inset-inline-start: var(--x); inline-size: var(--w); block-size: calc(var(--w) * 1.7); border-radius: 2px;
+  background: var(--tom); box-shadow: 0 0 10px color-mix(in srgb, var(--tom) 70%, transparent); opacity: 0;
+  animation: cerimonia-confete calc(var(--ds-duration-conjure) * 3.6 * var(--queda)) var(--ds-ease) var(--atraso) both;
+}
+@keyframes cerimonia-confete {
+  0% { opacity: 0; transform: translateY(0) rotate(0deg); }
+  8% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(105dvh) translateX(calc(var(--giro) * .12)) rotate(var(--giro)); }
+}
+.cerimonia-festa-anel {
+  position: absolute; inset-inline-start: 50%; inset-block-start: calc(var(--cy, 36%) - 4%); inline-size: 176px; block-size: 176px; margin: -88px 0 0 -88px;
+  border: 2px solid var(--cerimonia-cor); border-radius: 50%; opacity: 0;
+  animation: cerimonia-festa-anel calc(var(--ds-duration-conjure) * 2.4) var(--ds-ease) calc(var(--ds-duration-conjure) * .5) both;
+}
+.cerimonia-festa-anel[data-eco='1'] { animation-delay: calc(var(--ds-duration-conjure) * .8); border-color: var(--cerimonia-aura); }
+.cerimonia-festa-anel[data-eco='2'] { animation-delay: calc(var(--ds-duration-conjure) * 1.1); border-width: 1px; }
+@keyframes cerimonia-festa-anel { from { opacity: .9; transform: scale(.4); } to { opacity: 0; transform: scale(5.2); } }
+/* the sigil of a whole conquest arrives bigger and keeps a halo */
+.cerimonia[data-grandeza='grande'] .cerimonia-emblema { --tam: 196px; }
+.cerimonia[data-grandeza='grande'][data-pronto='true'] .cerimonia-emblema { --tam: 148px; }
+.cerimonia[data-grandeza='grande'] .cerimonia-emblema::before { content: ''; position: absolute; inset: -22%; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--cerimonia-aura) 38%, transparent), transparent 68%); animation: cerimonia-halo calc(var(--ds-duration-conjure) * 4) ease-in-out infinite alternate; }
+@keyframes cerimonia-halo { from { opacity: .6; scale: .94; } to { opacity: 1; scale: 1.08; } }
+
 /* Reduced motion: the same screen, still. */
 @media (prefers-reduced-motion: reduce) {
   .cerimonia, .cerimonia-beat, .cerimonia-emblema,
   .cerimonia-anel-ticks, .cerimonia-anel-fio, .cerimonia-no, .cerimonia-glifo, .cerimonia-kicker, .cerimonia-chegada h2, .cerimonia-filete,
-  .cerimonia-cartao, .cerimonia-cartao::after, .cerimonia-sair { animation: none; }
+  .cerimonia-cartao, .cerimonia-cartao::after, .cerimonia-sair, .cerimonia-festa, .cerimonia-festa *, .cerimonia[data-grandeza='grande'] .cerimonia-emblema::before { animation: none; }
+  .cerimonia-festa { display: none; }
   .cerimonia-anel-fio { stroke-dashoffset: 0; }
   .cerimonia-no { opacity: 1; }
   .cerimonia-cartao::after { display: none; }

@@ -10,9 +10,13 @@ import { trailHref } from './quest-path';
 import { QuestRune } from './QuestRune';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { CelebracaoConquista } from './CelebracaoConquista';
+import { Cerimonia } from '@/components/cerimonia/Cerimonia';
+import { premioDeConquista } from '@/lib/cerimonia/conquista';
+import type { Premio } from '@/lib/cerimonia/cerimonia';
 import './quests-uau.css';
 
 const names = { terra: 'Terra', fogo: 'Fogo', agua: 'Água', ar: 'Ar' };
+const xpKeys = { terra: 'xp_earth', fogo: 'xp_fire', agua: 'xp_water', ar: 'xp_air' } as const;
 const number = (value: number) => value.toLocaleString('pt-BR', { maximumFractionDigits: 2 });
 
 export function AchievementCompletion({ kind, id }: { kind: AchievementKind; id: string }) {
@@ -22,10 +26,11 @@ export function AchievementCompletion({ kind, id }: { kind: AchievementKind; id:
 
 function CompletionPanel({ kind, id }: { kind: AchievementKind; id: string }) {
   const state = useAppStore(useShallow(s => ({ tasks: s.tasks, habits: s.habits, quests: s.quests, projects: s.projects,
-    currentAccountId: s.currentAccountId, setAchievementCompleted: s.setAchievementCompleted, getLevelProgress: s.getLevelProgress })));
+    currentAccountId: s.currentAccountId, setAchievementCompleted: s.setAchievementCompleted, getLevelProgress: s.getLevelProgress, user: s.user })));
   const plan = useMemo(() => achievementPlan(state, kind, id), [state, kind, id]);
   const [review, setReview] = useState<string | null>(null);
   const [error, setError] = useState('');
+  const [cerimonia, setCerimonia] = useState<Premio | null>(null);
   const [result, setResult] = useState<{ message: string; amount: number; element: ElementId; fromLevel: number; progress: LevelProgress; completed: boolean; changed: boolean } | null>(null);
   const busy = useRef(false);
   const resultRef = useRef<HTMLDivElement>(null);
@@ -40,7 +45,13 @@ function CompletionPanel({ kind, id }: { kind: AchievementKind; id: string }) {
     setError('');
     try {
       const fromLevel = state.getLevelProgress().level;
+      const xpBefore = state.user[xpKeys[plan.element]];
       const receipt = state.setAchievementCompleted(kind, id, !completed, state.currentAccountId, plan.signature);
+      if (receipt.changed && !completed) {
+        // Finishing a whole journey or Great Work is the one moment that earns the full-screen ceremony.
+        setCerimonia(premioDeConquista({ tipo: kind, nome: plan.entity.title, elemento: plan.element, bonus: receipt.amount,
+          xpAntes: xpBefore, xpDepois: xpBefore + receipt.amount, magoAntes: fromLevel, magoDepois: state.getLevelProgress().level }));
+      }
       setResult({ message: receipt.changed ? `${label} ${completed ? 'reaberta' : 'concluída'}.` : 'Esta alteração já foi registrada.', amount: receipt.amount, element: plan.element, fromLevel, progress: state.getLevelProgress(), completed: !completed, changed: receipt.changed });
       setReview(null);
     } catch (reason) {
@@ -68,5 +79,6 @@ function CompletionPanel({ kind, id }: { kind: AchievementKind; id: string }) {
       </div>}
     </>}
     {error && <p className="quest-error" role="alert">{error}</p>}
+    {cerimonia ? <Cerimonia premio={cerimonia} onFechar={() => setCerimonia(null)} /> : null}
   </section>;
 }
