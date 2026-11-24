@@ -395,3 +395,43 @@
   .ritual-showcase-art::before, .rit-vazio-orbe { animation: none; }
   .rit-celebra-selo i, .rit-celebra-anel { display: none; }
 }
+
+/* ==========================================================================
+   O menu de Rituais, repaginado: a escolha entre Rituais e Trilhas é uma pílula de vidro com a marca que
+   desliza, e uma faixa discreta diz onde estão as etapas das Jornadas e Grandes Obras.
+   ========================================================================== */
+.ritual-page .rit-visao {
+  --i: 0; position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0;
+  inline-size: 100%; max-inline-size: 960px; margin: 0 auto var(--ds-ritmo-secao); padding: 4px; border-radius: var(--ds-raio-runa);
+}
+.ritual-page .rit-visao[data-ativa='trilhas'] { --i: 1; }
+.rit-visao-indicador {
+  position: absolute; z-index: 0; inset-block: 4px; inset-inline-start: 4px; inline-size: calc((100% - 8px) / 2);
+  border: 1px solid color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 45%, transparent); border-radius: var(--ds-raio-controle);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 26%, transparent), color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 10%, transparent));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 14%), 0 6px 18px color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 20%, transparent);
+  transform: translateX(calc(var(--i, 0) * 100%)); transition: transform var(--ds-duration-settle) var(--ds-ease-conjure); pointer-events: none;
+}
+.ritual-page .rit-visao > a {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-block-size: 52px; padding: 0 8px;
+  border-radius: var(--ds-raio-controle); color: rgb(var(--el-muted)); font-size: var(--ds-text-small); font-weight: 500; text-decoration: none; white-space: nowrap;
+  transition: color var(--ds-duration-feedback) var(--ds-ease), transform var(--ds-duration-settle) var(--ds-ease-conjure);
+}
+.ritual-page .rit-visao > a[aria-current='page'] { color: rgb(var(--el-text)); }
+.ritual-page .rit-visao > a:active { transform: scale(.96); transition-duration: var(--ds-duration-press); }
+.ritual-page .rit-visao > a:focus-visible { outline: 2px solid rgb(var(--el-gold) / .7); outline-offset: -2px; }
+.ritual-page .rit-visao > a > b { min-inline-size: 22px; padding: 2px 7px; border-radius: 50px; background: rgb(var(--el-muted) / .18); font-size: var(--ds-text-micro); font-weight: 600; font-variant-numeric: tabular-nums; text-align: center; transition: background var(--ds-duration-settle) var(--ds-ease); }
+.ritual-page .rit-visao > a[aria-current='page'] > b { background: color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 35%, transparent); }
+
+.rit-trilhas-aviso {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; margin: 0 0 var(--ds-ritmo-cabeca); padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 45%, transparent); border-radius: 16px;
+  background: color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 6%, transparent); animation: rit-subir var(--ds-duration-settle) var(--ds-ease) both;
+}
+.rit-trilhas-aviso > span { display: grid; place-items: center; inline-size: 36px; block-size: 36px; border-radius: 50%; color: var(--semana-acento, rgb(var(--el-gold))); background: color-mix(in srgb, var(--semana-acento, rgb(var(--el-gold))) 14%, transparent); }
+.rit-trilhas-aviso > p { margin: 0; font-size: var(--ds-text-small); line-height: 1.4; color: rgb(var(--el-muted)); }
+.rit-trilhas-aviso > p b { color: rgb(var(--el-text)); font-weight: 600; }
+.rit-trilhas-acoes { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 20px; }
+.rit-trilhas-acoes > a, .rit-trilhas-acoes > button { display: inline-flex; align-items: center; min-block-size: 44px; padding: 0; border: 0; background: none; color: var(--semana-acento, rgb(var(--el-gold))); font-size: var(--ds-text-small); font-weight: 600; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+@media (min-width: 520px) { .rit-trilhas-aviso { grid-template-columns: auto minmax(0, 1fr) auto; } .rit-trilhas-acoes { grid-column: auto; } }
+@media (prefers-reduced-motion: reduce) { .rit-visao-indicador, .rit-trilhas-aviso { transition: none; animation: none; } }

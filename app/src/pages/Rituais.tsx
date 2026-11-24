@@ -10,6 +10,8 @@ import { Contagem } from '@/components/motion/Contagem';
 import '@/components/rituals/rituals.css';
 import { ritualView } from '@/components/quests/quest-navigation';
 import { ActivityGuide } from '@/components/quests/ActivityGuide';
+import { buildQuestTrails } from '@/components/quests/quest-path';
+import { RitualCreateSheet } from '@/components/rituals/RitualCreateSheet';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import React, { useState, useMemo } from 'react';
@@ -129,6 +131,11 @@ export const Rituais: React.FC = () => {
   const [showQuickCreate, setShowQuickCreate] = useState(false);
   const [quickCreateName, setQuickCreateName] = useState('');
   const [quickElement, setQuickElement] = useState<ElementId>('terra');
+  const [quickAreaId, setQuickAreaId] = useState<string | null>(null);
+  const [quickEffort, setQuickEffort] = useState(1);
+  const [quickMinutes, setQuickMinutes] = useState(0);
+  // The steps of Journeys and Great Works live in Trilhas; here they are hidden unless asked for.
+  const [mostrarEtapas, setMostrarEtapas] = useState(false);
   const [editElement, setEditElement] = useState<ElementId>('terra');
   const [showQuickEdit, setShowQuickEdit] = useState(false);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
@@ -161,6 +168,7 @@ export const Rituais: React.FC = () => {
     if (!destinyIntent || task) {
       setAppliedDestinyIntent(destinyIntent);
       if (task) {
+        setMostrarEtapas(true);
         setSearchQuery(task.title);
         setFilterElement(null);
         setActiveTab(task.isCompleted ? 'completed' : 'pending');
@@ -170,8 +178,17 @@ export const Rituais: React.FC = () => {
 
 
 
+  // Rituais are one-off tasks. The steps of a Journey or Great Work belong to its trail: they are listed in Trilhas, not here.
+  const questsDoApp = useAppStore(state => state.quests);
+  const projetosDoApp = useAppStore(state => state.projects);
+  const trilhas = useMemo(() => buildQuestTrails({ tasks, habits, quests: questsDoApp, projects: projetosDoApp }), [tasks, habits, questsDoApp, projetosDoApp]);
+  const idsDeEtapas = useMemo(() => new Set(trilhas.flatMap(trilha => trilha.steps.filter(step => step.kind === 'task').map(step => step.id))), [trilhas]);
+  const trilhasAbertas = trilhas.filter(trilha => !trilha.archived && !trilha.completed).length;
+  const etapasEmTrilhas = tasks.filter(task => idsDeEtapas.has(task.id));
+  const tasksDaLista = mostrarEtapas ? tasks : tasks.filter(task => !idsDeEtapas.has(task.id));
+
   // Filter tasks: texto e elemento valem para todos; o estado só separa pendentes de selados.
-  const matchingTasks = tasks.filter((task) => {
+  const matchingTasks = tasksDaLista.filter((task) => {
     if (searchQuery && !task.title.toLowerCase().includes(searchQuery.toLowerCase())) {
       return false;
     }
@@ -183,8 +200,8 @@ export const Rituais: React.FC = () => {
   const sealedTasks = matchingTasks.filter((task) => task.isCompleted);
 
   // Stats
-  const pendingCount = tasks.filter(t => !t.isCompleted).length;
-  const completedCount = tasks.filter(t => t.isCompleted).length;
+  const pendingCount = tasksDaLista.filter(t => !t.isCompleted).length;
+  const completedCount = tasksDaLista.filter(t => t.isCompleted).length;
 
   // Start task timer
   const handleStartTask = (taskId: string) => {
@@ -290,15 +307,20 @@ export const Rituais: React.FC = () => {
   const handleQuickCreate = () => {
     if (!quickCreateName.trim()) return;
     
+    const area = quickAreaId ? allAreasForEdit.find((entry) => entry.id === quickAreaId) : undefined;
     addTask({
       title: quickCreateName.trim(),
-      areaPrimaryId: null,
-      baseValue: 1,
-      elementId: quickElement,
-      plannedTimeMinutes: null, // Sem tempo por padrão
+      areaId: area?.id,
+      areaPrimaryId: area?.id ?? null,
+      baseValue: quickEffort,
+      elementId: area?.elementId ?? quickElement,
+      plannedTimeMinutes: quickMinutes > 0 ? quickMinutes : null, // Sem tempo por padrão
     });
     
     setQuickCreateName('');
+    setQuickAreaId(null);
+    setQuickEffort(1);
+    setQuickMinutes(0);
     setShowQuickCreate(false);
   };
 
@@ -589,13 +611,15 @@ export const Rituais: React.FC = () => {
     <AppLayout>
       <MotionConfig reducedMotion="user">
       <div className="ritual-page">
-      <nav className="quest-view-switch" aria-label="Visualização dos rituais">
-        <Link to="/rituais" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} />Rituais</Link>
-        <Link to="/rituais?view=trilhas" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} />Trilhas</Link>
+      <nav className="rit-visao ds-glass-float" aria-label="Visualização dos rituais" data-ativa={showQuestList ? 'lista' : 'trilhas'}>
+        <span className="rit-visao-indicador" aria-hidden="true" />
+        <Link to="/rituais" aria-current={showQuestList ? 'page' : undefined}><ArcaneIcon name="ritual" size={20} /><span>Rituais</span><b>{pendingCount}</b></Link>
+        <Link to="/rituais?view=trilhas" aria-current={!showQuestList ? 'page' : undefined}><ArcaneIcon name="jornada" size={20} /><span>Trilhas</span><b>{trilhasAbertas}</b></Link>
       </nav>
       {showQuestList && <TaskCompletionFeedback key={questAccountId} />}
       {!showQuestList && <QuestHub key={questAccountId} onManageTask={id => {
         const task = tasks.find(item => item.id === id);
+        setMostrarEtapas(true);
         setQuestParams({ view: 'lista' });
         setSearchQuery(task?.title ?? '');
         setFilterElement(null);
@@ -605,7 +629,7 @@ export const Rituais: React.FC = () => {
       {/* Cabeçalho */}
       <header className="ds-cabecalho rit-cabecalho">
         <h1>Rituais</h1>
-        <p>Suas tarefas pontuais, para realizar no seu ritmo.</p>
+        <p>Tarefas pontuais, para fazer no seu ritmo. As etapas das suas Jornadas e Grandes Obras ficam em Trilhas.</p>
         <div className="ds-cabecalho-acao">
           <button
             type="button"
@@ -618,6 +642,17 @@ export const Rituais: React.FC = () => {
           </button>
         </div>
       </header>
+
+      {etapasEmTrilhas.length > 0 && (
+        <div className="rit-trilhas-aviso" data-aberto={mostrarEtapas || undefined}>
+          <span aria-hidden="true"><ArcaneIcon name="jornada" size={20} /></span>
+          <p><b>{etapasEmTrilhas.length} {etapasEmTrilhas.length === 1 ? 'etapa' : 'etapas'}</b> de Jornadas e Grandes Obras {mostrarEtapas ? 'aparecem aqui junto' : 'ficam em Trilhas'}.</p>
+          <div className="rit-trilhas-acoes">
+            <Link to="/rituais?view=trilhas">Ver trilhas</Link>
+            <button type="button" aria-pressed={mostrarEtapas} onClick={() => setMostrarEtapas(v => !v)}>{mostrarEtapas ? 'Ocultar' : 'Mostrar aqui'}</button>
+          </div>
+        </div>
+      )}
 
       <ActivityGuide />
 
@@ -822,43 +857,19 @@ export const Rituais: React.FC = () => {
 
       {/* Quick Create Modal */}
       <Dialog open={showQuickCreate} onOpenChange={setShowQuickCreate}>
-        <DialogContent className="ds-folha quest-quick-create" aria-labelledby="ritual-create-title" aria-describedby="ritual-create-description">
+        <DialogContent className="ds-folha quest-quick-create rc-dialogo" aria-labelledby="ritual-create-title" aria-describedby="ritual-create-description">
           <DialogHeader>
-            <DialogTitle id="ritual-create-title">
-              Novo Ritual
-            </DialogTitle>
+            <DialogTitle id="ritual-create-title">Novo ritual</DialogTitle>
             <DialogDescription id="ritual-create-description">
-              Uma tarefa pontual para realizar. Para criar um hábito que se repete, use Ciclos.
+              Uma tarefa pontual. Para algo que se repete, use Ciclos; para etapas de uma meta maior, use Trilhas.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <label htmlFor="ritual-create-name" className="ds-campo">
-              <span>Nome do Ritual</span>
-              <Input
-                id="ritual-create-name"
-                placeholder="Digite o nome..."
-                value={quickCreateName}
-                onChange={(e) => setQuickCreateName(e.target.value)}
-                autoFocus
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleQuickCreate();
-                  if (e.key === 'Escape') setShowQuickCreate(false);
-                }}
-              />
-            </label>
-
-            <RitualElementChoice value={quickElement} onChange={setQuickElement} />
-            <p className="ds-nota">O ritual ficará em {ELEMENTS[quickElement].name}. A área pode ser definida depois.</p>
-          </div>
-          <div className="ds-folha-pe">
-            <button type="button" className="ds-botao" data-tipo="fantasma" onClick={() => setShowQuickCreate(false)}>
-              Cancelar
-            </button>
-            <button type="button" className="ds-botao" data-tipo="primario" onClick={handleQuickCreate} disabled={!quickCreateName.trim()}>
-              Criar
-            </button>
-          </div>
+          <RitualCreateSheet name={quickCreateName} onNameChange={setQuickCreateName}
+            areas={allAreasForEdit} elemento={quickElement} areaId={quickAreaId}
+            onElemento={(elemento) => { setQuickElement(elemento ?? 'terra'); setQuickAreaId(null); }}
+            onArea={(area) => { setQuickAreaId(area?.id ?? null); if (area) setQuickElement(area.elementId); }}
+            esforco={quickEffort} onEsforco={setQuickEffort} minutos={quickMinutes} onMinutos={setQuickMinutes}
+            onSubmit={handleQuickCreate} onCancel={() => setShowQuickCreate(false)} />
         </DialogContent>
       </Dialog>
 
