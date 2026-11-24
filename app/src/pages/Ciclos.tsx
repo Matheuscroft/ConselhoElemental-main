@@ -3103,6 +3103,7 @@ export const Ciclos: React.FC = () => {
           <DialogHeader><DialogTitle id="cycles-create-title">Criar ciclo</DialogTitle><DialogDescription id="cycles-create-description">Transforme uma pequena ação em parte da sua rotina.</DialogDescription></DialogHeader>
           <CycleCreationForm kind="cycle" name={quickCreateCycleName} onNameChange={setQuickCreateCycleName}
             agenda={<><CycleRhythmPresets value={quickCreateCycleSchedule} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /><RecurrenceEditor value={quickCreateCycleSchedule} referenceDate={selectedDate} onChange={value => { setQuickCreateCycleSchedule(value); setQuickCreateCycleError(''); }} /></>}
+            onSugestao={({ texto, areaId }) => { setQuickCreateCycleName(texto); const area = allAreasForEdit.find((entry) => entry.id === areaId); if (area) { setQuickCreateElement(area.elementId); setQuickCreateAreaId(area.id); } }}
             elemento={quickCreateElement} categoriaNome={allAreasForEdit.find((area) => area.id === quickCreateAreaId)?.name}
             startLabel={selectedDate.toLocaleDateString('pt-BR')} agendaResumo={resumoDaAgenda(quickCreateCycleSchedule, selectedDate)}
             onSubmit={() => { if (handleQuickCreateCycle()) { setWorkspaceView('routine'); setCycleFilters({ query: '', element: 'all', status: 'all' }); } }}

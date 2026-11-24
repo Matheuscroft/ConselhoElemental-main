@@ -400,8 +400,8 @@
 .cycle-picker-grupo > p { margin: 0; font-size: var(--ds-text-micro); line-height: 1.5; color: rgb(var(--el-muted)); }
 
 /* ritmos rápidos */
-.cycle-ritmo { display: flex; flex-wrap: wrap; gap: 8px; margin-block-end: 14px; }
-.cycle-ritmo > button { min-block-size: 44px; padding-inline: 16px; border: 1px solid color-mix(in srgb, var(--cc-acento) 35%, transparent); border-radius: 50px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease); }
+.cycle-ritmo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-block-end: 14px; }
+.cycle-ritmo > button { min-block-size: 44px; padding-inline: 6px; white-space: nowrap; border: 1px solid color-mix(in srgb, var(--cc-acento) 35%, transparent); border-radius: 50px; background: transparent; color: rgb(var(--el-text)); font-size: var(--ds-text-small); transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease), color var(--ds-duration-feedback) var(--ds-ease); }
 .cycle-ritmo > button[aria-pressed="true"] { border-color: var(--cc-acento); background: color-mix(in srgb, var(--cc-acento) 22%, transparent); color: var(--cc-acento); font-weight: 600; }
 .cycle-ritmo > button:active { transform: scale(.95); }
 
@@ -413,3 +413,20 @@
 @media (prefers-reduced-motion: reduce) {
   .cycle-composer, .cycle-composer * { animation: none !important; transition: none !important; }
 }
+
+/* ---- segunda passada: cartão fixo, anel que pulsa, toque que responde ---- */
+@media (max-width: 600px) {
+  /* o cartão fica à vista enquanto você escolhe: tudo o que você toca aparece nele na hora */
+  .cycle-composer .cycle-composer-preview { position: sticky; inset-block-start: 0; z-index: 5; padding: 10px 14px; gap: 12px; background-color: rgb(var(--el-canvas)); box-shadow: 0 -40px 0 0 rgb(var(--el-canvas)), 0 8px 24px color-mix(in srgb, var(--cc-acento) 14%, transparent); }
+  .cycle-composer .cycle-composer-preview > .cc-orbe { inline-size: 46px; block-size: 46px; }
+  .cycle-composer .cycle-composer-preview strong { font-size: var(--ds-text-body); margin-block: 0; line-height: 1.3; }
+  .cycle-composer .cycle-composer-preview p { font-size: var(--ds-text-micro); line-height: 1.35; }
+}
+/* um anel de luz sai da orbe escolhida */
+.cycle-picker-elementos > button[aria-pressed="true"] .cp-orbe::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--acento); pointer-events: none; animation: cc-anel calc(var(--ds-duration-conjure) * 1.4) var(--ds-ease) both; }
+.cycle-picker-elementos .cp-orbe { position: relative; }
+@keyframes cc-anel { from { transform: scale(.9); opacity: .9; } to { transform: scale(1.7); opacity: 0; } }
+/* o cartão "respira" uma vez quando algo muda */
+.cycle-composer[data-elemento] .cycle-composer-preview { animation: cc-pulsa var(--ds-duration-settle) var(--ds-ease-conjure); }
+@keyframes cc-pulsa { 0% { transform: scale(.985); } 60% { transform: scale(1.01); } 100% { transform: none; } }
+.cycle-composer-sugestoes > button { transition: transform var(--ds-duration-press) var(--ds-ease), background var(--ds-duration-feedback) var(--ds-ease); }

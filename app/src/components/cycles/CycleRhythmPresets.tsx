@@ -4,7 +4,7 @@ const TODOS = [0, 1, 2, 3, 4, 5, 6];
 const ATALHOS: ReadonlyArray<{ rotulo: string; valor: RecurrenceEditorValue }> = [
   { rotulo: 'Todo dia', valor: { type: 'DAILY', config: { daysOfWeek: TODOS } } },
   { rotulo: 'Dias úteis', valor: { type: 'WEEKLY', config: { daysOfWeek: [1, 2, 3, 4, 5] } } },
-  { rotulo: 'Fim de semana', valor: { type: 'WEEKLY', config: { daysOfWeek: [0, 6] } } },
+  { rotulo: 'Sáb e dom', valor: { type: 'WEEKLY', config: { daysOfWeek: [0, 6] } } },
 ];
 
 const mesmoDias = (a?: number[], b?: number[]) => Boolean(a && b && a.length === b.length && [...a].sort().join() === [...b].sort().join());
