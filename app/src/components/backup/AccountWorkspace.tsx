@@ -614,6 +614,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
     {closedTabs}
     {panelInStep && panel}
     {feedback('Não deu para terminar agora. Seu progresso continua protegido.')}
+    <a className="account-text-link" href="/?progresso=reparar">Continua travado? Reparar este aparelho</a>
   </> } : { title: 'Terminar o que ficou pela metade', lead: 'Uma gravação na conta foi interrompida. Seu progresso está protegido.', body: <>
     <button type="button" disabled={cannotAct} onClick={()=>connectJourney()}>{spinner}Verificar e terminar</button>
     {failure('Não deu para terminar agora. Seu progresso continua protegido.')}
@@ -622,6 +623,7 @@ export function AccountWorkspace({ onStart, notice = 'none' }: { onStart?: (sess
       <button type="button" className="restore-workspace-secondary" disabled={cannotAct||!pendingRetryConsent} onClick={completePendingJourney}>Gravar de novo</button>
     </>}
     {statusLine}
+    <a className="account-text-link" href="/?progresso=reparar">Continua travado? Reparar este aparelho</a>
   </> };
   const stepAjuste = () => ({ title: blockKind === 'progress' ? 'Alguns dados deste aparelho precisam de ajuste' : blockKind === 'restore' ? 'Uma importação ficou pela metade' : 'Reconectar este aparelho', lead: 'Nada do seu progresso é apagado.', body: blockKind === 'progress' ? <>
     {progressRepair ? <>
