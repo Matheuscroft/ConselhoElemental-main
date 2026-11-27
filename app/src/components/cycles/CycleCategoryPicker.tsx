@@ -1,69 +1,68 @@
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ELEMENTS } from '@/constants';
 import { ACENTO } from '@/lib/design/palette';
 import type { Area, ElementId } from '@/types';
-import { CycleSigil } from './CycleSigil';
+import { ElementStackSlider } from './ElementStackSlider';
 
-const ORDEM: readonly ElementId[] = ['terra', 'fogo', 'agua', 'ar'];
-
-function Orbe({ id }: { id: ElementId }) {
-  const [falhou, setFalhou] = useState(false);
-  return falhou
-    ? <CycleSigil element={id} size="card" filled />
-    : <img src={`/sanctuary/elements/${id}-v1.webp`} alt="" width={64} height={64} loading="lazy" onError={() => setFalhou(true)} />;
+/** A compact row of chips that scrolls sideways, with a way to see them all at once when that is easier. */
+function Trilho({ titulo, itens, escolhido, aoEscolher, cor }: {
+  titulo: string; itens: readonly Area[]; escolhido: string | null; aoEscolher: (area: Area | null) => void; cor: string;
+}) {
+  const [aberto, setAberto] = useState(false);
+  const trilho = useRef<HTMLDivElement>(null);
+  // The chosen chip comes into view in its own row.
+  useEffect(() => {
+    const alvo = trilho.current?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    alvo?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+  }, [escolhido]);
+  return (
+    <section className="cp-secao" style={{ '--acento': cor } as CSSProperties} aria-label={titulo}>
+      <header>
+        <h4>{titulo} <small>opcional</small></h4>
+        {itens.length > 4 ? <button type="button" aria-expanded={aberto} onClick={() => setAberto((v) => !v)}>{aberto ? 'Recolher' : `Ver as ${itens.length}`}</button> : null}
+      </header>
+      <div ref={trilho} className="cp-trilho" data-aberto={aberto || undefined}>
+        {itens.map((area, i) => (
+          <button key={area.id} type="button" aria-pressed={escolhido === area.id} style={{ '--i': i } as CSSProperties} onClick={() => aoEscolher(escolhido === area.id ? null : area)}>{area.name}</button>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 /**
- * Element and category chosen where the cycle is born, so nothing has to be edited afterwards.
- * Controlled: it creates nothing. The category decides the element; picking an element only shows its categories.
- * "Sem categoria" is a real answer (the cycle can be sorted later), never a blocking error.
+ * Element, area and focus chosen where the thing is born, so nothing has to be edited afterwards. The element is a
+ * vertical stack slider; the area (the category) and the focus (its subcategory) are compact rows that appear under it,
+ * so the whole choice fits in one screen. Controlled: it creates nothing.
  */
-export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onArea, subareas = [], subareaId = null, onSubarea, grande = false, rotulo = 'Qual elemento rege este ciclo?' }: {
+export function CycleCategoryPicker({ areas, elemento, areaId, onElemento, onArea, subareas = [], subareaId = null, onSubarea, rotulo = 'Qual elemento rege este ciclo?' }: {
   /** Top-level categories, built-in and the person's own. */
   areas: readonly Area[];
   elemento: ElementId | null;
   areaId: string | null;
   onElemento: (elemento: ElementId | null) => void;
   onArea: (area: Area | null) => void;
-  /** The subcategories of the chosen category, when the caller offers them. */
+  /** The subcategories of the chosen area, when the caller offers them. */
   subareas?: readonly Area[];
   subareaId?: string | null;
   onSubarea?: (subarea: Area | null) => void;
-  /** The big, tilting version for the creation steps. */
+  /** Kept for callers that still pass it: the slider is always the big one. */
   grande?: boolean;
-  /** The question above the orbs. */
+  /** The question above the slider. */
   rotulo?: string;
 }) {
   const doElemento = elemento ? areas.filter((area) => area.elementId === elemento) : [];
-  // The orb leans toward the finger: only a transform, written on the element itself.
-  const inclinar = (evento: React.PointerEvent<HTMLButtonElement>) => {
-    const alvo = evento.currentTarget; const caixa = alvo.getBoundingClientRect();
-    alvo.style.setProperty('--ry', `${((evento.clientX - caixa.left) / caixa.width - 0.5) * 22}deg`);
-    alvo.style.setProperty('--rx', `${-((evento.clientY - caixa.top) / caixa.height - 0.5) * 22}deg`);
-  };
-  const soltar = (evento: React.PointerEvent<HTMLButtonElement>) => { evento.currentTarget.style.removeProperty('--rx'); evento.currentTarget.style.removeProperty('--ry'); };
-  return <div className="cycle-picker" data-grande={grande || undefined}>
-    <fieldset className="cycle-picker-grupo">
-      <legend>{rotulo} <small>opcional</small></legend>
-      <div className="cycle-picker-elementos" data-escolhido={elemento ?? undefined}>
-        {ORDEM.map((id) => <button key={id} type="button" aria-pressed={elemento === id} aria-label={ELEMENTS[id].name} style={{ '--acento': ACENTO[id] } as CSSProperties}
-          onClick={() => onElemento(elemento === id ? null : id)} onPointerMove={grande ? inclinar : undefined} onPointerLeave={grande ? soltar : undefined} onPointerCancel={grande ? soltar : undefined}>
-          <span className="cp-orbe"><Orbe id={id} /></span><span className="cp-nome">{ELEMENTS[id].name}</span>
-        </button>)}
-      </div>
-    </fieldset>
-    {elemento ? <fieldset className="cycle-picker-grupo" key={elemento}>
-      <legend>Categoria de {ELEMENTS[elemento].name}</legend>
-      <div className="cycle-picker-categorias" style={{ '--acento': ACENTO[elemento] } as CSSProperties}>
-        {doElemento.map((area, i) => <button key={area.id} type="button" aria-pressed={areaId === area.id} style={{ '--i': i } as CSSProperties} onClick={() => onArea(areaId === area.id ? null : area)}>{area.name}</button>)}
-      </div>
-      {!areaId ? <p>Sem categoria por enquanto: você escolhe depois.</p> : null}
-    </fieldset> : null}
-    {elemento && areaId && onSubarea && subareas.length > 0 ? <fieldset className="cycle-picker-grupo" key={areaId}>
-      <legend>Subcategoria <small>opcional</small></legend>
-      <div className="cycle-picker-categorias cycle-picker-sub" style={{ '--acento': ACENTO[elemento] } as CSSProperties}>
-        {subareas.map((sub, i) => <button key={sub.id} type="button" aria-pressed={subareaId === sub.id} style={{ '--i': i } as CSSProperties} onClick={() => onSubarea(subareaId === sub.id ? null : sub)}>{sub.name}</button>)}
-      </div>
-    </fieldset> : null}
-  </div>;
+  const cor = elemento ? ACENTO[elemento] : 'rgb(var(--el-gold))';
+  return (
+    <div className="cycle-picker">
+      <fieldset className="cycle-picker-grupo">
+        <legend>{rotulo} <small>opcional</small></legend>
+        <ElementStackSlider elemento={elemento} onElemento={onElemento} />
+      </fieldset>
+      {elemento ? <Trilho key={elemento} titulo={`Área de ${ELEMENTS[elemento].name}`} itens={doElemento} escolhido={areaId} aoEscolher={onArea} cor={cor} /> : null}
+      {elemento && areaId && onSubarea && subareas.length > 0
+        ? <Trilho key={areaId} titulo="Foco" itens={subareas} escolhido={subareaId} aoEscolher={onSubarea} cor={cor} />
+        : null}
+    </div>
+  );
 }

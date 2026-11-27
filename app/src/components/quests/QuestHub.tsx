@@ -4,6 +4,8 @@ import { useShallow } from 'zustand/react/shallow';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppStore } from '@/stores/appStore';
 import { formatTime } from '@/constants';
+import { VitroKey } from '@/components/vitro/VitroKey';
+import { ACENTO } from '@/lib/design/palette';
 import { ArcaneIcon } from '@/components/elemental/ArcaneIcon';
 import { ElementalTimer } from '@/components/elemental/ElementalTimer';
 import { openRitualTimer, ownsRitualTimer, toggleRitualTimer } from '@/components/elemental/sanctuary-timer';
@@ -89,7 +91,7 @@ export function QuestHub({ onManageTask }: { onManageTask: (id: string) => void 
     if (trail.archived || trail.completed) return <p>Esta trilha está {trail.archived ? 'arquivada' : 'concluída'}. Revise seu estado na página de origem para continuar.</p>;
     if (step.native || step.kind === 'habit') return <><p>{step.native ? 'Continue este treino no módulo de Treinos.' : 'Este ciclo se repete na sua rotina e tem seu próprio calendário.'}</p><Link className="quest-primary" to={step.native ? '/treinos' : '/ciclos'}>{step.native ? 'Abrir treino' : 'Abrir ciclos'}</Link></>;
     if (step.hasChildren) return <><p>Este ritual tem subetapas. Abra seus detalhes para acompanhar cada uma.</p><button className="quest-primary" onClick={() => onManageTask(step.id)}>Abrir subetapas</button></>;
-    return <><strong className="quest-balao-titulo">{step.title}</strong><small className="quest-balao-sub">{step.plannedMinutes !== null ? `${step.plannedMinutes} min planejados` : 'Conclua quando terminar'}</small><div className="quest-detail-actions"><button className="quest-primary quest-botao3d" onClick={event => begin(step.id, event.currentTarget)}><ArcaneIcon name="iniciar" size={17} />{timer.entityId === step.id && timer.entityType === 'TASK' ? 'Retomar etapa' : 'Iniciar etapa'}</button><button className="quest-text-button" onClick={() => onManageTask(step.id)}>Detalhes e edição</button></div></>;
+    return <><strong className="quest-balao-titulo">{step.title}</strong><small className="quest-balao-sub">{step.plannedMinutes !== null ? `${step.plannedMinutes} min planejados` : 'Conclua quando terminar'}</small><div className="quest-detail-actions"><VitroKey proporcao={3.4} flutuar tom={ACENTO[trail.element]} rotulo={timer.entityId === step.id && timer.entityType === 'TASK' ? 'Retomar etapa' : 'Iniciar etapa'} aoClicar={botao => begin(step.id, botao)} /><button className="quest-text-button" onClick={() => onManageTask(step.id)}>Detalhes e edição</button></div></>;
   };
   return <section className="quest-hub" aria-labelledby="quest-hub-title">
     <header className="quest-section-heading"><div><h1 id="quest-hub-title" ref={hubTitle} tabIndex={-1}>Trilhas de conquistas</h1><p>Execute os rituais das suas Jornadas e Grandes Obras. Ciclos seguem seu próprio calendário.</p></div></header>

@@ -560,3 +560,10 @@
 }
 
 .quest-xp-chip { display: inline-block; margin-inline-start: 4px; padding: 1px 8px; border-radius: 50px; white-space: nowrap; font: 700 var(--ds-text-micro)/1.5 Inter, system-ui, sans-serif; font-variant-numeric: tabular-nums; color: rgb(8 11 18); background: var(--quest-accent); box-shadow: 0 0 10px color-mix(in srgb, var(--quest-accent) 50%, transparent); }
+
+/* the stone of a step is a glass key now: it carries its own volume, so the old disc loses its fill and its lip */
+.quest-map .quest-step-stone { background: none; border: 0; box-shadow: none; inline-size: 92px; block-size: 92px; flex-basis: 92px; background-image: none; }
+.quest-map .quest-path > li .quest-step-stone, .quest-map .quest-path > li[data-complete="true"] .quest-step-stone, .quest-map .quest-path > li[data-next="true"] .quest-step-stone, .quest-map .quest-path > li[data-available="false"] .quest-step-stone { box-shadow: none; background: none; border: 0; }
+.quest-path > li[data-complete="true"] .quest-step-stone { translate: 0 0; }
+.quest-map .quest-step:active .quest-step-stone { translate: 0 0; box-shadow: none; }
+.quest-map .quest-step-stone .vk { inset: auto; }

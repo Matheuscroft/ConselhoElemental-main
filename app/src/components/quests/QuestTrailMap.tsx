@@ -1,7 +1,8 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { ArcaneIcon, ElementIcon } from '@/components/elemental/ArcaneIcon';
-import { QuestRune } from './QuestRune';
 import type { QuestStep, QuestTrail } from './quest-path';
+import { VitroKey } from '@/components/vitro/VitroKey';
+import { ACENTO } from '@/lib/design/palette';
 import './quests-uau.css';
 
 const OFFSETS = [0, 1, 0, -1];
@@ -22,7 +23,9 @@ export function QuestTrailMap({ trail, selectedKey, onSelect, detail }: {
         return <li key={step.key} style={{ '--step-offset': offset, '--step-direction': delta, '--passo': Math.min(index, 14), '--prog': progresso } as CSSProperties} data-complete={step.available && step.completed} data-next={next} data-available={step.available} data-selected={selected}>
           {index < trail.steps.length - 1 && <svg className="quest-connector" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M0 0 C0 50 100 50 100 100" /></svg>}
           <button type="button" className="quest-step" onClick={() => onSelect(step.key)} aria-expanded={selected} aria-controls={selected ? detailId : undefined} aria-current={next ? 'step' : undefined}>
-            <PedraDaEtapa concluida={step.available && step.completed} proxima={next} xp={step.xp ?? 0}><span className="quest-step-face">{!step.available ? <ArcaneIcon name="alerta" size={27} /> : step.completed ? <ArcaneIcon name="concluir" size={27} /> : step.kind === 'habit' ? <ArcaneIcon name="ciclo" size={27} /> : <QuestRune element={trail.element} size={46} />}</span></PedraDaEtapa>
+            <PedraDaEtapa concluida={step.available && step.completed} proxima={next} xp={step.xp ?? 0}>
+              <VitroKey comoFace proporcao={1} flutuar={next} tom={ACENTO[trail.element]} estado={!step.available ? 'bloqueado' : step.completed ? 'feito' : 'normal'} rotulo={!step.available ? '!' : step.completed ? '✓' : String(index + 1)} />
+            </PedraDaEtapa>
             <span className="quest-step-label"><small className="ds-meta">{step.chapter && <span>{step.chapter}</span>}<span>Etapa {index + 1}</span></small><strong>{step.title}</strong><span>{!step.available ? 'Indisponível' : step.completed ? (step.xp ? <>Concluído <b className="quest-xp-chip">+{Number.isInteger(step.xp) ? step.xp : step.xp.toFixed(1)} XP</b></> : 'Concluído') : step.kind === 'habit' ? 'Ciclo recorrente' : next ? 'Próxima etapa' : 'Disponível'}</span></span>
             <ArcaneIcon name="chevron" className="quest-step-chevron" size={17} />
           </button>

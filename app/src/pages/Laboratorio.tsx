@@ -18,6 +18,7 @@ import type { AscensaoDoReel, NivelDeAscensao } from '@/lib/momentos/ascensao';
 import type { NivelVfx } from '@/lib/momentos/nivel-vfx';
 import { LevelingCalculatorService } from '@/services/leveling-calculator';
 import { PainelGrimorio } from '@/components/laboratorio/PainelGrimorio';
+import { PainelTecla } from '@/components/laboratorio/PainelTecla';
 import '@/components/laboratorio/laboratorio.css';
 
 /**
@@ -31,10 +32,10 @@ const NOME: Record<ElementoId, string> = { fogo: 'Fogo', agua: 'Água', ar: 'Ar'
 const OPCOES_ELEMENTO = ELEMENTOS.map((valor) => ({ valor, texto: NOME[valor] }));
 const OPCOES_OU_NENHUM: ReadonlyArray<{ valor: ElementoId | null; texto: string }> = [{ valor: null, texto: 'Nenhum' }, ...OPCOES_ELEMENTO];
 
-type Painel = 'nivel' | 'moldura' | 'avisos' | 'recompensa' | 'movimento' | 'som' | 'grimorio';
+type Painel = 'nivel' | 'moldura' | 'avisos' | 'recompensa' | 'movimento' | 'som' | 'grimorio' | 'tecla';
 const PAINEIS: ReadonlyArray<{ id: Painel; texto: string }> = [
   { id: 'nivel', texto: 'Nível' }, { id: 'moldura', texto: 'Moldura' }, { id: 'avisos', texto: 'Avisos' },
-  { id: 'recompensa', texto: 'Recompensa' }, { id: 'movimento', texto: 'Movimento' }, { id: 'som', texto: 'Som' }, { id: 'grimorio', texto: 'Grimório' },
+  { id: 'recompensa', texto: 'Recompensa' }, { id: 'movimento', texto: 'Movimento' }, { id: 'som', texto: 'Som' }, { id: 'grimorio', texto: 'Grimório' }, { id: 'tecla', texto: 'Tecla' },
 ];
 const ids = PAINEIS.map((item) => item.id);
 
@@ -305,6 +306,7 @@ export default function Laboratorio() {
           {painel === 'movimento' ? <PainelMovimento /> : null}
         {painel === 'som' ? <PainelSom /> : null}
           {painel === 'grimorio' ? <PainelGrimorio /> : null}
+          {painel === 'tecla' ? <PainelTecla /> : null}
         </div>
       </main>
     </AppLayout>
